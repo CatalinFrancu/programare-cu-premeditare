@@ -4,6 +4,7 @@
 \usepackage{emoji}
 % We don't really need it, but it suppresses some warnings from hyperref.
 \usepackage{float}
+\usepackage{fontspec} % for the Inconsolata font
 \usepackage[a4paper, margin=1.8cm]{geometry}
 \usepackage{parskip}
 \usepackage[onehalfspacing]{setspace}
@@ -12,8 +13,8 @@
 \usepackage{biblatex}
 \addbibresource{references.bib}
 
-% pentru enumerări cu \alph, \Alph etc.; pentru control al spațierii în jurul
-% și în interiorul listelor (itemize, enumerate)
+% for enumerations with \alph, \Alph etc.; for better control of spacing
+% within in around lists (itemize, enumerate)
 \usepackage{enumitem}
 \setlist{noitemsep}
 
@@ -24,6 +25,15 @@
   filecolor=blue,
   urlcolor=blue,
 }
+
+% A more legible font for source code.
+\usepackage{inconsolata-nerd-font}
+\setmonofont[
+Scale=0.85, % Inconsolata looks naturally larger than the serif font.
+BoldFont={InconsolataLGCNerdFont-Bold.ttf},
+ItalicFont={InconsolataLGCNerdFont-Italic.ttf},
+BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
+]{InconsolataLGCNerdFont-Regular.ttf}
 
 \usepackage{minted}
 \usemintedstyle{trac}
