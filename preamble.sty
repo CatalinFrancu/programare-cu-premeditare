@@ -2,14 +2,17 @@
 
 \usepackage[romanian]{babel}
 \usepackage{emoji}
+% We don't really need it, but it suppresses some warnings from hyperref.
+\usepackage{float}
 \usepackage[a4paper, margin=1.8cm]{geometry}
+\usepackage[svgnames]{xcolor}
 
 % pentru enumerări cu \alph, \Alph etc.; pentru control al spațierii în jurul
 % și în interiorul listelor (itemize, enumerate)
 \usepackage{enumitem}
 \setlist{noitemsep}
 
-\usepackage{hyperref}
+\usepackage[pdfpagelabels]{hyperref}
 \hypersetup{
   colorlinks=true,
   linkcolor=blue,
@@ -26,6 +29,5 @@
 
 \usepackage{tikz}
 \usetikzlibrary{positioning}
-
 
 \def\bigoh{\mathcal{O}}

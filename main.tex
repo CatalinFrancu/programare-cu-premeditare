@@ -3,25 +3,29 @@
 \usepackage{import}
 \usepackage{preamble}
 
+\title{Programare cu premeditare}
+\author{Cătălin Frâncu}
+\date{}
+
 \begin{document}
 
 % Disable page numbering for now.
 \pagenumbering{gobble}
 
-% Supress most "Underfull \vbox" warnings caused by Minted.
-\raggedbottom
+% Prevent some warnings about duplicate anchors.
+\hypersetup{pageanchor=false}
 
-% title
-\title{Programare cu premeditare}
-\author{Cătălin Frâncu}
-\date{}
-
+\begin{titlepage}
 \maketitle
+\end{titlepage}
 
-% table of contents
-
+\hypersetup{pageanchor=true}
+\cleardoublepage
 % Reenable page numbering.
 \mainmatter
+
+% Supress most "Underfull \vbox" warnings caused by Minted.
+\raggedbottom
 
 \begingroup
 \hypersetup{hidelinks} % No blue links in the ToC.

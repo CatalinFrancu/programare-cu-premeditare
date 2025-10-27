@@ -99,11 +99,11 @@ void add(int pos, int delta) {
 
 Apropo de \textit{clean code}: Remarcați că am denumit funcțiile \mintinline{c}{set} și \mintinline{c}{add}, nu le-am denumit pe ambele \mintinline{c}{update}. Astfel am evidențiat diferența dintre ele.
 
-\subsection{Construcția în $\bigoh(n \log n)$}
+\subsection{Construcția în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)}}
 
 O variantă de construcție este să invocăm funcția set de mai sus pentru fiecare valoare de la intrare. Complexitatea va fi $\bigoh(n \log n)$.
 
-\subsection{Construcția în $\bigoh(n)$}
+\subsection{Construcția în \texorpdfstring{$\bigoh(n)$}{O(n)}}
 
 Putem reduce timpul de construcție dacă doar inserăm valorile frunzelor, fără a le propaga la strămoși. La final calculăm foarte simplu nodurile interne, în ordine descrescătoare.
 
@@ -118,6 +118,8 @@ void build() {
 \subsection{Calculul sumei pe interval}
 
 Să calculăm suma pe intervalul original [2, 12], care corespunde intervalului [18, 28] din reprezentarea internă. Ideea este să descompunem acest interval într-un număr logaritmic de segmente, mai exact [18,19], [20,23], [24,27] și [28,28]. Avantajul descompunerii este că avem deja calculate sumele acestor intervale, respectiv în nodurile 9, 5, 6 și 28.
+
+\import{./figures}{segment-tree-range-sum.tex}
 
 Pornim cu doi pointeri $l$ și $r$ din capetele interogării date. Apoi procedăm astfel:
 
