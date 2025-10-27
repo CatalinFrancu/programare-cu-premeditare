@@ -160,20 +160,6 @@ long long query(int l, int r) { // [l, r] închis
 
 Clarificare: la ultimul nivel, dacă $l = r$, atunci $s[l]$ va fi selectat exact o dată, fie datorită lui $l$, fie datorită lui $r$, după cum poziția este impară sau pară.
 
-\subsection{Implementarea recursivă}
-
-Există și o implementare recursivă, pe care nu o vom discuta acum (o menționez doar ca să o fac de rîs). O vom discuta mai tîrziu în acest capitol. Este păcat că mulți elevi învață și stăpînesc doar acea implementare, pe care o aplică și cînd nu este nevoie de ea, deși implementarea iterativă de mai sus este de 2-3 ori mai rapidă. Implementarea iterativă ar trebui să fie implementarea voastră go-to oricînd este suficientă.
-
-Exemplu: din implementarea iterativă rezultă imediat că:
-
-\begin{enumerate}
-  \item  Complexitatea este $\bigoh(\log n)$, întrucît $l$ și $r$ urcă exact un nivel la fiecare iterație.
-
-  \item De pe fiecare nivel selectăm cel mult două intervale.
-\end{enumerate}
-
-Vă urez succes să demonstrați aceste lucruri în implementarea recursivă. \emoji{smiling-face-with-horns}
-
 \subsection{Căutarea unei sume parțiale}
 
 Ca și la AIB-uri, dacă toate valorile sînt pozitive are sens întrebarea: pe ce poziție suma parțială atinge valoarea $P$? Pentru simplitate, recomand să adăugați o santinelă de valoarea infinită pe poziția $n$. Aceasta garantează că suma parțială se atinge întotdeauna, iar dacă răspunsul este $n$, atunci de fapt suma parțială nu există în vectorul fără santinelă.
@@ -231,3 +217,17 @@ Am inclus acest algoritm, deși este rar întîlnit în pratică, pentru a ilust
 \subsection{Adaptarea la alte tipuri de operații}
 
 Aceeași structură de date poate răspunde la multe alte feluri de actualizări și interogări. Nu detaliem aici, vom studia probleme. Ce este important este să ne dăm seama ce stocăm în fiecare nod și cum combină părintele informațiile din cei doi fii.
+
+\subsection{Implementarea recursivă}
+
+Există și o implementare recursivă, pe care nu o vom discuta acum (o menționez doar ca să o fac de rîs). O vom discuta mai tîrziu în acest capitol. Este păcat că mulți elevi învață și stăpînesc doar acea implementare, pe care o aplică și cînd nu este nevoie de ea, deși implementarea iterativă de mai sus este de 2-3 ori mai rapidă. Implementarea iterativă ar trebui să fie implementarea voastră de referință oricînd este suficientă.
+
+Exemplu: din implementarea iterativă rezultă imediat că:
+
+\begin{enumerate}
+  \item  Complexitatea este $\bigoh(\log n)$, întrucît $l$ și $r$ urcă exact un nivel la fiecare iterație.
+
+  \item De pe fiecare nivel selectăm cel mult două intervale.
+\end{enumerate}
+
+Vă urez succes să demonstrați aceste lucruri în implementarea recursivă. \emoji{smiling-face-with-horns}
