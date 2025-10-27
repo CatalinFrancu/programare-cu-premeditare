@@ -1,0 +1,31 @@
+\ProvidesPackage{preamble}
+
+\usepackage[romanian]{babel}
+\usepackage{emoji}
+\usepackage[a4paper, margin=1.8cm]{geometry}
+
+% pentru enumerări cu \alph, \Alph etc.; pentru control al spațierii în jurul
+% și în interiorul listelor (itemize, enumerate)
+\usepackage{enumitem}
+\setlist{noitemsep}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  filecolor=blue,
+  urlcolor=blue,
+}
+
+\usepackage{minted}
+\usemintedstyle{trac}
+\setminted{
+  bgcolor=black!02,
+  fontsize=\footnotesize,
+}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+
+\def\bigoh{\mathcal{O}}

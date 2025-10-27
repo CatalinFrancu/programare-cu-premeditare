@@ -1,0 +1,60 @@
+\part{Structuri de date pe vectori}
+
+Următoarele capitole tratează structuri de date care pot procesa anumite operații pe vectori în timp mai bun decît $\bigoh(N)$. Ocazional aceste structuri se aplică și matricilor.
+
+Subiectele de ONI / baraj ONI / lot din anii trecuți abundă în probleme rezolvabile cu astfel de structuri:
+
+\begin{itemize}
+  \item \href{https://kilonova.ro/problems/141}{3dist} (baraj ONI 2022)
+  \item \href{https://kilonova.ro/problems/2801}{6 de Pentagrame} (lot 2024)
+  \item \href{https://kilonova.ro/problems/3734}{Babel} (baraj ONI 2025)
+  \item \href{https://kilonova.ro/problems/2666}{Balama} (baraj ONI 2024)
+  \item \href{https://kilonova.ro/problems/63}{Bisortare} (ONI 2021)
+  \item \href{https://kilonova.ro/problems/3806}{Circuit} (lot 2025)
+  \item \href{https://kilonova.ro/problems/76}{Emacs} (baraj ONI 2021)
+  \item \href{https://kilonova.ro/problems/210}{Erinaceida} (lot 2022)
+  \item \href{https://kilonova.ro/problems/210}{Guguștiuc} (baraj ONI 2022)
+  \item \href{https://kilonova.ro/problems/565}{Împiedicat} (baraj ONI 2023)
+  \item \href{https://kilonova.ro/problems/137}{Lupușor} (ONI 2022)
+  \item \href{https://kilonova.ro/problems/3790}{Medwalk} (lot 2025)
+  \item \href{https://kilonova.ro/problems/2669}{Perm} (baraj ONI 2024)
+  \item \href{https://kilonova.ro/problems/142}{Piezișă} (baraj ONI 2022)
+  \item \href{https://kilonova.ro/problems/2843}{Subiectul III} (lot 2024)
+  \item \href{https://kilonova.ro/problems/556}{Șirbun} (baraj ONI 2023)
+  \item \href{https://kilonova.ro/problems/3790}{Trapez} (lot 2025)
+\end{itemize}
+
+Pare o idee bună să le învățăm și să le stăpînim bine. \emoji{slightly-smiling-face} Concret, vom studia trei structuri:
+
+\begin{enumerate}
+  \item arbori de intervale;
+  \item arbori indexați binar;
+  \item descompunere în radical.
+\end{enumerate}
+
+Vom exemplifica structurile și vom face benchmarks pe două probleme didactice. Apoi vom vedea, prin probleme, cum putem extinde aceleași structuri pentru nevoi mai complicate.\\
+
+\textbf{Varianta 1 (actualizări punctuale, interogări pe interval)}: Se dă un vector de $N$ elemente întregi și $Q$ operații de două tipuri:
+
+\begin{enumerate}
+  \item $\langle 1, x, val \rangle$: Adaugă $val$ pe poziția $x$ a vectorului.
+  \item $\langle 2, x, y \rangle$: Calculează suma pozițiilor de la $x$ la $y$ inclusiv.
+\end{enumerate}
+
+\textbf{Varianta 2 (actualizări pe interval, interogări pe interval)}: Similar, dar operația 1 este pe interval:
+
+\begin{enumerate}
+  \item $\langle 1, x, y, val \rangle$: Adaugă $val$ pe pozițiile de la $x$ la $y$ inclusiv.
+  \item $\langle 2, x, y \rangle$: Calculează suma pozițiilor de la $x$ la $y$ inclusiv.
+\end{enumerate}
+
+Vom menționa ocazional și \textbf{Varianta 3 (actualizări pe interval, interogări punctuale)}:
+
+\begin{enumerate}
+  \item $\langle 1, x, y, val \rangle$: Adaugă $val$ pe pozițiile de la $x$ la $y$ inclusiv.
+  \item $\langle 2, x \rangle$: Returnează valoarea poziției $x$.
+\end{enumerate}
+
+Toate implementările mele sînt disponibile \href{https://github.com/CatalinFrancu/nerdvana/tree/main/query-update}{pe GitHub}.
+
+\import{./segment-trees}{segment-trees.tex}

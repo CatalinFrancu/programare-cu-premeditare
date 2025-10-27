@@ -1,0 +1,36 @@
+% !TeX program = lualatex
+\documentclass[12pt,openany]{book}
+\usepackage{import}
+\usepackage{preamble}
+
+\begin{document}
+
+% Disable page numbering for now.
+\pagenumbering{gobble}
+
+% Supress most "Underfull \vbox" warnings caused by Minted.
+\raggedbottom
+
+% title
+\title{Programare cu premeditare}
+\author{Cătălin Frâncu}
+\date{}
+
+\maketitle
+
+% table of contents
+
+% Reenable page numbering.
+\mainmatter
+
+\begingroup
+\hypersetup{hidelinks} % No blue links in the ToC.
+\tableofcontents
+\endgroup
+
+\cleardoublepage
+
+\import{./}{array-data-structures.tex}
+
+
+\end{document}
