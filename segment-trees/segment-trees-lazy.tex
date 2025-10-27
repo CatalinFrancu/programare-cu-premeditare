@@ -1,0 +1,146 @@
+\chapter{Arbori de intervale cu propagare \textit{lazy}}
+
+Să reluăm exemplul din capitolul trecut și să spunem acum că dorim să adăugăm 100 pe intervalul [2, 12], corespunzător nodurilor [12, 28] din arbore.
+
+Ca să nu facem efort $\bigoh(n)$, vom descompune intervalul ca mai înainte și vom nota informația „+100” în nodurile 9, 5, 6 și 28, cu semnificația că valoarea reală a tuturor frunzelor de sub aceste noduri a crescut cu 100.
+
+\import{./figures}{segment-tree-range-add.tex}
+
+Aceasta este o \textbf{informație \textit{lazy}}: o informație care stă într-un nod intern și care trebuie propagată tuturor frunzelor subîntinse de acel nod. Totuși, amînăm efortul acestei propagări pînă cînd el devine strict necesar; tocmai de aceea se numește \textbf{propagare \textit{lazy}}. (Mulți elevi denumesc întreaga structură „AINT cu \textit{lazy}”, dar asta este... lene.)
+
+Evaluarea \textit{lazy} este un concept des întîlnit:
+
+\begin{itemize}
+  \item Memoizarea unor valori într-un vector / matrice, cu speranța că nu va fi nevoie să calculăm tabelul complet.
+
+  \item Amînarea evaluării lui \ccode{y} în expresia booleană \ccode{x || y}, cu speranța că \ccode{x} va fi evaluat ca adevărat, iar \ccode{y} va deveni irelevant.
+
+  \item Inițializarea unei componente costisitoare dintr-un program doar cînd devine necesară (o conexiune la baza de date, o zonă a hărții dintr-un joc).
+\end{itemize}
+
+Așadar, definim un al doilea vector numit \ccode{lazy} și executăm \ccode{lazy[x] += 100} pe pozițiile 9, 5, 6 și 28.
+
+Motivul pentru care treaba se complică este următorul. Dacă acum primim o interogare de sumă pe intervalul [25,29]? Nu putem să însumăm, ca de obicei, pozițiile 25, 13 și 14, căci pierdem din vedere că unele dintre noduri au (cîte) +100. Sigur, putem lua asta în calcul, dar trebuie să clarificăm operațiile, altfel efortul poate deveni $\bigoh(n)$.
+
+În primul rînd, introducem două funcții noi (le puteți include în alte funcții, dar pentru claritate le puteți declara de sine stătătoare):
+
+\begin{itemize}
+  \item \ccode{push()}, care propagă informația \textit{lazy} de la un nod la fiii săi;
+  \item \ccode{pull()}, care combină în părinte informația din cei doi fii după o actualizare.
+\end{itemize}
+
+\begin{minted}{c}
+void push(int node, int size) {
+  s[node] += lazy[node] * size;
+  lazy[2 * node] += lazy[node];
+  lazy[2 * node + 1] += lazy[node];
+  lazy[node] = 0;
+}
+
+void pull(int node, int size) {
+  s[node] =
+    s[2 * node] + lazy[2 * node] * size / 2 +
+    s[2 * node + 1] + lazy[2 * node + 1] * size / 2;
+}
+\end{minted}
+
+Pentru problema dată (dar nu pentru toate problemele), codul are nevoie să știe numărul de frunze subîntinse (\ccode{size}).
+
+Să presupunem acum că dorim să calculăm suma intervalului [2, 12] și că este posibil să avem niște sume \textit{lazy} în multe alte noduri. Știm că codul descompune interogările în intervale mai scurte și nu urcă mai sus de acestea. Dacă există valori \textit{lazy} mai sus (să zicem în rădăcină), codul nu va afla de ele. De aceea, în pregătirea interogării, trebuie să vizităm toți strămoșii intervalului și să propagăm în jos (\textit{push}) informația \textit{lazy}. Dar, dacă ne gîndim, lista completă a acestor strămoși constă doar din strămoșii capetelor de interval! Pentru intervalul [18,28], este nevoie să propagăm în jos informația \textit{lazy} din strămoșii lui 18 (adică 1, 2, 4 și 9) și ai lui 28 (adică 1, 3, 7 și 14).
+
+Dacă apelăm push din acești strămoși, de sus în jos, avem garanția că informația pe intervalele dorite este la zi. Vă rămîne vouă ca experiment de gîndire să demonstrați că, după operațiile \textit{push}, nu va mai exista informație \textit{lazy} în niciun strămoș al niciunei poziții din interogare.
+
+Astfel obținem o funcție foarte similară cu cea din capitolul trecut
+
+\begin{minted}{c}
+void push_path(int node, int size) {
+  if (node) {
+    push_path(node / 2, size * 2);
+    push(node, size);
+  }
+}
+
+long long query(int l, int r) {
+  long long sum = 0;
+  int size = 1;
+
+  l += n;
+  r += n;
+  push_path(l / 2, 2); // pornim din părinte
+  push_path(r / 2, 2);
+
+  while (l <= r)  {
+    if (l & 1) {
+      sum += s[l] + lazy[l] * size;
+      l++;
+    }
+    l >>= 1;
+
+    if (!(r & 1)) {
+      sum += s[r] + lazy[r] * size;
+      r--;
+    }
+    r >>= 1;
+    size <<= 1;
+  }
+
+  return sum;
+}
+\end{minted}
+
+Dacă viteza este crucială, putem scrie și o funcție \ccode{push_path} cu circa 10\% mai rapidă, iterativă, folosind operații pe biți. Să considerăm nodul $22=10110_{(2)}$. Strămoșii lui sînt 1, 2, 5 și 11 care au respectiv reprezentările binare 1, 10, 101 și 1011, care sînt fix prefixele lui 10110! Deci îl vom deplasa pe 10110 la dreapta cu 4, 3, 2 și respectiv 1 bit pentru a-i obține strămoșii.
+
+\begin{minted}{c}
+void push_path(int node) {
+  int bits = 31 - __builtin_clz(n);
+  for (int b = bits, size = n; b; b--, size >>= 1) {
+    int x = node >> b;
+    push(x, size);
+  }
+}
+
+// Acum primul apel este chiar din frunză:
+...
+push_path(l);
+push_path(r);
+...
+\end{minted}
+
+Actualizările sînt foarte similare. Apelăm \ccode{pull()} după terminarea actualizărilor, deoarece trebuie să lăsăm arborele într-o stare coerentă și trebuie să preluăm orice modificare de la fii.
+
+\begin{minted}{c}
+void pull_path(int node) {
+  for (int x = node / 2, size = 2; x; x /= 2, size <<= 1) {
+    pull(x, size);
+  }
+}
+
+void update(int l, int r, int delta) {
+  l += n;
+  r += n;
+  int orig_l = l, orig_r = r;
+  push_path(l / 2, 2);
+  push_path(r / 2, 2);
+
+  while (l <= r)  {
+    if (l & 1) {
+      lazy[l++] += delta;
+    }
+    l >>= 1;
+
+    if (!(r & 1)) {
+      lazy[r--] += delta;
+    }
+    r >>= 1;
+  }
+
+  pull_path(orig_l);
+  pull_path(orig_r);
+}
+\end{minted}
+
+Iată și \href{https://codeforces.com/blog/entry/18051}{o altă implementare} care combină bucla \ccode{while} principală cu funcția \ccode{pull_path}.
+
+Notă: În această implementare, valoarea \textit{lazy} se aplică întregului subarbore, inclusiv nodului însuși. În implementarea de pe \href{https://cp-algorithms.com/data_structures/segment_tree.html#adding-on-segments-querying-for-maximum}{CP Algorithms}, valoarea \textit{lazy} se aplică subarborelui fără nodul însuși. Oricare dintre formulări este acceptabilă, cîtă vreme o folosiți consecvent.
+
+Notă: În practică, cîmpurile \ccode{lazy} și \ccode{s} merită încapsulate într-un \ccode{struct}. Datorită localității acceselor la memorie, diferența de viteză este notabilă (circa 25\%). Aici le-am lăsat separate pentru concizie.

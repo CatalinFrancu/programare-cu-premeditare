@@ -6,6 +6,7 @@
 \usepackage{float}
 \usepackage[a4paper, margin=1.8cm]{geometry}
 \usepackage{parskip}
+\usepackage[onehalfspacing]{setspace}
 \usepackage[svgnames]{xcolor}
 
 \usepackage{biblatex}
@@ -31,7 +32,11 @@
   fontsize=\footnotesize,
 }
 
+% Recommended by babel + biblatex. Must be loaded after Minted.
+\usepackage{csquotes}
+
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 
 \def\bigoh{\mathcal{O}}
+\newcommand{\ccode}[1]{\mintinline{c}{#1}}

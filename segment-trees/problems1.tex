@@ -1,1 +1,155 @@
 \section{Probleme}
+
+\subsection{Problema Xenia and Bit Operations (Codeforces)}
+
+\href{https://codeforces.com/contest/339/problem/D}{enunț}
+$\bullet$
+\href{https://codeforces.com/contest/339/submission/280956091}{sursă}
+
+Problema este simplisimă. O includ doar ca exemplu de arbore care face operații diferite pe niveluri diferite.
+
+\subsection{Problema Distinct Characters Queries (Codeforces)}
+
+\href{https://codeforces.com/contest/1234/problem/D}{enunț}
+$\bullet$
+\href{https://codeforces.com/contest/1234/submission/341304487}{sursă}
+
+Există diverse abordări pentru această problemă. Una este să construim un AIB sau un AINT pentru fiecare caracter, cu memorie totală $\bigoh(\Sigma n)$ (tradițional $\Sigma$ denotă mărimea alfabetului). Fiecare structură reține pozițiile pe care apare un caracter. Modificările sînt simple: debifăm poziția în AIB-ul corespunzător vechiului caracter și o marcăm în AIB-ul noului caracter. Pentru interogări, verificăm pentru fiecare din cele 26 de caractere dacă suma pe intervalul dat este non-zero. Rezultă o complexitate de $\bigoh(\Sigma q \log n)$.
+
+Dar iată și o soluție mai elegantă, care reduce complexitatea la $\bigoh(q \log n)$, folosind paralelismul nativ pe 32 de biți al procesorului. Vom folosi 26 de biți din fiecare întreg, cîte unul pentru fiecare caracter. Într-o frunză care stochează litera 'f' vom seta pe 1 doar cel de-al șaselea bit, așadar valoarea întreagă va fi \texttt{000...000100000}. Apoi, un nod intern va stoca OR-ul pe biți al frunzelor din intervalul acoperit. Acest gen de informație se numește \textbf{mască de biți} (engl. \textit{bitmask}).
+
+Ce semnifică acest OR pe biți? Fiecare dintre biți va fi 1 dacă și numai dacă litera corespunzătoare apare cel puțin o dată în intervalul acoperit. Să observăm că bitul 6 va fi 1 indiferent dacă intervalul conține un caracter 'f' sau multiple caractere 'f'. Rezultă că fiecare mască va avea atîția biți setați (biți 1) cîte caractere distincte există în interval.
+
+Facem modificări în acest arbore înlocuind masca din frunză și propagînd valoarea spre strămoși cu operația OR. Pentru a răspunde la interogări,
+
+\begin{itemize}
+  \item colectăm cele $\bigoh(\log n)$ măști care compun interogarea;
+  \item le combinăm cu OR;
+  \item numărăm biții din rezultat, de exemplu cu funcția \mintinline{c}{__builtin_popcount}.
+\end{itemize}
+
+\subsection{Problema K-query (SPOJ)}
+
+\href{https://www.spoj.com/problems/KQUERY/}{enunț}
+$\bullet$
+\href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/kquery/cata-segtree-decreasing-k.cpp}{sursă}
+
+Problema fiind offline, este destul de natural să ordonăm interogările. Sper să vă obișnuiți și voi să luați în calcul această posibilitate.
+
+Ordonarea după capătul stîng sau drept nu pare să ducă nicăieri. Exemplu: ordonăm interogările după capătul drept $dr$. Atunci, după ce adăugăm elementul $a[dr]$ la structura noastră (oricare ar fi ea), trebuie să răspundem la interogări de tipul: cîte numere $> k$ există începînd cu poziția $st$? Eu nu am reușit să găsesc o structură echilibrată care să răspundă la întrebări. Poate voi reușiți?
+
+În schimb, ordonarea descrescătoare după valoare duce la o soluție relativ directă. Pentru o interogare $(st, dr, k)$, marcăm (cu 1) într-o structură de date toate pozițiile elementelor mai mari decît $k$. Apoi numărăm valorile 1 din intervalul $[st, dr]$.
+
+Pentru a găsi rapid toate elementele mai mari decît $k$ (care nu au fost deja inserate în structură), rezultă că trebuie să sortăm și vectorul în ordine descrescătoare, reținînd și poziția originală a fiecărei valori.
+
+În fapt, putem implementa această soluție chiar și cu un AIB. Iată \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/kquery/cata-fenwick-decreasing-k.cpp}{o sursă}, identică cu cea bază pe arbori de intervale cu excepția \mintinline{c}{struct}-ului. În acest caz, timpii de rulare sînt aproape egali, dar în general vă recomand să folosiți AIB unde se poate.
+
+\subsection{Problema Sereja and Brackets (Codeforces)}
+
+\href{https://codeforces.com/contest/380/problem/C}{enunț}
+$\bullet$
+\href{https://codeforces.com/contest/380/submission/280972559}{sursă}
+
+Iată și o problemă pentru a cărei rezolvare este mai puțin clar că ne ajunge un arbore de intervale. Vom construi un arbore în care nodurile stochează valori mai complexe care se combină după reguli speciale.
+
+Să considerăm o subsecvență contiguă. Din ce constă ea? Dintr-un subșir (pe sărite) care este bine format, plus niște paranteze deschise neîmperecheate, plus niște paranteze închise neîmperecheate. De exemplu, în subșirul \texttt{))) ( \textbf{()} ( \textbf{()} ( \textbf{()} (} am evidențiat cu bold cele 6 caractere bine formate. Rămîn 4 paranteze deschise și 3 închise. Să notăm aceste cantități cu $f$ (lungimea subșirului bine format), $d$ (surplusul de paranteze deschise) și $i$ (surplusul de paranteze închise).
+
+Cum combinăm două subsecvențe adiacente $(f_1, d_1, i_1)$ și $(f_2, d_2, i_2)$? Clar putem concatena porțiunile bine formate. Dar mai mult, putem prelua și $\min(d_1, i_2)$ perechi dintre surplusurile de paranteze deschise, respectiv închise. Șirul rezultat va fi bine format. Ne putem convinge de asta eliminînd porțiunile bine formate $f_1$ și $f_2$, ca și cînd ele nu ar exista. Dacă nu sînteți convinși, puteți apela la o definiție echivalentă pentru un șir de paranteze bine format: pentru orice prefix, diferența dintre numărul de paranteze deschise și închise este pozitivă.
+
+Rezultă că intervalul concatenat va avea parametrii:
+
+
+\begin{itemize}
+  \item $f = f_1 + f_2 + 2 \min(d_1, i_2)$
+  \item $d = d_1 + d_2 - \min(d_1, i_2)$
+  \item $i = i_1 + i_2 - \min(d_1, i_2)$
+\end{itemize}
+
+Construcția arborelui se face ca de obicei, combinînd fiii doi cîte doi. La interogare este nevoie de puțină atenție pentru a colecta și combina intervalele în ordinea corectă (de la stînga la dreapta). Ne bazăm pe observația că operația de compunere nu este comutativă, dar este asociativă.
+
+\subsection{Problema Copying Data (Codeforces)}
+
+\href{https://codeforces.com/contest/292/problem/E}{enunț}
+$\bullet$
+\href{https://codeforces.com/contest/292/submission/281463235}{sursă}
+
+Aici întîlnim o formă complementară a arborilor de intervale: actualizări pe interval și interogări punctuale (\textit{range update, point query}). Mecanismul necesar folosește o reprezentare puțin diferită. O problemă foarte similară este \href{https://cses.fi/problemset/task/1651}{Range Update Queries} (CSES).
+
+(Cei dintre voi care stăpînesc arborii de intervale cu propagare \textit{lazy} vor fi tentați să se repeadă la aceia: Pe fiecare nod ținem informația \textit{lazy} că segmentul din $b$ a fost suprascris cu un segment din $a$ începînd de la o poziție $p$ (sau cu o deplasare $\pm p$, cum preferați). La actualizări, propagăm informația la fii după nevoie. La interogare, propagăm informația pînă în frunza cerută, pentru a afla de unde provine. Dar nu este nevoie de aceste complicații.)
+
+Să pornim de la observația de bun simț: Dacă o copiere acoperă o poziție, atunci la descompunerea sa în intervale, unul dintre acele intervale va fi strămoș al poziției poziția (\textit{duh!}).
+
+Ne vom folosi și de numerele de ordine ale interogărilor, care vor funcționa ca niște momente de timp între 1 și $q$. Acum, să construim un arbore de intervale care, pentru o operație de copiere $(x, y, k)$:
+
+\begin{itemize}
+  \item Descompune intervalul $[y, y + k - 1]$ prin metoda obișnuită.
+  \item Notează pe fiecare interval momentul $t$ și diferența $x-y$.
+\end{itemize}
+
+Dacă ulterior o altă copiere va acoperi unul dintre aceste intervale, vom nota acolo momentul $t'$ și diferența $x'-y'$. Atunci ultimul moment (și, implicit, ultima proveniență) a suprascrierii unei poziții este dată de cel mai mare moment de timp \textbf{dintre toți strămoșii poziției}.
+
+\subsection{Problema Points (Codeforces)}
+
+\href{https://codeforces.com/contest/19/problem/D}{enunț}
+$\bullet$
+\href{https://codeforces.com/contest/19/submission/281139891}{sursă}
+
+Problema are rating de 2800 pentru că se compune din multe blocuri, dar niciunul nu este de speriat, căci sîntem deja versați în arbori de intervale. \emoji{smiling-face-with-sunglasses} Aș zice că problema ar fi grea la un baraj ONI sau ușoară la lot.
+
+Ca să putem construi un arbore de intervale, în primul rînd normalizăm coordonatele $x$. Păstrăm și o tabelă cu valorile originale, căci pe acelea trebuie să le afișăm.
+
+Am putea reformula întrebarea pentru operația \texttt{find x y}: dintre toate punctele cu $x'>x$, există vreunul cu $y' > y$? Ne gîndim că am putea folosi un AINT de maxime, indexat după $x$, cu valori din $y$, cu interogarea: „Caută maximul pe intervalul $[x + 1, n)$ și spune-mi dacă este mai mare decît $y$”.
+
+Dar astfel aflăm doar dacă există un punct. Ca să-l găsim, întrebarea corectă este: „dă-mi cea mai din stînga poziție după $x$ pe care maximul depășește $y$”. Din fericire, putem face asta cu același AINT maxime, așa cum am explicat în secțiunea de teorie:
+
+\begin{enumerate}
+  \item Pornind de la prima poziție validă (în cazul nostru, $x+1$), mergem în sus și spre dreapta, spre intervale tot mai mari, pînă cînd găsim o poziție de valoare $> y$. Ca să evităm cazurile particulare, adăugăm la finalul vectorului o santinelă de valoare infinită.
+
+  \item De la această poziție, coborîm în timp ce menținem în vizor valoarea $> y$. Dacă putem coborî în orice direcție, preferăm stînga.
+\end{enumerate}
+
+Astfel putem gestiona operațiile de adăugare (cînd maximul pentru un $x$ fixat poate doar să crească). Următoarea întrebare este cum gestionăm ștergerile. Cea mai directă soluție este să menținem cîte un \mintinline{c}{set} STL pentru fiecare coordonată $x$. Suma mărimilor acestor seturi nu va depăși $n$. Cu metoda \mintinline{c}{rbegin()} putem afla noul maxim după inserări și ștergeri.
+
+Ultima întrebare, odată ce stabilim că răspunsul pentru \texttt{find x y} este la abscisa $x'$, este: care dintre punctele cu această abscisă este răspunsul? Folosim același set și metoda \mintinline{c}{upper_bound()} pentru a afla cel mai mic $y'$ strict mai mare decît $y$.
+
+Complexitatea soluției este $\bigoh(n \log n)$, atît pentru normalizarea inițială cît și pentru procesarea operațiilor. Fiecare operație necesită o căutare în set și o căutare sau modificare în AINT.
+
+\subsection{Problema Medwalk (Lot 2025)}
+
+\href{https://kilonova.ro/problems/3790}{enunț}
+$\bullet$
+\href{https://kilonova.ro/submissions/770116}{sursă}
+
+Problema admite și \href{https://kilonova.ro/submissions/770475}{o soluție diferită}, mult mai rapidă, bazată pe AIB-uri 2D, dar iată o soluție care folosește doar arbori de intervale.
+
+Din enunț putem defini forma drumului: el va merge pe linia de sus a unor coloane, apoi va folosi ambele linii de pe o coloană $c$ pentru a coborî, apoi va merge pe linia de jos a coloanelor rămase. Acum, să presupunem că avem un oracol care, pentru orice interogare, ne spune coloana $c$. Atunci vom muta restul coloanelor fie în stînga, fie în dreapta lui $c$, pentru a folosi valoarea de sus sau de jos, oricare este mai mică.
+
+Cu alte cuvinte, mulțimea de valori de pe drumul care minimizează medianul constă din
+
+\begin{itemize}
+  \item minimele de pe toate coloanele;
+  \item minimul dintre maximele de pe coloane.
+\end{itemize}
+
+Răspunsul la fiecare interogare este elementul median al acestei mulțimi. Logica pentru a afla a $k$-a valoare este relativ simplă și implică trei valori: al $k$-lea minim, al $k-1$-lea minim și minimul maximelor. De aici înainte, putem abstractiza matricea ca doi vectori, unul cu minimele perechilor și altul cu maximele. De exemplu, cînd o coloană se modifică din (3, 6) în (3, 2), atunci minimul se modifică din 3 în 2, iar maximul din 6 în 3.
+
+De aceea, avem nevoie de două structuri independente:
+
+\begin{itemize}
+  \item O structură pentru maxime, care să admită actualizări punctuale și interogare de minim pe interval.
+  \item O structură pentru minime, care să admită actualizări punctuale și interogări de al $k$-lea element pe interval.
+\end{itemize}
+
+Pentru prima structură, ochiul nostru de-acum experimentat ne spune că putem folosi un simplu AINT. Dar pentru a doua? Am găsit \href{https://stackoverflow.com/a/22075025/6022817}{pe StackOverflow} o idee bine explicată, pe care o reiau.
+
+Vom folosi un arbore de intervale \textbf{pe valori}. Așadar, nu indexăm pozițiile conform cu pozițiile din vector, ci cu valorile existente în vector. Fiecare frunză din aint, corespunzătoare unei valori $v$, reține o colecție ordonată (un \mintinline{c}{set}, în esență) cu pozițiile pe care apare valoarea $v$. Fiecare nod intern reține reuniunea colecțiilor fiilor săi. Cu alte cuvinte, dacă un nod subîntinde valorile $[l, r]$, colecția sa va enumera toate pozițiile pe care apar valori între $l$ și $r$.
+
+Remarcăm că memoria necesară este $\bigoh(n \log V_{max})$, deoarece aint-ul conține $V_{max}$ valori, deci are înălțime $\log V_{max}$, iar fiecare poziție din vectorul original va fi enumerată în $\log V_{max}$ colecții.
+
+Pentru actualizare, trebuie să ștergem poziția modificată din lista vechii valori minime și din listele tuturor strămoșilor. Apoi inserăm poziția în listele noii valori minime. De exemplu, dacă minimul coloanei 100 se modifică din 30 în 20, atunci de la poziția 30 din aint și din toți strămoșii eliminăm elementul 100 din colecție. Apoi la poziția 20 în aint și în toți strămoșii inserăm elementul 100.
+
+Rămîne să descriem interogările. Pentru a afla al $k$-lea minim dintr-un interval de coloane $[l, r]$, pornim din rădăcina arborelui de intervale (luînd așadar în calcul toate valorile de la 0 la $V_{max}$). Consultăm fiul stîng (valorile $1 \dots V_{max}/2$) și ne întrebăm: cîte apariții au aceste valori pe poziții din $[l, r]$? Putem răspunde la această întrebare printr-o diferență, reducînd întrebarea la forma: cîte apariții au aceste valori pe pozițiile $0 \dots r$? Așadar, trebuie numărate elementele mai mici sau egale cu $r$ din setul rădăcinii. Set-ul simplu din STL nu poate gestiona această întrebare, dar putem folosi un set extins din PB/DS. Nu detaliem acum, dar ne vom reîntîlni cu acest tip de date.
+
+Dacă numărul de valori între 0 și $V_{max}/2$ care apar pe poziții între $l$ și $r$ este $\geq k$, atunci acolo se va afla și al $k$-lea element, deci coborîm în fiul stîng. Altfel coborîm în fiul drept.
+
+Complexitatea algoritmului este $\bigoh((n + q) \log n \log V_{max})$. De exemplu, fiecare interogare coboară $\log V_{max}$ niveluri, iar la fiecare nivel face o căutare într-un set de $\bigoh(n)$ elemente în timp $\bigoh(\log n)$.
