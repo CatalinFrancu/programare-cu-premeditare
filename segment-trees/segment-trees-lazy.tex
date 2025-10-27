@@ -1,5 +1,7 @@
 \chapter{Arbori de intervale cu propagare \textit{lazy}}
 
+\section{Operații pe interval}
+
 Să reluăm exemplul din capitolul trecut și să spunem acum că dorim să adăugăm 100 pe intervalul [2, 12], corespunzător nodurilor [12, 28] din arbore.
 
 Ca să nu facem efort $\bigoh(n)$, vom descompune intervalul ca mai înainte și vom nota informația „+100” în nodurile 9, 5, 6 și 28, cu semnificația că valoarea reală a tuturor frunzelor de sub aceste noduri a crescut cu 100.
@@ -144,3 +146,81 @@ Iată și \href{https://codeforces.com/blog/entry/18051}{o altă implementare} c
 Notă: În această implementare, valoarea \textit{lazy} se aplică întregului subarbore, inclusiv nodului însuși. În implementarea de pe \href{https://cp-algorithms.com/data_structures/segment_tree.html#adding-on-segments-querying-for-maximum}{CP Algorithms}, valoarea \textit{lazy} se aplică subarborelui fără nodul însuși. Oricare dintre formulări este acceptabilă, cîtă vreme o folosiți consecvent.
 
 Notă: În practică, cîmpurile \ccode{lazy} și \ccode{s} merită încapsulate într-un \ccode{struct}. Datorită localității acceselor la memorie, diferența de viteză este notabilă (circa 25\%). Aici le-am lăsat separate pentru concizie.
+
+\section{Implementare recursivă (actualizări punctuale)}
+
+Lecția trecută am spus că există și o implementare recursivă. Să o examinăm acum (mulți o știți deja).
+
+\begin{minted}{c}
+void update(int node, int pl, int pr, int pos, int delta) {
+  if (pr - pl == 1) {
+    s[node] += delta;
+  } else {
+    int mid = (pl + pr) >> 1;
+    if (pos < mid) {
+      update(2 * node, pl, mid, pos, delta);
+    } else {
+      update(2 * node + 1, mid, pr, pos, delta);
+    }
+    s[node] = s[2 * node] + s[2 * node + 1];
+  }
+}
+\end{minted}
+
+Metoda recursivă cară după ea 5 parametri:
+
+\begin{itemize}
+  \item \ccode{node}: nodul curent din arbore (aka poziția în vector);
+
+  \item \ccode{pl}, \ccode{pr}: intervalul din vectorul inițial acoperit de \ccode{node}. Eu am optat pentru implementarea cu \ccode{pl} inclusiv și \ccode{pr} exclusiv. Dacă preferați intervale închise, este OK.
+
+  \item \ccode{pos}, \ccode{delta}: poziția de modificat și valoarea de adăugat/scăzut.
+\end{itemize}
+
+Vedem că funcția coboară recursiv în fiul stîng sau fiul drept, după caz. Un exemplu de apel ar fi:
+
+\begin{minted}{c}
+update(1, 0, n, some_pos, some_val);
+\end{minted}
+
+Mai interesant, iată și implementarea funcției de interogare (sumă pe interval):
+
+\begin{minted}{c}
+long long query(int node, int pl, int pr, int l, int r) {
+  if (l >= r) {
+    return 0;
+  } else if ((l == pl) && (r == pr)) {
+    return s[node];
+  } else {
+    int mid = (pl + pr) >> 1;
+
+    return
+      query(node * 2, pl, mid, l, min(r, mid)) +
+      query(node * 2 + 1, mid, pr, max(l, mid), r);
+  }
+}
+\end{minted}
+
+Regăsim trei din aceiași parametri, \ccode{node}, \ccode{pl} și \ccode{pr}. În plus,
+
+\begin{itemize}
+  \item \ccode{l}, \ccode{r}: Intervalul [închis, deschis) pe care dorim să calculăm suma.
+\end{itemize}
+
+Funcția se reapelează pe cei doi fii, restrîngînd corespunzător intervalul $[l, r)$. Iată o imagine care arată arborele de apeluri pentru calculul sumei pe intervalul [3, 10):
+
+\import{./figures}{segment-tree-rec-query.tex}
+
+Am ilustrat cu albastru nodurile care au nevoie să-și apeleze descendenții, cu verde nodurile selectate integral, iar cu roșu nodurile eliminate.
+
+Complexitatea rămîne $\mathcal{O}(\log n)$, deși funcția se reapelează pentru ambii fii. De ce?
+
+Discutăm implementarea recursivă pentru că ea plutește prin supa culturală și vreau să puteți citi cod scris astfel. Dar ea este un exemplu de dopaj, de implementare repetată \textit{mot à mot} indiferent de nevoile problemei. Implementarea recursivă este de 2-3 ori mai lentă decît cea iterativă pentru actualizări punctuale. Presupun că există două motive:
+
+Implementarea recursivă cară după ea 5-6 parametri la fiecare apel, care trebuie copiați, puși/scoși de pe stivă etc. Implementarea iterativă folosește doar 3 variabile.
+
+Implementarea recursivă este nevoită să pornească din rădăcină, să coboare pînă la frunze, apoi să revină din recursivitate. Implementarea iterativă se oprește imediat ce termină de descompus intervalul $[l,r]$.
+
+La varianta cu propagare \textit{lazy} diferența de timp aproape dispare, pentru că ambele implementări trebuie să urce pînă la rădăcină.
+
+Nu vă năpustiți la implementarea recursivă dacă nu este nevoie. Rezistați tentației de a fi leneși, de a învăța o singură structură de date, pe care să o pictați indiferent de situație! Trebuie să aspirați la mai mult de atît, dacă este să vă meritați locul în lot.
