@@ -1,0 +1,33 @@
+\section{Probleme}
+
+\subsection{Problema Polynomial Queries (CSES)}
+
+\href{https://cses.fi/problemset/task/1736}{enunț}
+$\bullet$
+\href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/cses/1736-polynomial-queries/segtree-iter.cpp}{sursă cu AINT iterativ}
+$\bullet$
+\href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/cses/1736-polynomial-queries/segtree-v2.cpp}{sursă cu AINT recursiv}
+
+Problema seamănă mult cu cea discutată la teorie, dar pe intervale nu mai adăugăm constante, ci progresii aritmetice. Așadar, pare natural să reținem exact această informație \textit{lazy}: în fiecare nod reținem că în fiecare frunză acoperită de acel nod trebuie să adăugăm cîte un termen al unei progresii cu un anumit prim element și pasul (deocamdată) 1. De exemplu, dacă în figura \ref{fig:segment-tree-range-add} facem o actualizare pe intervalul [18, 28], atunci în nodul 5 notăm progresia cu primul termen 3 și pasul 1. Informația \textit{lazy} este o pereche $\langle 3,1 \rangle$.
+
+Trebuie tratate atent diversele cazuri care iau naștere. Dacă două progresii acoperă același interval, vor lua naștere progresii cu pas mai mare decît 1. Să luăm un exemplu:
+
+\begin{itemize}
+  \item Progresia cu primul termen 5 și pasul 3, așadar 5, 8, 11, 14, ...
+  \item Progresia cu primul termen 2 și pasul 7, așadar 2, 9, 16, 23, ...
+  \item După însumare dorim să avem termenii 7, 17, 27, 37, ...
+  \item Rezultă că suma este și ea o progresie cu primul termen 7 și pasul 10. Cu alte cuvinte, informațiile \textit{lazy} se pot compune ușor: $\langle 5,3 \rangle + \langle 2,7 \rangle = \langle 7,10 \rangle$.
+\end{itemize}
+
+La propagarea în jos a informației \textit{lazy}, în cei doi fii vom adăuga progresii cu același pas. În fiul drept, primul termen trebuie calculat, dar este ușor. Dacă într-un nod care acoperă 16 elemente avem o progresie cu primul element 3 și pasul 5, atunci fiul drept va începe cu al nouălea termen al progresiei:
+
+$$3 + 5 \cdot (16/2) = 43$$
+
+La operațiile de adăugare, pe toate intervalele din descompunere vom aduna progresii cu pasul 1, dar primul element diferă pentru fiecare interval (la fel, nu este greu de calculat).
+
+Contractul pe care l-am ales pentru implementarea iterativă este:
+
+\begin{itemize}
+  \item \ccode{first} și \ccode{step} înseamnă că pe nodurile din intervalul acoperit trebuie adăugate valorile \ccode{first}, \ccode{first + step}, \ccode{first + 2 * step}, ...
+  \item Valoarea \ccode{s} din fiecare nod \textbf{nu} include și suma progresiei dată de \ccode{<first, step>} din acel nod.
+\end{itemize}

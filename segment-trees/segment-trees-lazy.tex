@@ -224,3 +224,55 @@ Implementarea recursivă este nevoită să pornească din rădăcină, să coboa
 La varianta cu propagare \textit{lazy} diferența de timp aproape dispare, pentru că ambele implementări trebuie să urce pînă la rădăcină.
 
 Nu vă năpustiți la implementarea recursivă dacă nu este nevoie. Rezistați tentației de a fi leneși, de a învăța o singură structură de date, pe care să o pictați indiferent de situație! Trebuie să aspirați la mai mult de atît, dacă este să vă meritați locul în lot.
+
+\section{Implementare recursivă (actualizări pe interval)}
+
+În această implementare, observăm cum:
+
+\begin{itemize}
+  \item apelăm \ccode{push} înainte de reapelarea recursivă, pentru a-i garanta fiecărui nod că deasupra sa nu mai există informații lazy;
+
+  \item apelăm \ccode{pull} după revenirea din recursivitate, ca să lăsăm arborele într-o stare coerentă.
+\end{itemize}
+
+\begin{minted}{c}
+long long query(int node, int pl, int pr, int l, int r) {
+  if (l >= r) {
+    return 0;
+  } else if ((l == pl) && (r == pr)) {
+    return s[node] + lazy[node] * (r - l);
+  } else {
+    push(node, pr - pl);
+    int mid = (pl + pr) >> 1;
+    return
+      query(node * 2, pl, mid, l, min(r, mid)) +
+      query(node * 2 + 1, mid, pr, max(l, mid), r);
+  }
+}
+
+void update(int node, int pl, int pr, int l, int r, int delta) {
+  if (l >= r) {
+    return;
+  } else if ((l == pl) && (r == pr)) {
+    lazy[node] += delta;
+  } else {
+
+    push(node, pr - pl);
+    int mid = (pl + pr) >> 1, child_size = (pr - pl) >> 1;
+    update(2 * node, pl, mid, l, min(r, mid), delta);
+    update(2 * node + 1, mid, pr, max(l, mid), r, delta);
+    pull(node, child_size);
+
+  }
+}
+
+void process_ops() {
+  for (int i = 0; i < num_queries; i++) {
+    if (q[i].t == OP_UPDATE) {
+      update(1, 0, n, q[i].l - 1, q[i].r, q[i].val);
+    } else {
+      answer[num_answers++] = query(1, 0, n, q[i].l - 1, q[i].r);
+    }
+  }
+}
+\end{minted}

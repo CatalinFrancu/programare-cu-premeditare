@@ -18,6 +18,23 @@
 \usepackage{enumitem}
 \setlist{noitemsep}
 
+% Do not write chapter / section names in all uppercase in headers, plus other
+% goodies.
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\fancypagestyle{fancy}{
+  \renewcommand{\headrulewidth}{0.4pt}
+  \fancyhf{}
+  \fancyhead[LE]{\nouppercase{\leftmark}}
+  \fancyhead[RO]{\nouppercase{\rightmark}}
+  \fancyfoot[LE,RO]{\thepage}
+}
+\fancypagestyle{plain}{
+  \renewcommand{\headrulewidth}{0pt}
+  \fancyhf{}
+  \fancyfoot[LE,RO]{\thepage}
+}
+
 \usepackage[pdfpagelabels]{hyperref}
 \hypersetup{
   colorlinks=true,

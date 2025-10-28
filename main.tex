@@ -10,6 +10,7 @@
 \begin{document}
 
 % Disable page numbering for now.
+\pagestyle{plain}
 \pagenumbering{gobble}
 
 % Prevent some warnings about duplicate anchors.
@@ -26,6 +27,8 @@
 \mainmatter
 
 \import{./}{preface.tex}
+
+\pagestyle{fancy}
 
 % Supress most "Underfull \vbox" warnings caused by Minted.
 \raggedbottom
