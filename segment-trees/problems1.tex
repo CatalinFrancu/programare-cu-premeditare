@@ -1,18 +1,20 @@
 \section{Probleme}
 
 \subsection{Problema Xenia and Bit Operations (Codeforces)}
+\label{problem:xenia-and-bit-operations}
 
 \href{https://codeforces.com/contest/339/problem/D}{enunț}
 $\bullet$
-\href{https://codeforces.com/contest/339/submission/280956091}{sursă}
+\hyperref[code:xenia-and-bit-operations]{sursă}
 
 Problema este simplisimă. O includ doar ca exemplu de arbore care face operații diferite pe niveluri diferite.
 
 \subsection{Problema Distinct Characters Queries (Codeforces)}
+\label{problem:distinct-characters-queries}
 
 \href{https://codeforces.com/contest/1234/problem/D}{enunț}
 $\bullet$
-\href{https://codeforces.com/contest/1234/submission/341304487}{sursă}
+\hyperref[code:distinct-characters-queries]{sursă}
 
 Există diverse abordări pentru această problemă. Una este să construim un AIB sau un AINT pentru fiecare caracter, cu memorie totală $\bigoh(\Sigma n)$ (tradițional $\Sigma$ denotă mărimea alfabetului). Fiecare structură reține pozițiile pe care apare un caracter. Modificările sînt simple: debifăm poziția în AIB-ul corespunzător vechiului caracter și o marcăm în AIB-ul noului caracter. Pentru interogări, verificăm pentru fiecare din cele 26 de caractere dacă suma pe intervalul dat este non-zero. Rezultă o complexitate de $\bigoh(\Sigma q \log n)$.
 
@@ -29,10 +31,11 @@ Facem modificări în acest arbore înlocuind masca din frunză și propagînd v
 \end{itemize}
 
 \subsection{Problema K-query (SPOJ)}
+\label{problem:k-query}
 
 \href{https://www.spoj.com/problems/KQUERY/}{enunț}
 $\bullet$
-\href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/kquery/cata-segtree-decreasing-k.cpp}{sursă}
+\hyperref[code:k-query]{surse}
 
 Problema fiind offline, este destul de natural să ordonăm interogările. Sper să vă obișnuiți și voi să luați în calcul această posibilitate.
 
@@ -42,13 +45,14 @@ Ordonarea după capătul stîng sau drept nu pare să ducă nicăieri. Exemplu: 
 
 Pentru a găsi rapid toate elementele mai mari decît $k$ (care nu au fost deja inserate în structură), rezultă că trebuie să sortăm și vectorul în ordine descrescătoare, reținînd și poziția originală a fiecărei valori.
 
-În fapt, putem implementa această soluție chiar și cu un AIB. Iată \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/kquery/cata-fenwick-decreasing-k.cpp}{o sursă}, identică cu cea bază pe arbori de intervale cu excepția \mintinline{c}{struct}-ului. În acest caz, timpii de rulare sînt aproape egali, dar în general vă recomand să folosiți AIB unde se poate.
+În fapt, putem implementa această soluție chiar și cu un AIB. Sursa este identică cu cea bază pe arbori de intervale cu excepția \mintinline{c}{struct}-ului. În acest caz, timpii de rulare sînt aproape egali, dar în general vă recomand să folosiți AIB unde se poate.
 
 \subsection{Problema Sereja and Brackets (Codeforces)}
+\label{problem:sereja-and-brackets}
 
 \href{https://codeforces.com/contest/380/problem/C}{enunț}
 $\bullet$
-\href{https://codeforces.com/contest/380/submission/280972559}{sursă}
+\hyperref[code:sereja-and-brackets]{sursă}
 
 Iată și o problemă pentru a cărei rezolvare este mai puțin clar că ne ajunge un arbore de intervale. Vom construi un arbore în care nodurile stochează valori mai complexe care se combină după reguli speciale.
 
@@ -68,10 +72,11 @@ Rezultă că intervalul concatenat va avea parametrii:
 Construcția arborelui se face ca de obicei, combinînd fiii doi cîte doi. La interogare este nevoie de puțină atenție pentru a colecta și combina intervalele în ordinea corectă (de la stînga la dreapta). Ne bazăm pe observația că operația de compunere nu este comutativă, dar este asociativă.
 
 \subsection{Problema Copying Data (Codeforces)}
+\label{problem:copying-data}
 
 \href{https://codeforces.com/contest/292/problem/E}{enunț}
 $\bullet$
-\href{https://codeforces.com/contest/292/submission/281463235}{sursă}
+\hyperref[code:copying-data]{sursă}
 
 Aici întîlnim o formă complementară a arborilor de intervale: actualizări pe interval și interogări punctuale (\textit{range update, point query}). Mecanismul necesar folosește o reprezentare puțin diferită. O problemă foarte similară este \href{https://cses.fi/problemset/task/1651}{Range Update Queries} (CSES).
 
@@ -89,10 +94,11 @@ Ne vom folosi și de numerele de ordine ale interogărilor, care vor funcționa 
 Dacă ulterior o altă copiere va acoperi unul dintre aceste intervale, vom nota acolo momentul $t'$ și diferența $x'-y'$. Atunci ultimul moment (și, implicit, ultima proveniență) a suprascrierii unei poziții este dată de cel mai mare moment de timp \textbf{dintre toți strămoșii poziției}.
 
 \subsection{Problema Points (Codeforces)}
+\label{problem:points}
 
 \href{https://codeforces.com/contest/19/problem/D}{enunț}
 $\bullet$
-\href{https://codeforces.com/contest/19/submission/281139891}{sursă}
+\hyperref[code:points]{sursă}
 
 Problema are rating de 2800 pentru că se compune din multe blocuri, dar niciunul nu este de speriat, căci sîntem deja versați în arbori de intervale. \emoji{smiling-face-with-sunglasses} Aș zice că problema ar fi grea la un baraj ONI sau ușoară la lot.
 
@@ -115,10 +121,11 @@ Ultima întrebare, odată ce stabilim că răspunsul pentru \texttt{find x y} es
 Complexitatea soluției este $\bigoh(n \log n)$, atît pentru normalizarea inițială cît și pentru procesarea operațiilor. Fiecare operație necesită o căutare în set și o căutare sau modificare în AINT.
 
 \subsection{Problema Medwalk (Lot 2025)}
+\label{problem:medwalk}
 
 \href{https://kilonova.ro/problems/3790}{enunț}
 $\bullet$
-\href{https://kilonova.ro/submissions/770116}{sursă}
+\hyperref[code:medwalk]{sursă}
 
 Problema admite și \href{https://kilonova.ro/submissions/770475}{o soluție diferită}, mult mai rapidă, bazată pe AIB-uri 2D, dar iată o soluție care folosește doar arbori de intervale.
 

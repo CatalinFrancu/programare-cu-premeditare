@@ -8,6 +8,7 @@
 \usepackage[a4paper, margin=1.8cm]{geometry}
 \usepackage{parskip}
 \usepackage[onehalfspacing]{setspace}
+\usepackage{typicons}
 \usepackage[svgnames]{xcolor}
 
 \usepackage{biblatex}
@@ -66,5 +67,6 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 
+\newcommand{\backlink}[1]{\hyperref[problem:#1]{\tiChevronLeft \ înapoi}}
 \def\bigoh{\mathcal{O}}
 \newcommand{\ccode}[1]{\mintinline{c}{#1}}
