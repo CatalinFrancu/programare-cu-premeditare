@@ -31,3 +31,54 @@ Contractul pe care l-am ales pentru implementarea iterativă este:
   \item \ccode{first} și \ccode{step} înseamnă că pe nodurile din intervalul acoperit trebuie adăugate valorile \ccode{first}, \ccode{first + step}, \ccode{first + 2 * step}, ...
   \item Valoarea \ccode{s} din fiecare nod \textbf{nu} include și suma progresiei dată de \ccode{<first, step>} din acel nod.
 \end{itemize}
+
+\subsection{Problema Nezzar and Binary String (Codeforces)}
+
+\href{https://codeforces.com/contest/1478/problem/E}{enunț}
+$\bullet$
+\href{https://codeforces.com/contest/1478/submission/283167039}{sursă}
+
+Problema este relativ directă odată ce „ne prindem” că trebuie să procesăm operațiile în ordine inversă. Știm șirul final $f$ și fie $[l, r]$ ultimul interval inspectat de Nanako. În momentul inspecției, șirul curent trebuia să fie identic cu $f$ pe pozițiile $[1, l) \cup (r,n]$, căci pe acelea nu le putem modifica. Pe pozițiile $[l, r]$ trebuiau să fie doar biți 0 sau doar biți 1. Care dintre ele? Știm că la ultima modificare am modificat strict mai puțin de jumătate din biți. Să notăm cu $z$ numărul de zerouri și cu $u$ numărul de unu de pe pozițiile $[l,r]$ din $f$. Iau naștere trei cazuri:
+
+\begin{enumerate}
+  \item Dacă $z > u$, înseamnă că la pasul anterior $[l,r]$ conținea doar 0.
+  \item Dacă $z < u$, înseamnă că la pasul anterior $[l,r]$ conținea doar 1.
+  \item Dacă $z = u$, problema nu are soluție, căci nu putem opera modificarea necesară.
+\end{enumerate}
+
+Astfel, toate operațiile sînt forțate, mergînd înapoi în timp. Răspunsul este \texttt{YES} doar dacă putem procesa toate operațiile, iar la final ajungem la șirul $s$.
+
+Rezultă că, pentru a efectua efectiv operațiile, avem nevoie de un arbore de segmente cu valori de 0 și 1 în frunze, cu funcții de sumă pe interval (pentru a stabili majoritatea) și de atribuire pe interval (pentru a face \textit{undo} la o operație).
+
+\subsection{Problema Balama (Baraj ONI 2024)}
+
+\href{https://kilonova.ro/problems/2666}{enunț}
+$\bullet$
+\href{https://kilonova.ro/submissions/800609}{sursă cu AINT iterativ}
+$\bullet$
+\href{https://kilonova.ro/submissions/367617}{sursă cu AINT recursiv}
+
+Vă veți întîlni des cu probleme unde soluția devine simplă dacă analizăm informațiile în altă ordine. În cazul de față, în loc să luăm în calcul liniile (care sînt subsecvențe ordonate), să analizăm coloanele.
+
+Care va fi răspunsul pe ultima coloană? Desigur, va fi maximul din vector. Mult mai interesantă este întrebarea: care va fi răspunsul pe penultima coloană? Va fi cel mai mare element care este vreodată (în cel puțin o fereastră) \textbf{al doilea maxim}.
+
+Exemplu: fie maximul global $1.000$ și fie al doilea maxim global $999$. Dacă $999$ stă foarte departe de $1.000$, la distanță de cel puțin $k$, atunci $999$ va fi maxim în toate ferestrele de lățime $k$ care îl conțin. Cu alte cuvinte, $999$ se va regăsi doar pe ultima coloană în matricea $B$ (și va fi mascat de $1.000$). Să spunem că următoarele valori din șir, în ordine descrescătoare, sînt $998$, $997$ și $996$ și toate se află la distanță mare unele de altele. Niciunul dintre ele nu va apărea pe penultima coloană în $B$.
+
+În schimb, să spunem că următoarea valoare ca mărime, $995$, se află aproape (la distanță $< k$) de o valoare anterioară, cum ar fi $997$. Atunci există o fereastră în care $995$ și $997$ coexistă, deci $995$ va fi al doilea maxim din acea fereastră și va apărea pe penultima coloană în $B$. Cum alte valori mai mari nu au această proprietate, $995$ este răspunsul pe penultima poziție a soluției.
+
+(Amănunt esențial \emoji{winking-face}: $995$ nu poate fi și al treilea maxim. Dacă exista o fereastră de lățime $k$ care îl cuprindea pe $995$ și alte două valori anterioare, atunci înainte să ajungem la $995$ una dintre acele două valori anterioare ar fi fost al doilea maxim).
+
+Astfel, putem considera elemente în ordine descrescătoare și, pentru fiecare element $x$ ne întrebăm: cîte elemente văzute anterior conține fiecare dintre ferestrele care îl conțin pe $x$ (cel mult $k$ la număr)? Dacă o astfel de fereastră are $e$ elemente, și dacă a $e+1$-a valoare din soluție (numărînd de la dreapta) este încă necunoscută, atunci pune $x$ pe poziția $e+1$ a soluției.
+
+Exemplu: Dacă considerăm elementul $900$ și constatăm că într-una din ferestrele care îl conțin pe $900$ existau deja alte $5$ valori, atunci în acea fereastră $900$ este al $6$-lea element. Dacă a $6$-a poziție din soluție este încă neocupată, scriem $900$ acolo, acesta fiind maximul posibil.
+
+Implementarea sună fioros, dar nu este! În realitate avem nevoie de o structură cu două operații:
+
+\begin{itemize}
+  \item Incrementează pozițiile de la $st$ la $dr$, pentru a arăta că în ferestrele de la $[st, st+k-1]$ și pînă la $[dr, dr + k - 1]$ avem cîte un element în plus.
+  \item Află maximul de pe pozițiile de la $st$ la $dr$.
+\end{itemize}
+
+Operația a doua ne este suficientă deoarece ferestrele nu vor ajunge brusc la 6 elemente. Vor apărea mai întîi ferestre cu 1, 2, 3, 4, 5 elemente. Cu alte cuvinte, soluția se completează de la dreapta spre stînga.
+
+Vom implementa un AINT de maxime în care informația \textit{lazy} din fiecare nod este valoarea de adăugat pe fiecare poziție din intervalul acoperit.
