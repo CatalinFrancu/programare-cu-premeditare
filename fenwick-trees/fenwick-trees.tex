@@ -1,0 +1,325 @@
+\chapter{Arbori indexați binar}
+
+Arborii indexați binar (AIB), numiți și arbori Fenwick, iar în engleză \textit{binary indexed trees (BIT)}, servesc ca și arborii de intervale tot la rezolvarea în $\bigoh(\log n)$ a unor operații pe vectori. Ei sînt mai puțin flexibili și universali decît arborii de intervale. Nu toate problemele rezolvabile cu AINT pot fi rezolvate și cu AIB. Dar acolo unde se potrivesc, AIB-urile sînt ușor de codat și sînt de 2-3 ori mai rapide decît arborii de intervale.
+
+\section{\textit{Benchmarks}}
+
+Dacă se potrivesc mai multe structuri, contează pe care o alegem? Ca să alegem în cunoștință de cauză, iată niște măsurători de viteză (\textit{benchmarks}). Le-am făcut în 2025 pe un procesor \href{https://www.cpubenchmark.net/cpu.php?cpu=AMD+Ryzen+7+4700U}{AMD Ryzen 7 4700U}, la acea vreme comparabil cu evaluatoarele de la Kilonova și Codeforces.
+
+Am măsurat timpii de rulare pentru diverse implementări ale problemei în ambele variante (actualizări punctuale sau pe interval).
+
+\begin{itemize}
+  \item arbori indexați binar, $\bigoh(\log n)$ per operație;
+  \item arbori de segmente iterativi, $\bigoh(\log n)$ per operație;
+  \item arbori de segmente recursivi, $\bigoh(\log n)$ per operație;
+  \item descompunere în radical, $\bigoh(\sqrt{n})$ și cel mult două împărțiri per operație;
+  \item descompunere în radical, $\bigoh(\sqrt{n})$ și $\bigoh(\sqrt{n})$ împărțiri per operație.
+\end{itemize}
+
+Precizez că vom discuta descompunerea în radical abia în capitolul următor, dar pare un moment bun să privim aceste \textit{benchmarks}.
+
+Am ales limitele $n = q = 500.000$ pentru ambele variante ale problemei. Pentru unele programe contează cîte dintre operații sînt interogări și cîte sînt actualizări. Pentru aceste situații, am măsurat doi timpi, notați astfel:
+
+\begin{itemize}
+  \item 250u/250q: există cîte 250.000 de operații din fiecare tip;
+  \item 100u/400q: există 100.000 de actualizări și 400.000 de interogări.
+\end{itemize}
+
+Toate testele sînt pe \ccode{long long} și 90\% dintre intervale au lungime peste $n/2$. Toți timpii măsoară strict partea de procesare (excluzînd citirea și scrierea).
+
+\subsection{Varianta 1 (\textit{point update, range query})}
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{structură} & \textbf{timp} \\
+    \hline
+    arbore indexat binar & 23 ms \\
+    arbore de intervale iterativ (250u/250q) & 46 ms \\
+    arbore de intervale iterativ (100u/400q) & 55 ms \\
+    arbore de intervale recursiv (250u/250q) & 116 ms \\
+    arbore de intervale recursiv (100u/400q) & 130 ms \\
+    descompunere în radical (250u/250q) & 113 ms \\
+    descompunere în radical (100u/400q) & 177 ms \\
+    descompunere în radical cu împărțiri (250u/250q) & 763 ms \\
+    descompunere în radical cu împărțiri (100u/400q) & 1.219 ms \\
+    \hline
+  \end{tabular}
+
+  \caption{Timpii de rulare pentru sume pe interval și actualizări punctuale.}
+\end{table}
+
+\subsection{Varianta 2 (\textit{range update, range query})}
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{structură} & \textbf{timp} \\
+    \hline
+     arbore indexat binar (250u/250q) & 66 ms \\
+     arbore indexat binar (100u/400q) & 58 ms \\
+     arbore de intervale iterativ (250u/250q) & 183 ms \\
+     arbore de intervale iterativ (100u/400q) & 175 ms \\
+     arbore de intervale recursiv (250u/250q) & 211 ms \\
+     arbore de intervale recursiv (100u/400q) & 203 ms \\
+     descompunere în radical (250u/250q) & 235 ms \\
+     descompunere în radical (100u/400q) & 274 ms \\
+    \hline
+  \end{tabular}
+
+  \caption{Timpii de rulare pentru sume pe interval și actualizări pe interval.}
+\end{table}
+
+\subsection{Concluzii}
+
+Reținem că:
+
+\begin{itemize}
+  \item Arborii indexați binar sînt de departe cei mai rapizi.
+  \item Pentru actualizări punctuale, arborii de intervale iterativi sînt de două ori mai rapizi decît cei recursivi.
+  \item Descompunerea în radical ține binișor pasul cu arborii de segmente. Din experiență, aceasta este o particularitate a problemei alese. Pentru alte probleme diferența poate fi mai mare.
+  \item Împărțirile îngreunează enorm descompunerea în radical.
+\end{itemize}
+
+
+\section{Modificări punctuale și interogări pe interval}
+
+\section{Reprezentare}
+
+AIB-ul descompune informația în felul următor: Poziția $k$ din vector stochează suma ferestrei de $p$ elemente care se termină la poziția $k$, unde $p$ este cea mai mare putere a lui 2 care îl divide pe $k$. De exemplu, pentru $k = 40$, $p = 8$. Așadar, pe poziția 40 AIB-ul va stoca suma celor 8 valori de pe pozițiile $[33 \dots 40]$.
+
+Iată un exemplu care arată sus valorile pe care dorim să le reținem, iar jos valorile concrete pe care ajunge să le stocheze vectorul. Subliniez că AIB-ul nu folosește memorie suplimentară, ci doar stochează diferit informația în același vector. Suspectez că și de aici provine eficiența lui în raport cu arborii de intervale.
+
+\import{./figures}{fenwick-tree-representation.tex}
+
+\section{Operația de interogare (suma unui interval)}
+
+AIB-urile tratează interogările pe un interval oarecare $[x, y]$ prin diferența a două interogări pe prefix, $[1, y]$ și $[1, x - 1]$. Pentru a răspunde la o interogare pe prefix, de exemplu suma pe intervalul $[1, 21]$, descompunem acel prefix în intervale dintre cele stocate în AIB, respectiv $[1,16]$, $[17, 20]$ și $[21, 21]$. Odată ce includem o poziție $x$ și tot intervalul pe care îl acoperă ea, pentru a ajunge la următoarea poziție de însumat trebuie, prin definiție, să scădem cea mai mare putere a lui $2$ care îl divide pe $x$. Rezultă codul:
+
+\begin{minted}{c}
+struct fenwick_tree {
+  int v[MAX_N + 1]; // indexare de la 1
+
+  int prefix_sum(int pos) {
+    int s = 0;
+    while (pos) {
+      s += v[pos];
+      pos &= pos - 1;
+    }
+    return s;
+  }
+
+  int range_sum(int from, int to) {
+    return prefix_sum(to) - prefix_sum(from - 1);
+  }
+};
+\end{minted}
+
+Expresia \ccode{pos &= pos - 1} elimină cel mai din dreapta bit de 1 dintr-un număr; de exemplu, din $20 = 10100_{(2)}$ ea obține $16 = 10000_{(2)}$. Pe cazul general,
+
+\begin{verbatim}
+pos             = abc...xyz1000...000
+pos - 1         = abc...xyz0111...111
+pos & (pos - 1) = abc...xyz0000...000
+\end{verbatim}
+
+De aici rezultă și complexitatea $\bigoh(\log n)$, căci reprezentarea oricărei poziții în baza 2 are cel mult $\log n$ biți de 1.
+
+\section{Operația de actualizare (adăugare pe poziție)}
+
+La modificarea pe o poziție, trebuie actualizate toate intervalele care conțin acea poziție. De exemplu, la actualizarea poziției 11 trebuie actualizate intervalele $[11, 11]$, $[9, 12]$ și $[1, 16]$, așadar trebuie recalculate pozițiile 11, 12 și 16 din AIB. Această parte pare magică: de ce pozițiile 13, 14 și 15 nu trebuie actualizate? Dar ne putem convinge că, cu cît ne îndepărtăm de poziția inițială (11), ne interesează doar pozițiile responsabile de intervale suficient de mari încît să acopere poziția 11.
+
+\begin{minted}{c}
+void add(int pos, int val) {
+  do {
+    v[pos] += val;
+    pos += pos & -pos;
+  } while (pos <= n);
+}
+\end{minted}
+
+Pentru a înțelege expresia \ccode{pos & -pos}, să facem o scurtă digresiune. Numerele cu semn sînt reprezentate în calculator în \href{https://en.wikipedia.org/wiki/Two\%27s_complement}{complement față de 2}. Aceasta înseamnă că, pentru a reprezenta un număr negativ,
+
+\begin{itemize}
+  \item Reprezentăm întîi numărul pozitiv (valoarea absolută).
+  \item Îi inversăm toți biții.
+  \item Adăugăm 1.
+\end{itemize}
+
+De exemplu, pentru a îl reprezenta pe -20 procedăm astfel:
+
+\begin{itemize}
+  \item Îl reprezentăm pe +20: \texttt{000...00010100}.
+  \item Îi inversăm toți biții: \texttt{111...11101011}.
+  \item Adăugăm 1: \texttt{111...11101100}.
+\end{itemize}
+
+Această reprezentare are două avantaje:
+
+\begin{enumerate}
+  \item Putem folosi același circuite logice pentru operații pe numere cu sau fără semn.
+  \item Reprezentările lui $+0$ și $-0$ sînt identice, \texttt{000...000}. În \href{https://en.wikipedia.org/wiki/Ones\%27_complement}{complement față de 1} există două reprezentări, \texttt{000...000} și \texttt{111...111}, ceea ce este straniu.
+\end{enumerate}
+
+Revenind, observăm acum că \ccode{20 & -20} este \texttt{000...00000100}, adică formula \ccode{pos & -pos} izolează ultimul bit, adică mărimea intervalului subîntins de \ccode{pos}. Prin adăugarea acestei cantități la \ccode{pos}, obținem intervalul imediat următor care include poziția \ccode{pos}.
+
+Dacă din orice motiv această expresie vă scapă din memorie, puteți inventa pe loc formule echivalente, de exemplu:
+
+\begin{minted}{c}
+pos = (pos | (pos - 1)) + 1;
+\end{minted}
+
+Complexitatea este tot $\bigoh(\log n)$ deoarece la fiecare pas eliminăm cel puțin un bit 1 din reprezentarea binară a lui pos.
+
+\section{Construcția în \texorpdfstring{$\bigoh(n)$}{O(n)}}
+
+Dat fiind un vector-sursă \ccode{src}, este tentant să construim arborele într-un al doilea vector apelînd de $n$ ori rutina de adăugare:
+
+\begin{minted}{c}
+void build(int* src) {
+  for (int i = 1; i <= n; i++) {
+    add(i, src[i]);
+  }
+}
+\end{minted}
+
+Această metodă cere timp $\bigoh(n \log n)$. Există însă o metodă care refolosește vectorul și rulează în $\bigoh(n)$:
+
+\begin{minted}{c}
+void build() {
+  for (int i = 1; i <= n; i++) {
+    int j = i + (i & -i);
+    if (j <= n) {
+      v[j] += v[i];
+    }
+  }
+}
+\end{minted}
+
+Explicație: fiecare element \ccode{v[i]} este propagat doar la următorul element \ccode{j} care include poziția \ccode{i}. Este treaba acelui segment să propage adaosul și mai departe. Pentru scenariul relativ comun în care construim AIB-ul, apoi facem $n$ interogări și $n$ actualizări, construcția în $\bigoh(n)$ reduce costul de rulare cu circa 20\%.
+
+Paradoxal, tocmai fiindcă este atît de rapid, costul de funcționare al unui AIB este adesea înecat de costul altor operații (în special intrarea/ieșirea). De aceea optimizările sînt greu de observat. Dar \textit{the hacker spirit} ne obligă să folosim oricum soluția inteligentă.
+
+\section{Găsirea unei valori punctuale}
+
+Pentru a găsi valoarea pe o singură poziție \ccode{k}, o putem calcula în $\bigoh(\log n)$ ca pe \ccode{sum(k) - sum(k - 1)}. Sau, desigur, putem păstra o copie a vectorului real. Dar există și o implementare în $\bigoh(1)$ amortizat.
+
+Să considerăm poziția $k = 60$. Dacă o calculăm prin diferența sumelor parțiale, obținem
+
+\begin{verbatim}
+val(60) = sum(60) - sum(59) = (v[60]         + v[56] + v[48] + v[32]) -
+                              (v[59] + v[58] + v[56] + v[48] + v[32])
+                            = v[60] - (v[59] + v[58])
+\end{verbatim}
+
+Se vede că, de la poziția 56 încolo, sumele de intervale se anulează în cele două paranteze. Nu este o coincidență. Fie:
+
+\begin{verbatim}
+k     = bbb...bbb10000
+k - 1 = bbb...bbb01111
+\end{verbatim}
+
+Unde \texttt{b} sînt niște biți oarecare, iar poziția $k$ se termină într-un bit 1 urmat de cîțiva (posibil 0) biți de 0. Atunci, în calculul sumelor parțiale, pozițiile $k$ și $k - 1$ vor elimina biți de la coadă pînă cînd vor ajunge la strămoșul comun, care este
+
+\begin{verbatim}
+str   = bbb...bbb00000
+\end{verbatim}
+
+De aceea, codul este:
+
+\begin{minted}{c}
+int get_value_at(int pos) {
+  int result = v[pos];
+  int ancestor = pos & (pos - 1);
+  pos--;
+  while (pos != ancestor) {
+    result -= v[pos];
+    pos &= pos - 1;
+  }
+  return result;
+}
+\end{minted}
+
+Acest cod pare tot logaritmic. În realitate, jumătate din valorile din AIB (cele de pe poziții impare) stochează chiar valoarea în acel punct, deci bucla din \ccode{get_value_at()} va face 0 iterații. Un sfert din valorile din AIB vor face o iterație, o optime dintre ele vor face două iterații. În general, pentru o poziție $k$, funcția \ccode{get_value_at()} va face atîtea iterații cîte zerouri are la coadă reprezentarea binară a lui $k$. Media acestei valori este 1 (așadar constantă) dacă distribuția lui $k$ este uniformă și aleatorie.
+
+\section{Căutarea binară a unei sume parțiale}
+
+Dacă vectorul (abstract) are doar valori non-negative, atunci sumele parțiale sînt nedescrescătoare și are sens întrebarea: Care este prima poziție pe care se atinge suma parțială $S$?
+
+Putem face o căutare binară naivă: examinăm suma parțială la poziția $n/2$, apoi la una dintre pozițiile $n/4$ sau $3n/4$ după caz, etc. Dar fiecare dintre aceste interogări durează $\bigoh(\log n)$, deci complexitatea totală a algoritmului va fi $\bigoh(\log^2 n)$. Dar iată și o metodă în $\bigoh(\log n)$, similară cu căutarea binară prin „metoda Mihai Pătrașcu” (ca să adoptăm nomenclatura din supa culturală olimpică).
+
+Fie $p$ cea mai mare putere a lui 2 cel mult egală cu $n$. Pentru exemplul inițial, $n = 22$, deci $p$ = 16. Observația-cheie este că putem afla suma parțială pe pozițiile $[1 \dots p]$ printr-o singură operație: ea este exact \ccode{v[p]}! După cum \ccode{v[p] < S} sau \ccode{v[p] > S}, ne îndreptăm atenția către pozițiile din stînga sau din dreapta lui $p$. Următoarea interogare o vom face la \ccode{v[p / 2]} sau la \ccode{v[3 * p / 2]}.
+
+În practică, invariantul este: \ccode{pos} reprezintă cea mai mare poziție cunoscută pe care suma parțială \textbf{nu} atinge valoarea $S$. La final, funcția returnează \ccode{pos + 1}. De asemenea, ținem cont că nu întotdeauna putem avansa la dreapta (nu putem depăși valoarea $n$).
+
+\begin{minted}{c}
+int bin_search(int sum) {
+  int pos = 0;
+
+  for (int interval = max_p2; interval; interval >>= 1) {
+    if ((pos + interval <= n) && (v[pos + interval] < sum)) {
+      sum -= v[pos + interval];
+      pos += interval;
+    }
+  }
+
+  return pos + 1;
+}
+\end{minted}
+
+Exemplu: pentru AIB-ul din figura \ref{fig:fenwick-tree-representation} și suma parțială 72, algoritmul funcționează astfel:
+
+\begin{itemize}
+  \item Verifică poziția 16. Suma este 95, prea mare.
+  \item Verifică poziția 8. Suma este 49. Așadar, căutăm suma parțială 72 - 49 = 23 începînd dincolo de poziția 8.
+  \item Verifică poziția 12. Suma este 18. Așadar, căutăm suma parțială 23 - 18 = 5 începînd dincolo de poziția 12.
+  \item Verifică poziția 14. Suma este 9, prea mare.
+  \item Verifică poziția 13. Suma este 2. Așadar, căutăm suma parțială 5 - 2 = 3 începînd dincolo de poziția 13.
+  \item Răspunsul este poziția 14.
+\end{itemize}
+
+Aici, \ccode{max_p2} este cea mai mare putere a lui 2 care nu depășește $n$. O putem afla naiv, de exemplu astfel:
+
+\begin{minted}{c}
+max_p2 = n;
+while (max_p2 & (max_p2 - 1)) {
+  max_p2 &= max_p2 - 1;
+}
+\end{minted}
+
+, sau într-o singură linie cu funcția \ccode{__builtin_clz(n)}, care returnează numărul de zerouri la stînga lui $n$:
+
+\begin{minted}{c}
+max_p2 = 1 << (31 - __builtin_clz(n));
+\end{minted}
+
+Corolar: putem folosi căutarea binară pentru a afla prima poziție cu o valoare nenulă într-un AIB. Aceasta este poziția pe care suma parțială atinge valoarea 1. Similar putem afla ultima poziție cu o valoare nenulă. Mai trebuie doar să menținem și suma elementelor din AIB, ceea ce cere două linii de cod.
+
+Corolar: dacă AIB-ul ține valori de 0 și 1, putem folosi căutarea binară pentru a afla poziția celui de-al $k$-lea bit 1 (în engleză această valoare se numește \textit{k-th order statistic}). Ea este fix poziția pe care suma parțială atinge valoarea $k$. Multe probleme de permutări, care necesită evidența elementelor văzute / nevăzute, se încadrează aici (exemplu: codificarea / decodificarea permutărilor).
+
+\section{Alte operații decît adunarea}
+
+Arborii Fenwick pot gestiona și alte operații, cîtă vreme ele sînt \textbf{inversabile}. Reamintesc că \textbf{suma} pe intervalul $[l \dots r]$ se calculează ca \textbf{diferența} sumelor pe intervalele $[1 \dots r]$ și $[1 \dots l-1]$. Deci operația inversă (scăderea) trebuie să fie definită. Exemplu: operația xor, operația de înmulțire modulo un număr prim etc.
+
+Deoarece operația \textit{max} nu este inversabilă, AIB-urile nu suportă, pe cazul general, operațiile:
+
+\begin{enumerate}
+  \item actualizare punctuală;
+  \item maxim pe interval.
+\end{enumerate}
+
+Totuși, putem folosi AIB-uri pentru interogări de maxim dacă următoarele condiții sînt adevărate:
+
+\begin{enumerate}
+  \item Toate interogările sînt pe prefix (capătul stînga este întotdeauna 1).
+  \begin{itemize}
+    \item Sau toate interogările sînt pe sufix, caz în care putem reflecta toți indicii față de $n$.
+  \end{itemize}
+  \item Prin modificare, valorile pot doar să crească.
+\end{enumerate}
+
+Temă de gîndire: De ce este necesar ca toate valorile să crească? Ce poate să meargă prost dacă într-un AIB de maxime valorile pot să și scadă?
+
+Raționamente similare putem aplica pentru operațiile \textit{min}, \textit{and} și \textit{or}. Cum reformulăm condiția 2 pentru aceste operații?
+
+Un exemplu mai extravagant este operația \textit{or} pe \ccode{bitset}-uri, vezi problema \href{https://kilonova.ro/problems/210}{Erinaceida}.

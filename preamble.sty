@@ -1,5 +1,6 @@
 \ProvidesPackage{preamble}
 
+\usepackage{amsmath}
 \usepackage[romanian]{babel}
 \usepackage{emoji}
 % We don't really need it, but it suppresses some warnings from hyperref.
@@ -65,6 +66,10 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \usepackage{csquotes}
 
 \usepackage{tikz}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{matrix}
 \usetikzlibrary{positioning}
 
 \newcommand{\backlink}[1]{\hyperref[problem:#1]{\tiChevronLeft \ înapoi}}

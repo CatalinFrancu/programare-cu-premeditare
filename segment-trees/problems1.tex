@@ -93,6 +93,31 @@ Ne vom folosi și de numerele de ordine ale interogărilor, care vor funcționa 
 
 Dacă ulterior o altă copiere va acoperi unul dintre aceste intervale, vom nota acolo momentul $t'$ și diferența $x'-y'$. Atunci ultimul moment (și, implicit, ultima proveniență) a suprascrierii unei poziții este dată de cel mai mare moment de timp \textbf{dintre toți strămoșii poziției}.
 
+\subsection{Problema PHF (FMI No Stress 2013)}
+\label{problem:phf}
+
+\href{https://kilonova.ro/problems/3234}{enunț}
+$\bullet$
+\hyperref[code:phf]{sursă}
+
+Problema ne cere să simulăm un șir de meciuri de piatră-hîrtie-foarfecă de tip „cîștigătorul la masă” și să admitem actualizări punctuale pe acest șir. Deoarece nu ne permitem o simulare în $\bigoh(n)$ pentru fiecare din cele $q$ actualizări, vom căuta să accelerăm simularea la $\bigoh(\log n)$.
+
+Caracterul de pe fiecare poziție, să-i spunem $X$, este un meci între $X$ și cîștigătorul meciului de pe poziția anterioară. Echivalent, $X$ este o funcție definită pe mulțimea $\{P, H, F\}$ cu valori tot în $\{P, H, F\}$, unde $X(c)$ este chiar rezultatul unui meci între $X$ și $c$. De exemplu, $P$ este funcția:
+
+$$
+\begin{cases}
+P(P) & = P \\
+P(H) & = H \\
+P(F) & = P
+\end{cases}
+$$
+
+Atunci o înșiruire de caractere este o compunere de funcții. De exemplu, dintr-un șir de intrare de patru caractere, numite generic $XYZT$, îl tratăm pe $X$ ca argument, iar rezultatul final este $T(Z(Y(X)))$ sau $(T \circ Z \circ Y)(X)$.
+
+Orice funcție are nevoie de un argument. \emoji{slightly-smiling-face} De aceea, tratăm separat primul caracter, iar pe celelalte $n-1$ le punem într-o structură. (O altă abordare este să definim primul caracter ca pe o funcție care returnează acel caracter independent de intrarea fictivă). Această structură trebuie să mențină rezultatul compunerii caracterelor, cu modificări. Vom folosi un arbore de intervale unde informația dintr-un nod este funcția compusă a intervalului subîntins. Reprezentăm aceste funcții prin tabelul complet (trei valori). Tabelele frunzelor le definim manual, iar tabelul unui nod intern este compunerea tabelelor celor doi fii. Tabelul rădăcinii este ceea ce ne interesează: compunerea pozițiilor $2 \dots n$ din șir, adică o funcție pe care o vom aplica primului caracter din șir.
+
+Implementarea mea rotunjește numărul de noduri la o putere a lui 2. De aceea la dreapta vom avea și noduri vide, pe care le tratăm ca pe funcții identice ($X(c) = X$).
+
 \subsection{Problema Points (Codeforces)}
 \label{problem:points}
 

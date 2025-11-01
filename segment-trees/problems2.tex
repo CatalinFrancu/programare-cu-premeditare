@@ -1,12 +1,11 @@
 \section{Probleme}
 
 \subsection{Problema Polynomial Queries (CSES)}
+\label{problem:polynomial-queries}
 
 \href{https://cses.fi/problemset/task/1736}{enunț}
 $\bullet$
-\href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/cses/1736-polynomial-queries/segtree-iter.cpp}{sursă cu AINT iterativ}
-$\bullet$
-\href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/cses/1736-polynomial-queries/segtree-v2.cpp}{sursă cu AINT recursiv}
+\hyperref[code:polynomial-queries]{surse}
 
 Problema seamănă mult cu cea discutată la teorie, dar pe intervale nu mai adăugăm constante, ci progresii aritmetice. Așadar, pare natural să reținem exact această informație \textit{lazy}: în fiecare nod reținem că în fiecare frunză acoperită de acel nod trebuie să adăugăm cîte un termen al unei progresii cu un anumit prim element și pasul (deocamdată) 1. De exemplu, dacă în figura \ref{fig:segment-tree-range-add} facem o actualizare pe intervalul [18, 28], atunci în nodul 5 notăm progresia cu primul termen 3 și pasul 1. Informația \textit{lazy} este o pereche $\langle 3,1 \rangle$.
 
@@ -33,10 +32,11 @@ Contractul pe care l-am ales pentru implementarea iterativă este:
 \end{itemize}
 
 \subsection{Problema Nezzar and Binary String (Codeforces)}
+\label{problem:nezzar-and-binary-string}
 
 \href{https://codeforces.com/contest/1478/problem/E}{enunț}
 $\bullet$
-\href{https://codeforces.com/contest/1478/submission/283167039}{sursă}
+\hyperref[code:nezzar-and-binary-string]{sursă}
 
 Problema este relativ directă odată ce „ne prindem” că trebuie să procesăm operațiile în ordine inversă. Știm șirul final $f$ și fie $[l, r]$ ultimul interval inspectat de Nanako. În momentul inspecției, șirul curent trebuia să fie identic cu $f$ pe pozițiile $[1, l) \cup (r,n]$, căci pe acelea nu le putem modifica. Pe pozițiile $[l, r]$ trebuiau să fie doar biți 0 sau doar biți 1. Care dintre ele? Știm că la ultima modificare am modificat strict mai puțin de jumătate din biți. Să notăm cu $z$ numărul de zerouri și cu $u$ numărul de unu de pe pozițiile $[l,r]$ din $f$. Iau naștere trei cazuri:
 
@@ -50,13 +50,33 @@ Astfel, toate operațiile sînt forțate, mergînd înapoi în timp. Răspunsul 
 
 Rezultă că, pentru a efectua efectiv operațiile, avem nevoie de un arbore de segmente cu valori de 0 și 1 în frunze, cu funcții de sumă pe interval (pentru a stabili majoritatea) și de atribuire pe interval (pentru a face \textit{undo} la o operație).
 
+\subsection{Problema Simple (infO(1)Cup 2019)}
+\label{problem:simple}
+
+\href{https://kilonova.ro/problems/3424/}{enunț}
+$\bullet$
+\hyperref[code:simple]{sursă}
+
+Să aplicăm regula menționată ca să proiectăm un arbore de intervale pentru această problemă.
+
+\begin{itemize}
+  \item În cîmpul \textit{lazy} vom stoca valorile primite la update, așadar cantitățile de adăugat pe tot subarborele.
+  \item În cîmpurile propriu-zise vom stoca valorile necesare pentru interogări, așadar minimul par pe interval și maximul impar pe interval.
+  \item Ce altceva ne mai trebuie ca să putem menține informația la actualizări? Să observăm că o cantitate \textit{lazy} impară schimă paritatea valorilor pe întregul interval. Noul minim par este fostul minim impar, plus  cantitatea \textit{lazy}. De acea, vom introduce încă două cantități: maximul par și minimul impar.
+\end{itemize}
+
+Ca de obicei, este important ca la implementare să alegem dacă valoarea \textit{lazy} este deja inclusă în nodul curent și mai trebuie aplicată doar la subarbore sau dacă ea trebuie aplicată inclusiv nodului curent. Eu am ales prima variantă. Ambele sînt bune, cîtă vreme codul respectă alegerea făcută.
+
+Pe unele intervale nu vor exista valori pare sau impare. Dacă facem cazuri speciale pentru toate acele situații, vom avea undeva între 5 și 10 \ccode{if}-uri de presărat prin cod. O abordare mai simplă este să notăm în acele noduri $+\infty$ pentru a arăta că nu există minime și $-\infty$ pentru a arăta că nu există maxime. Apoi lăsăm aceste valori să se combine fără să mai tratăm cazuri particulare. La final, știm că orice valori definite vor fi între $1$ și $2 \cdot 20^9 + 2 \cdot 20^5 \cdot 2 \cdot 20^9$, conform limitelor din enunț. Valorile din afara acestui interval le interpretăm ca fiind nedefinite.
+
+În cod am încercat să separ funcțiile specifice nodului de funcțiile specifice arborelui.
+
 \subsection{Problema Balama (Baraj ONI 2024)}
+\label{problem:balama}
 
 \href{https://kilonova.ro/problems/2666}{enunț}
 $\bullet$
-\href{https://kilonova.ro/submissions/800609}{sursă cu AINT iterativ}
-$\bullet$
-\href{https://kilonova.ro/submissions/367617}{sursă cu AINT recursiv}
+\hyperref[code:balama]{surse}
 
 Vă veți întîlni des cu probleme unde soluția devine simplă dacă analizăm informațiile în altă ordine. În cazul de față, în loc să luăm în calcul liniile (care sînt subsecvențe ordonate), să analizăm coloanele.
 
