@@ -31,3 +31,22 @@ $\bullet$
 „Aproape” putem rezolva problema cu un singur vector de frecvențe. Dar avem nevoie să găsim eficient al $k$-lea element ca să-l putem șterge. Un vector de frecvențe ne dă inserări în $\bigoh(1)$, dar ștergeri în $\bigoh(n)$.
 
 De aceea, înlocuim vectorul cu un AIB în care pe poziția $x$ notăm frecvența lui $x$ în multiset. Astfel putem căuta al $k$-lea element reformulînd definiția: al $k$-lea element este poziția $p$ pe care suma parțială atinge sau depășește valoarea $k$.
+
+\subsection{Problema Hanoi Factory (Codeforces)}
+\label{problem:hanoi-factory}
+
+\href{https://codeforces.com/contest/777/problem/E}{enunț}
+$\bullet$
+\hyperref[code:hanoi-factory]{sursă}
+
+Pare natural să sortăm inelele descrescător după diametrul exterior. Ce facem la egalitate? Toate inelele de același diametru exterior pot fi stivuite, caz în care îl vom prefera deasupra pe cel cu diametrul interior minim, ca să ne maximizăm șansele de a putea pune alt inel deasupra lui. Așadar, ca departajare, sortăm inelele descrescător după diametrul interior.
+
+Acum orice turn valid va fi un subșir din șirul sortat, pe sărite, dar fără reordonare. Și atunci putem defini relativ ușor o recurență calculabilă în $\bigoh(n^2)$. Fie $H_i$ înălțimea maximă a unui turn care are în vîrf inelul $i$. Atunci inelul aflat imediat sub $i$, fie el $j$, respectă condițiile $j < i$ și $in_j < out_i$. Așadar,
+
+$$H_i = h_i + \max_{j < i,\ \ in_j < out_i} H_j$$
+
+Pentru a reduce complexitatea la $\bigoh(n \log n)$, procesăm inelele de la stînga la dreapta. Atunci $j < i$ este întotdeauna respectată și trebuie doar să răspundem la întrebarea: dintre toate inelele cu $in_j < $ un $x$ dat (unde $x = out_i$), care este valoarea maximă pentru $H_j$? Putem răspunde la întrebare cu un AIB de maxime, indexat după diametrele interioare, pe care îl interogăm despre maximul pe pozițiile $[1 \dots out_i - 1]$. După calcularea lui $H_i$, optimizăm maximul din AIB pe poziția $in_i$ cu valoarea $H_i$.
+
+Diametrele pot fi mari, dar le putem normaliza în intervalul $[1 \dots 2n]$.
+
+Există și o soluție mai ingenioasă, cu o stivă ordonată, care nu face obiectul acestui capitol.
