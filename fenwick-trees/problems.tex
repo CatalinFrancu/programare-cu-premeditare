@@ -1,0 +1,33 @@
+\section{Probleme}
+
+\subsection{Problema The Permutation Game Again (SPOJ)}
+\label{problem:the-permutation-game-again}
+
+\href{https://www.spoj.com/problems/TPGA/}{enunț}
+$\bullet$
+\hyperref[code:the-permutation-game-again]{sursă}
+
+Problema ne cere să aflăm \textbf{rangul} unei permutări (engl. \textit{rank}). Acesta este numărul de ordine al permutării în lista ordonată lexicografic a tuturor permutărilor mulțimii $\{1, 2, \dots, n\}$.
+
+Echivalent, trebuie să răspundem eficient la întrebarea: cîte permutări vin înaintea celei date în lista permutărilor?
+
+Să considerăm un exemplu. Dacă primul element al permutării este 9, atunci toate permutările care încep cu $1, 2, \dots, 8$ o vor preceda în listă. Există $8(n-1)!$ astfel de permutări.
+
+Similar, dacă al doilea element este 3, atunci toate permutările care încep cu $91$ sau $92$ o vor preceda în listă. Există $2(n-2)!$ astfel de permutări.
+
+Dar dacă al treilea element este 7? Acum trebuie să ținem cont de faptul că pe 3 l-am văzut deja. Trebuie să socotim permutările care încep cu $931, 932, 934, 935, 936$. Există $5(n-3)!$ astfel de permutări.
+
+Cu alte cuvinte, trebuie să răspundem eficient la întrebarea: cîte elemente mai mici decît cel curent am văzut în prefixul dinaintea elementului curent? Putem gestiona această informație cu un AIB de 0 și 1. Cînd procesăm un element de valoare $x$, adunăm 1 pe poziția $x$ în AIB. Astfel, suma parțială din AIB pe o poziție $y$ ne va arăta cîte elemente mai mici decît $y$ am procesat pînă în prezent.
+
+Pentru un plus de eficiență, sursa nu reține întreaga permutare, ci doar citește cîte un element, îl ia în calcul la rang, îl bifează în AIB, apoi îl aruncă.
+
+\subsection{Problema Multiset (Codeforces)}
+\label{problem:multiset}
+
+\href{https://codeforces.com/contest/1354/problem/D}{enunț}
+$\bullet$
+\hyperref[code:multiset]{sursă}
+
+„Aproape” putem rezolva problema cu un singur vector de frecvențe. Dar avem nevoie să găsim eficient al $k$-lea element ca să-l putem șterge. Un vector de frecvențe ne dă inserări în $\bigoh(1)$, dar ștergeri în $\bigoh(n)$.
+
+De aceea, înlocuim vectorul cu un AIB în care pe poziția $x$ notăm frecvența lui $x$ în multiset. Astfel putem căuta al $k$-lea element reformulînd definiția: al $k$-lea element este poziția $p$ pe care suma parțială atinge sau depășește valoarea $k$.

@@ -276,3 +276,19 @@ void process_ops() {
   }
 }
 \end{minted}
+
+\section{Arta proiectării unui arbore de intervale}
+
+Atunci cînd primim o problemă și avem de proiectat o structură de date, cum știm dacă un arbore de intervale se potrivește scopului? În general, trebuie să urmărim trei lucruri.
+
+În primul rînd, pentru a putea procesa rapid actualizările pe interval, dorim să facem efort $\bigoh(1)$ în fiecare interval elementar din descompunere. De aceea, în general informația \textit{lazy} stochează fix ce primim de la operațiile de \textit{update}: o cantitate de adăugat sau de atribuit, un bit de semn, un bit care arată că intervalul curent trebuie inversat etc.
+
+Este nevoie de atenție la compunerea actualizărilor. Dacă avem două cantități de adăugat pe același interval, cîmpul \textit{lazy} va reține suma cantităților. Dacă avem două atribuiri succesive pe același interval, cîmpul \textit{lazy} o va reține doar pe ultima.
+
+În al doilea rînd, pentru a putea procesa rapid interogările pe interval, dorim să facem efort $\bigoh(1)$ în fiecare interval din descompunere. De aceea, informația propriu-zisă din fiecare nod trebuie să includă valorile pe care le cer operațiile de \textit{query}. Acestea sînt un punct de pornire, dar uneori nu sînt suficiente, ci este nevoie să menținem mai multe valori din care să le putem alege pe cele cerute.
+
+În sfîrșit, în al treilea rînd trebuie să verificăm că avem tot ce ne trebuie pentru a compune două intervale alăturate la interogare, pentru a recalcula un părinte din cei doi fii ai săi (operația \textit{pull}) și pentru a propaga informația \textit{lazy} de la părinte la fii (operația \textit{push}).
+
+O regulă de aur este că, la începutul și la sfîrșitul fiecărei funcții, arborele trebuie să fie într-o stare \textbf{coerentă}. Aceasta înseamnă că trebuie să definim un \textbf{contract}, o promisiune despre care este structura logică a fiecărui nod. Vă recomand chiar să notați acest contract într-un comentariu de una-două fraze, la începutul codului pentru AINT. Apoi, scrieți codul astfel încît, la intrarea și la ieșirea din orice funcție, toate nodurile arborelui să respecte acel contract.
+
+De exemplu, dacă informația \textit{lazy} este o cantitate de adăugat pe tot subarborele, atunci operația \textit{push} trebuie neapărat să se încheie prin a pune pe 0 valoarea \textit{lazy} din părinte. În niciun caz nu trebuie să încheiem operația \textit{push} lăsînd aceeași valoare \textit{lazy} în părinte și în fii.
