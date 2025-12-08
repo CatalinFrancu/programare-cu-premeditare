@@ -1,4 +1,4 @@
-// Complexity: O(q log n)
+// Complexitate: O(q log n)
 #include <stdio.h>
 
 const int MAX_N = 1 << 17;

@@ -1,4 +1,4 @@
-// Complexity: O(n + q log n).
+// Complexitate: O(n + q log n).
 #include <stdio.h>
 #include <string.h>
 

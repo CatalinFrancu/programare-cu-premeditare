@@ -1,7 +1,7 @@
-// Complexity: O(q log n)
+// Complexitate: O(q log n)
 //
-// Method: maintain a segment tree that supports range sums and adding
-// an arithmetic progression to a range.
+// Metodă: menține un arbore de intervale care admite sume pe interval și
+// adăugarea unei progresii pe interval.
 #include <stdio.h>
 
 const int MAX_N = 1 << 18;
@@ -23,12 +23,12 @@ long long progression_sum(long long first, long long step, int len) {
   return first * len + step * (len - 1) * len / 2;
 }
 
-// Invariants:
+// Invarianți:
 //
-// 1. first[k] and step[k] mean that the real values of spanned nodes are the
-//    values in v[] plus an arithmetic progression with the given parameters.
-// 2. v[k] includes first[k] and step[k], but not values from ancestors.
-// 3. All intervals are [closed, open).
+// 1. Valorile reale ale nodurilor subîntines sînt valorile lor v respective
+//    plus o progresie aritmetică definită prin first și step.
+// 2. v[k] include first[k] și step[k], dar nu și valorile de la strămoși.
+// 3. Toate intervalele sînt [închis, deschis).
 struct segment_tree {
   long long v[2 * MAX_N];
   long long first[2 * MAX_N];
@@ -67,7 +67,7 @@ struct segment_tree {
     v[t] = v[2 * t] + v[2 * t + 1];
   }
 
-  // pos1 = position where the 1 is written
+  // pos1 = poziția unde scriem 1
   void add_progression_helper(int t, int pl, int pr, int l, int r, int pos1) {
     if (l >= r) {
       return;

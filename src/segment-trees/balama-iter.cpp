@@ -1,4 +1,3 @@
-// v3: Unifică range_max() și inc(), care sînt apelate consecutiv.
 #include <algorithm>
 #include <stdio.h>
 

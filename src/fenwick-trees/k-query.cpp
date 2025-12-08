@@ -1,4 +1,4 @@
-// Complexity: O(n log n)
+// Complexitate: O(n log n)
 #include <algorithm>
 #include <stdio.h>
 
@@ -47,8 +47,8 @@ struct query {
 
 elem v[MAX_N];
 query q[MAX_Q];
-// This belongs in the struct, but that would require sorting the queries once
-// more at the end.
+// Mai curat ar fi să punem răspunsurile în struct. Dar atunci ar trebui să
+// sortăm interogările încă o dată la final.
 short answer[MAX_Q];
 fenwick_tree fen;
 int n, num_queries;

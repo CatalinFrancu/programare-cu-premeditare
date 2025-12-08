@@ -1,4 +1,4 @@
-// Complexity: O(q log n).
+// Complexitate: O(q log n).
 #include <stdio.h>
 
 const int MAX_N = 256 * 1024;
@@ -9,13 +9,14 @@ int next_power_of_2(int n) {
   return 1 << (32 - __builtin_clz(n - 1));
 }
 
-// Segment tree with 0/1 values, range set and range sum operations.
+// Arbore de intervale cu valori 0/1, atribuire pe interval și sumă pe
+// interval.
 //
-// Contract: state[x] can be:
-// * 0/1 to indicate a value to be set on all of x's descendants, or
-// * ST_CLEAN to indicate that the value has been pushed.
+// Contract: state[x] poate fi:
+// * 0/1 pentru a indica o valoare de atribuit pe toți descendenții lui x, sau
+// * ST_CLEAN pentru a arăta că am apelat deja push.
 //
-// sum[node] takes into account state[node].
+// sum[node] ține cont și de state[node].
 struct segment_tree {
   int sum[2 * MAX_N];
   int state[2 * MAX_N];

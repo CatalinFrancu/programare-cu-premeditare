@@ -30,12 +30,12 @@ struct max_segment_tree {
   int n;
 
   void init(int n) {
-    n++; // infinite sentinel at the end
+    n++; // santinelă infinită la final
     n = next_power_of_2(n);
     this->n = n;
 
     for (int i = 1; i < 2 * n; i++) {
-      v[i] = -1; // no points
+      v[i] = -1; // fără puncte
     }
 
     set(n - 1, INFINITY);
@@ -49,12 +49,12 @@ struct max_segment_tree {
     }
   }
 
-  // Returns the first position after pos where the value is greater than val.
+  // Returnează prima poziție după pos unde valoarea depășește val.
   int find_first_after(int pos, int val) {
     pos += n;
     pos++;
 
-    // Climb until we encounter a maximum greater than val.
+    // Urcă pînă cînd găsim un maxim mai mare decît val.
     while (v[pos] <= val) {
       if (pos & 1) {
         pos++;
@@ -63,8 +63,7 @@ struct max_segment_tree {
       }
     }
 
-    // Descend and zoom in on the desired value, keeping to the left when we
-    // can.
+    // Coboară spre valoarea dorită, mergînd la stînga oricînd putem.
     while (pos < n) {
       pos = (v[2 * pos] > val) ? (2 * pos) : (2 * pos + 1);
     }
@@ -75,7 +74,7 @@ struct max_segment_tree {
 };
 
 query q[MAX_N];
-int pos[MAX_N]; // used for normalization
+int pos[MAX_N]; // pentru normalizare
 int orig_x[MAX_N];
 max_segment_tree segtree;
 std::set<int> whys[MAX_N];
