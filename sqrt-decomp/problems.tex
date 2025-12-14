@@ -1,0 +1,22 @@
+\section{Probleme}
+
+\subsection{Problema Mexitate (ONI 2018 clasa a 9-a)}
+\label{problem:mexitate}
+
+\href{https://kilonova.ro/problems/1521}{enunț}
+$\bullet$
+\hyperref[code:mexitate]{surse}
+
+Această problemă nu mi se pare nici în ruptul capului de clasa a 9-a. Posibil de baraj juniori.
+
+Am notat cu $m$ numărul de linii deoarece $m$ vine înaintea lui $n$ în alfabet, după cum și $k$ vine înaintea lui $l$ în alfabet.
+
+Să luăm în calcul soluția naivă: calculăm mex-ul matricei din colțul stînga-sus, apoi translatăm în diverse feluri matricea pentru a recalcula incremental mex-urile celorlalte ferestre. De exemplu, putem urma un traseu șerpuit: translatăm matricea la dreapta pînă la capăt, apoi o dată în jos, apoi în stînga pînă la capăt etc.
+
+La fiecare translație, menținem într-o structură $S$ informații despre frecvența elementelor din matrice. Ștergem din structură elementele care ies din fereastră și le inserăm pe cele care intră în fereastră. Atunci complexitatea translatărilor va fi $\bigoh(mnk + ml)$. Ca să minimizăm efortul, rotim sau transpunem matricea cînd $k > l$. Astfel, $k \leq l$ și complexitatea translatărilor va fi $\bigoh(mn \sqrt{mn})$.
+
+Odată ce am adus raționamentul pînă aici, eu am și trimis o sursă, cu structura $S$ implementată naiv ca vector de frecvențe. Astfel m-am asigurat că restul programului funcționează, căci el are suficient de multă logică (matrice de dimensiuni arbitrare, transpoziții, șerpuire...). Deoarece am gîndit totul modular, am programat structura \mintinline{c}{frequency_tracker} să expună funcțiile \mintinline{c}{add}, \mintinline{c}{remove} și \mintinline{c}{mex}. Pentru versiunea optimizată, doar am rescris acele funcții.
+
+Pentru punctaj maxim, ce ne dorim de la structura $S$? Dorim să facem $\bigoh(mn \sqrt{mn})$ inserări și ștergeri și $\bigoh(mn)$ calcule de mex. Rezultă că ne permitem $\bigoh(\sqrt{mn})$ per apel de mex, dar avem nevoie de $\bigoh(1)$ pe inserare și ștergere.
+
+Atunci putem folosi descompunerea în radical. Stocăm vectorul naiv de frecvențe. În plus, în fiecare bloc stocăm numărul de valori nenule. Inițial această valoare este 0. Ea crește cu 1 ori de cîte ori frecvența unui element din bloc crește de la 0 la 1 și, invers, scade cu 1 ori de cîte ori frecvența unui element din bloc scade de la 1 la 0. Funcția mex caută din bloc în bloc pînă cînd găsește un bloc cu cel puțin o valoare nulă, apoi caută naiv prin acel bloc.

@@ -213,7 +213,7 @@ Funcția se reapelează pe cei doi fii, restrîngînd corespunzător intervalul 
 
 Am ilustrat cu albastru nodurile care au nevoie să-și apeleze descendenții, cu verde nodurile selectate integral, iar cu roșu nodurile eliminate.
 
-Complexitatea rămîne $\mathcal{O}(\log n)$, deși funcția se reapelează pentru ambii fii. De ce?
+Complexitatea rămîne $\bigoh(\log n)$, deși funcția se reapelează pentru ambii fii. De ce?
 
 Discutăm implementarea recursivă pentru că ea plutește prin supa culturală și vreau să puteți citi cod scris astfel. Dar ea este un exemplu de dopaj, de implementare repetată \textit{mot à mot} indiferent de nevoile problemei. Implementarea recursivă este de 2-3 ori mai lentă decît cea iterativă pentru actualizări punctuale. Presupun că există două motive:
 

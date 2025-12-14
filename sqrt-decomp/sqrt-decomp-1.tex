@@ -1,0 +1,180 @@
+\chapter{Descompunere în radical}
+
+Pe lîngă faptul că oferă complexitate optimă pentru unele probleme, metoda oferă și un substitut bun pentru algoritmi în $\bigoh(n \log n)$ și în special $\bigoh(n \log^2 n)$, în cazul în care nu găsim ideea. Descompunerea în radical este, în experiența mea, mult mai ușor de implementat.
+
+\section{Actualizări punctuale}
+
+Revenim la problema inițială: actualizări punctuale, sume pe interval. Împărțim vectorul în blocuri de lungime $k = \sqrt{n}$. Așadar, vor exista $\lceil n/k \rceil$ blocuri (engl. \textit{blocks} sau \textit{buckets}). Pentru fiecare bloc, menținem o informație suplimentară: suma elementelor din acel bloc.
+
+Memorie suplimentară: $\bigoh(\sqrt{n})$.
+
+\begin{minted}{c}
+int v[MAX_N];
+int b[MAX_BUCKETS];
+int bs, nb;
+
+// Se poate implementa și cu împărțiri pentru concizie (sînt doar n).
+void init_buckets() {
+  nb = sqrt(n + 1);
+  bs = n / nb + 1;
+
+  for (int i = 0; i < nb; i++) {
+    int bucket_start = i * bs;
+    for (int j = 0; j < bs; j++) {
+      b[i] += v[j + bucket_start];
+    }
+  }
+}
+
+int array_sum(int* v, int l, int r) {
+  int sum = 0;
+  while (l < r) {
+    sum += v[l++];
+  }
+  return sum;
+}
+
+int fragment_sum(int l, int r) {
+  return array_sum(v, l, r);
+}
+
+int bucket_sum(int l, int r) {
+  return array_sum(b, l, r);
+}
+
+int range_sum(int l, int r) { // [l, r)
+  int bl = l / bs, br = r / bs;
+  if (bl == br) {
+    return fragment_sum(l, r);
+  } else {
+    return
+      // capete
+      fragment_sum(l, (bl + 1) * bs) +
+      fragment_sum(br * bs, r) +
+      // blocuri complete
+      bucket_sum(bl + 1, br);
+  }
+}
+
+void point_add(int pos, int val) {
+  v[pos] += val;
+  b[pos / bs] += val;
+}
+\end{minted}
+
+Vă recomand să lucrați pe intervale închise la stînga, deschise la dreapta, ca să simplificați aritmetica.
+
+Încheiem secțiunea cu observația că funcția \mintinline{c}{range_sum} are complexitatea $\bigoh(k + n/k)$: Ea iterează naiv prin blocurile acoperite parțial, așadar $\bigoh(k)$, și iterează rapid prin blocurile acoperite complet, așadar $\bigoh(n/k)$. Alegem $k = \sqrt{n}$ ca să minimizăm acea sumă, dar vom vedea în unele exemple că pot lua naștere și alte sume care duc la valori diferite pentru $k$.
+
+\section{Actualizări pe interval}
+
+Folosim o informație suplimentară care amintește de informația propagată \textit{lazy} din arborii de segmente. Pentru problema dată (sume pe interval), am denumit această informație \texttt{bdelta}. Ea are semnificația: \texttt{bdelta[j]} este o valoare care trebuie adăugată la fiecare element din blocul \texttt{j}. Așadar, valoarea reală a unui element \texttt{i} din blocul \texttt{j} este \texttt{v[i] + bdelta[j]}.
+
+\begin{minted}{c}
+int fragment_sum(int l, int r, int bucket) {
+  return
+    (r - l) * bdelta[bucket] +
+    array_sum(v, l, r);
+}
+
+int bucket_sum(int l, int r) {
+  return
+    array_sum(bsum, l, r) +
+    bs * array_sum(bdelta, l, r);
+}
+
+int range_sum(int l, int r) {
+  int bl = l / bs, br = r / bs;
+  if (bl == br) {
+    return fragment_sum(l, r, bl);
+  } else {
+    return
+      // capete
+      fragment_sum(l, (bl + 1) * bs, bl) +
+      fragment_sum(br * bs, r, br) +
+      // blocuri complete
+      bucket_sum(bl + 1, br);
+  }
+}
+
+void array_add(long long* v, int l, int r, int val) {
+  while (l < r) {
+    v[l++] += val;
+  }
+}
+
+void fragment_add(int l, int r, int bucket, int val) {
+  bsum[bucket] += (r - l) * val;
+  array_add(v, l, r, val);
+}
+
+void range_add(int l, int r, int val) {
+  int bl = l / bs, br = r / bs;
+  if (bl == br) {
+    fragment_add(l, r, bl, val);
+  } else {
+    // capete
+    fragment_add(l, (bl + 1) * bs, bl, val);
+    fragment_add(br * bs, r, br, val);
+
+    // blocuri complete
+    array_add(bdelta, bl + 1, br, val);
+  }
+}
+\end{minted}
+
+Paranteză: conceptual, aint-urile fac același lucru cu descompunerea în radical, deci multe concepte se translatează între cele două, cum ar fi propagarea \textit{lazy}. Marea inovație a arborilor de intervale este că garantează descompunerea în $\bigoh(\log n)$ blocuri.
+
+\section{Optimizări}
+
+\subsection{Evitați împărțirile!}
+
+Codul anterior face doar două împărțiri per operație. În general, aveți nevoie strict de o împărțire pentru fiecare indice primit ca parametru. Evitați stilul de mai jos, care face $\bigoh(\sqrt{n})$ împărțiri (sau operații modulo) per operație. El poate fi \textbf{de cîteva ori mai lent} (vedeți \textit{benchmark}-urile).
+
+\begin{minted}{c}
+int bl = l / bs, br = r / bs;
+int sum = 0;
+
+// stînga
+do {
+  sum += v[l++];
+} while (l % bs);
+
+// dreapta
+while (r % bs) {
+  sum += v[--r];
+}
+
+// blocuri complete
+for (int i = bl + 1; i < br; i++) {
+  sum += b[i];
+}
+
+return sum;
+\end{minted}
+
+\subsection{Alegerea mărimii blocurilor}
+
+Am auzit că mărimea blocului merită declarată constantă, deoarece compilatorul va optimiza împărțirile. Am experimentat, dar diferențele nu sînt semnificative. Am încercat chiar să declar mărimea \href{https://github.com/CatalinFrancu/nerdvana/blob/main/query-update/point-range/sqrt-pow2.cpp}{o putere a lui 2}, pentru ca împărțirile să fie ieftine. Codul rezultat a fost mai lent! Cred că motivul este că se dezechilibrează acea funcție $k + n/k$ pe care descompunerea în radical o optimizează.
+
+Diferența de viteză este vizibilă cînd codul face multe împărțiri. Cînd codul face $\bigoh(1)$ împărțiri per operație, nu mai contează.
+
+Are sens să declarați mărimea constantă dacă vi se pare codul mai simplu (evitați cîteva calcule la inițializare). În acest caz, vă recomand să puneți constanta mică (3-4) cînd lucrați local și să-i dați valoarea reală cînd trimiteți sursa. Altfel, dacă testați local pe teste mici și mărimea blocului 300, nu veți testa decît codul cu interogări și actualizări într-un singur bloc.
+
+\subsection{Alegerea mărimii blocurilor pentru operații inegale}
+
+Dacă programul vostru depășește timpul, merită să variați mărimea blocurilor în jurul lui $\sqrt{n}$ ca să vedeți dacă se schimbă ceva. Fie $b$ numărul de blocuri și fie $l$ lungimea unui bloc. Operațiile pot depinde doar de una dintre aceste variabile sau pot depinde de ambele, dar în mod inegal. Exemplu: dacă constanta pentru cele două capete de segment (de lungime medie $l/2$) este mult mai mare decît constanta pentru blocurile întregi, merită redus $l$-ul puțin.
+
+Iată un exemplu mai interesant. Să spunem că nu știm să rezolvăm corect una dintre operații și găsim doar o implementare în $\bigoh(b + l^2)$. Pare catastrofic: dacă alegem $b=l=\sqrt{n}$, avem de fapt o soluție în $\bigoh(n)$. \emoji{thinking-face}
+
+Dar se poate asimptotic mai bine. Să alegem $b = n^{2/3}$, caz în care $l = n/b = n^{1/3}$. Dacă $n = 100.000$, atunci $b = 2.174$ și $l = 46$. O soluție în $\bigoh(\sqrt{n})$ per operație ar face circa 600 de operații, pe cînd a noastră va face circa 4.300 de operații. Desigur, diferența este notabilă, dar, cu o implementare eficientă, avem șanse să „ținem aproape”.
+
+Pauză de matematică: mai exact, noi vrem să găsim minimul funcției
+
+$$f(x) = x^2 + \frac{n}{x}$$
+
+Funcția își atinge minimul cînd derivata este zero, iar derivata este
+
+$$f'(x) = 2x - \frac{n}{x^2} = \frac{2x^3 - n}{x^2}$$
+
+Rezultă că $l$ minim este $\sqrt[3]{n/2} \approx 37$, iar funcția va face sub 4.100 de operații.

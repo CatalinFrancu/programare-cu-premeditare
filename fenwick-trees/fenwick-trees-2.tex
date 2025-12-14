@@ -78,7 +78,7 @@ struct fenwick_tree_2 {
 
 \section{Arbori indexați binar 2D}
 
-Putem extinde arborii indexați binar la matrice, cu costuri $\mathcal{O}(\log^2 n)$ pentru operații. Să considerăm următoarele operații (\textit{point update, rectangle query}):
+Putem extinde arborii indexați binar la matrice, cu costuri $\bigoh(\log^2 n)$ pentru operații. Să considerăm următoarele operații (\textit{point update, rectangle query}):
 
 \begin{itemize}
   \item \texttt{1 row col val}: Adaugă val la coordonatele $(row, col)$
@@ -150,9 +150,9 @@ void add(int row, int col, int val) {
 }
 \end{minted}
 
-\subsection{Construcția în \texorpdfstring{$\mathcal{O}(n^2)$}{O(n²)}}
+\subsection{Construcția în \texorpdfstring{$\bigoh(n^2)$}{O(n²)}}
 
-Și acest arbore poate fi construit in-place, refolosind matricea dată la intrare și în timp $\mathcal{O}(1)$ per element.
+Și acest arbore poate fi construit in-place, refolosind matricea dată la intrare și în timp $\bigoh(1)$ per element.
 
 În varianta unidimensională, trebuia să propagăm valoarea de la poziția $x$ la poziția $x + (x \ \& -x)$. În varianta bidimensională am vrea să procedăm astfel:
 
