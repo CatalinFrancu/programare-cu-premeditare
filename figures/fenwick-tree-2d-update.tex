@@ -1,0 +1,48 @@
+\begin{figure}[H]
+  \centering
+
+  \tikzset{
+    row 1/.style={
+      color=black!50,
+      font=\small,
+    },
+    column 1/.style={
+      color=black!50,
+      font=\small,
+    },
+  }
+
+  \begin{tikzpicture}
+
+    \matrix (mat) at (2, 0) [
+    matrix of math nodes,
+    nodes={anchor=center, minimum size=20pt},
+    ] {
+      \ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16\\
+      1 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      2 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      3 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      4 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      5 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      6 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      7 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      8 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      9 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      10 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      11 & \  & \  & \  & \  & |[fill=black!20]| \times & \times & \  & \times & \  & \  & \  & \  & \  & \  & \  & \times\\
+      12 & \  & \  & \  & \  & \times & \times & \  & |[red]| \times & \  & \  & \  & \  & \  & \  & \  & \times\\
+      13 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      14 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      15 & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \  & \ \\
+      16 & \  & \  & \  & \  & \times & |[brown]| \times & \  & \times & \  & \  & \  & \  & \  & \  & \  & \times\\
+    };
+
+    \draw[red!80] (mat-10-2.north west) rectangle (mat-13-9.south east);
+    \draw[brown] (mat-2-6.north west) rectangle (mat-17-7.south east);
+
+    \foreach \x in {1,...,17} {
+      \draw [help lines, dashed] (mat-1-\x.south east) -- (mat-17-\x.south east);
+      \draw [help lines, dashed] (mat-\x-1.south east) -- (mat-\x-17.south east);
+    }
+  \end{tikzpicture}
+\end{figure}

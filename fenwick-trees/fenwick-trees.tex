@@ -82,7 +82,7 @@ Reținem că:
 \end{itemize}
 
 
-\section{Modificări punctuale și interogări pe interval}
+\section{Actualizări punctuale și interogări pe interval}
 
 \section{Reprezentare}
 
@@ -127,7 +127,7 @@ De aici rezultă și complexitatea $\bigoh(\log n)$, căci reprezentarea oricăr
 
 \section{Operația de actualizare (adăugare pe poziție)}
 
-La modificarea pe o poziție, trebuie actualizate toate intervalele care conțin acea poziție. De exemplu, la actualizarea poziției 11 trebuie actualizate intervalele $[11, 11]$, $[9, 12]$ și $[1, 16]$, așadar trebuie recalculate pozițiile 11, 12 și 16 din AIB. Această parte pare magică: de ce pozițiile 13, 14 și 15 nu trebuie actualizate? Dar ne putem convinge că, cu cît ne îndepărtăm de poziția inițială (11), ne interesează doar pozițiile responsabile de intervale suficient de mari încît să acopere poziția 11.
+La actualizarea pe o poziție, trebuie actualizate toate intervalele care conțin acea poziție. De exemplu, la actualizarea poziției 11 trebuie actualizate intervalele $[11, 11]$, $[9, 12]$ și $[1, 16]$, așadar trebuie recalculate pozițiile 11, 12 și 16 din AIB. Această parte pare magică: de ce pozițiile 13, 14 și 15 nu trebuie actualizate? Dar ne putem convinge că, cu cît ne îndepărtăm de poziția inițială (11), ne interesează doar pozițiile responsabile de intervale suficient de mari încît să acopere poziția 11.
 
 \begin{minted}{c}
 void add(int pos, int val) {
@@ -315,7 +315,7 @@ Totuși, putem folosi AIB-uri pentru interogări de maxim dacă următoarele con
   \begin{itemize}
     \item Sau toate interogările sînt pe sufix, caz în care putem reflecta toți indicii față de $n$.
   \end{itemize}
-  \item Prin modificare, valorile pot doar să crească.
+  \item Prin actualizare, valorile pot doar să crească.
 \end{enumerate}
 
 Temă de gîndire: De ce este necesar ca toate valorile să crească? Ce poate să meargă prost dacă într-un AIB de maxime valorile pot să și scadă?

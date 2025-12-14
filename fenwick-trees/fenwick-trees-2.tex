@@ -1,0 +1,188 @@
+\section{Interogări punctuale și actualizări pe interval}
+
+Putem privi actualizările pe interval ca pe un fel de „Șmen al lui Mars online”. În șmenul lui Mars prelucrăm operațiile „adaugă $x$ pe pozițiile $[l \dots r]$” adăugînd $x$ pe poziția $l$ și $-x$ pe poziția $r + 1$. Deosebirea este că în Șmenul lui Mars interogările vin doar la sfîrșit, după toate actualizările, pe cînd în varianta online interogările pot veni și pe parcurs.
+
+AIB-ul poate fi adaptat foarte ușor la această nevoie:
+
+
+\begin{enumerate}
+  \item Actualizare: adaugă $x$ pe poziția $l$ și $-x$ pe poziția $r + 1$.
+  \item Interogare pe poziția $k$: calculează suma prefixului $[1 \dots k]$.
+\end{enumerate}
+
+Aceasta funcționează deoarece, la interogarea pe poziția $k$,
+
+\begin{enumerate}
+  \item Dacă $k < l$, atunci suma prefixului $[1 \dots k]$ nu va include pozițiile $l$ și $r + 1$.
+  \item Dacă $k > r$, atunci suma prefixului $[1 \dots k]$ va include pozițiile $l$ și $r + 1$, care se vor anula reciproc. Dorim aceasta, deoarece $k \not\in [l, r]$, deci variația intervalului $[l, r]$ nu trebuie să afecteze poziția $k$.
+  \item Dacă $l \leq k \leq r$, atunci suma prefixului $[1 \dots k]$ va include doar poziția $l$, nu și poziția $r + 1$, deci poziția $k$ va fi afectată de variația pe intervalul $[l, r]$.
+\end{enumerate}
+
+\section{Interogări și actualizări pe interval}
+
+Să rezolvăm și această versiune, doar de amorul artei. Nu cred că discuția de mai jos se aplică la altceva decît la sume (la xor-uri, de pildă).
+
+Avînd în vedere că AIB-urile se preocupă în special de sume parțiale, să examinăm grafic sumele parțiale după operația de adăugare a lui $x$ pe intervalul $[l,r]$. Pe pozițiile $[l \dots r]$ ia naștere o funcție scară: dorim ca sumele parțiale să crească cu $x$, $2x$, ..., $(r - l + 1)x$.
+
+\import{./figures}{fenwick-tree-range-update-1.tex}
+
+Intuitiv, deoarece suma parțială crește cu poziția, sîntem tentați să returnăm, la poziția $k$, valoarea $\mathrm{sum}(k) \times k$. Pentru ca după $r$ suma parțială să se oprească din crescut, adăugăm $x$ la poziția $l$ și scădem $x$ la poziția $r + 1$, similar cu șmenul lui Mars. Doar că atunci funcția $\mathrm{sum}(k) \times k$ are graficul:
+
+\import{./figures}{fenwick-tree-range-update-2.tex}
+
+Într-adevăr, observăm că suma parțială la stînga lui $l$ este 0, iar la dreapta lui $r$ este $x - x$ = 0. Totuși, pare că cele două grafice nu au nicio legătură! Dar nu este chiar așa. Observăm că diferența între cele două funcții arată relativ simplu:
+
+\import{./figures}{fenwick-tree-range-update-3.tex}
+
+Pentru a corecta al doilea grafic ca să arate ca primul, trebuie să menținem un al doilea AIB în care:
+
+\begin{itemize}
+  \item să scădem pe pozițiile $l, \dots, r$ valoarea $(l-1)x$;
+  \item să adăugăm pe pozițiile $r+1, \dots, n$ valoarea $(r-l+1)x$.
+\end{itemize}
+
+În termeni de sume parțiale, trebuie:
+
+\begin{itemize}
+  \item să scădem pe poziția $l$ valoarea $(l-1)x$;
+  \item să adăugăm pe poziția $r+1$ valoarea $rx$.
+\end{itemize}
+
+Astfel ia naștere \href{https://github.com/CatalinFrancu/nerdvana/blob/main/query-update/range-range/fenwick.cpp}{codul} care, dacă nu-l înțelegem, poate părea foarte ezoteric:
+
+\begin{minted}{c}
+struct fenwick_tree_2 {
+  fenwick_tree v, w;
+
+  void from_array(long long* src, int n) {
+    v.n = n;
+    w.from_array(src, n);
+  }
+
+  void range_add(int l, int r, long long val) {
+    v.add(l, val);
+    v.add(r + 1, -val);
+    w.add(l, -val * (l - 1));
+    w.add(r + 1, val * r);
+  }
+
+  long long prefix_sum(int pos) {
+    return v.prefix_sum(pos) * pos + w.prefix_sum(pos);
+  }
+
+  long long range_sum(int l, int r) {
+    return prefix_sum(r) - prefix_sum(l - 1);
+  }
+};
+\end{minted}
+
+\section{Arbori indexați binar 2D}
+
+Putem extinde arborii indexați binar la matrice, cu costuri $\mathcal{O}(\log^2 n)$ pentru operații. Să considerăm următoarele operații (\textit{point update, rectangle query}):
+
+\begin{itemize}
+  \item \texttt{1 row col val}: Adaugă val la coordonatele $(row, col)$
+  \item \texttt{2 row1 col1 row2 col2}: Calculează suma dreptunghiului $(row_1, col_1)$ - $(row_2, col_2)$ inclusiv.
+\end{itemize}
+
+\subsection{Structura informației}
+
+Așa cum arborele 1D modifică structura informației din vector, arborele 2D modifică structura informației din matrice. El stochează anumite sume parțiale. Mai exact, arborele stochează la poziția $(r, c)$ suma elementelor din submatricea (originală) de dimensiuni $p \times q$ cu colțul dreapta-jos la coordonatele $(r, c)$, unde
+
+\begin{itemize}
+  \item $p$ este cea mai mare putere a lui 2 care îl divide pe $r$
+  \item $q$ este cea mai mare putere a lui 2 care îl divide pe $c$.
+\end{itemize}
+
+De exemplu, la poziția 40, 60 arborele stochează suma elementelor din matricea de dimensiuni $8 \times 4$ cuprinsă între liniile 33 și 40 și coloanele 57 și 60.
+
+\subsection{Calculul sumei dintr-un dreptunghi}
+
+Putem folosi această structură pentru a calcula suma dreptunghiurilor de forma $(1,1) - (r, c)$. Iată o figură pentru $r = 13$ și $c = 11$.
+
+\import{./figures}{fenwick-tree-2d-sum.tex}
+
+Dreptunghiul de dimensiune $13 \times 11$ se compune din $3 \times 3$ dreptunghiuri cu laturile puteri ale lui 2. Trebuie să însumăm valorile din colțurile jos-dreapta ale acestor dreptunghiuri (desenate mai întunecat). Codul este:
+
+\begin{minted}{c}
+int prefix_sum(int row, int col) {
+  int s = 0;
+
+  for (int r = row; r; r &= r - 1) {
+    for (int c = col; c; c &= c - 1) {
+      s += mat[r][c];
+    }
+  }
+
+  return s;
+}
+\end{minted}
+
+Desigur, putem calcula prin includeri și excluderi suma unui dreptunghi arbitrar:
+
+\begin{minted}{c}
+int rectangle_sum(int row1, int col1, int row2, int col2) {
+  return
+    + prefix_sum(row2, col2)
+    - prefix_sum(row2, col1 - 1)
+    - prefix_sum(row1 - 1, col2)
+    + prefix_sum(row1 - 1, col1 - 1);
+}
+\end{minted}
+
+\subsection{Actualizări punctuale}
+
+Ca și la varianta 1D, cînd modificăm valoarea de la coordonatele $(r, c)$ trebuie să modificăm corespunzător toate dreptunghiurile care includ acele coordonate. Iată un exemplu pentru linia 11, coloana 5:
+
+\import{./figures}{fenwick-tree-2d-update.tex}
+
+Se observă că trebuie actualizate liniile 11, 12 și 16, adică exact cele care ar include poziția 11 într-un AIB unidimensional. Similar, trebuie actualizate coloanele 5, 6, 8 și 16, adică exact cele care ar include poziția 5. Am evidențiat cu roșu și cu auriu două dintre aceste coordonate, $(12, 8)$ și $(16, 6)$, și dreptunghiurile aferente lor, pentru a evidenția că ele includ celula (11, 5).
+
+Codul pentru actualizare este:
+
+\begin{minted}{c}
+void add(int row, int col, int val) {
+  for (int r = row; r <= n; r += r & -r) {
+    for (int c = col; c <= n; c += c & -c) {
+      mat[r][c] += val;
+    }
+  }
+}
+\end{minted}
+
+\subsection{Construcția în \texorpdfstring{$\mathcal{O}(n^2)$}{O(n²)}}
+
+Și acest arbore poate fi construit in-place, refolosind matricea dată la intrare și în timp $\mathcal{O}(1)$ per element.
+
+În varianta unidimensională, trebuia să propagăm valoarea de la poziția $x$ la poziția $x + (x \ \& -x)$. În varianta bidimensională am vrea să procedăm astfel:
+
+\begin{itemize}
+  \item Fie $r' = r + (r \ \& -r)$ și $c' = c + (c \ \& -c)$.
+  \item Propagăm valoarea de la poziția $(r, c)$ la poziția $(r, c')$. De acolo, ea se va propaga automat la coloanele următoare.
+  \item Propagăm valoarea de la poziția $(r, c)$ la poziția $(r', c)$. De acolo, ea se va propaga automat la liniile următoare, iar pe fiecare linie pe coloanele următoare.
+\end{itemize}
+
+Dar apare o problemă: valoarea de la $(r, c)$ se va propaga la $(r', c')$ de două ori, pe căi diferite! Din fericire, este suficient să o scădem o dată. Iată codul:
+
+\begin{minted}{c}
+void build() {
+  for (int r = 1; r <= n; r++) {
+    for (int c = 1; c <= n; c++) {
+      int next_r = r + (r & -r);
+      int next_c = c + (c & -c);
+
+      if (next_r <= n) {
+        mat[next_r][c] += mat[r][c];
+      }
+
+      if (next_c <= n) {
+        mat[r][next_c] += mat[r][c];
+      }
+
+      if ((next_r <= n) && (next_c <= n)) {
+        mat[next_r][next_c] -= mat[r][c];
+      }
+    }
+  }
+}
+\end{minted}

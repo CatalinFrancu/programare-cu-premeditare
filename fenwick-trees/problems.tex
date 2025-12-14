@@ -50,3 +50,124 @@ Pentru a reduce complexitatea la $\bigoh(n \log n)$, procesăm inelele de la st�
 Diametrele pot fi mari, dar le putem normaliza în intervalul $[1 \dots 2n]$.
 
 Există și o soluție mai ingenioasă, cu o stivă ordonată, care nu face obiectul acestui capitol.
+
+\subsection{Problema Subsequences (Codeforces)}
+\label{problem:subsequences}
+
+\href{https://codeforces.com/contest/597/problem/C}{enunț}
+$\bullet$
+\hyperref[code:subsequences]{sursă}
+
+Problema pare abordabilă cu programare dinamică. Să căutăm întîi formula de recurență, care nu este dificilă. Fie $C_{l,i}$ numărul de subsecvențe crescătoare de lungime $l$ terminate pe poziția $i$. Atunci:
+
+$$C_{l,i} = \sum_{j < i,\ a_j < a_i} C_{l-1,j}$$
+
+Implementarea în $\bigoh(kn^2)$ este așadar directă. Cum procedăm să reducem calculul sumei de la $\bigoh(n)$ la $\bigoh(\log n)$? Observăm aici un mecanism pe care îl vom regăsi și la alte probleme. Pare că dorim o interogare bidimensională (suma valorilor $C_{l-1,j}$ pe poziții unde $j < i$ și simultan $a_j < a_i$). În realitate, însă, putem reduce interogarea la una unidimensională.
+
+Să inserăm într-un AIB valorile $C_{l-1,1} \dots C_{l-1, i-1}$. Atunci condiția $j < i$ este automat satisfăcută și dorim suma valorilor pe pozițiile unde $a_j < a_i$. De aceea, vom indexa AIB-ul nu după $j$, ci după $a_j$. Cu alte cuvinte, vom scrie $C_{l-1,j}$ nu la poziția $j$, ci la poziția $a_j$. Desigur, după ce calculăm $C_{l,i}$ adăugăm și $C_{l-1,i}$ la AIB.
+
+Ca fapt divers, puteam face reducerea la interogări unidimensionale pe dos: iterăm prin elemente în ordinea crescătoare a valorilor, astfel încît condiția $a_j < a_i$ să fie automat satisfăcută. Atunci AIB-ul ar fi fost indexat după pozițiile propriu-zise, deci $C_{l-1,j}$ ar fi stat chiar la poziția $a_j$.
+
+Noua complexitate este $\bigoh(kn \log n)$: pentru fiecare dintre cele $k \times n$ valori ale lui $C$ facem o interogare și o actualizare în AIB. Ca optimizare de memorie, ne este suficientă o singură linie din matricea $C$.
+
+\subsection{Problema D-query (SPOJ)}
+\label{problem:dquery-fenwick}
+
+\href{https://www.spoj.com/problems/DQUERY/}{enunț}
+$\bullet$
+\hyperref[code:dquery-fenwick]{sursă}
+
+La prima vedere AIB-urile ne sînt inutile aici, pentru că funcția „numărul de elemente distincte” nu poate fi calculată prin diferențe de intervale: dacă în intervalul $[1, 10]$ avem 5 elemente distincte, iar în $[1, 20]$ avem 8 elemente distincte, nu știm destule despre numărul de elemente distincte din $[11, 20]$.
+
+Dar, ca la multe alte probleme, varianta offline (în care primim de la început toate interogările) este considerabil mai simplă decît varianta online (în care trebuie să răspundem la o interogare înainte de a o primi pe următoarea).
+
+Pare natural să sortăm interogările și să le scanăm cumva, dar cum? Să fixăm o poziție $r$ și să considerăm toate intervalele care se termină la $r$. Dacă un interval $[l, r]$ conține o valoare $x$, atunci o poate conține o dată sau de multiple ori, dar în mod sigur va include \textbf{cea mai din dreapta} apariție a lui $x$ înainte de $r$. Și atunci, pentru o poziție fixată $r$, dorim să bifăm toate pozițiile $i \in [1, r]$ pentru care nu există o altă poziție $j \in [i+1, r]$ cu $v[i] = v[j]$.
+
+De exemplu, pentru $r = 8$ și prefixul $(1\ 1\ 7\ 6\ 1\ 2\ 6\ 2)$, dorim să stocăm bifele $(0\ 0\ 1\ 0\ 1\ 0\ 1\ 1)$, pentru a indica cele mai din dreapta apariții ale lui 1, 2, 6 și 7. Atunci răspunsul la interogarea $[5, 8]$ va fi tocmai numărul de bife (adică suma) din intervalul $[5, 8]$, pentru că astfel ne asigurăm că numărăm exact o apariție, ultima, a fiecărei valori din interval.
+
+AIB-ul de bife este ușor de actualizat. Dacă, de exemplu, următorul element din vector este 7, trebuie să ștergem bifa de la ultima apariție a lui 7 (poziția 3) și să o aplicăm pe poziția 9. Avem nevoie de un vector cu poziția ultimei apariții a fiecărei valori (dacă există), ceea ce este fezabil deoarece valorile nu depășesc 1.000.000.
+
+La final, reordonăm interogările conform ordinii inițiale și afișăm răspunsurile.
+
+\subsection{Problema Magic Board (CodeChef)}
+\label{problem:mboard}
+
+\href{https://www.codechef.com/problems/MBOARD}{enunț}
+$\bullet$
+\hyperref[code:mboard]{sursă}
+
+Pare că avem de-a face cu o matrice binară uriașă, dar secretul este să reținem separat informații despre linii și despre coloane. Observația-cheie este că operațiile \texttt{Set} modifică doar linii și coloane întregi.
+
+Putem reformula o interogare de tipul \texttt{RowQuery i} astfel. Dacă ultima resetare a liniei $i$ a fost la momentul de timp $t$ (operația cu numărul $t$) și la valoarea 0, atunci cîte coloane au fost modificate din 0 în 1 după momentul $t$? Dacă au fost $k$ coloane modificate, răspunsul la interogare este $n-k$.
+
+Similar, dacă ultima resetare a liniei $i$ a fost la momentul de timp $t$ (operația cu numărul $t$) și la valoarea 1, și dacă ulterior $k$ coloane au fost modificate din 1 în 0, atunci răspunsul la interogare este chiar $k$.
+
+Astfel, trebuie să răspundem la întrebări de tipul: cîte modificări există la valoarea $v$ la timpi $> t$? De aceea, vom ține două AIB-uri pe coloane, indexate după timp (adică după numărul operației), în care stocăm timpul ultimei resetări a fiecărei coloane în 0 și respectiv în 1.
+
+De asemenea, cînd primim o interogare, trebuie să știm timpul ultimei modificări a acelei linii sau coloane, ceea ce putem stoca naiv: un vector de perechi (timp, valoare).
+
+Informațiile pe linii și pe coloane sînt perfect simetrice. Vom studia codul ca să vedem cum putem elimina duplicarea codului. Asta doar dacă evitarea duplicării codului este importantă pentru noi. \emoji{winking-face}
+
+\subsection{Problema Ball (Codeforces)}
+\label{problem:ball}
+
+\href{https://codeforces.com/contest/12/problem/D}{enunț}
+$\bullet$
+\hyperref[code:ball]{sursă}
+
+Să abstractizăm problema: date fiind $n$ puncte în spațiu, cîte dintre ele sînt dominate de un alt punct? Spunem că un punct $(x,y,z)$ domină un punct ($x', y', z'$) dacă $x > x'$, $y > y'$ și $z > z'$.
+
+Ca și la problema Subsequences, un prim pas este să reducem interogările tridimensionale la interogări  bidimensionale. Să sortăm punctele descrescător după $z$. Dacă toate $z$-urile ar fi diferite, atunci am ști că toate punctele procesate anterior au $z$-ul mai mare decît toate cele viitoare. Dat fiind că $z$-urile pot fi egale, trebuie să ne adaptăm. Este suficient să procesăm  punctele în grupuri cu același $z$. Pentru toate punctele dintr-un grup calculăm întîi răspunsul și abia apoi le adăugăm la structura de date (oricare ar fi ea).
+
+Astfel, problema pentru punctul $p(p_x, p_y, p_z)$ devine: există vreun punct văzut anterior care să aibă și $x$-ul și $y$-ul mai mare? Interogarea pare bidimensională: trebuie să aflăm dacă există vreun punct în cadranul de la $(p_x,p_y)$ la $(\infty,\infty)$. Iar coordonatele sînt prea mari pentru un AIB 2D.
+
+Aici intervine ultimul artificiu. Dorim să reducem problema la o interogare unidimensională pe sufix: dintre toate punctele văzute anterior, considerîndu-le doar pe cele cu $x > p_x$, există vreunul cu $y > p_y$? Putem reformula această întrebare ca pe una de maxim: Dă-mi maximul lui $y$ pe domeniul $[p_x, \infty)$. Dacă acest maxim este  $> p_y$, atunci există un punct care îl domină pe $p$, altfel nu.
+
+Putem răspunde la aceste întrebări cu un AIB de maxime, cu două observații:
+
+Trebuie să normalizăm coordonatele $x$ la intervalul $[1, n]$. Nu ne interesează valorile exacte, ci doar relațiile între ele.
+
+AIB-ul de maxime știe să calculeze doar maxime pe prefix, nu pe sufix. Dar putem să reflectăm toate valorile $x$ normalizate față de $n$ pentru a transforma interogările pe sufix în interogări pe prefix.
+
+Observație tangențială: Întotdeauna estimați mărimea fișierului de intrare! În acest caz, avem 1,5 milioane de numere pe 9 cifre plus spații, deci circa 15 MB. Timpul de rulare este efectiv dominat de citire. Sursa inclusă a rulat în 1.100 ms. O \href{https://codeforces.com/contest/12/submission/280421220}{a doua sursă}, cu citire rapidă, a rulat în 170 ms.
+
+
+\subsection{Problema Medwalk, revizitată (Lot 2025)}
+\label{problem:medwalk-fenwick}
+
+\href{https://kilonova.ro/problems/3790}{enunț}
+$\bullet$
+\hyperref[code:medwalk-fenwick]{sursă}
+
+Am discutat această problemă și în \hyperref[problem:medwalk]{capitolul de arbori de intervale}. Am găsit o soluție bazată pe un AINT de seturi, construit peste valorile din matrice. Să vedem acum una de 5 ori mai rapidă, probabil cea pe care a dorit-o comisia.
+
+Primele observații se mențin. Decuplăm (conceptual) matricea în doi vectori, unul cu minimele și unul cu maximele de pe fiecare coloană. Pentru a minimiza medianul (scorul unui interval $[l, r]$), căutăm un drum minim lexicografic. Acesta va consta din minimele de pe intervalul $[l, r]$ și din minimul maximelor. Medianul acestei mulțimi va fi una din trei valori posibile (logica deciziei este simplă):
+
+\begin{itemize}
+  \item fie minimul maximelor;
+  \item fie medianul minimelor;
+  \item fie elementul anterior medianului minimelor.
+\end{itemize}
+
+Pentru cazul (1), minimul maximelor îl menținem într-un aint simplu, cu actualizări punctuale și cu interogări de minim pe interval. Pentru cazurile (2) și (3) trebuie să răspundem la interogări de al $k$-lea element pe interval. Aici introducem următoarea soluție, constînd dintr-un \href{https://usaco.guide/plat/2DRQ?lang=cpp#offline-2d-bit}{AIB offline 2D} construit peste minimele din matrice.
+
+Dorim să căutăm binar al $k$-lea element. Bunăoară, prima dată ne întrebăm: este el mai mare decît $V_{max} / 2$? Dacă da, îl căutăm între $V_{max} / 2$ și $V_{max}$. Dacă nu, îl căutăm între 1 și $V_{max} / 2$. În general, pentru plaja de valori curentă, $[x, y]$, vom calcula mijlocul $m = (x + y) / 2$ și îi vom adresa structurii de date întrebarea: cîte valori între $x$ și $m$ apar la intrare pe poziții între $l$ și $r$? Dacă răspunsul este $\geq k$, atunci al $k$-lea element are valoarea între $x$ și $m$. Altfel, el are valoarea între $m$ și $y$.
+
+Să încercăm o structură naivă: o matrice binară uriașă $A$ de dimensiuni $n \times V_{max}$, unde $A_{p,v}$ reține 1 dacă valoarea $v$ apare în matrice la poziția $p$, 0 altfel. Atunci răspunsul la întrebarea „cîte valori între $v_1$ și $v_2$ apar pe poziții între $l$ și $r$?” este suma dreptunghiului $[l, r] \times [v_1, v_2]$. Sună bine, dar memoria nu ne permite această matrice.
+
+De aceea, vom comprima fiecare coloană într-un AIB pornind de la următoarea observație. Coloana $v$ va reține 1, oricînd pe durata întregului program, doar pe liniile $p$ cu proprietatea că poziția $p$ în vectorul de minime va avea, cel puțin după o operație, valoarea $v$. De aceea, în primă fază simulăm operațiile și colectăm toate minimele posibile pe toate pozițiile, care vor fi cel mult $n + q$. (De aici provine partea de \textit{offline} din nume.) Pe fiecare coloană $v$ stocăm:
+
+\begin{itemize}
+  \item O listă a pozițiilor posibile pentru valori 1, ordonate crescător.
+  \item Un AIB de 0/1 construit peste această listă.
+\end{itemize}
+
+De exemplu, dacă valoarea $9$ este măcar o dată minimă pe pozițiile 102, 109, 110, 113, atunci pe coloana 9 stocăm vectorul $[102, 109, 110, 113]$ și un AIB de 0/1 cu 4 poziții disponibile.
+
+Dar facem mai mult decît atît, căci v-am promis un AIB 2D. \emoji{slightly-smiling-face} Vectorul de coloane este el însuși un AIB. Coloana $v$ nu reține doar pozițiile aparițiilor lui $v$, ci ale oricărei valori din $(v - p, v]$, unde $p$ este cea mai mare putere a lui 2 mai mică sau egală cu $v$. În particular, cele 4 valori 102, 109, 110, 113 exemplificate mai sus nu apar doar în lista coloanei 9, ci și în listele coloanelor $10, 12, 16, 32, 64, \dots$.
+
+\import{./figures}{fenwick-tree-medwalk.tex}
+
+Să observăm că fiecare poziție apare în lista unui număr logaritmic de coloane. De aceea, suma lungimilor tuturor listelor (și a tuturor AIB-urilor) este $\mathcal{O}(n \log V_{max})$.
+
+Pe această structură putem răspunde în timp $\mathcal{O}(n \log n \log V_{max})$ la interogări de al $k$-lea element.

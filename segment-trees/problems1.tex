@@ -22,7 +22,7 @@ Dar iată și o soluție mai elegantă, care reduce complexitatea la $\bigoh(q \
 
 Ce semnifică acest OR pe biți? Fiecare dintre biți va fi 1 dacă și numai dacă litera corespunzătoare apare cel puțin o dată în intervalul acoperit. Să observăm că bitul 6 va fi 1 indiferent dacă intervalul conține un caracter 'f' sau multiple caractere 'f'. Rezultă că fiecare mască va avea atîția biți setați (biți 1) cîte caractere distincte există în interval.
 
-Facem modificări în acest arbore înlocuind masca din frunză și propagînd valoarea spre strămoși cu operația OR. Pentru a răspunde la interogări,
+Facem actualizări în acest arbore înlocuind masca din frunză și propagînd valoarea spre strămoși cu operația OR. Pentru a răspunde la interogări,
 
 \begin{itemize}
   \item colectăm cele $\bigoh(\log n)$ măști care compun interogarea;
@@ -143,7 +143,7 @@ Astfel putem gestiona operațiile de adăugare (cînd maximul pentru un $x$ fixa
 
 Ultima întrebare, odată ce stabilim că răspunsul pentru \texttt{find x y} este la abscisa $x'$, este: care dintre punctele cu această abscisă este răspunsul? Folosim același set și metoda \mintinline{c}{upper_bound()} pentru a afla cel mai mic $y'$ strict mai mare decît $y$.
 
-Complexitatea soluției este $\bigoh(n \log n)$, atît pentru normalizarea inițială cît și pentru procesarea operațiilor. Fiecare operație necesită o căutare în set și o căutare sau modificare în AINT.
+Complexitatea soluției este $\bigoh(n \log n)$, atît pentru normalizarea inițială cît și pentru procesarea operațiilor. Fiecare operație necesită o căutare în set și o căutare sau actualizare în AINT.
 
 \subsection{Problema Medwalk (Lot 2025)}
 \label{problem:medwalk}
