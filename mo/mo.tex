@@ -1,0 +1,80 @@
+\chapter{Algoritmul lui Mo}
+
+Algoritmul lui Mo atinge tot complexitatea de $\bigoh((q + n) \sqrt {n})$, ca și metoda descompunerii în radical, dar printr-o metodă destul de diferită. El duce adesea la cod mai simplu, dar necesită ca interogările să fie date în avans (\textit{offline}).
+
+\section{Algoritmul lui Mo fără actualizări}
+
+Algoritmul lui Mo ordonează interogările și le procesează în această ordine:
+
+\begin{enumerate}
+  \item După blocul capătului stîng.
+  \item La egalitate, după capătul drept.
+\end{enumerate}
+
+\import{./figures}{mo-sort-order.tex}
+
+Algoritmul lui Mo ține minte informații despre interogarea curentă (răspunsul, dar posibil și alte informații). Pentru a trece la următoarea interogare, algoritmul:
+
+\begin{enumerate}
+  \item Extinde intervalul curent cu cîte un pas, pînă cînd ajunge să includă și următoarea interogare.
+  \item Restrînge intervalul curent cu cîte un pas, pînă cînd ajunge să coincidă cu următoarea interogare.
+\end{enumerate}
+
+Atenție! Pașii trebuie executați în această ordine. Altfel puteți ajunge la intervale negative, din care încercați să eliminați elemente care nu au fost adăugate, cu consecințe neprevăzute.
+
+Vom relua problema \href{https://www.spoj.com/problems/DQUERY/}{D-query} (SPOJ) și vom examina \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/dquery/cata-mo.cpp}{implementarea} algoritmului lui Mo. Logica este considerabil mai simplă decît la implementarea cu AIB, în $\bigoh(n \log n)$. Surprinzător, timpul de rulare este identic!
+
+\subsection{Analiză de complexitate}
+
+La fiecare interogare, trebuie să deplasăm capetele intervalului curent ca să se suprapună cu interogarea. Care este efortul total?
+
+\begin{itemize}
+  \item Capătul stîng se poate deplasa cu cel mult $\sqrt{n}$ la fiecare interogare, plus $n$ pași pentru toate trecerile între blocuri. Efortul total este de cel mult $q \sqrt{n} + n$ pași.
+  \item Capătul drept se deplasează cu cel mult $n$ pași la dreapta pentru toate interogările dintr-un bloc, apoi cu cel mult $n$ pași înapoi la stînga la trecerea între blocuri. Există $\sqrt{n}$ blocuri, deci efortul total este de cel mult $2n \sqrt n$ pași.
+\end{itemize}
+
+Să spunem că includerea sau excluderea unei poziții durează $\bigoh(f(n))$. Pentru problema Dquery efortul este $\bigoh(1)$, dar pentru alte probleme costul poate diferi. Atunci complexitatea totală a algoritmului lui Mo este:
+
+$$\bigoh((q + n) \sqrt{n} f(n))$$
+
+\subsection{Optimizare de viteză}
+
+Nu ne costă aproape nimic (doar un \mintinline{c}{if} în plus la sortare) ca, în cadrul unui bloc, să ordonăm interogările astfel:
+
+\begin{itemize}
+  \item crescător după capătul drept în blocurile impare;
+  \item descrescător după capătul drept în blocurile impare.
+\end{itemize}
+
+Atunci nu mai plătim costul deplasării spre stînga „în gol” a capătului drept al intervalului curent. Iată \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/dquery/cata-mo-v2.cpp#L42}{o sursă} cu această optimizare la problema Dquery. Timpii de rulare nu diferă, dar în general optimizarea poate ajuta.
+
+De amorul artei, strict pentru problema Dquery, am \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/dquery/cata-mo-v3.cpp}{normalizat} valorile din vectorul dat. Pot fi cel mult 30.000 de valori distincte, ceea ce înseamnă că vectorul de frecvențe (pe \mintinline{c}{short}) poate ocupa doar 60 kB, în loc de 2 MB. Din nou, timpii nu diferă.
+
+Aș preciza, tot pentru Dquery, că soluțiile țin foarte bine pasul cu soluția cu AIB (70-75 ms în loc de 60-65).
+
+\section{Algoritmul lui Mo cu actualizări}
+
+Algoritmul lui Mo se pretează și la probleme care au actualizări, cu o complexitate de $\bigoh((q + n) n^{2/3})$. El este în continuare offline, avînd nevoie să citească și să sorteze interogările (și, posibil, să normalizeze valorile).
+
+Esența este să introducem o nouă dimensiune pentru operații, în afară de capetele de interval $l$ și $r$: timpul $t$, adică indicele operației (între 1 și $q$). Structura de date curentă stochează informații despre un interval $[L,R]$ la un moment de timp $T$, adică despre vectorul cu toate actualizările cu indici mai mici sau egali cu $T$. Pentru a răspunde la interogarea $[l,r]$ la momentul $t$, trebuie să:
+
+\begin{enumerate}
+  \item Extindem intervalul curent pînă îl include pe $[l,r]$ (ca și pînă acum).
+  \item Restrîngem intervalul curent pînă devine egal cu $[l,r]$ (ca și pînă acum).
+  \item „Avansăm” timpul dacă $T < t$, procesînd actualizările din intervalul $(T, t]$.
+  \item „Dăm înapoi” timpul dacă $t < T$, inversînd actualizările din intervalul $[t, T)$.
+\end{enumerate}
+
+Dacă actualizările efectuate sau inversate se întîmplă în intervalul curent $[l,r]$, actualizăm și structura de date, altfel nu.
+
+\subsection{Mărimea blocului, ordinea operațiilor, complexitate}
+
+Să alegem $B$ blocuri de mărime $S$. Acum, să sortăm operațiile după blocul lui $l$, apoi după blocul lui $r$, apoi după $t$. Atunci:
+
+Poziția lui $l$ se schimbă cu $\bigoh(S)$ la fiecare operație, plus $\bigoh(n)$ la toate trecerile între blocuri, așadar cu $O(n + qS)$ în total.
+
+Poziția lui $r$ se schimbă cu $\bigoh(S)$ la fiecare operație. În plus, pentru fiecare bloc al lui $l$ (deci de $B$ ori), $r$ va face o trecere prin cele $n$ poziții cu un efort total de $\bigoh(qS + nB)$.
+
+Pentru fiecare pereche de blocuri, $t$ poate trece prin toate cele $q$ operații, cu un efort total de $\bigoh(qB^2)$.
+
+Așadar, complexitatea algoritmului este $\bigoh(qS + nB + qB^2)$. De aceea dorim ca $B^2 \approx S$ și alegem $B \approx n^{1/3}$ și $S \approx n^{2/3}$, pentru o complexitate totală de $\bigoh((q + n)n^{2/3})$.
