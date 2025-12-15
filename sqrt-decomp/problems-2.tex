@@ -1,0 +1,67 @@
+\section{Probleme}
+
+\subsection{Problema Serega and Fun (Codeforces)}
+\label{problem:serega-and-fun}
+
+\href{https://codeforces.com/contest/455/problem/D}{enunț}
+$\bullet$
+\hyperref[code:serega-and-fun]{surse}
+
+Trebuie să procesăm eficient operațiile:
+
+\begin{enumerate}
+  \item Rotește circular la dreapta, cu o poziție, un interval $[l, r]$.
+  \item Raportează frecvența unei valori $k$ într-un interval $[l, r]$.
+\end{enumerate}
+
+Iată întîi soluția „clasică”, cu descompunere în blocuri de mărime egală. Soluția relativ directă. În fiecare bloc putem menține:
+
+\begin{enumerate}
+  \item O listă a elementelor.
+  \item Informații despre frecvență (\mintinline{c}{map} sau vector simplu).
+\end{enumerate}
+
+Atunci, la rotire, trebuie să:
+
+\begin{enumerate}
+  \item Rotim naiv blocurile acoperite parțial.
+  \item Rotim eficient blocurile acoperite complet. La rotire, adăugăm la începutul listei elementul care ne parvine de la blocul anterior și trimitem ultimul element din listă în blocul următor.
+\end{enumerate}
+
+La interogare, trebuie să:
+
+\begin{enumerate}
+  \item Consultăm element cu element blocurile acoperite parțial.
+  \item Consultăm vectorii de frecvență ai blocurilor acoperite complet.
+\end{enumerate}
+
+\subsubsection*{Discuție despre implementarea cu structuri STL}
+
+Putem rezolva problema și cu structuri ca \mintinline{c}{deque}, \mintinline{c}{map} sau \mintinline{c}{unordered_map}, dar este nevoie de o implementare atentă ca să nu depășim timpul și memoria.
+
+În particular, mare atenție la \href{https://en.cppreference.com/w/cpp/container/map/operator_at}{operatorul \texttt{[]}}! Este tentant să îl folosim ca să aflăm frecvența unui element. Dacă elementul nu există în \mintinline{c}{map}, operatorul va returna 0, ceea ce este corect. Dar \textbf{operatorul inserează elementul} dacă nu exista deja.
+
+Ce înseamnă asta? În mod normal, suma mărimilor tabelelor hash din toate blocurile va fi $n$. Dar, dacă pentru fiecare din cele $q$ interogări noi căutăm o valoare inexistentă în fiecare dintre cele $\sqrt{n}$ blocuri, și dacă toate acele valori sînt inserate, suma mărimilor tabelelor va ajunge la $q \sqrt{n}$. Necesarul de memorie va crește enorm. Este obligatoriu să folosim iteratori pentru căutarea sau decrementarea frecvențelor, pentru ca mărimea tabelelor să rămînă $\bigoh(\sqrt{n})$.
+
+\subsubsection*{Detalii de implementare}
+
+Prime sursă stochează lista de elemente din fiecare bloc într-un \mintinline{c}{deque} din STL. A doua sursă folosește un simplu buffer circular: un vector de mărime \mintinline{c}{BUCKET_SIZE} împreună cu un pointer la primul element din listă. Atunci putem face rotirea completă în $\bigoh(1)$ mutînd pointerul de start cu un element spre stînga. Pe poziția noului element de start scriem valoarea provenită din blocul anterior.
+
+O altă diferență este că prima sursă stochează frecvențele din fiecare bloc într-o tabelă hash, pe cînd a doua folosește un vector de frecvențe, căci elementele au valori de cel mult $n$. Necesarul de memorie crește la $\bigoh(n \times numBuckets)$. Din acest motiv, merită să experimentăm cu mai puține blocuri de dimensiune mai mare. Într-adevăr, pentru blocuri de mărime $2 \sqrt{n} \approx 640$, timpul scade la jumătate față de $\sqrt{n}$.
+
+Mai remarcăm că frecvența într-un singur bloc încape pe tipul \mintinline{c}{short}, nu este nevoie de \mintinline{c}{int}. Doar cu această modificare am redus timpul de rulare cu 20\%. Am experimentat și cu \mintinline{c}{unsigned char}, dar atunci frecvența maximă stocabilă ar fi 256, deci mărimea maximă a unui bloc ar trebui să fie 256, iar timpul se înrăutățește.
+
+\subsubsection*{Soluție cu descompunere după operații}
+
+Iată acum și rezolvarea în care lăsăm blocurile să fluctueze ca lungime. La rotire, extragem efectiv elementul de pe poziția $r$ din blocul său și îl inserăm la indicele corect în blocul poziției $l$. Blocurile dintre $l$ și $r$ rămîn nemodificate. Ca fapt divers, complexitatea rotirii depinde doar de mărimea blocului, nu și de numărul de blocuri.
+
+Cu timpul, lungimile blocurilor pot degenera, ceea ce poate încetini operațiile: dacă un bloc devine foarte mare, atunci inserarea, ștergerea și numărarea de elemente din acel bloc vor fi lente. De aceea, periodic refacem structura blocurilor:
+
+\begin{enumerate}
+  \item Colectăm toate blocurile într-un vector. Acesta este chiar conținutul real al vectorului.
+  \item Redistribuim elementele în blocuri de mărime egală.
+\end{enumerate}
+
+Putem face redistribuirea fie periodic (la fiecare $\bigoh(\sqrt{q})$ operații), fie la nevoie, cînd în momentul inserării detectăm că unul dintre blocuri a atins un anumit prag, să zicem dublu față de lungimea inițială. În ambele cazuri, complexitatea rămîne $\bigoh(q \sqrt{n})$.
+
+Această implementare este relativ elementară și se mișcă de circa două ori mai repede decît precedenta!

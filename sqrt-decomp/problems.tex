@@ -20,3 +20,115 @@ Odată ce am adus raționamentul pînă aici, eu am și trimis o sursă, cu stru
 Pentru punctaj maxim, ce ne dorim de la structura $S$? Dorim să facem $\bigoh(mn \sqrt{mn})$ inserări și ștergeri și $\bigoh(mn)$ calcule de mex. Rezultă că ne permitem $\bigoh(\sqrt{mn})$ per apel de mex, dar avem nevoie de $\bigoh(1)$ pe inserare și ștergere.
 
 Atunci putem folosi descompunerea în radical. Stocăm vectorul naiv de frecvențe. În plus, în fiecare bloc stocăm numărul de valori nenule. Inițial această valoare este 0. Ea crește cu 1 ori de cîte ori frecvența unui element din bloc crește de la 0 la 1 și, invers, scade cu 1 ori de cîte ori frecvența unui element din bloc scade de la 1 la 0. Funcția mex caută din bloc în bloc pînă cînd găsește un bloc cu cel puțin o valoare nulă, apoi caută naiv prin acel bloc.
+
+\subsection{Problema Give Away (SPOJ)}
+\label{problem:give-away}
+
+\href{https://www.spoj.com/problems/GIVEAWAY/}{enunț}
+$\bullet$
+\hyperref[code:give-away]{surse}
+
+Problema are limită de timp mare (1-2 secunde, iar conform paginii \textit{status}, chiar peste 6 secunde). Acesta este un indiciu bun că o soluție în $O((n + q) \sqrt{n})$ este arhisuficientă. Doar că pare mai rău de atît! Să presupunem că ținem pe fiecare bloc o structură $S$ (nu știm încă ce). Atunci:
+
+\begin{itemize}
+  \item Sigur putem procesa actualizările în $O(\sqrt{n})$, chiar și naiv la o adică.
+  \item La căutare, pare simplu să procesăm naiv blocurile acoperite parțial, în $O(\sqrt{n})$.
+  \item Dar ce facem cu blocurile acoperite complet? Dacă folosim orice structură echilibrată, introducem un factor logaritmic în plus pentru căutarea lui $c$.
+\end{itemize}
+
+Rezultă o complexitate de $\bigoh(q \sqrt{n} \log n)$. Dar în 6 secunde, este acceptabil.
+
+\subsubsection*{Mărimea blocurilor}
+
+Dacă am vrea să optimizăm suma $k + n/k$, am alege $k=\sqrt{n} \approx 707$. Dar noi dorim să optimizăm suma $k + n/k \log k$. Ochiometric $\log$-ul va fi undeva între 7 și 12, deci este important să-l mărim pe $k$. Atunci $\log k$ va crește lent, dar $n/k$ va scădea rapid. Din cîteva încercări pe hîrtie aflăm că valoarea optimă pentru $k$ este $2.000$ sau $3.000$. Într-adevăr, timpii de execuție pe acolo ating optimul.
+
+\subsubsection*{Detalii de implementare}
+
+Așadar, dorim o structură $S$ care să admită inserări, ștergeri, și numărarea elementelor mai mari sau egale cu o valoare dată. Eu am izolat această structură într-un \mintinline{c}{struct} și am scris o primă \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/giveaway/2-sqrt-naive.cpp#L9}{implementare naivă} ($S$ este doar un vector). Cu doar 5 linii de cod în plus, sursa naivă mă ajută să verific corectitudinea restului programului.
+
+A doua încercare a fost cu \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/giveaway/3-sqrt-set.cpp}{structuri de date} din STL, care trece în 3 secunde. Dar este nevoie să memorați papagalicește două noțiuni (le vom relua în capitolele viitoare):
+
+\begin{enumerate}
+  \item \mintinline{c}{set}-ul simplu nu este suficient, căci el poate să caute valoarea $c$, dar nu și să numere elementele mai mari sau egale cu $c$. Este nevoie de structuri cu statistici de ordine (PBDS).
+
+  \item Blocurile pot conține valori egale, deci ne trebuie un multiset. Multisetul PBDS este o încropeală, iar ștergerea trebuie rescrisă.
+\end{enumerate}
+
+Dar a treia încercare este elementară și trece în 1.3 secunde: pe fiecare bloc ținem vectorul original (ca să știm ce element înlocuim) și o copie sortată. Putem căuta binar în acea copie, iar la inserare/ștergere o actualizăm prin deplasări naive.
+
+\subsection{Problema Holes (Codeforces)}
+\label{problem:holes}
+
+\href{https://codeforces.com/contest/13/problem/E}{enunț}
+$\bullet$
+\hyperref[code:holes]{sursă}
+
+Îmi place această problemă pentru că este nestandard. Nu facem efectiv împărțirea în blocuri și nu stocăm informații agregate pe fiecare bloc. În loc de aceasta, fiecare poziție $pos$ reține informații ca să își accelereze trecerea prin blocul său:
+
+\begin{itemize}
+  \item care este ultima destinație din același bloc pe care o vizitează o bilă pornind de la $pos$;
+  \item cîte salturi face bila pînă la acea destinație.
+\end{itemize}
+
+Atunci operațiile sînt:
+
+\begin{itemize}
+  \item La interogare, urmărim traseul bilei din bloc în bloc, în timp $\bigoh(\sqrt{n})$.
+
+  \item La actualizare, trebuie să recalculăm poziția modificată și toate pozițiile din stînga ei, din același bloc, tot în $\bigoh(\sqrt{n})$.
+\end{itemize}
+
+Sursa mea se apropie de limita de timp (700 ms din 1000 ms). Am încercat următoarea optimizare care cred că ajută. Am ales o mărime mai mare pentru blocuri, $1.000$ în loc de cea teoretică ($\sqrt{100.000} \approx 316$). Astfel accelerăm interogările, care traversează mai puține blocuri, în defavoarea actualizărilor, care au de recalculat mai multe poziții. Dar actualizările operează foarte local, pe 1.000 de poziții vecine și vor beneficia de cache. În schimb, interogările sar de colo-colo prin vector.
+
+Remarc și că cele mai rapide soluții ajung la 122 ms. Ele folosesc \textit{link-cut trees} pentru a obține $\bigoh(n \log n)$. Putem percepe structura ca fiind arborescentă: părintele unei poziții este poziția unde sare bila. Atunci actualizările schimbă structura arborelui, ancorînd poziția modificată de un alt părinte. De aici (cred) decurge soluția cu \textit{link-cut trees}.
+
+\subsection{Problema Piezișă (Baraj ONI 2022)}
+\label{problem:piezișă}
+
+\href{https://kilonova.ro/problems/142}{enunț}
+$\bullet$
+\hyperref[code:piezișă]{surse}
+
+Un element comun tuturor soluțiilor este: renumerotăm vectorul de la 1. Acum, dacă xorul pe $[l,r]$ este 0, atunci xorurile pe $[0, l-1]$ și $[0, r]$ sînt egale. Așadar, calculăm xorurile parțiale și le normalizăm, ca să fie indexabile. Acum răspunsul la orice interogare $[l,r]$ este o pereche $(x,y)$ cu $0 \leq x < l$, $r \leq y \leq n$ și $v[x] = v[y]$.
+
+\subsubsection*{Brute force de 100p}
+
+Menționez pentru completitudine că următorul \textit{brute force} optimizat ia 100p: Răspundem la interogări online, imediat ce le primim. Fie o interogare $[l,r]$. Căutăm binar ultima apariție a lui $v[r]$ pe o poziție anterioară lui $l$ (pentru aceasta, colectăm în prealabil listele de poziții pentru fiecare valoare distinctă din $v$). Fie această poziție $q$. Atunci avem o soluție de mărime $r–q$, posibil $\infty$ dacă elementul $v[r]$ nu apare înainte de poziția $l$. Repetăm aceeași întrebare la pozițiile $r+1, r+2, \dots$. Menținem minimul răspunsurilor la aceste căutări, fie el $m$. Ne oprim la poziția $l+m$ (sau, desigur, la $n$), deoarece dincolo de ea am putea primi doar răspunsuri mai mari decît optimul curent. Afișăm răspunsul $m$.
+
+\subsubsection*{Metoda 1}
+
+Fără sortarea interogărilor nu am găsit nicio soluție. Așadar, să sortăm interogările după capătul stîng și să răspundem la ele baleind $l$ de la 1 la $n$. Acum, pentru o interogare $[l,r]$, dorim ca pentru fiecare poziție $r' \geq r$ să aflăm dacă valoarea $v[r']$ există pe vreo poziție $l' \leq l$. Aceasta este mult prea scump, deci dorim cumva să răspundem la întrebări pentru mai multe poziții simultan.
+
+Să descompunem vectorul în bucăți de mărime $\sqrt{n}$. Pentru o interogare $[l,r]$, fie blocurile celor două capete $bl$ și $br$. Atunci răspunsul poate avea capătul stîng fie în blocul $bl$ (în stînga lui $l$), fie într-un bloc anterior. Similar pentru capătul drept. Cazul care ne încurcă este cel în care ambele capete sînt în blocurile $bl$, respectiv $br$. Vrem să evităm să comparăm naiv aceste $\bigoh(\sqrt{n} \times \sqrt{n}) = \bigoh(n)$ posibilități.
+
+Astfel ne vine ideea să calculăm o singură informație pentru toate pozițiile din stînga lui $l$. Fie $left[x]$ ultima poziție (înaintea lui $l$) pe care apare valoarea $x$. Evident, putem menține vectorul $left$ în $\bigoh(1)$ pe măsură ce $l$ avansează.
+
+Capătul drept al interogării poate varia oricum, și aici intervine descompunerea în radical. Fie $best[b]$ cea mai mică soluție cunoscută pînă în prezent între orice valoare din blocul $b$ și orice valoare din stînga lui $l$. Putem menține vectorul $best$ în $\bigoh(1)$ per bloc pe măsură ce $l$ avansează (așadar efort $\bigoh(n \sqrt{n})$ efort global). Pentru aceasta, trebuie să cunoaștem, pentru elementul în curs de procesare $v[l]$, cea mai din stînga apariție a sa în fiecare bloc următor. Putem precalcula această informație la început, într-o manieră similară cu colectarea listelor de apariții a fiecărei valori. Vezi vectorul \mintinline{c}{ptr} și funcția \mintinline{c}{preprocess_values}.
+
+Cu aceste informații, răspunsul pentru interogarea curentă $[l,r]$ este minimul dintre:
+
+\begin{itemize}
+  \item Valorile $best$ ale blocurilor mai mari decît $br$.
+  \item Diferențele $r'-left[v[r']]$ pentru elementele din blocul $br$ începînd cu poziția $r$.
+\end{itemize}
+
+Codul este lung, cam urît și cam lent, dar ia 100p.
+
+\subsubsection*{Metoda 2}
+
+Citind surse mai rapide decît a mea, am găsit-o \href{https://infoarena.ro/job_detail/3032904?action=view-source}{pe aceasta}, care folosește o metodă mai simplă. Principala diferență este că sortează interogările diferit: crescător după blocul lui $l$, iar la egalitate descrescător după $r$. Această sortare amintește de algoritmul lui Mo, pe care îl vom discuta în curînd.
+
+Vectorul $left$ are aceeași definiție ca mai înainte, dar include doar elementele dinaintea blocului $bl$.
+
+La procesarea unui bloc, avem avantajul că toate $r$-urile scad. De aceea, și la dreapta putem ține un vector $right$ similar cu $left$: $right[x]$ indică prima apariție a lui $x$ pe o poziție mai mare decît $r$-ul curent. Atenție, vectorul $right$ trebuie golit și recalculat pentru fiecare bloc $bl$. Acest efort este $\bigoh(n \sqrt{n})$, deci acceptabil.
+
+Pe măsură ce $r$ scade, menținem și valoarea minimă $m$ a oricărei perechi $right[x]-left[x]$. Deoarece $r$ doar scade, intervalele doar scad, deci $m$ poate doar să scadă.
+
+Acum, pentru $[l,r]$, răspunsul poate fi:
+
+\begin{itemize}
+  \item chiar $m$, dacă soluția are capătul stîng înaintea blocului $bl$;
+  \item altfel, minimul dintre $right[x]-x$ pentru toate valorile $x$ din blocul $bl$, din stînga lui $l$.
+\end{itemize}
+
+Implementarea este conceptual mai simplă și de peste două ori mai rapidă!

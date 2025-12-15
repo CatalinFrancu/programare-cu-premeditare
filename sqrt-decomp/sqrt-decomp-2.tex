@@ -1,0 +1,9 @@
+\section{Descompunere după operații}
+
+Iată acum o tehnică înrudită. Proiectăm o structură relativ naivă pentru procesarea operațiilor. Prin „naiv” înțelegem, de exemplu, inserarea într-un vector prin deplasarea elementelor, fără a folosi structuri de date echilibrate.
+
+Facem aceste operații naive cîtă vreme ele se încadrează în $\bigoh(\sqrt{n})$ sau $\bigoh(\sqrt{q})$ per operație.
+
+Periodic, trebuie să intervenim pentru ca structura naivă să nu degenereze în timp și să nu ajungă la $\bigoh(n)$ sau $\bigoh(q)$. De aceea, aproximativ o dată la $\sqrt{q}$ operații iterăm prin structură și o „consolidăm” (ce înseamnă asta depinde de la problemă la problemă). Această consolidare poate dura $\bigoh(n)$, pentru ca efortul total al consolidărilor să fie $\bigoh(n \sqrt{q})$. Această limită de timp face consolidările să fie facile, în general.
+
+Să studiem o problemă concretă.

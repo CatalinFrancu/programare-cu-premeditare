@@ -1,0 +1,120 @@
+\section{Probleme}
+
+\subsection{Problema Sandor (Baraj ONI 2025)}
+\label{problem:sandor}
+
+\href{https://kilonova.ro/problems/3731}{enunț}
+$\bullet$
+\hyperref[code:sandor]{sursă}
+
+Observăm că algoritmul lui Sandor este un algoritm \textit{greedy} pentru problema rucsacului. Să facem trei experimente de gîndire despre natura acestui algoritm.
+
+În primul rînd, dacă eliminăm un obiect pe care algoritmul oricum nu l-ar selecta (pentru că nu încape), atunci vom obține aceeași sumă ca și cînd nu am elimina nimic. Practic, obiectul nu există pentru algoritm.
+
+Mai interesant, putem generaliza prima observație. Dacă există $k$ obiecte de aceeași greutate și, la acel pas în algoritm, în rucsac încap mai puțin de $k$ din aceste obiecte, atunci pe oricare dintre ele încercăm să-l eliminăm vom obține aceeași greutate ca și cînd nu am elimina nimic. De ce? Dacă, de exemplu, există 5 obiecte identice și doar 3 încap în rucsac, atunci dacă îl eliminăm pe primul algoritmul îl va adăuga pe al 4-lea.
+
+În sfîrșit, deoarece în rucsac punem obiecte cu greutatea totală cel mult $g$, rezultă că vom pune $\bigoh(\sqrt{g})$ greutăți distincte.
+
+De aceea, merită să stocăm mai degrabă un vector de serii (în sursă le-am numit \textit{runs}) de elemente egale, $\langle val, cnt \rangle$, decît valorile originale. Peste acest vector precalculăm niște \textit{jump pointers}, adică răspunsurile la întrebări de tipul „Cu ce serie să continui algoritmul dacă rucsacul mai are capacitate rămasă $c$?” Cu această reprezentare, evaluarea algoritmului lui Sandor este elementară și necesită timp $\bigoh(\sqrt{g})$. Mai mult, putem parametriza algoritmul ca să-l putem rula începînd cu oricare dintre serii, nu neapărat cu prima.
+
+\subsubsection*{Cerința 1}
+
+De aici rezultă un algoritm relativ naiv pentru cerința 1. El necesită $\bigoh(\sqrt{g}^2)$, adică $\bigoh(g)$.
+
+Mergînd de la stînga la dreapta prin vector, considerăm fiecare serie $\langle val, cnt \rangle$. Dacă în prezent în rucsac încap mai puțin de $cnt$ obiecte, atunci conform observației din preambul oricum am elimina un element din serie obținem tot soluția inițială (avem $cnt$ astfel de moduri).
+
+Dacă încap toate obiectele, atunci are sens să ne punem întrebarea „dar dacă eliminăm unul, ce obținem?”. Deci punem în rucsac doar $cnt-1$ obiecte și simulăm algoritmul lui Sandor (naiv) pentru restul vectorului. Apoi revenim la problema originală, punem în rucsac toate cele $cnt$ obiecte și continuăm.
+
+Așadar, facem $\bigoh(\sqrt{g})$ simulări ale algoritmului, pentru o complexitate totală de $\bigoh(g)$. Este important să nu luăm în calcul valorile care nu încap în rucsac, deoarece complexitatea ar crește la $\bigoh(n \sqrt{g})$. Acele valori le sărim folosind \textit{jump pointers}. Doar le contorizăm, prin diferența între $n$ și numărul de valori pe care le-am luat în calcul. Fiecare valoare sărită ne dă un mod de a obține greutatea algoritmului lui Sandor fără eliminări.
+
+Vom parametriza și cerința 1 pentru a o putea rula începînd cu orice serie și cu orice capacitate reziduală a rucsacului, nu neapărat cu prima serie și cu capacitatea $g$.
+
+\subsubsection*{Cerința 2}
+
+Dacă reușim să facem același gen de trecere prin vector și pentru cerința 2, și să delegăm subprobleme la algoritmul naiv (fără eliminări) și la cerința 1 (o eliminare), atunci vom obține o complexitate de $\bigoh(g \sqrt{g})$. Pentru aceasta, trebuie să analizăm cazurile posibile.
+
+În primul rînd, cîtă vreme din seria curentă nici măcar un obiect nu încape un rucsac, trecem la seria următoare și contorizăm numărul de obiecte ignorate. Fie acest contor $mult$. Să spunem că avem capacitatea $c=100$ și am ignorat serii de greutate 200, 150 și 130, totalizînd $mult=10$ obiecte. Atunci avem $C_{mult}^2 = 45$ de moduri de a elimina două din aceste obiecte. Rulăm algoritmul lui Sandor naiv și vedem ce sumă obținem. Adăugăm 45 la răspunsul pentru acea sumă.
+
+Dacă măcar un exemplar încape în rucsac, atunci putem încerca să eliminăm un obiect din seriile anterioare și unul din seria curentă. Deci apelăm cerința 1 începînd cu poziția curentă, și îi transmitem că fiecare soluție găsită trebuie socotită de $mult$ ori, deoarece există $mult$ moduri de a elimina un obiect dinaintea seriei curente.
+
+Dacă seria curentă include cel puțin două obiecte, putem încerca să eliminăm două obiecte din seria curentă, punînd $cnt-2$ în rucsac. Desigur, există $C_{cnt}^2$ moduri de a face asta, iar pentru restul vectorului rulăm Sandor varianta de bază. Îi trimitem algoritmului parametrizat multiplicatorul $C_{cnt}^2$ pentru soluția pe care o va găsi.
+
+Similar, putem elimina doar un obiect din grupa curentă, punînd $cnt-1$ în rucsac, ceea ce putem face în $cnt$ moduri distincte. Iar pentru seriile următoare apelăm cerința 1, spunîndu-i că soluțiile găsite trebuie numărate de cîte $cnt$ ori.
+
+În sfîrșit, putem să punem toate obiectele în rucsac și să reconsiderăm cerința 2 de la seria următoare.
+
+\subsection{Problema Puzzle-bile (Lot 2025)}
+\label{problem:puzzle-bila}
+
+\href{https://kilonova.ro/problems/3791}{enunț}
+$\bullet$
+\hyperref[code:puzzle-bila]{sursă}
+
+\subsubsection*{Formularea programării dinamice}
+
+Vom denumi \textbf{fereastră} o serie de celule libere consecutive.
+
+Pare firesc să ne dorim să calculăm valori de următorul tip. Fie $C_{r,c}$ costul pentru a aduce bila pe rîndul $r$, coloana $c$. E destul de clar că $C_{r,c}$ va depinde doar de valori din $C$ de pe rîndul $r-1$. Dacă $C_{r,c}$ va depinde de $C_{r-1,c'}$, atunci va trebui să calculăm și costul de a aduce pe rîndul $r$ o fereastră pe intervalul $[c', c]$.
+
+Așadar, să definim și $D_{r,c,l}$ ca fiind costul de a aduce pe rîndul $r$ o fereastră de lățime (cel puțin) $l$ terminată la coloana $c$. Acum putem defini recurența pentru $C$:
+
+$$C_{r,c} = \min_{c'=1}^{c} (C_{r-1,c'} + D_{r,c,c-c'+1})$$
+
+Recurența modelează ideea că mergem pe rîndul $r-1$ pînă la coloana $c'$, apoi coborîm pe rîndul $r$ unde am pregătit o fereastră care ne duce pînă la coloana $c$.
+
+\subsubsection*{Reducerea complexității}
+
+O soluție în $\bigoh(nm^2)$ procedează astfel: pentru fiecare celulă $(r,c)$ considerăm fiecare fereastră de pe rîndul $r$. Dacă fereastra are lățime $l$ și trebuie deplasată cu $p$ celule pentru a o alinia la dreapta cu coloana $c$, atunci putem optimiza $C_{r,c}$ cu cantitatea:
+
+$$p + \textrm{rmq}(C_{r-1,c-l+1}, \dots, C_{r-1,c})$$
+
+, unde desigur $\textrm{rmq}$ este funcția de minim pe interval. Doar că există $\bigoh(m)$ ferestre pe fiecare rînd, deci complexitatea este prea mare. Aici intervine descompunerea în valori distincte! Există doar $\bigoh(\sqrt{m})$ lățimi distincte de ferestre pe fiecare rînd. De aceea putem itera doar prin aceste lungimi. Pentru o lungime fixată $l$, nu are sens să testăm decît cele mai apropiate ferestre din stînga, respectiv din dreapta coloanei curente $c$. De aici rezultă complexitatea totală $\bigoh(nm \sqrt{m})$.
+
+Implementarea nu este deloc simplă datorită următoarei situații pe care o enunțăm, dar nu o detaliem (ea este descrisă cu exemple în cea de-a doua sursă). Cînd aducem o fereastră din stînga coloanei $c$, decizia este simplă: trebuie să o deplasăm pînă cînd capătul ei drept atinge coloana $c$. Dar, cînd aducem o fereastră din dreapta coloanei $c$, avem libertatea să o deplasăm fie pînă cînd capătul ei stîng atinge coloana $c$, fie mai mult de atît. Depinde ce coloană $c' < c$ ne interesează să „prindem” în recurență. Poate există o  valoare $c'$ destul de mică (costul deplasării pînă acolo este mare), dar unde $C_{r-1,c'}$ este foarte mic și justifică costul deplasării. Ia naștere un al doilea tabel RMQ construit nu peste valorile $C_{r-1,c}$, ci peste $C_{r-1,c} - c$.
+
+\subsubsection*{Cîteva cuvinte despre Arpa's trick}
+
+Eu sînt mereu în căutare de noi structuri pentru RMQ. \emoji{face-with-tears-of-joy} Îmi displace tabela rară deoarece folosește  $\bigoh(n \log n)$ memorie și evit să mă reped la ea. Iată o structură interesantă, numită Arpa's trick. Aparent, și alte nații au șmenurile lor... CP Algorithms are \href{https://cp-algorithms.com/data_structures/disjoint_set_union.html#arpa}{o lecție} foarte bună.
+
+Algoritmul răspunde la interogări în ordine crescătoare după capătul drept. Deci putem întîi să sortăm interogările sau să le distribuim în liste după capătul drept.  Apoi folosim o pădure de mulțimi disjuncte, pe care o instanțiem pe măsură ce baleiem poziția capătului drept.
+
+Cînd ajungem la o poziție nouă $p$ unde se află valoarea $x$, în primul rînd instanțiem o nouă rădăcină în DSF: părintele lui $p$ este $p$. În plus, $p$ devine părinte și pentru toate rădăcinile anterioare $p'$ care aveau valori $x' > x$. Procedăm astfel deoarece, pentru orice interogări viitoare, valoarea $x'$ nu va fi niciodată RMQ, deoarece $x$ va face și ea parte din orice interogare care îl conține pe $x'$. Pentru implementarea acestei părți folosim o stivă ordonată.
+
+La interogarea $\textrm{rmq}[p', p]$, unde $p$ este poziția curentă, răspunsul este rădăcina arborelui lui $p'$. Într-adevăr, dorim cea mai mică valoare cu care a fost $p'$ unit la orice moment.
+
+Am rezolvat problema Puzzle-bila folosind \textit{Arpa's trick}. \href{https://kilonova.ro/submissions/781135}{Implementarea} este dificilă și ineficientă, deoarece colectarea în avans și ordonarea interogărilor de care vom avea nevoie îngreunează codul (ca să folosesc un eufemism). Dar codul pentru \textit{Arpa's trick} în sine este scurt și clar. El funcționează în $\bigoh(\log^{*} n)$ amortizat cu memorie $\bigoh(n)$.
+
+\begin{minted}{c}
+struct arpa_s_trick {
+  int val[MAX_N];
+  int parent[MAX_N];
+  int n;
+
+  // O stivă cu pozițiile care încă nu au un element mai mic la dreapta.
+  int st[MAX_N], ss;
+
+  void reset() {
+    ss = 0;
+    n = 0;
+  }
+
+  void append(int x) {
+    while (ss && (val[st[ss - 1]] >= x)) {
+      parent[st[--ss]] = n;
+    }
+    st[ss++] = n;
+    parent[n] = n;
+    val[n++] = x;
+  }
+
+  int find(int p) {
+    return (parent[p] == p)
+      ? p
+      : (parent[p] = find(parent[p]));
+  }
+
+  int rmq(int p) {
+    return val[find(p)];
+  }
+};
+\end{minted}
