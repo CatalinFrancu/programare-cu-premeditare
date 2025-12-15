@@ -1,0 +1,10 @@
+\section{Procesări diferite înainte și după \texorpdfstring{$\sqrt{n}$}{sqrt(n)}}
+
+Următoarele două secțiuni teoretice prezintă două tehnici care ating timp $\bigoh(n \sqrt{n})$ din motive matematice. Tehnicile nu duc la descompunere în radical „convențională”, cu blocuri, dar nu știu unde altundeva să le încadrez.
+
+Prima tehnică pornește de la observațiile:
+
+\begin{enumerate}
+  \item Între 1 și $\sqrt{n}$ există $\sqrt{n}$ valori\footnote{From the Department of Redundancy Department.}.
+  \item Valorile de forma $\lfloor n / k \rfloor$, cu $k > \sqrt{n}$, iau doar $\bigoh(\sqrt{n})$ valori distincte.
+\end{enumerate}

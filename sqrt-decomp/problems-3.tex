@@ -1,0 +1,50 @@
+\section{Probleme}
+
+\subsection{Problema Time to Raid Cowavans (Codeforces)}
+\label{problem:time-to-raid-cowavans}
+
+\href{https://codeforces.com/contest/103/problem/D}{enunț}
+$\bullet$
+\hyperref[code:time-to-raid-cowavans]{sursă}
+
+În foarte multe cuvinte, problema ne dă un vector cu $n$ elemente și $q$ interogări $\langle prim, pas \rangle$. Răspunsul fiecărei interogări este suma valorilor de pe pozițiile care formează progresia cu primul termen $prim$ și pasul $pas$.
+
+Desigur, codul naiv care însumează progresiile este lent:
+
+\begin{minted}{c}
+long long naive_prog_sum(int first, int step) {
+  long long sum = 0;
+  for (int i = first; i <= n; i += step) {
+    sum += w[i];
+  }
+  return sum;
+}
+\end{minted}
+
+Dar... nu chiar atît de lent! Dacă pasul este cel puțin $\sqrt{n}$, progresia va avea cel mult $\sqrt{n}$ termeni. Rămîne să tratăm progresiile cu pasul mic (așadar $1, 2, \dots, \sqrt{n}$). Ne permitem să facem o preprocesare în $\bigoh(n)$ pentru fiecare din acești pași. Pentru un pas $pas$, preprocesăm efectiv $prep[i]$ = răspunsul la progresia cu primul  termen $i$ și pasul $pas$.  Apoi putem răspunde la interogările pentru acel pas în $\bigoh(1)$.
+
+\begin{minted}{c}
+void preprocess(int step) {
+  for (int i = n; (i > n - step) && (i >= 1); i--) {
+    prep[i] = w[i];
+  }
+  for (int i = n - step; i >= 1; i--) {
+    prep[i] = w[i] + prep[i + step];
+  }
+}
+\end{minted}
+
+Complexitatea totală este:
+
+
+\begin{itemize}
+  \item $\bigoh(q \sqrt{n})$ pentru progresiile cu pas mare (calculate naiv);
+  \item $\bigoh(n \sqrt{n} + q)$ pentru preprocesarea tuturor răspunsurilor pentru pași mici.
+\end{itemize}
+
+Alte probleme similare:
+
+\begin{itemize}
+  \item \href{https://codeforces.com/contest/1580/problem/C}{Train Maintenance} (Codeforces);
+  \item \href{https://kilonova.ro/problems/3939}{Căsuța} (Lot juniori 2025) -- atenție, la momentul scrierii acestei secțiuni problema nu are checker.
+\end{itemize}
