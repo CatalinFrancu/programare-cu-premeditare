@@ -1,0 +1,98 @@
+\section{Probleme}
+
+\subsection{Problema Powerful Array (Codeforces)}
+\label{problem:powerful-array}
+
+\href{https://codeforces.com/contest/86/problem/D}{enunț}
+$\bullet$
+\hyperref[code:powerful-array]{sursă}
+
+Problema este o aplicație directă a algoritmului lui Mo. Am copiat sursa de la D-query și am adaptat-o. Atenție doar la lucrul pe 64 de biți.
+
+\subsection{Problema Most Frequent Value (SPOJ)}
+\label{problem:most-frequent-value}
+
+\href{https://www.spoj.com/problems/FREQ2/}{enunț}
+$\bullet$
+\hyperref[code:most-frequent-value]{sursă}
+
+Problema este doar puțin mai complicată decît precedentele. Odată ce ne vine ideea că am putea-o rezolva cu algoritmul lui Mo, întrebarea este: ce ne trebuie ca să menținem cea mai mare frecvență?
+
+Răspunsul, desigur, este: menținem toate frecvențele. Dar nu este suficient. Cînd frecvența lui $x$ crește, să spunem de la 7 la 8, atunci frecvența maximă:
+
+\begin{itemize}
+  \item se păstrează dacă era deja 8 sau mai mare;
+  \item crește la 8 dacă era 7 (notă: nu putea fi mai mică de 7, căci $x$ avea frecvența 7).
+\end{itemize}
+
+Pînă aici, toate bune. Dar cînd frecvența lui $x$ scade, să spunem de la 8 la 7? Atunci frecvența maximă:
+
+\begin{itemize}
+  \item se păstrează dacă era mai mare decît 8 (un alt element $y$ avea frecvență maximă);
+  \item se păstrează dacă era 8 și mai există un alt element $y$ cu frecvență 8;
+  \item altfel scade la 7.
+\end{itemize}
+
+Cazul al doilea este critic. Cum aflăm dacă alt element are frecvența egală cu frecvența elementului care iese din interval? Răspunsul este: menținem numărul de elemente care au fiecare frecvență. Un fel de frecvență a frecvențelor, dacă vreți. \emoji{slightly-smiling-face} Cînd frecvența lui $x$ scade de la 8 la 7, decrementăm numărul de elemente cu frecvență 8 și îl incrementăm pe cel cu frecvență 7. Dacă frecvența maximă era 8, dar acum nu mai există elemente cu frecvență 8, atunci ne aflăm în cazul al treilea.
+
+\subsection{Problema RangeMode (Infoarena Cup 2013)}
+\label{problem:rangemode}
+
+\href{https://www.infoarena.ro/problema/rangemode}{enunț}
+$\bullet$
+\hyperref[code:rangemode]{sursă}
+
+Problema seamănă cu precedenta, dar nu cere frecvența maximă, ci elementul minim care atinge această valoare. Nu mai putem folosi fix aceeași abordare din cauza ștergerilor. Dacă există mai multe elemente cu frecvența maximă, și dacă cel mai mic dintre ele dispare, care este următorul minim?
+
+Soluția este simplă: nu facem ștergeri! \emoji{grinning-face-with-sweat} Glumesc, iar soluția nu este deloc evidentă. Ea împrumută sortarea interogărilor din algoritmul lui Mo. Atunci o interogare $[l, r]$ constă din:
+
+\begin{enumerate}
+  \item „Partea stîngă”: porțiunea de la $l$ pînă la sfîrșitul blocului curent, care poate varia cu $\bigoh(\sqrt{n})$ elemente între interogări.
+  \item „Partea dreaptă”: porțiunea de la începutul blocului următor pînă la $r$, care poate doar să crească între interogări.
+\end{enumerate}
+
+Desigur, mai există și cazul particular în care $l$ și $r$ se află în același bloc.
+
+Încercăm să aflăm răspunsul la fiecare interogare aditiv, compunînd partea dreaptă cu partea stîngă. Structura de date pe care o proiectăm, $S$, menține pentru partea dreaptă un vector de frecvențe simplu, în $\bigoh(n)$ pentru toate interogările din bloc. Cînd trecem la blocul următor de interogări, golim acest vector. Așadar, efortul total pentru partea dreaptă este $\bigoh(n \sqrt{n})$.
+
+Ce facem cu partea stîngă? Dacă adăugăm elemente în $S$, va trebui să le ștergem la final. Am vrea să clonăm $S$ pentru fiecare interogare, dar acea operație este scumpă. Iată o soluție struțo-cămilă, dar care funcționează:
+
+\begin{enumerate}
+  \item După ce terminăm de adăugat elementele din partea dreaptă, salvăm din structura $S$ doar răspunsul (elementul cu frecvența maximă).
+  \item Continuăm să adăugăm în $S$ elementele din partea stîngă și să recalculăm răspunsul.
+  \item La final, notăm răspunsul. Acesta este răspunsul la interogare.
+  \item Eliminăm din $S$ elementele din partea stîngă, fără să mai recalculăm răspunsul.
+  \item Restaurăm răspunsul salvat la pasul (1).
+\end{enumerate}
+
+Soluția merge pentru că face ștergeri, dar evită componenta pe care nu știm s-o rezolvăm, a recalculării răspunsului la ștergere.
+
+\subsection{Problema Machine Learning (Codeforces)}
+\label{problem:machine-learning}
+
+\href{https://codeforces.com/contest/940/problem/F}{enunț}
+$\bullet$
+\hyperref[code:machine-learning]{sursă}
+
+Problema cere să admitem $100.000$ operații de două tipuri pe un vector cu $100.000$:
+
+\begin{enumerate}
+  \item Pentru un interval $[l,r]$ tipărește mex-ul frecvențelor acelui interval. Așadar, tipărește valoarea minimă $f > 0$ pentru care nu există un element de frecvență $f$ în intervalul $[l,r]$.
+  \item Modifică punctual vectorul, $a[i] = x$.
+\end{enumerate}
+
+Implementarea mea este școlărească și medie ca eficiență. Iată ce am învățat din ea.
+
+Pare mai natural să stocăm separat actualizările și interogările.
+
+Ca să pot face \textit{undo} la actualizări, cel mai simplu mi s-a părut să stochez și vechea valoare în fiecare operație de actualizare. Putem obține vechile valori în mod elementar, scriind actualizările într-un vector pe măsură ce le facem (avem nevoie de o copie a vectorului original, pe care o distrugem).
+
+Ca să descriu  momentul curent, am ales să mențin un indice în vectorul de actualizări, care pointează la prima operație încă neaplicată. Ca să „derulez” sistemul la momentul de timp $t$, avansez spre dreapta în vectorul de actualizări dacă timpul operației neaplicate este mai mic decît $t$, respectiv avansez spre stînga dacă timpul ultimei operații aplicate este mai mare decît $t$. Ca fapt divers, timpii nu pot fi egali, căci $t$ este timpul unei interogări, care nu va apărea în vectorul de actualizări.
+
+Mi-a fost mai simplu să adaug santinele la timpii 0 și $q + 1$, ca să nu verific condiții suplimentare de ieșire din vector.
+
+Strict referitor la problema Machine Learning: funcția mex pare greu de menținut incremental. Dacă o frecvență $f$ încetează să mai aibă elemente, iar $f$ este mai mic decît mex-ul curent, atunci $f$ devine noul mex. Aceasta este partea simplă. Dar dacă apare un nou element de frecvența mex-ului, cum recalculăm noul mex? Riscăm să introducem un factor suplimentar la complexitate.
+
+Soluția este de fapt brutală. Pot exista cel mult $\sqrt{n}$ frecvențe diferite (deoarece suma frecvențelor este $n$, așa cum am arătat în capitolul de descompunere în radical). De aceea, putem calcula funcția mex naiv pentru fiecare interogare cu o complexitate totală de $\mathcal{O}(q \sqrt{n})$, care nu este dominantă.
+
+O ultimă observație specifică problemei: ne interesează doar frecvențele valorilor, nu ordinea lor relativă. De aceea, am ales o variantă mai simplă pentru codul de normalizare.
