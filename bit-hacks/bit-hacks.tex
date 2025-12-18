@@ -1,0 +1,98 @@
+\chapter{Operații pe biți. Compactarea variabilelor}
+
+\section{Operații elementare}
+
+Multe dintre structurile de date pe care le folosim au legătură cu puterile lui 2: arborii indexați binar, arborii de segmente, heapurile, \textit{bitsets}... De aceea, este important să fiți familiari cu o listă de operații utile.
+
+Această listă este inspirată din articolele \href{https://graphics.stanford.edu/~seander/bithacks.html}{Bit Twiddling Hacks} și \href{https://cp-algorithms.com/algebra/bit-manipulation.html}{Bit manipulation}.
+
+\subsection{Noțiuni de bază}
+
+\begin{itemize}
+  \item C are suport pentru constante hexazecimale (\mintinline{c}{0xdeadbeef}) și binare (\mintinline{c}{0b1100101101}).
+
+  \item De asemenea, puteți tipări valori în bazele 8 și 16 cu \href{https://linux.die.net/man/3/printf}{printf} sau \href{https://en.cppreference.com/w/cpp/io/manip/hex}{folosind STL}.
+
+  \item O cifră hexa are 4 biți în baza 2. Deci \mintinline{c}{0xce = 0b1100'1110}.
+
+  \item Uneori valorile hexa ajută la claritate. \mintinline{c}{0xff'ffff} arată că avem 24 de biți 1, poate mai clar decît \mintinline{c}{((1 << 24) - 1)}. Dar depinde de gusturi.
+\end{itemize}
+
+\subsection{Măști}
+
+Conceptual, o mască pe $n$ biți este un număr binar care descrie o submulțime a unei mulțimi cu $n$ elemente, indexate de la $0$ la $n-1$. Bitul $k$ are valoarea 1 dacă și numai dacă submulțimea descrisă include elementul $k$. Măștile se pretează la submulțimi mici (32 sau 64 de biți). Dincolo de aceasta avem nevoie de vectori de măști (cum ar fi \mintinline{c}{bitset} din STL).
+
+Exemple din lumea reală:
+
+\begin{itemize}
+  \item Multe constante predefinite în limbajele de programare ocupă un singur bit (sînt puteri ale lui 2), iar programatorul le poate combina cu OR pe biți. Vezi \href{https://www.php.net/manual/en/errorfunc.constants.php}{codurile de eroare} din PHP. Programatorul poate decide să afișeze sau să ascundă anumite tipuri de eroare. De exemplu, apelînd funcția \mintinline{php}{error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED)}, programatorul arată că vrea să vadă toate erorile în afară de cele minore (\mintinline{php}{E_NOTICE}) și cele despre perimare (\mintinline{php}{E_DEPRECATED}).
+
+  \item În multe programe, utilizatorii au permisiuni, care sînt definite ca puteri ale lui 2, iar permisiunile unui utilizator sînt o mască (o submulțime din mulțimea totală).
+
+  \item Programele de șah moderne descriu tabla ca pe o colecție de măști pe 64 de biți: una pentru pozițiile pionilor albi, una pentru pozițiile pionilor negri etc. Este foarte convenabil că tabla de șah are fix 64 de pătrate.
+\end{itemize}
+
+Măștile au anumite avantaje, cum ar fi:
+
+\begin{enumerate}
+  \item Este foarte ușor să facem operații de intersecție, reuniune, diferență folosind operatorii pe biți \mintinline{c}{&}, \mintinline{c}{|}, \mintinline{c}{^} și \mintinline{c}{~}.
+
+  \item Valoarea numerică a măștii creează o bijecție naturală între mulțimea $\{0, 1, \dots, 2^n - 1\}$ și mulțimea submulțimilor unei mulțimi. Deci putem stoca eficient informații despre toate submulțimile într-un vector de $2^n$ elemente indexate după ordinea lexicografică a submulțimii.
+\end{enumerate}
+
+\subsection{Operații pe măști de biți}
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{SlSl}
+    \textbf{operația} & \textbf{efectul} \\
+    \hline
+    \mintinline{c}{x & 31} sau \mintinline{c}{x & 0x1f} & Restul împărțirii lui $x$ la 32. \\
+    \mintinline{c}{x & 1} & Test de (im)paritate. \\
+    \mintinline{c}{x & (1 << k)} & Test dacă al $k$-lea bit este 1. Atenție, nu returnează 0/1, ci 0/$2^k$. \\
+    \mintinline{c}{(x >> k) & 1} & Test dacă al $k$-lea bit este 1. Returnează 0/1. \\
+    \mintinline{c}{x |= (1 << k)} & Setează bitul $k$ pe 1. \\
+    \mintinline{c}{x &= ~(1 << k)} & Setează bitul $k$ pe 0. \\
+    \mintinline{c}{x ^= (1 << k)} & Neagă bitul $k$.\\
+    \mintinline{c}{x & (x-1)} & Elimină ultimul bit 1 din $n$. Util și ca test dacă $n$ este putere a lui 2. \\
+    \hline
+  \end{tabular}
+
+  \caption{Operații pe măști de biți.}
+\end{table}
+
+\section{Numărarea biților de 1 dintr-o valoare (popcount)}
+
+De exemplu, pentru 187, care în binar este 10111011, dorim răspunsul 6. Vom discuta metodele de mai jos și vom studia codul. Puteți citi și \href{https://github.com/CatalinFrancu/nerdvana/blob/main/bit-hacks/popcount.cpp}{programul complet} care măsoară timpii de rulare.
+
+\subsection{Metoda naivă}
+
+Shiftăm în mod repetat numărul la dreapta și numărăm biții de 1.
+
+\begin{minted}{c}
+pop = 0;
+while (x) {
+  pop += x & 1;
+  x >>= 1;
+}
+\end{minted}
+
+\subsection{Metoda Kernighan}
+
+Eliminăm și contorizăm cîte un bit de 1.
+
+\subsection{Funcții built-in}
+
+Folosim funcțiile \mintinline{c}{__builtin_popcount} (pentru \mintinline{c}{int}) și \mintinline{c}{__builtin_popcountll} (pentru \mintinline{c}{long long}) sau \mintinline{c}{std::popcount} din STL. Atenție, aceasta din urmă apare doar în standardul C++20.
+
+\subsection{Tabel precalculat}
+
+Construim un tabel de 256 de valori care precalculează rezultatul pentru un octet. Extragem octeții numărului prin shiftare.
+
+\subsection{Tabel precalculat + conversie}
+
+Construim același tabel de 256 de valori. Extragem octeții numărului prin conversia la \mintinline{c}{char*}.
+
+\subsection{Calcul paralel}
+
+Iată o metodă bazată pe calcul paralel, care face \mintinline{c}{log(sizeof(n))} operații.
