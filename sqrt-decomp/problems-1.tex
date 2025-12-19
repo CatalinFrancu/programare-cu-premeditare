@@ -15,7 +15,7 @@ Să luăm în calcul soluția naivă: calculăm mex-ul matricei din colțul stî
 
 La fiecare translație, menținem într-o structură $S$ informații despre frecvența elementelor din matrice. Ștergem din structură elementele care ies din fereastră și le inserăm pe cele care intră în fereastră. Atunci complexitatea translatărilor va fi $\bigoh(mnk + ml)$. Ca să minimizăm efortul, rotim sau transpunem matricea cînd $k > l$. Astfel, $k \leq l$ și complexitatea translatărilor va fi $\bigoh(mn \sqrt{mn})$.
 
-Odată ce am adus raționamentul pînă aici, eu am și trimis o sursă, cu structura $S$ implementată naiv ca vector de frecvențe. Astfel m-am asigurat că restul programului funcționează, căci el are suficient de multă logică (matrice de dimensiuni arbitrare, transpoziții, șerpuire...). Deoarece am gîndit totul modular, am programat structura \mintinline{c}{frequency_tracker} să expună funcțiile \mintinline{c}{add}, \mintinline{c}{remove} și \mintinline{c}{mex}. Pentru versiunea optimizată, doar am rescris acele funcții.
+Odată ce am adus raționamentul pînă aici, eu am și trimis o sursă, cu structura $S$ implementată naiv ca vector de frecvențe. Astfel m-am asigurat că restul programului funcționează, căci el are suficient de multă logică (matrice de dimensiuni arbitrare, transpoziții, șerpuire...). Deoarece am gîndit totul modular, am programat structura \ccode{frequency_tracker} să expună funcțiile \ccode{add}, \ccode{remove} și \ccode{mex}. Pentru versiunea optimizată, doar am rescris acele funcții.
 
 Pentru punctaj maxim, ce ne dorim de la structura $S$? Dorim să facem $\bigoh(mn \sqrt{mn})$ inserări și ștergeri și $\bigoh(mn)$ calcule de mex. Rezultă că ne permitem $\bigoh(\sqrt{mn})$ per apel de mex, dar avem nevoie de $\bigoh(1)$ pe inserare și ștergere.
 
@@ -44,12 +44,12 @@ Dacă am vrea să optimizăm suma $k + n/k$, am alege $k=\sqrt{n} \approx 707$. 
 
 \subsubsection*{Detalii de implementare}
 
-Așadar, dorim o structură $S$ care să admită inserări, ștergeri, și numărarea elementelor mai mari sau egale cu o valoare dată. Eu am izolat această structură într-un \mintinline{c}{struct} și am scris o primă \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/giveaway/2-sqrt-naive.cpp#L9}{implementare naivă} ($S$ este doar un vector). Cu doar 5 linii de cod în plus, sursa naivă mă ajută să verific corectitudinea restului programului.
+Așadar, dorim o structură $S$ care să admită inserări, ștergeri, și numărarea elementelor mai mari sau egale cu o valoare dată. Eu am izolat această structură într-un \ccode{struct} și am scris o primă \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/giveaway/2-sqrt-naive.cpp#L9}{implementare naivă} ($S$ este doar un vector). Cu doar 5 linii de cod în plus, sursa naivă mă ajută să verific corectitudinea restului programului.
 
 A doua încercare a fost cu \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/giveaway/3-sqrt-set.cpp}{structuri de date} din STL, care trece în 3 secunde. Dar este nevoie să memorați papagalicește două noțiuni (le vom relua în capitolele viitoare):
 
 \begin{enumerate}
-  \item \mintinline{c}{set}-ul simplu nu este suficient, căci el poate să caute valoarea $c$, dar nu și să numere elementele mai mari sau egale cu $c$. Este nevoie de structuri cu statistici de ordine (PBDS).
+  \item \ccode{set}-ul simplu nu este suficient, căci el poate să caute valoarea $c$, dar nu și să numere elementele mai mari sau egale cu $c$. Este nevoie de structuri cu statistici de ordine (PBDS).
 
   \item Blocurile pot conține valori egale, deci ne trebuie un multiset. Multisetul PBDS este o încropeală, iar ștergerea trebuie rescrisă.
 \end{enumerate}
@@ -103,7 +103,7 @@ Să descompunem vectorul în bucăți de mărime $\sqrt{n}$. Pentru o interogare
 
 Astfel ne vine ideea să calculăm o singură informație pentru toate pozițiile din stînga lui $l$. Fie $left[x]$ ultima poziție (înaintea lui $l$) pe care apare valoarea $x$. Evident, putem menține vectorul $left$ în $\bigoh(1)$ pe măsură ce $l$ avansează.
 
-Capătul drept al interogării poate varia oricum, și aici intervine descompunerea în radical. Fie $best[b]$ cea mai mică soluție cunoscută pînă în prezent între orice valoare din blocul $b$ și orice valoare din stînga lui $l$. Putem menține vectorul $best$ în $\bigoh(1)$ per bloc pe măsură ce $l$ avansează (așadar efort $\bigoh(n \sqrt{n})$ efort global). Pentru aceasta, trebuie să cunoaștem, pentru elementul în curs de procesare $v[l]$, cea mai din stînga apariție a sa în fiecare bloc următor. Putem precalcula această informație la început, într-o manieră similară cu colectarea listelor de apariții a fiecărei valori. Vezi vectorul \mintinline{c}{ptr} și funcția \mintinline{c}{preprocess_values}.
+Capătul drept al interogării poate varia oricum, și aici intervine descompunerea în radical. Fie $best[b]$ cea mai mică soluție cunoscută pînă în prezent între orice valoare din blocul $b$ și orice valoare din stînga lui $l$. Putem menține vectorul $best$ în $\bigoh(1)$ per bloc pe măsură ce $l$ avansează (așadar efort $\bigoh(n \sqrt{n})$ efort global). Pentru aceasta, trebuie să cunoaștem, pentru elementul în curs de procesare $v[l]$, cea mai din stînga apariție a sa în fiecare bloc următor. Putem precalcula această informație la început, într-o manieră similară cu colectarea listelor de apariții a fiecărei valori. Vezi vectorul \ccode{ptr} și funcția \ccode{preprocess_values}.
 
 Cu aceste informații, răspunsul pentru interogarea curentă $[l,r]$ este minimul dintre:
 

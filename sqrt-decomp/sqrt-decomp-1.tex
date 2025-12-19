@@ -64,7 +64,7 @@ void point_add(int pos, int val) {
 
 Vă recomand să lucrați pe intervale închise la stînga, deschise la dreapta, ca să simplificați aritmetica.
 
-Încheiem secțiunea cu observația că funcția \mintinline{c}{range_sum} are complexitatea $\bigoh(k + n/k)$: Ea iterează naiv prin blocurile acoperite parțial, așadar $\bigoh(k)$, și iterează rapid prin blocurile acoperite complet, așadar $\bigoh(n/k)$. Alegem $k = \sqrt{n}$ ca să minimizăm acea sumă, dar vom vedea în unele exemple că pot lua naștere și alte sume care duc la valori diferite pentru $k$.
+Încheiem secțiunea cu observația că funcția \ccode{range_sum} are complexitatea $\bigoh(k + n/k)$: Ea iterează naiv prin blocurile acoperite parțial, așadar $\bigoh(k)$, și iterează rapid prin blocurile acoperite complet, așadar $\bigoh(n/k)$. Alegem $k = \sqrt{n}$ ca să minimizăm acea sumă, dar vom vedea în unele exemple că pot lua naștere și alte sume care duc la valori diferite pentru $k$.
 
 \section{Actualizări pe interval}
 

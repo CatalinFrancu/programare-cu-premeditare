@@ -39,7 +39,7 @@ $$\bigoh((q + n) \sqrt{n} f(n))$$
 
 \subsection{Optimizare de viteză}
 
-Nu ne costă aproape nimic (doar un \mintinline{c}{if} în plus la sortare) ca, în cadrul unui bloc, să ordonăm interogările astfel:
+Nu ne costă aproape nimic (doar un \ccode{if} în plus la sortare) ca, în cadrul unui bloc, să ordonăm interogările astfel:
 
 \begin{itemize}
   \item crescător după capătul drept în blocurile impare;
@@ -48,7 +48,7 @@ Nu ne costă aproape nimic (doar un \mintinline{c}{if} în plus la sortare) ca, 
 
 Atunci nu mai plătim costul deplasării spre stînga „în gol” a capătului drept al intervalului curent. Iată \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/dquery/cata-mo-v2.cpp#L42}{o sursă} cu această optimizare la problema Dquery. Timpii de rulare nu diferă, dar în general optimizarea poate ajuta.
 
-De amorul artei, strict pentru problema Dquery, am \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/dquery/cata-mo-v3.cpp}{normalizat} valorile din vectorul dat. Pot fi cel mult 30.000 de valori distincte, ceea ce înseamnă că vectorul de frecvențe (pe \mintinline{c}{short}) poate ocupa doar 60 kB, în loc de 2 MB. Din nou, timpii nu diferă.
+De amorul artei, strict pentru problema Dquery, am \href{https://github.com/CatalinFrancu/nerdvana/blob/main/problems/spoj/dquery/cata-mo-v3.cpp}{normalizat} valorile din vectorul dat. Pot fi cel mult 30.000 de valori distincte, ceea ce înseamnă că vectorul de frecvențe (pe \ccode{short}) poate ocupa doar 60 kB, în loc de 2 MB. Din nou, timpii nu diferă.
 
 Aș preciza, tot pentru Dquery, că soluțiile țin foarte bine pasul cu soluția cu AIB (70-75 ms în loc de 60-65).
 

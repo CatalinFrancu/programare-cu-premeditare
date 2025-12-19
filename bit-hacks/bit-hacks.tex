@@ -9,18 +9,18 @@ Această listă este inspirată din articolele \href{https://graphics.stanford.e
 \subsection{Noțiuni de bază}
 
 \begin{itemize}
-  \item C are suport pentru constante hexazecimale (\mintinline{c}{0xdeadbeef}) și binare (\mintinline{c}{0b1100101101}).
+  \item C are suport pentru constante hexazecimale (\ccode{0xdeadbeef}) și binare (\ccode{0b1100101101}).
 
   \item De asemenea, puteți tipări valori în bazele 8 și 16 cu \href{https://linux.die.net/man/3/printf}{printf} sau \href{https://en.cppreference.com/w/cpp/io/manip/hex}{folosind STL}.
 
-  \item O cifră hexa are 4 biți în baza 2. Deci \mintinline{c}{0xce = 0b1100'1110}.
+  \item O cifră hexa are 4 biți în baza 2. Deci \ccode{0xce = 0b1100'1110}.
 
-  \item Uneori valorile hexa ajută la claritate. \mintinline{c}{0xff'ffff} arată că avem 24 de biți 1, poate mai clar decît \mintinline{c}{((1 << 24) - 1)}. Dar depinde de gusturi.
+  \item Uneori valorile hexa ajută la claritate. \ccode{0xff'ffff} arată că avem 24 de biți 1, poate mai clar decît \ccode{((1 << 24) - 1)}. Dar depinde de gusturi.
 \end{itemize}
 
 \subsection{Măști}
 
-Conceptual, o mască pe $n$ biți este un număr binar care descrie o submulțime a unei mulțimi cu $n$ elemente, indexate de la $0$ la $n-1$. Bitul $k$ are valoarea 1 dacă și numai dacă submulțimea descrisă include elementul $k$. Măștile se pretează la submulțimi mici (32 sau 64 de biți). Dincolo de aceasta avem nevoie de vectori de măști (cum ar fi \mintinline{c}{bitset} din STL).
+Conceptual, o mască pe $n$ biți este un număr binar care descrie o submulțime a unei mulțimi cu $n$ elemente, indexate de la $0$ la $n-1$. Bitul $k$ are valoarea 1 dacă și numai dacă submulțimea descrisă include elementul $k$. Măștile se pretează la submulțimi mici (32 sau 64 de biți). Dincolo de aceasta avem nevoie de vectori de măști (cum ar fi \ccode{bitset} din STL).
 
 Exemple din lumea reală:
 
@@ -35,7 +35,7 @@ Exemple din lumea reală:
 Măștile au anumite avantaje, cum ar fi:
 
 \begin{enumerate}
-  \item Este foarte ușor să facem operații de intersecție, reuniune, diferență folosind operatorii pe biți \mintinline{c}{&}, \mintinline{c}{|}, \mintinline{c}{^} și \mintinline{c}{~}.
+  \item Este foarte ușor să facem operații de intersecție, reuniune, diferență folosind operatorii pe biți \ccode{&}, \ccode{|}, \ccode{^} și \ccode{~}.
 
   \item Valoarea numerică a măștii creează o bijecție naturală între mulțimea $\{0, 1, \dots, 2^n - 1\}$ și mulțimea submulțimilor unei mulțimi. Deci putem stoca eficient informații despre toate submulțimile într-un vector de $2^n$ elemente indexate după ordinea lexicografică a submulțimii.
 \end{enumerate}
@@ -47,14 +47,14 @@ Măștile au anumite avantaje, cum ar fi:
   \begin{tabular}{SlSl}
     \textbf{operația} & \textbf{efectul} \\
     \hline
-    \mintinline{c}{x & 31} sau \mintinline{c}{x & 0x1f} & Restul împărțirii lui $x$ la 32. \\
-    \mintinline{c}{x & 1} & Test de (im)paritate. \\
-    \mintinline{c}{x & (1 << k)} & Test dacă al $k$-lea bit este 1. Atenție, nu returnează 0/1, ci 0/$2^k$. \\
-    \mintinline{c}{(x >> k) & 1} & Test dacă al $k$-lea bit este 1. Returnează 0/1. \\
-    \mintinline{c}{x |= (1 << k)} & Setează bitul $k$ pe 1. \\
-    \mintinline{c}{x &= ~(1 << k)} & Setează bitul $k$ pe 0. \\
-    \mintinline{c}{x ^= (1 << k)} & Neagă bitul $k$.\\
-    \mintinline{c}{x & (x-1)} & Elimină ultimul bit 1 din $n$. Util și ca test dacă $n$ este putere a lui 2. \\
+    \ccode{x & 31} sau \ccode{x & 0x1f} & Restul împărțirii lui $x$ la 32. \\
+    \ccode{x & 1} & Test de (im)paritate. \\
+    \ccode{x & (1 << k)} & Test dacă al $k$-lea bit este 1. Atenție, nu returnează 0/1, ci 0/$2^k$. \\
+    \ccode{(x >> k) & 1} & Test dacă al $k$-lea bit este 1. Returnează 0/1. \\
+    \ccode{x |= (1 << k)} & Setează bitul $k$ pe 1. \\
+    \ccode{x &= ~(1 << k)} & Setează bitul $k$ pe 0. \\
+    \ccode{x ^= (1 << k)} & Neagă bitul $k$.\\
+    \ccode{x & (x-1)} & Elimină ultimul bit 1 din $n$. Util și ca test dacă $n$ este putere a lui 2. \\
     \hline
   \end{tabular}
 
@@ -83,7 +83,7 @@ Eliminăm și contorizăm cîte un bit de 1.
 
 \subsection{Funcții built-in}
 
-Folosim funcțiile \mintinline{c}{__builtin_popcount} (pentru \mintinline{c}{int}) și \mintinline{c}{__builtin_popcountll} (pentru \mintinline{c}{long long}) sau \mintinline{c}{std::popcount} din STL. Atenție, aceasta din urmă apare doar în standardul C++20.
+Folosim funcțiile \ccode{__builtin_popcount} (pentru \ccode{int}) și \ccode{__builtin_popcountll} (pentru \ccode{long long}) sau \ccode{std::popcount} din STL. Atenție, aceasta din urmă apare doar în standardul C++20.
 
 \subsection{Tabel precalculat}
 
@@ -91,8 +91,8 @@ Construim un tabel de 256 de valori care precalculează rezultatul pentru un oct
 
 \subsection{Tabel precalculat + conversie}
 
-Construim același tabel de 256 de valori. Extragem octeții numărului prin conversia la \mintinline{c}{char*}.
+Construim același tabel de 256 de valori. Extragem octeții numărului prin conversia la \ccode{char*}.
 
 \subsection{Calcul paralel}
 
-Iată o metodă bazată pe calcul paralel, care face \mintinline{c}{log(sizeof(n))} operații.
+Iată o metodă bazată pe calcul paralel, care face \ccode{log(sizeof(n))} operații.

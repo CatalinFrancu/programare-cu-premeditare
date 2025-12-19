@@ -57,7 +57,7 @@ while (n & (n - 1)) {
 }
 \end{minted}
 
-Mai concis, putem folosi funcția \mintinline{c}{__builtin_clz(x)}, care ne spune cu cîte zerouri începe numărul \mintinline{c}{x}:
+Mai concis, putem folosi funcția \ccode{__builtin_clz(x)}, care ne spune cu cîte zerouri începe numărul \ccode{x}:
 
 \begin{minted}{c}
 n = 1 << (32 - __builtin_clz(n - 1));
@@ -97,7 +97,7 @@ void add(int pos, int delta) {
 }
 \end{minted}
 
-Apropo de \textit{clean code}: Remarcați că am denumit funcțiile \mintinline{c}{set} și \mintinline{c}{add}, nu le-am denumit pe ambele \mintinline{c}{update}. Astfel am evidențiat diferența dintre ele.
+Apropo de \textit{clean code}: Remarcați că am denumit funcțiile \ccode{set} și \ccode{add}, nu le-am denumit pe ambele \ccode{update}. Astfel am evidențiat diferența dintre ele.
 
 \subsection{Construcția în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)}}
 
