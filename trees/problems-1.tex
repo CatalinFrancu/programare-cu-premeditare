@@ -1,0 +1,143 @@
+\chapter{Unelte și algoritmi esențiali}
+
+Acest curs presupune deja cunoscute reprezentarea arborilor și parcurgerile DFS și BFS. De aceea, în acest capitol vom prezenta doar o unealtă pentru depanare (generatoarele de arbori) și vom rezolva cîteva probleme de bază.
+
+\section{Generatoare de arbori aleatorii}
+
+Generarea unor arbori aleatorii este și interesantă din punct de vedere teoretic, dar vă poate ajuta și la depanarea problemelor pe arbori.
+
+\label{problem:tree-gen-basic}
+Dacă nu ne interesează forma arborelui, generatoarele de arbori sînt la fel de ușor de scris ca generatoarele de vectori + interogări. Iată \hyperref[code:tree-gen-basic]{un generator de bază} care generează un arbore cu $n$ noduri și $k$ interogări de tip pereche de noduri. L-am folosit la problema \href{https://usaco.org/index.php?page=viewproblem2&cpid=576}{Max Flow} (USACO).
+
+În schimb, dacă dorim să testăm viteza unei soluții, sau dacă compunem o problemă și dorim date de test greu de fentat, avem nevoie ca:
+
+\begin{itemize}
+  \item Arborele să aibă un lanț foarte lung.
+  \item Arborele să aibă un nod cu foarte mulți vecini.
+  \item Aceste structuri să nu poată fi decelate din datele de intrare (de exemplu, lanțul să nu conțină fix nodurile $1, 2, \dots, n/2$.
+  \item Generarea să dureze $\mathcal{O}(n)$.
+\end{itemize}
+
+\label{problem:tree-gen-advanced}
+Iată \hyperref[code:tree-gen-advanced]{un generator avansat} care răspunde acestor nevoie și poate genera, la cerere, și interogări sau actualizări. El poate fi apelat în trei moduri și poate fi ușor adaptat la altele:
+
+\begin{enumerate}
+  \item Doar structura arborelui, fără valori în noduri, fără operații.
+  \item Valori inițiale în fiecare nod, actualizări în noduri, interogări în noduri.
+  \item Fără valori în noduri, interogări pe căi (perechi de noduri).
+\end{enumerate}
+
+El acceptă trei parametri pentru definirea structurii:
+
+\begin{enumerate}
+  \item $n$: numărul de noduri;
+  \item $c$: lungimea minimă garantată a cel puțin unui lanț;
+  \item $d$: gradul minim garantat al cel puțin unui nod.
+\end{enumerate}
+
+Generatorul funcționează astfel:
+
+\begin{itemize}
+  \item Generează o permutare aleatorie a nodurilor.
+  \item Unește primele $c$ noduri în lanț.
+  \item Unește următoarele $n - d - c$ noduri de noduri dinaintea lor, alese aleatoriu.
+  \item Unește ultimele $d$ noduri de un nod dintre primele $n - d$, ales aleatoriu.
+  \item După ce a generat cele $n-1$ muchii, le amestecă, astfel încît primele $c-1$ muchii tipărite să nu formeze un lanț etc.
+\end{itemize}
+
+\section{Probleme}
+
+\subsection{Problema Subordinates (CSES)}
+\label{problem:subordinates}
+
+\href{https://cses.fi/problemset/task/1674}{enunț}
+$\bullet$
+\hyperref[code:subordinates]{surse}
+
+Cerința este clasică: aflarea mărimii subarborelui fiecărui nod. Am inclus două implementări: cu vectori STL și cu liste înlănțuite scrise de la zero. Implementarea cu liste este de două ori mai rapidă.
+
+\subsection{Problema Tree Matching (CSES)}
+\label{problem:tree-matching}
+
+\href{https://cses.fi/problemset/task/1130}{enunț}
+$\bullet$
+\hyperref[code:tree-matching]{sursă}
+
+Problema se rezolvă cu un singur DFS. Ea este un bun exemplu de raționament recursiv pe arbore. Ca în multe alte situații, putem trata nodul curent în relație cu fiul său (dacă nodul și fiul sînt necuplați, cuplează-i) sau în raport cu părintele (dacă nodul și părintele sînt necuplați, cuplează-i).
+
+\subsection{Problema Tree Diameter (CSES)}
+\label{problem:tree-diameter}
+
+\href{https://cses.fi/problemset/task/1131}{enunț}
+$\bullet$
+\hyperref[code:tree-diameter]{surse}
+
+Există două soluții relativ diferite. Vom lua fără demonstrație soluția cu două parcurgeri DFS:
+
+\begin{itemize}
+  \item Facem un DFS pornind din orice nod $x$. Fie $a$ nodul cel mai depărtat de $x$.
+  \item Facem un al doilea DFS pornind din $a$. Fie $b$ nodul cel mai depărtat de $a$.
+  \item $a \rightsquigarrow b$ este unul dintre diametrele arborelui.
+\end{itemize}
+
+Soluția cu o singură parcurgere este cu 20\% mai rapidă (ambele neoptimizate). Implementăm recursiv observația că diametrul constă din două lanțuri descendente care pornesc dintr-un strămoș comun $u$. (Este ușor de tratat și cazul cînd diametrul este doar un lanț pornind din rădăcină, considerînd atunci al doilea lanț ca fiind rădăcina însăși, o cale de lungime zero.) Atunci fiecare nod are două sarcini:
+
+\begin{itemize}
+  \item Să actualizeze un maxim global cu suma maximă a căilor raportate de oricare doi fii distincți. La fiecare cale, $u$ adaugă $1$ (muchia care pleacă din $u$ însuși).
+  \item Să raporteze la părinte distanța maximă de la $u$ pînă la orice frunză din subarbore.
+\end{itemize}
+
+Ambele soluții trebuie să fie scurte (5-6 linii în plus față de șablonul de declarații, citire, DFS).
+
+Discuție secundară: pentru claritate, \ccode{diam} nu trebuia să fie variabilă globală, ci DFS-ul trebuia să-l returneze, ca maxim dintre valorile raportate de fii. Pentru viteză, însă, și pentru economisirea memoriei pe stivă, cred că putem face concesia să-l declarăm pe \ccode{diam} global. Cititorii mai pedanți decît mine \emoji{grinning-face-with-sweat} pot încapsula \ccode{diam} și parcurgerea DFS într-o clasă.
+
+\subsection{Problema Tree Distances II (CSES)}
+\label{problem:tree-distances-2}
+
+\href{https://cses.fi/problemset/task/1133}{enunț}
+$\bullet$
+\hyperref[code:tree-distances-2]{sursă}
+
+Pentru un nod fixat (să zicem $1$), putem calcula răspunsul cu un singur DFS. Apoi, vom introduce un concept întîlnit ocazional: recalcularea unei valori la schimbarea rădăcinii. Să spunem că suma cerută pentru nodul $u$ este $S_u$ și dorim să o calculăm pe $S_v$ pentru nodul $v$, vecin cu $u$. Să spunem că, raportat la muchia $u-v$, de partea lui $u$ avem $n_u$ noduri, iar de partea lui $v$ avem $n_v = n - n_u$ noduri. Atunci, ca să trecem din $S_u$ în $S_v$, observăm că:
+
+\begin{itemize}
+  \item pentru $n_v$ noduri distanțele scad cu 1;
+  \item pentru $n_u$ noduri distanțele cresc cu 1;
+\end{itemize}
+
+Rezultă tranziția simplă $S_v = S_u - n_v + n_u = S_u + n - 2 n_v$.
+
+Dacă facem toate tranzițiile dinspre rădăcina inițială ($1$) spre fii, atunci $n_v$ va fi întotdeauna mărimea subarborelui lui $v$.
+
+\subsection{Problema White-Black Balanced Subtrees (Codeforces)}
+\label{problem:white-black-balanced-subtrees}
+
+\href{https://codeforces.com/contest/1676/problem/G}{enunț}
+$\bullet$
+\hyperref[code:white-black-balanced-subtrees]{sursă}
+
+Includ această problemă pentru a discuta o altă parcurgere decît DFS, în cazul în care arborele este dat printr-un vector de părinți. Am ales o problemă simplă. Pentru una cu mai multă substanță, vedeți \href{https://kilonova.ro/problems/67}{Arbsumpow} (baraj ONI 2021).
+
+Avantajul acestei reprezentări este că simplitatea și memoria redusă: $n-1$ întregi în loc de $2(n-1)$.
+
+Desigur, puteți converti formatul dat la cel obișnuit (liste de vecini). Dar uneori vectorul de părinți este suficient. În multe probleme trebuie să calculăm pentru fiecare nod o valoare care depinde, recurent, de valorile fiilor. Atunci putem folosi codul:
+
+\begin{minted}{c}
+for (int u = 1; u <= n; u++) {
+  scanf("%d", &p[u]);
+  num_children[p[u]]++;
+}
+
+for (int u = 1; u <= n; u++) {
+  int s = u;
+  while (s && !num_children[s]) {
+    process(s);  // raportează la părinte ce trebuie raportat
+    s = p[s];
+    num_children[s]--;
+  }
+}
+\end{minted}
+
+Rolul funcției \ccode{process} este să raporteze la părinte informațiile dintr-un nod. Valoarea \ccode{num_children[u]} arată cîți fii ai lui \ccode{u} încă nu și-au raportat informațiile. Astfel, cînd îi va veni rîndul părintelui să fie procesat, el va fi acumulat informațiile de la toți fiii.
+
+Ordinea nodurilor este \textit{bottom-up}. Programul încearcă vizitarea fiecărui nod de cel mult două ori: fie cînd îi vine rîndul în ordine numerică, fie în momentul în care ultimul său fiu este vizitat.
