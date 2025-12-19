@@ -138,6 +138,6 @@ for (int u = 1; u <= n; u++) {
 }
 \end{minted}
 
-Rolul funcției \ccode{process} este să raporteze la părinte informațiile dintr-un nod. Valoarea \ccode{num_children[u]} arată cîți fii ai lui \ccode{u} încă nu și-au raportat informațiile. Astfel, cînd îi va veni rîndul părintelui să fie procesat, el va fi acumulat informațiile de la toți fiii.
+Rolul funcției \ccode{process} este să raporteze la părinte informațiile dintr-un nod. Pe parcurs, valoarea \ccode{num_children[u]} arată cîți fii ai lui \ccode{u} încă nu și-au raportat informațiile. Astfel, cînd îi va veni rîndul părintelui să fie procesat, el va fi acumulat informațiile de la toți fiii.
 
 Ordinea nodurilor este \textit{bottom-up}. Programul încearcă vizitarea fiecărui nod de cel mult două ori: fie cînd îi vine rîndul în ordine numerică, fie în momentul în care ultimul său fiu este vizitat.

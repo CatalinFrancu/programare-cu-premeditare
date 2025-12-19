@@ -1,0 +1,39 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    tree/.style={
+      circle,
+      draw,
+      font=\Large,
+      inner sep=2pt,
+      minimum size=22pt,
+    },
+    level distance=20mm,
+    level 1/.style={sibling distance=60mm},
+    level 2/.style={sibling distance=30mm}
+    ]
+    \node[tree] (n3) {3}
+    child {node[tree] (n1) {1}
+      child {node[tree] (n6) {6}}
+      child {node[tree] (n2) {2}}
+    }
+    child {node[tree] (n5) {5}
+      child {node[tree] (n8) {8}}
+      child {node[tree] (n4) {4}}
+    }
+    child {node[tree] (n7) {7}};
+
+    \node[right = 1mm of n3] {$t_i = 1$, $t_o = 16$};
+    \node[right = 1mm of n1] {$t_i = 2$, $t_o = 7$};
+    \node[below = 1mm of n6] {$t_i = 3$, $t_o = 4$};
+    \node[below = 1mm of n2] {$t_i = 5$, $t_o = 6$};
+    \node[right = 1mm of n5] {$t_i = 8$, $t_o = 13$};
+    \node[below = 1mm of n8] {$t_i = 9$, $t_o = 10$};
+    \node[below = 1mm of n4] {$t_i = 11$, $t_o = 12$};
+    \node[below = 1mm of n7] {$t_i = 14$, $t_o = 15$};
+  \end{tikzpicture}
+
+  \caption{Timpii de intrare și de ieșire din noduri, varianta 1.}
+  \label{fig:tree-times-1}
+\end{figure}

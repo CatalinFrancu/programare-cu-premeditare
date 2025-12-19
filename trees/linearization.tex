@@ -1,0 +1,67 @@
+\chapter{Liniarizarea arborilor}
+
+Să considerăm un arbore cu $n$ noduri și cu valori în noduri. Liniarizarea acestui arbore este o parcurgere DFS care calculează informații suplimentare. Putem folosi aceste informații ca să gestionăm operații pe arbore, cum ar fi:
+
+\begin{itemize}
+  \item Modificarea valorii unui nod sau a unei muchii.
+  \item Modificarea valorilor pe calea de la un nod la rădăcină.
+  \item Modificarea valorilor în tot subarborele unui nod.
+  \item Interogări despre valoarea unui nod.
+  \item Interogări despre valorile pe calea de la un nod spre rădăcină.
+  \item Interogări despre valorile din subarborele unui nod.
+\end{itemize}
+
+\section{Timpi de intrare și de ieșire din DFS}
+
+Să considerăm următoarea parcurgere DFS. Ea este elementară, cu o singură noutate: menține un contor global pe care îl incrementează la intrarea și la ieșirea dintr-un nod. (Din motive inginerești, ca să evidențiez că variabila \ccode{time} este folosită doar în funcția \ccode{dfs}, nu am declarat-o globală, ci statică în funcție. Efectul este același.)
+
+\begin{minted}{c}
+void dfs(int u, int parent) {
+  static int time = 0;
+
+  time_in[u] = ++time;
+  for (int v: adj[u]) {
+    if (v != parent) {
+      dfs(v, u);
+    }
+  }
+  time_out[u] = ++time;
+}
+\end{minted}
+
+Dacă vreți, \ccode{time} este un metronom care bate la fiecare parcurgere a unei muchii, fie în jos (la intrarea într-un nod), fie în sus (la ieșirea dintr-un nod). Toate valorile din vectorii \ccode{time_in} și \ccode{time_out} vor fi distincte și cuprinse între $1$ și $2n$. Iată un exemplu.
+
+\import{./figures}{tree-times-1.tex}
+
+Într-o altă variantă, incrementăm timpul numai la intrarea în nod, nu și la ieșire. Atunci în vectorii $t_i$ și $t_o$ vom avea valori între $1$ și $n$. Iată aceste valori pentru același arbore:
+
+\import{./figures}{tree-times-2.tex}
+
+\section{Testul de strămoș}
+
+O aplicație directă a timpilor de intrare și de ieșire este că putem decide în $\bigoh(1)$ dacă un nod $u$ este strămoș al altui nod $v$. Este necesar ca $t_i[u] < t_i[v] < t_o[v] < t_o[u]$. Inegalitatea poate fi strictă ($<$) sau permisivă ($\leq$) în funcție de varianta aleasă mai sus și dacă dorim ca $u$ să fie considerat propriul său strămoș sau nu.
+
+\section{Liniarizarea. Tipuri de liniarizare}
+
+Liniarizarea unui arbore este un vector. Obținem acest vector printr-o parcurgere DFS în care emitem, la anumite momente, numărul nodului curent. Acest instrument puternic ne permite să rezolvăm probleme pe arbori folosind structuri familiare pe vectori: AIB, arbori de segmente, căutări binare, algoritmul lui Mo...
+
+Există trei tipuri de liniarizări, foarte asemănătoare și la fel de ușor de obținut. Fiecare este utilă în alte situații.
+
+\subsection{Liniarizarea DFS}
+
+În această liniarizare, emitem nodul curent (adică îl adăugăm la vectorul rezultat) cînd intrăm în nod. Pentru arborele din Figura \ref{fig:tree-times-2}, vectorul este:
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{SlSlSlSlSlSlSlSlSl}
+    \textbf{poziție} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+    \hline
+    \textbf{nod} & 3 & 1 & 6 & 2 & 5 & 8 & 4 & 7 \\
+  \end{tabular}
+
+  \caption{Liniarizarea de tip DFS.}
+\end{table}
+
+Cu alte cuvinte, această liniarizare constă din nodurile arborelui în ordinea în care le descoperă DFS-ul. Tocmai de aceea, fiecare nod $u$ apare în vector la poziția $t_i[u]$ (în varianta 2, din figura \ref{fig:tree-times-2}). De altfel, pentru acest tip de liniarizare în practică nu vom construi efectiv vectorul, ci doar vectorii $t_i$ și $t_o$.
+
+O observație importantă pentru toate liniarizările este că subarborele oricărui nod corespunde unui interval contiguu din vector. De exemplu, nodurile 5, 8 și 4 apar pe poziții consecutive. Mai mult decît atît, subarborele oricărui nod $u$ acoperă pozițiile dintre $t_i[u]$ și $t_o[u]$ inclusiv. De exemplu, subarborele nodului 5 ocupă pozițiile de la 5 la 7.
