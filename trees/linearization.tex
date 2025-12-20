@@ -53,7 +53,7 @@ Există trei tipuri de liniarizări, foarte asemănătoare și la fel de ușor d
 
 \begin{table}[!htbp]
   \centering
-  \begin{tabular}{SlSlSlSlSlSlSlSlSl}
+  \begin{tabular}{ScScScScScScScScSc}
     \textbf{poziție} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
     \hline
     \textbf{nod} & 3 & 1 & 6 & 2 & 5 & 8 & 4 & 7 \\
@@ -64,4 +64,40 @@ Există trei tipuri de liniarizări, foarte asemănătoare și la fel de ușor d
 
 Cu alte cuvinte, această liniarizare constă din nodurile arborelui în ordinea în care le descoperă DFS-ul. Tocmai de aceea, fiecare nod $u$ apare în vector la poziția $t_i[u]$ (în varianta 2, din figura \ref{fig:tree-times-2}). De altfel, pentru acest tip de liniarizare în practică nu vom construi efectiv vectorul, ci doar vectorii $t_i$ și $t_o$.
 
-O observație importantă pentru toate liniarizările este că subarborele oricărui nod corespunde unui interval contiguu din vector. De exemplu, nodurile 5, 8 și 4 apar pe poziții consecutive. Mai mult decît atît, subarborele oricărui nod $u$ acoperă pozițiile dintre $t_i[u]$ și $t_o[u]$ inclusiv. De exemplu, subarborele nodului 5 ocupă pozițiile de la 5 la 7.
+O observație importantă pentru toate liniarizările este că subarborele oricărui nod corespunde unui interval contiguu din vector. De exemplu, nodurile 5, 8 și 4 apar pe poziții consecutive. În liniarizarea DFS, subarborele oricărui nod $u$ acoperă pozițiile dintre $t_i[u]$ și $t_o[u]$ inclusiv. De exemplu, subarborele nodului 5 ocupă pozițiile de la 5 la 7. Pentru a exploata această structură, în probleme de arbori cu valori în noduri vom stoca într-un vector valoarea fiecărui nod $u$ pe poziția $t_i[u]$. Atunci, folosind structurile cunoscute pe vector, putem face actualizări și interogări pe subarbori întregi.
+
+\subsection{Liniarizarea Euler}
+
+În această liniarizare, emitem nodul curent de două ori: la intrare și la ieșire. Pentru arborele din Figura \ref{fig:tree-times-1}, vectorul este:
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{ScScScScScScScScScScScScScScScScSc}
+    \textbf{poziție} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 & 16\\
+    \hline
+    \textbf{nod} & 3 & 1 & 6 & 6 & 2 & 2 & 1 & 5 & 8 & 8 & 4 & 4 & 5 & 7 & 7 & 3\\
+  \end{tabular}
+
+  \caption{Liniarizarea de tip Euler.}
+\end{table}
+
+Observăm că pozițiile nodului $u$ în vector sînt $t_i[u]$ și $t_o[u]$. Vom studia probleme care arată cum folosim această liniarizare pentru a admite actualizări și interogări pe calea de la rădăcină la un nod oarecare $u$.
+
+\subsection{Liniarizarea Euler cu repetiție}
+
+Pe Internet nu am găsit o distincție clară între liniarizarea anterioară și aceasta, așa că am inventat un nume, sper că acceptabil. În această liniarizare, emitem nodul curent la intrare și la revenirea din fiecare fiu. În particular, emitem frunzele o singură dată. Pentru arborele din Figura \ref{fig:tree-times-1}, vectorul este:
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{ScScScScScScScScScScScScScScScSc}
+    \textbf{poziție} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15\\
+    \hline
+    \textbf{nod} & 3 & 1 & 6 & 1 & 2 & 1 & 3 & 5 & 8 & 5 & 4 & 5 & 3 & 7 & 3\\
+  \end{tabular}
+
+  \caption{Liniarizarea de tip Euler cu repetiție.}
+\end{table}
+
+Lungimea acestei liniarizări este întotdeauna $2n - 1$. Emitem fiecare nod la intrare, ceea ce ocupă $n$ poziții. În plus, emitem fiecare nod de atîtea ori cîți fii are. Dar suma numărului de fii pentru toate nodurile este $n - 1$, deoarece fiecare nod este fiul cuiva, cu excepția rădăcinii.
+
+Folosim această liniarizare cu preponderență pentru interogări de LCA (engl. \textit{lowest common ancestor}), pe care le vom studia în capitolul FIXME.
