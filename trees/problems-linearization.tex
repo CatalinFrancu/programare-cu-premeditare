@@ -1,0 +1,56 @@
+\section{Probleme}
+
+\subsection{Problema Tree Queries (Codeforces)}
+\label{problem:tree-queries}
+
+\href{https://codeforces.com/contest/1328/problem/E}{enunț}
+$\bullet$
+\hyperref[code:tree-queries]{sursă}
+
+Probabil am putea implementa următoarea soluție. Pentru fiecare interogare, pornim din cel mai de jos dintre noduri, mergînd pînă la rădăcină, și vedem dacă întîlnim toate celelalte noduri sau părinții acestora. Dar această soluție necesită $\mathcal{O}(n)$ per interogare pentru un arbore degenerat. Probabil ea poate fi adusă la $\mathcal{O}(\sqrt{n})$ sau $\mathcal{O}(\log n)$ prin tehnici mai complicate.
+
+În loc de acesta, să procedăm astfel. Fie $u$ cel mai de jos nod dintr-o interogare. Atunci toate celelalte noduri \textbf{sau} părinții lor trebuie să se afle pe calea de la $u$ la rădăcină. Cu alte cuvinte, să fie strămoși ai lui $u$. Mai mult, decizia se simplifică astfel: dacă un nod $v$ este pe calea de la $u$ la rădăcină, atunci și părintele lui $v$ se va afla pe calea de la $u$ la rădăcină. Deci este suficient să testăm doar părinții și să răspundem la întrebarea: Sînt părinții tuturor nodurilor dintr-o interogare strămoși ai celui mai de jos nod? (Complicația cu noduri și părinți este mai mult un \textit{red herring}, o diversiune care poate păcăli pe cineva.)
+
+Vom folosi testul de strămoș studiat anterior: $v$ este strămoș al lui $u$ dacă și numai dacă $t_i[v] < t_i[u] < t_o[u] < t_o[v]$.
+
+\subsubsection*{Detalii de implementare}
+
+Am preferat să declar variabila \ccode{time} statică, în interiorul funcției \ccode{euler_tour}, ca să evidențiez că nu este folosită altundeva.
+
+Nodurile dintr-o interogare nu trebuie stocate, sortate etc. Nu avem nevoie de adîncimea nodurilor. Pur și simplu îl reținem pe cel mai de jos găsit pînă atunci, fie el $l$. Cînd citim un nod nou, $u$, îi aflăm părintele $p$. Pot lua naștere trei cazuri:
+
+\begin{itemize}
+  \item Dacă $p$ este strămoș al lui $l$, atunci $l$ nu se modifică, iar calea care conține toate nodurile de pînă acum rămîne calea de la $l$ la rădăcină.
+  \item Dacă $l$ este strămoș al lui $p$, atunci $p$ îl înlocuiește pe $l$, iar calea care conține toate nodurile de pînă acum este calea de la $p$ la rădăcină.
+  \item Altfel nu există nicio cale care să le conțină pe $l$ și pe $p$, deci răspunsul la interogarea curentă este \texttt{NO}.
+\end{itemize}
+
+\subsection{Problema Subtree Queries (CSES)}
+\label{problem:subtree-queries}
+
+\href{https://cses.fi/problemset/task/1137}{enunț}
+$\bullet$
+\hyperref[code:subtree-queries]{sursă}
+
+Această problemă este o aplicație directă a liniarizării. Facem o liniarizare de tip DFS pentru a calcula doar vectorul $t_i$ (timpul de intrare în fiecare nod). Apoi construim un vector indexat după timp, în care notăm valoarea fiecărui nod $u$ la poziția $t_i[u]$. Peste acest vector construim un simplu arbore Fenwick sau orice structură preferați care să ofere actualizare punctuală + sumă pe interval.
+
+O altă variantă clasică a acestei probleme ar fi ca operațiile de actualizare să fie pe subarbore: atribuie tuturor nodurilor din subarborele lui $u$ o valoare $x$, incrementează toate nodurile cu o cantitate $x$ etc. Desigur, aceste operații s-ar traduce în operații de actualizare pe interval, pentru care putem folosi un arbore de intervale cu propagare \textit{lazy}.
+
+\subsection{Problema Path Queries (CSES)}
+\label{problem:path-queries}
+
+\href{https://cses.fi/problemset/task/1138}{enunț}
+$\bullet$
+\hyperref[code:path-queries]{sursă}
+
+Această problemă ne arată utilitatea liniarizării Euler. Să considerăm momentul în care DFS-ul intră în nodul $u$, adică $t_i[u]$. El corespunde prefixului din liniarizare de la poziția 1 pînă la poziția $t_i[u]$. Observăm că:
+
+\begin{enumerate}
+  \item Nodurile complet vizitate înainte de intrarea în $u$ (numite și \textit{noduri negre}) apar de cîte două ori.
+  \item Nodurile în curs de vizitare (calea de la $u$ la rădăcină, numite și \textit{noduri gri}) apar cîte o dată.
+  \item Nodurile încă nevizitate (numite și \textit{noduri albe}) nu apar niciodată.
+\end{enumerate}
+
+Putem exprima punctul (2) și în termeni de strămoși, discutați anterior: strămoșii lui $u$ sînt singurele noduri ale căror intervale cuprind intervalul lui $u$.
+
+De aici rezultă cum putem folosi paritatea aparițiilor ca să notăm informații de pe calea spre rădăcină. Notăm valoarea fiecărui nod $v$ cu semnul + la poziția $t_i[v]$ și cu semnul - la poziția $t_o[v]$. Astfel, suma prefixului $[1, t_i[u]]$ va fi exact suma valorilor pe calea de la $u$ la rădăcină.
