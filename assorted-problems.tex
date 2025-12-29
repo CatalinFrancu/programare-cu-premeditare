@@ -1,0 +1,48 @@
+\chapter{Probleme diverse}
+
+Acest capitol include probleme care fie necesită doar cunoștințe de bază (engl. \textit{core}, numite în supa culturală și probleme ad-hoc), fie necesită cunoștințe specifice, dar pentru care cursul încă nu are un capitol dedicat.
+
+\section{Problema Liars (Baraj ONI 2025)}
+\label{problem:liars}
+
+\href{https://kilonova.ro/problems/3730}{enunț}
+$\bullet$
+\hyperref[code:liars]{sursă}
+
+\subsection{Generalități}
+
+Problema este una relativ clasică de programare dinamică pe arbore, dar acest curs nu are un capitol dedicat subiectului. Poate într-o zi cu soare. Problema necesită multă atenție la implementare.
+
+Să începem cu numărarea configurațiilor posibile. În problemele de programare dinamică pe arbore, de obicei judecăm recursiv. Informația pe care o dorim să o calculăm într-un nod $u$ decurge din combinarea informațiilor similare calculate în fiecare dintre fiii lui $u$. În plus, \textbf{încercăm să decuplăm subarborele lui $u$ de restul arborelui}. Pentru aceasta, luăm în calcul toate posibilitățile pentru $u$ sau (în alte probleme) pentru părintele lui $u$. Nu știm care dintre posibilități ne va trebui în final, dar astfel ne asigurăm că problema nu „se revarsă” în restul arborelui.
+
+\subsection{Numărarea configurațiilor}
+
+În cazul de față, vom considera pe rînd că $u$ este sincer, apoi mincinos. Să considerăm cazul în care $u$ este sincer și fie $r$ numărul de vecini mincinoși ai lui $u$ (citit de la intrare). \textbf{În principiu} dorim să calculăm recursiv, pentru fiecare fiu $v$ al lui $u$, numărul de configurații valide pentru $v$ și subarborele său, apoi să contorizăm numărul de moduri în care putem alege $r$ fii mincinoși pentru $u$. Doar că ne mai lipsește o informație: valoarea de adevăr a părintelui lui $u$, fie el $p$. Dacă $p$ este mincinos, atunci lui $u$ îi mai trebuie doar $r-1$ fii mincinoși.
+
+Astfel ajungem la mulțimea finală de informații necesare în fiecare nod $u$, respectiv numărul de configurații valide pentru subarborele lui $u$ în patru cazuri:
+
+\begin{enumerate}
+  \item $u$ este sincer, iar $p$ este sincer;
+  \item $u$ este sincer, iar $p$ este mincinos;
+  \item $u$ este mincinos, iar $p$ este sincer;
+  \item $u$ este mincinos, iar $p$ este mincinos.
+\end{enumerate}
+
+Să considerăm acum că avem aceste 4 cantități calculate în toți fiii lui $u$. Dacă $u$ este sincer, atunci, după cum am spus, ne interesează în cîte moduri putem asigna $r$ sau $r-1$ fii mincinoși (în funcție de valoarea lui $p$. Dacă $u$ este mincinos, atunci dimpotrivă ne interesează să asignăm orice număr de fii mincinoși în afară de $r$, respectiv $r-1$. Această cantitate este mai simplu de calculat dacă aflăm numărul total de configurații în subarborele lui $u$ (indiferent de numărul de fii mincinoși) din care scădem cantitatea care l-ar face pe $u$ să fie sincer.
+
+Cum combinăm informațiile din fii? Limitele problemei ne permit complexitatea $\bigoh(d_u^2)$ în fiecare nod, unde cu $d_u$ am notat numărul de fii ai lui $u$. Aceasta ne permite o logică rezonabil de simplă (la acest nivel). Pentru nodul curent $u$, și pentru o valoare fixată pentru $u$, să calculăm numărul de configurații în care printre fiii lui $u$ există $0, 1, 2, d_u$ mincinoși.
+
+Aceasta este o subproblemă, tot de programare dinamică. Fie $C(i, j)$ numărul de moduri de a obține $j$ mincinoși folosind primii $i$ fii. Inițial, $C(0, 0) = 1$, căci cu primii 0 fii putem obține (doar) 0 mincinoși într-un singur mod. Apoi, $C(i, j)$ provine
+
+\begin{itemize}
+  \item din $C(i - 1, j)$ dacă asignăm al $i$-lea fiu ca fiind sincer;
+  \item din $C(i - 1, j - 1)$ dacă asignăm al $j$-lea fiu ca fiind mincinos.
+\end{itemize}
+
+\subsection{Găsirea unei configurații}
+
+Odată numărate configurațiile în această manieră \textit{bottom up}, putem găsi una dintre ele într-o manieră \textit{top down}. Ce valoare să punem în rădăcină (nodul 1)? Prin convenție, să asignăm rădăcina ca sinceră dacă ea raportează cel puțin o configurație validă în care ea este sinceră, altfel o asignăm ca mincinoasă. Din nou, efectul acestei asignări este că decuplăm subarborii rădăcinii.
+
+O dată fixată valoarea unui nod $u$, îi putem asigna și fiii. Acest proces este elementar, dar necesită un pic de cod, în două faze.
+
+În primă fază, asignăm toți fiii lui $u$ care sînt impuși. Dacă un fiu $v$ nu are nicio asignare în care el să fie sincer, iar părintele său $u$ să aibă valoarea fixată, atunci obligatoriu $v$ trebuie să fie mincinos. Similar decidem dacă $v$ trebuie să fie sincer. Dintre restul fiilor, care pot lua orice valoare, știm cîți trebuie să fie sinceri și cîți mincinoși, în funcție de numărul de vecini mincinoși declarați de $u$ și de valoarea acestuia de adevăr. Asignăm și restul de fii ai lui $u$ respectînd aceste cantități. Procedăm astfel pînă în frunze.
