@@ -141,3 +141,42 @@ for (int u = 1; u <= n; u++) {
 Rolul funcției \ccode{process} este să raporteze la părinte informațiile dintr-un nod. Pe parcurs, valoarea \ccode{num_children[u]} arată cîți fii ai lui \ccode{u} încă nu și-au raportat informațiile. Astfel, cînd îi va veni rîndul părintelui să fie procesat, el va fi acumulat informațiile de la toți fiii.
 
 Ordinea nodurilor este \textit{bottom-up}. Programul încearcă vizitarea fiecărui nod de cel mult două ori: fie cînd îi vine rîndul în ordine numerică, fie în momentul în care ultimul său fiu este vizitat.
+
+\subsection{Problema Blood Cousins (Codeforces)}
+\label{problem:blood-cousins}
+
+\href{https://codeforces.com/contest/208/problem/E}{enunț}
+$\bullet$
+\hyperref[code:blood-cousins]{sursă}
+
+Soluția propusă în \href{https://codeforces.com/blog/entry/4930}{editorial}, în $\bigoh(q \log n)$, procedează astfel.
+
+\begin{itemize}
+  \item Măsoară timpii DFS și adîncimea fiecărui nod.
+
+  \item Pentru a afla eficient al $p$-lea strămoș, construiește în fiecare nod lista strămoșilor de gradele $1, 2, \dots, 2^k$.
+
+  \item Colectează nodurile arborelui, în ordinea DFS, în liste separate pentru fiecare adîncime. Așadar $L[0]$ va conține doar rădăcina, $L[1]$ va conține fiii rădăcinii etc.
+
+  \item Pentru a afla numărul de descendenți la distanță $p$ ai unui nod $u$ care are timpii DFS $t_i[u]$ și $t_o[u]$, căutăm binar în lista $L[d[u] + p]$ primul și ultimul nod cu timpi DFS între $t_i[u]$ și $t_o[u]$.
+\end{itemize}
+
+Iată și o soluție în timp liniar. Mi se pare mai simplă, căci folosește doar liste și două parcurgeri DFS.
+
+\begin{itemize}
+  \item Distribuim interogările $(v, p)$ în liste după nodul $v$.
+
+  \item Rulăm un DFS în care menținem o stivă explicită de noduri în curs de vizitare. Concret, la intrarea în nodul $u$ la adîncime $d[u]$ notăm $st[d[u]] = u$.
+
+  \item La intrarea în nodul $v$, procesăm toate interogările $(v, p)$. Al $p$-lea strămoș al lui $v$ este $st[d[v] - p]$ (dacă există). Înlocuim fiecare $p$ cu acest strămoș.
+\end{itemize}
+
+Astfel, după un prim DFS, toate interogările au luat forma: cîți descendenți are nodul $v$ la adîncime $p$? Vom scădea 1 pentru a răspunde la cerința problemei. Putem răspunde la aceste întrebări cu un al doilea DFS.
+
+\begin{itemize}
+  \item Redistribuim interogările $(v, p)$ în liste după noul nod $v$.
+
+  \item Rulăm un DFS în care menținem numărul de noduri vizitate pe fiecare nivel. Concret, la intrarea în nodul $u$ la adîncime $d[u]$ îl incrementăm pe $st[d[u]]$.
+
+  \item Acum răspunsul pentru o interogare $(v, p)$ este diferența între $st[d[v] + p]$ la intrarea și la ieșirea din nodul $v$. Iterăm prin toate interogările referitoare la nodul $v$ la intrarea și la ieșirea din recursivitate.
+\end{itemize}
