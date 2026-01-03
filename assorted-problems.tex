@@ -11,9 +11,9 @@ $\bullet$
 
 \subsection{Generalități}
 
-Problema este una relativ clasică de programare dinamică pe arbore, dar acest curs nu are un capitol dedicat subiectului. Poate într-o zi cu soare. Problema necesită multă atenție la implementare.
+Problema este una tipică de recurență pe arbore\footnote{Simt nevoia unei digresiuni despre termenul \textit{programare dinamică}. Olimpicii tind să denumească orice recurență programare dinamică (și, pentru maximum de efect, să-și denumească variabilele aferente \ccode{dp}). Dar acest lucru nu este adevărat. Pentru a putea încadra o soluție ca programare dinamică, ea are nevoie de \href{https://en.wikipedia.org/wiki/Dynamic_programming\#Computer_science}{două trăsături}: substructura optimă și suprapunerea subproblemelor. În cazul recurențelor pe arbore, prin definiție \textbf{nu} există subprobleme suprapuse, deoarece în acest caz subproblemele unui nod sînt fiii nodului, deci prin definiție sînt disjuncte.}, dar acest curs nu are un capitol dedicat subiectului. Poate într-o zi cu soare. Problema necesită multă atenție la implementare.
 
-Să începem cu numărarea configurațiilor posibile. În problemele de programare dinamică pe arbore, de obicei judecăm recursiv. Informația pe care o dorim să o calculăm într-un nod $u$ decurge din combinarea informațiilor similare calculate în fiecare dintre fiii lui $u$. În plus, \textbf{încercăm să decuplăm subarborele lui $u$ de restul arborelui}. Pentru aceasta, luăm în calcul toate posibilitățile pentru $u$ sau (în alte probleme) pentru părintele lui $u$. Nu știm care dintre posibilități ne va trebui în final, dar astfel ne asigurăm că problema nu „se revarsă” în restul arborelui.
+Să începem cu numărarea configurațiilor posibile. În problemele de recurență pe arbore, de obicei judecăm recursiv. Informația pe care o dorim să o calculăm într-un nod $u$ decurge din combinarea informațiilor similare calculate în fiecare dintre fiii lui $u$. În plus, \textbf{încercăm să decuplăm subarborele lui $u$ de restul arborelui}. Pentru aceasta, luăm în calcul toate posibilitățile pentru $u$ sau (în alte probleme) pentru părintele lui $u$. Nu știm care dintre posibilități ne va trebui în final, dar astfel ne asigurăm că problema nu „se revarsă” în restul arborelui.
 
 \subsection{Numărarea configurațiilor}
 
