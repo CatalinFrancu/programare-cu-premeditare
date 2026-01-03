@@ -55,6 +55,27 @@ Putem exprima punctul (2) și în termeni de strămoși, discutați anterior: st
 
 De aici rezultă cum putem folosi paritatea aparițiilor ca să notăm informații de pe calea spre rădăcină. Notăm valoarea fiecărui nod $v$ cu semnul + la poziția $t_i[v]$ și cu semnul - la poziția $t_o[v]$. Astfel, suma prefixului $[1, t_i[u]]$ va fi exact suma valorilor pe calea de la $u$ la rădăcină.
 
+\subsection{Problema New Year Tree (Codeforces)}
+\label{problem:new-year-tree}
+
+\href{https://codeforces.com/contest/620/problem/E}{enunț}
+$\bullet$
+\hyperref[code:new-year-tree]{sursă}
+
+Problema este relativ directă, doar cu puțin mai complicată decît precedentele. După liniarizare, avem nevoie de o structură de date care să admită operațiile:
+
+\begin{enumerate}
+  \item \ccode{range_set(l, r, val)}: scrie valoarea val pe tot intervalul $[l,r]$
+  \item \ccode{range_count_distinct(l, r)}: returnează numărul de valori distincte din intervalul $[l,r]$.
+\end{enumerate}
+
+Problema numărării de elemente distincte cu actualizări nu este trivială, dar varianta de față are un avantaj: valorile sînt între 1 și 60, deci putem folosi măști de biți. Rezultă că avem nevoie de un arbore de intervale cu propagare lazy, cu operațiile:
+
+\begin{enumerate}
+  \item atribuiri pe interval;
+  \item OR pe biți pe interval.
+\end{enumerate}
+
 \subsection{Problema Max Flow (USACO)}
 \label{problem:max-flow}
 
