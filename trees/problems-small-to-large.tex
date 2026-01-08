@@ -43,3 +43,18 @@ Două observații de implementare:
 
   \item Această variantă este mai lentă decît cea cu AIB (nicio surpriză).
 \end{enumerate}
+
+\subsection{Problema Lomsat Gelral (Codeforces)}
+\label{problem:lomsat-gelral}
+
+\href{https://codeforces.com/contest/600/problem/E}{enunț}
+$\bullet$
+\hyperref[code:lomsat-gelral]{surse}
+
+Folosim tehnica \textit{small-to-large}, așa cum se poate deduce și din numele problemei \emoji{fox}. Este important ca fiecare fiu să stocheze $\mathcal{O}(\text{subarbore})$ informații, nu $\mathcal{O}(n)$. Deci vom folosi o tabelă hash de culori cu frecvențele lor.
+
+Ca observație interesantă, este mult mai eficient să calculați și să returnați din DFS tabela hash și celelalte informații, decît să le stocați în fiecare nod. Iată și o astfel de \href{https://codeforces.com/contest/600/submission/232610323}{implementare}, considerabil mai lentă.
+
+Există și o soluție cu algoritmul lui Mo, puțin mai lentă, dar care consumă mai puțină memorie. Este necesară atenție la detalii. Ce informații stochează intervalul curent? Vă recomand să izolați acele structuri de date într-un \ccode{struct} sau o clasă separată.
+
+Problemă similară: \href{https://kilonova.ro/problems/958}{Christmas Balls} (IIOT 2021/22 runda 2).
