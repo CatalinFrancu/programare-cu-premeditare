@@ -7,7 +7,7 @@
 $\bullet$
 \hyperref[code:tree-queries]{sursă}
 
-Probabil am putea implementa următoarea soluție. Pentru fiecare interogare, pornim din cel mai de jos dintre noduri, mergînd pînă la rădăcină, și vedem dacă întîlnim toate celelalte noduri sau părinții acestora. Dar această soluție necesită $\mathcal{O}(n)$ per interogare pentru un arbore degenerat. Probabil ea poate fi adusă la $\mathcal{O}(\sqrt{n})$ sau $\mathcal{O}(\log n)$ prin tehnici mai complicate.
+Probabil am putea implementa următoarea soluție. Pentru fiecare interogare, pornim din cel mai de jos dintre noduri, mergînd pînă la rădăcină, și vedem dacă întîlnim toate celelalte noduri sau părinții acestora. Dar această soluție necesită $\bigoh(n)$ per interogare pentru un arbore degenerat. Probabil ea poate fi adusă la $\bigoh(\sqrt{n})$ sau $\bigoh(\log n)$ prin tehnici mai complicate.
 
 În loc de acesta, să procedăm astfel. Fie $u$ cel mai de jos nod dintr-o interogare. Atunci toate celelalte noduri \textbf{sau} părinții lor trebuie să se afle pe calea de la $u$ la rădăcină. Cu alte cuvinte, să fie strămoși ai lui $u$. Mai mult, decizia se simplifică astfel: dacă un nod $v$ este pe calea de la $u$ la rădăcină, atunci și părintele lui $v$ se va afla pe calea de la $u$ la rădăcină. Deci este suficient să testăm doar părinții și să răspundem la întrebarea: Sînt părinții tuturor nodurilor dintr-o interogare strămoși ai celui mai de jos nod? (Complicația cu noduri și părinți este mai mult un \textit{red herring}, o diversiune care poate păcăli pe cineva.)
 
@@ -130,7 +130,7 @@ Această metodă nu mai necesită calculul LCA.
 
 \subsubsection*{Metoda 3 (cred): \textit{Small to large}}
 
-Cred că fiecare nod își poate menține colecția de căi care trec prin el. Un părinte va unifica aceste colecții, eliminîndu-le pe cele care apar de două ori (pentru care părintele este LCA). Dacă folosim cea mai mare colecție dintre cele ale fiilor, timpul rezultat va fi $\mathcal{O}(n + q \log q)$.
+Cred că fiecare nod își poate menține colecția de căi care trec prin el. Un părinte va unifica aceste colecții, eliminîndu-le pe cele care apar de două ori (pentru care părintele este LCA). Dacă folosim cea mai mare colecție dintre cele ale fiilor, timpul rezultat va fi $\bigoh(n + q \log q)$.
 
 \subsection{Problema Distinct Colors (CSES)}
 \label{problem:distinct-colors}
@@ -139,9 +139,9 @@ Cred că fiecare nod își poate menține colecția de căi care trec prin el. U
 $\bullet$
 \hyperref[code:distinct-colors]{sursă}
 
-După liniarizare și după normalizarea culorilor, problema se reduce destul de direct la numărarea culorilor distincte dintr-un interval. O variantă este cu algoritmul lui Mo, în $\mathcal{O}(n \sqrt{n})$. O altă variantă posibilă este cu tehnica \textit{small to large} (vom reveni cînd studiem tehnica).
+După liniarizare și după normalizarea culorilor, problema se reduce destul de direct la numărarea culorilor distincte dintr-un interval. O variantă este cu algoritmul lui Mo, în $\bigoh(n \sqrt{n})$. O altă variantă posibilă este cu tehnica \textit{small to large} (vom reveni cînd studiem tehnica).
 
-Soluția mai eficientă, în $\mathcal{O}(n \log n)$, este cea studiată în capitolele anterioare (problema \href{https://www.spoj.com/problems/DQUERY/}{DQUERY}). Procesăm interogările în ordinea crescătoare a capătului drept. Pe parcursul procesării, într-un AIB ținem valori de 1 pentru poziția celei mai din dreapta apariții a fiecărei culori.
+Soluția mai eficientă, în $\bigoh(n \log n)$, este cea studiată în capitolele anterioare (problema \href{https://www.spoj.com/problems/DQUERY/}{DQUERY}). Procesăm interogările în ordinea crescătoare a capătului drept. Pe parcursul procesării, într-un AIB ținem valori de 1 pentru poziția celei mai din dreapta apariții a fiecărei culori.
 
 În practică implementarea se simplifică mult, căci interogările pe liniarizare au o structură foarte specială. Dacă răspundem la interogări la revenirea din nod, atunci în mod evident ele vor fi ordonate după capătul drept, deoarece capătul drept este dat de timpul curent din DFS, care poate doar să crească! De aceea,
 

@@ -93,6 +93,6 @@ Mi-a fost mai simplu să adaug santinele la timpii 0 și $q + 1$, ca să nu veri
 
 Strict referitor la problema Machine Learning: funcția mex pare greu de menținut incremental. Dacă o frecvență $f$ încetează să mai aibă elemente, iar $f$ este mai mic decît mex-ul curent, atunci $f$ devine noul mex. Aceasta este partea simplă. Dar dacă apare un nou element de frecvența mex-ului, cum recalculăm noul mex? Riscăm să introducem un factor suplimentar la complexitate.
 
-Soluția este de fapt brutală. Pot exista cel mult $\sqrt{n}$ frecvențe diferite (deoarece suma frecvențelor este $n$, așa cum am arătat în capitolul de descompunere în radical). De aceea, putem calcula funcția mex naiv pentru fiecare interogare cu o complexitate totală de $\mathcal{O}(q \sqrt{n})$, care nu este dominantă.
+Soluția este de fapt brutală. Pot exista cel mult $\sqrt{n}$ frecvențe diferite (deoarece suma frecvențelor este $n$, așa cum am arătat în capitolul de descompunere în radical). De aceea, putem calcula funcția mex naiv pentru fiecare interogare cu o complexitate totală de $\bigoh(q \sqrt{n})$, care nu este dominantă.
 
 O ultimă observație specifică problemei: ne interesează doar frecvențele valorilor, nu ordinea lor relativă. De aceea, am ales o variantă mai simplă pentru codul de normalizare.

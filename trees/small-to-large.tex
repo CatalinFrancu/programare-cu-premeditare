@@ -1,0 +1,17 @@
+\chapter{Tehnica small-to-large}
+
+\section{Generalități}
+
+Există o clasă de probleme pe arbori care, implementate naiv, au complexitate $\bigoh(n^2)$.  În aceste probleme, informația pentru un nod are mărime $\bigoh(n)$ și trebuie compusă din informațiile fiilor. Exemplu: fiecare nod $u$ dorește să-și cunoască frecvențele adîncimilor nodurilor din subarbore, raportate la $u$. Cu alte cuvinte, $u$ dorește să știe cîți fii, nepoți, strănepoți etc. are. Pentru a calcula acest vector, $u$ trebuie:
+
+\begin{enumerate}
+  \item să însumeze vectorii primiți de la fii;
+  \item să translateze cu 1 toate valorile (fiul fiului lui $u$ este nepotul lui $u$);
+  \item să se adauge pe sine însuși la distanță 0.
+\end{enumerate}
+
+Pentru un arbore degenerat (un lanț de lungime $n$), o implementare naivă va copia și modifica succesiv vectori de lungime $1, 2, 3, \dots, n$, așadar $\bigoh(n^2)$ în total.
+
+Tehnica \textit{small-to-large} spune: este OK să transferăm O(mărimea fiului) informații de la fiecare fiu la părinte, \textbf{cîtă vreme ne asigurăm că transferăm din structura mai mică în cea mai mare}. Astfel, fiecare informație va fi transferată într-o structură de (cel puțin) două ori mai mare, deci numărul de transferuri este limitat la $\log n$. Complexitatea totală este $\bigoh(n \log n)$ sau, în unele cazuri, chiar $\bigoh(n)$.
+
+Pentru exemplul de mai sus, vectorii ar putea fi \ccode{deque}, astfel încît părintele să se poată adăuga la începutul listei. Aceasta rezolvă cerințele (2) și (3) în $\bigoh(1)$. Pentru cerința (1), este suficient ca părintele să folosească cea mai lungă listă primită de la vreun fiu și să adune listele celorlalți fii la aceasta.

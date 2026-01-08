@@ -1,0 +1,45 @@
+\section{Probleme}
+
+\subsection{Problema Fixed-Length Paths I (CSES)}
+\label{problem:fixed-length-paths-1}
+
+\href{https://cses.fi/problemset/task/2080}{enunț}
+$\bullet$
+\hyperref[code:fixed-length-paths-1]{sursă}
+
+Putem rezolva problema exact cu ideile expuse teoretic. Fiecare nod raportează la părintele său o listă cu numărul de noduri aflate la distanțe 0 (el însuși), 1 (fiii), 2 (nepoții) etc. Pentru a-și calcula lista, fiecare nod:
+
+\begin{enumerate}
+  \item Însumează listele primite de la toți fiii.
+  \item Deplasează lista rezultată cu o poziție (fiul fiului meu este nepotul meu).
+  \item Se adaugă pe sine însuși la distanță 0.
+\end{enumerate}
+
+Pentru implementare, putem folosi un deque, care oferă inserarea la început în $\bigoh(1)$. Pentru însumarea listelor, adăugăm mereu lista mai scurtă la cea mai lungă. În plus, fiecare nod $u$ răspunde la întrebarea: pentru cîte căi de lungime $k$ sînt eu LCA (nodul cel mai de sus de pe cale)? Apoi adaugă această valoare la un contor global. Pentru a calcula răspunsul, nodul $u$ confruntă lista primită de la fiecare fiu $v$ cu listele obținute și însumate anterior: dacă fiul $v$ raportează $a$ noduri la o distanță $l$ și fiii anteriori raportaseră $b$ noduri la o distanță $k-2-l$, adăugăm $a \cdot b$ la contorul global.
+
+Care este complexitatea? Pare că ar fi $\bigoh(n \log n)$, după cum spuneam: cînd copiem un nod din lista $L_1$ în lista $L_2$, la final $L_2$ va stoca informații (frecvențe) despre cel puțin dublul numărului de noduri din $L_1$. Deci fiecare nod poate fi copiat de cel mult $\log n$ ori.
+
+Dar putem da o limită și mai strînsă. Pentru această problemă soluția este, de fapt, $\bigoh(n)$! Programul nu operează cu noduri, ci doar cu distanțe. Cînd frecvența unei distanțe $d$ în $L_1$ este 2 sau mai mare, nu mai pierdem timp individual ca să copiem acele noduri din $L_1$ în $L_2$, ci le „copiem” pe toate simultan, însumînd niște frecvențe. Practic, fiecare nod este copiat o singură dată. Vă puteți convinge de asta adăugînd contoare globale în interiorul buclelor critice și verificînd că ele nu depășesc valoarea totală $n$.
+
+Notă: pentru a interschimba două liste, folosiți întotdeauna metoda \ccode{swap()}, care doar schimbă pointeri între ei. Niciodată nu folosiți operatorul \ccode{=}, care face copieri de elemente și are complexitate $\bigoh(\text{lungime})$!
+
+\subsection{Problema Distinct Colors (CSES) (din nou)}
+\label{problem:distinct-colors-small-to-large}
+
+\href{https://cses.fi/problemset/task/1139}{enunț}
+$\bullet$
+\hyperref[code:distinct-colors-small-to-large]{sursă}
+
+Să reluăm această problemă și să o rezolvăm cu tehnica \textit{small-to-large}. O variantă ar fi ca fiecare nod să țină o listă sortată de culori. Atunci părintele trebuie să interclaseze listele fiilor. Dar nu putem face interclasarea în O(lista mai scurtă), ci doar în O(suma lungimilor). Aceasta duce la o soluție în $\bigoh(n^2)$. Exemplu: $n=1.000.000$, iar rădăcina are 1.000 de fii, fiecare cu cîte 1.000 de noduri în subarbore. Toate culorile sînt distincte. Atunci costul total al interclasărilor în rădăcină ar fi:
+
+$$2.000 + 3.000 + \dots + 1.000.000$$
+
+Ca să combinăm doi fii în O(fiul mai mic), putem menține culorile într-o tabelă hash (\ccode{unordered_set}). Atunci este ușor să „vărsăm” tabela mai mică în cea mai mare.
+
+Două observații de implementare:
+
+\begin{enumerate}
+  \item Această variantă consumă mai mult spațiu pe stivă, căci are variabile locale mai mari. Pe calculatorul meu local, testele mari chiar umplu stiva!
+
+  \item Această variantă este mai lentă decît cea cu AIB (nicio surpriză).
+\end{enumerate}
