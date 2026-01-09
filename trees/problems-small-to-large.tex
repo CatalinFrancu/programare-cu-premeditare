@@ -58,3 +58,34 @@ Ca observație interesantă, este mult mai eficient să calculați și să retur
 Există și o soluție cu algoritmul lui Mo, puțin mai lentă, dar care consumă mai puțină memorie. Este necesară atenție la detalii. Ce informații stochează intervalul curent? Vă recomand să izolați acele structuri de date într-un \ccode{struct} sau o clasă separată.
 
 Problemă similară: \href{https://kilonova.ro/problems/958}{Christmas Balls} (IIOT 2021/22 runda 2).
+
+\subsection{Problema Tokens on a Tree (CodeChef)}
+\label{problem:tokens-on-a-tree}
+
+\href{https://www.codechef.com/problems/TRTOKENS}{enunț}
+$\bullet$
+\hyperref[code:tokens-on-a-tree]{surse}
+
+O problemă echivalentă este \href{https://codeforces.com/contest/965/problem/E}{Short Code} (inspirată din viața reală, avînd în vedere cum își denumesc unii elevi variabilele).
+
+Să demonstrăm teoretic ce avem de făcut. Iată diverse observații.
+
+\textbf{Observația 1.} O monedă $A$ poate „sări” aparent peste altă monedă $B$: practic, monedele fiind identice, o urcăm pe $B$ pînă la destinația dorită, apoi pe $A$ în locul lui $B$.
+
+\textbf{Observația 2.} În orice soluție, monedele se vor afla la vîrful arborelui. Niciodată nu vom avea o monedă sub un nod gol, căci am putea face o mutare în plus.
+
+\textbf{Observația 3.} Dacă rădăcina conține inițial o monedă, atunci acea monedă nu pleacă nicăieri și nicio altă monedă nu îi va lua locul. Deci putem rezolva problema independent pentru subarbori.
+
+\textbf{Observația 4.} Dacă rădăcina nu conține inițial o monedă, atunci dintr-unul dintre subarborii fiilor o monedă va urca în rădăcină. Restul fiilor vor fi rezolvați independent, conform Observației 3. Moneda care va urca în rădăcină este cea de adîncime maximă după ce rezolvăm fiii, ca să facem cît mai mulți pași în plus. Urcarea este aparentă, conform Observației 1.
+
+Așadar, implementarea trebuie să combine în mod eficient fiii unui nod, apoi să găsească cea mai de jos monedă și să o urce în părinte. Am găsit două variante de implementare.
+
+\subsubsection*{Implementare cu \textit{small-to-large}}
+
+Fiecare nod $u$ calculează un vector/listă $f$ unde $f[i]$ pentru $i \geq 0$ este numărul de monede la distanță $i$ de $u$. Fiecare părinte însumează listele fiilor așa cum știm, iar algoritmul este $\mathcal{O}(n)$, căci nodurile odată comasate își pierd identitatea. În plus, nodul $u$ se adaugă pe sine însuși la începutul listei și, dacă este loc, simulează urcarea unei monede transferînd o unitate de pe ultima poziție din $f$ pe prima.
+
+\textbf{Detalii de implementare.} Implementarea cu \ccode{std::list} este cu vreo 25 de linii mai scurtă decît cea cu liste proprii, dar este de două ori mai lentă și consumă dublul memoriei. Implementarea cu \ccode{std::deque} este nefolosibilă ca timp și ca memorie (spre 1 GB). Probabil, clasa \ccode{deque} are costuri fixe, iar multe deque-uri mici sînt foarte scumpe.
+
+\subsubsection*{Implementare cu liniarizare + RMQ}
+
+Construim o liniarizare DFS și notăm, în nodurile care conțin monede, adîncimea acelor noduri. În nodurile care nu conțin monede nu notăm nimic. Pentru a găsi cea mai de jos monedă din subarborele unui nod $u$, găsim maximul pe intervalul subîntins de $u$. Pentru a muta moneda, scriem 0 în locul acelui maxim (moneda dispare) și scriem adîncimea lui $u$ la poziția nodului $u$ (moneda apare acolo). Apoi creștem numărul total de mutări cu diferența dintre cele două adîncimi. Avem nevoie de RMQ cu actualizare, deci putem folosi varianta pe arbori de segmente. Rezultă o complexitate de $\mathcal{O}(n \log n)$. Codul este puțin mai lent și consumă mai multă memorie decît implementarea cu \textit{small-to-large}.
