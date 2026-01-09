@@ -51,7 +51,7 @@ Două observații de implementare:
 $\bullet$
 \hyperref[code:lomsat-gelral]{surse}
 
-Folosim tehnica \textit{small-to-large}, așa cum se poate deduce și din numele problemei \emoji{fox}. Este important ca fiecare fiu să stocheze $\mathcal{O}(\text{subarbore})$ informații, nu $\mathcal{O}(n)$. Deci vom folosi o tabelă hash de culori cu frecvențele lor.
+Folosim tehnica \textit{small-to-large}, așa cum se poate deduce și din numele problemei \emoji{fox}. Este important ca fiecare fiu să stocheze $\bigoh(\text{subarbore})$ informații, nu $\bigoh(n)$. Deci vom folosi o tabelă hash de culori cu frecvențele lor.
 
 Ca observație interesantă, este mult mai eficient să calculați și să returnați din DFS tabela hash și celelalte informații, decît să le stocați în fiecare nod. Iată și o astfel de \href{https://codeforces.com/contest/600/submission/232610323}{implementare}, considerabil mai lentă.
 
@@ -82,10 +82,78 @@ Așadar, implementarea trebuie să combine în mod eficient fiii unui nod, apoi 
 
 \subsubsection*{Implementare cu \textit{small-to-large}}
 
-Fiecare nod $u$ calculează un vector/listă $f$ unde $f[i]$ pentru $i \geq 0$ este numărul de monede la distanță $i$ de $u$. Fiecare părinte însumează listele fiilor așa cum știm, iar algoritmul este $\mathcal{O}(n)$, căci nodurile odată comasate își pierd identitatea. În plus, nodul $u$ se adaugă pe sine însuși la începutul listei și, dacă este loc, simulează urcarea unei monede transferînd o unitate de pe ultima poziție din $f$ pe prima.
+Fiecare nod $u$ calculează un vector/listă $f$ unde $f[i]$ pentru $i \geq 0$ este numărul de monede la distanță $i$ de $u$. Fiecare părinte însumează listele fiilor așa cum știm, iar algoritmul este $\bigoh(n)$, căci nodurile odată comasate își pierd identitatea. În plus, nodul $u$ se adaugă pe sine însuși la începutul listei și, dacă este loc, simulează urcarea unei monede transferînd o unitate de pe ultima poziție din $f$ pe prima.
 
 \textbf{Detalii de implementare.} Implementarea cu \ccode{std::list} este cu vreo 25 de linii mai scurtă decît cea cu liste proprii, dar este de două ori mai lentă și consumă dublul memoriei. Implementarea cu \ccode{std::deque} este nefolosibilă ca timp și ca memorie (spre 1 GB). Probabil, clasa \ccode{deque} are costuri fixe, iar multe deque-uri mici sînt foarte scumpe.
 
 \subsubsection*{Implementare cu liniarizare + RMQ}
 
-Construim o liniarizare DFS și notăm, în nodurile care conțin monede, adîncimea acelor noduri. În nodurile care nu conțin monede nu notăm nimic. Pentru a găsi cea mai de jos monedă din subarborele unui nod $u$, găsim maximul pe intervalul subîntins de $u$. Pentru a muta moneda, scriem 0 în locul acelui maxim (moneda dispare) și scriem adîncimea lui $u$ la poziția nodului $u$ (moneda apare acolo). Apoi creștem numărul total de mutări cu diferența dintre cele două adîncimi. Avem nevoie de RMQ cu actualizare, deci putem folosi varianta pe arbori de segmente. Rezultă o complexitate de $\mathcal{O}(n \log n)$. Codul este puțin mai lent și consumă mai multă memorie decît implementarea cu \textit{small-to-large}.
+Construim o liniarizare DFS și notăm, în nodurile care conțin monede, adîncimea acelor noduri. În nodurile care nu conțin monede nu notăm nimic. Pentru a găsi cea mai de jos monedă din subarborele unui nod $u$, găsim maximul pe intervalul subîntins de $u$. Pentru a muta moneda, scriem 0 în locul acelui maxim (moneda dispare) și scriem adîncimea lui $u$ la poziția nodului $u$ (moneda apare acolo). Apoi creștem numărul total de mutări cu diferența dintre cele două adîncimi. Avem nevoie de RMQ cu actualizare, deci putem folosi varianta pe arbori de segmente. Rezultă o complexitate de $\bigoh(n \log n)$. Codul este puțin mai lent și consumă mai multă memorie decît implementarea cu \textit{small-to-large}.
+
+\subsection{Problema Tree and Queries (Codeforces)}
+\label{problem:tree-and-queries}
+
+\href{https://codeforces.com/contest/375/problem/D}{enunț}
+$\bullet$
+\hyperref[code:tree-and-queries]{surse}
+
+Din această problemă vom învăța o formă specială și foarte frumoasă de \textit{small-to-large}. Să vedem întîi abordarea cunoscută.
+
+\subsubsection*{Implementare brută}
+
+Cel mai direct, proiectăm o structură de date care:
+
+\begin{enumerate}
+  \item Să mențină frecvențele culorilor din subarborele curent.
+  \item Să raporteze numărul de frecvențe cel puțin egale cu o valoare dată.
+\end{enumerate}
+
+Pentru (2) am dori un vector de frecvențe ale frecvențelor:$g[x]$ stochează numărul de culori care au frecvența $x$. Pe acest vector, răspunsul la o interogare $(u, x)$ este suma pe sufixul $g[x \dots n]$. Dar implementarea este alunecoasă, căci dorim ca structura să ocupe spațiu $\bigoh(\text{subarbore})$, nu $\bigoh(n)$. Deci orice AIB sau arbore de intervale construit peste $g$ trebuie extins dinamic pe măsură ce urcăm în arbore.
+
+În schimb, putem folosi un multiset: un set ordonat al tuturor frecvențelor (nenule). Ca să putem răspunde la întrebarea „cîte frecvențe mai mari sau egale cu $x$ există?”, avem nevoie de PBDS (\textit{policy-based data structure}), o colecție extinsă de structuri de date din STL. Ne-am mai întîlnit cu seturi PBDS la problema \hyperref[problem:give-away]{Give Away}, în capitolul de descompunere în radical.
+
+Soluția este relativ directă, dar ca să o puteți scrie în timp de concurs trebuie să memorați două lucruri:
+
+\begin{enumerate}
+  \item Incantația magică necesară pentru a declara o structură de date PBDS.
+
+  \item Codul necesar pentru ștergerea dintr-un multiset. Cînd o frecvență se modifică, noi dorim să ștergem din multiset o singură apariție a vechii frecvențe, dar un simplu apel la \ccode{erase} le-ar șterge pe toate.
+\end{enumerate}
+
+\subsubsection*{Implementare cu vector global}
+
+Ar fi grozav dacă fiecare nod $u$, cînd îi vine rîndul în DFS, ar avea acces exclusiv la vectorul de frecvențe $f$ și la un AIB cu frecvențele frecvențelor $g$. Atunci putem răspunde la toate interogările despre nodul $u$ în $\bigoh(\log n)$ per interogare. Doar că, la o parcurgere normală, fiecare nod va opera pe o structură de date deja populată cu date din afara subarborelui său, ceea ce face interogările în AIB incorecte.
+
+Și totuși, se poate! Dar este nevoie de o parcurgere DFS specială. Am învățat-o și eu din \href{https://codeforces.com/contest/375/submission/5508178}{sursa} unui legendary grandmaster. \emoji{star-struck} Mai întîi, calculăm pentru fiecare nod $u$ care este fiul său cu subarborele cel mai mare. Notăm această informație cu $h[u]$ (de la \textit{heavy}). Acum, $DFS(u)$ procedează astfel:
+
+\begin{enumerate}
+  \item Apelează recursiv toți fiii cu excepția lui $h[u]$.
+
+  \item La revenirea din fiecare fiu $v$, elimină recursiv din $f$ și $g$ toate nodurile din subarborele lui $v$.
+
+  \item Apelează recursiv $DFS(h[u])$. De data aceasta, lasă informațiile în arbore.
+
+  \item Adaugă la loc subarborii eliminați la pasul (2).
+
+  \item Adaugă în $f$ și $g$ nodul $u$ însuși.
+
+  \item Răspunde la interogări despre subarborele lui $u$.
+\end{enumerate}
+
+Se nasc două întrebări. Prima: de ce funcționează corect algoritmul? Mai exact, de ce la pasul (6) vectorii conțin doar informații despre subarborele lui $u$? Să considerăm un alt nod $w$, din afara subarborelui lui $u$. Există trei posibilități.
+
+\begin{enumerate}
+  \item $w$ este strămoș al lui $u$ („nod gri”). Atunci, în mod garantat, $w$ nu apare în structura de date la momentul procesării lui $u$, deoarece $w$ este adăugat în structură doar la finalul recursivității.
+
+  \item $w$ este un „nod negru” într-un subarbore deja vizitat. Fie $a$ strămoșul comun al lui $u$ și $v$ și fie $a_w$ și $a_u$ fiii lui $a$ care pornesc către $w$, respectiv către $u$. Deoarece sîntem în procesul de vizitare a lui $a_u$, înseamnă că $a_w$ și tot subarborele său (inclusiv $w$) au fost temporar șterși din structură.
+
+  \item $w$ este un „nod alb”, undeva într-un subarbore încă nevizitat. Atunci $w$ încă nu a fost descoperit de DFS.
+\end{enumerate}
+
+A doua întrebare: care este complexitatea algoritmului? Dacă nu am trata special nodul $h[u]$, atunci complexitatea ar fi pătratică. Fiecare nod este eliminat la pasul (2) și readăugat la pasul (5) pentru fiecare strămoș al său.
+
+Dacă tratăm special fiii \textit{heavy}, să analizăm numărul de eliminări și readăugări. Ori de cîte ori un strămoș $w$ cauzează eliminarea unui descendent $u$, înseamnă că $w$ \textbf{nu} este fiu \textit{heavy} al părintelui său. Echivalent, părintele lui $w$ este cel puțin de două ori mai mare decît $w$. Așadar, eliminarea nodului $u$ poate fi cauzată de cel mult $\log n$ dintre strămoșii săi. Complexitatea parcurgerii este $\bigoh(n \log n)$.
+
+Cum fiecare eliminare și adăugare necesită o operație în AIB, rezultă că complexitatea întregului algoritm este $\bigoh(n \log^2 n)$.
+
+Notă de implementare: putem stoca listele de adiacență și listele de interogări ca \ccode{vector} sau ca \ccode{list}, căci nu avem nevoie de acces aleatoriu. \href{https://codeforces.com/contest/375/submission/294270594}{Implementarea} cu \ccode{list} este considerabil mai lentă și consumă mai multă memorie.
