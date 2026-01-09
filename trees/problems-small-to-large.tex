@@ -90,6 +90,58 @@ Fiecare nod $u$ calculează un vector/listă $f$ unde $f[i]$ pentru $i \geq 0$ e
 
 Construim o liniarizare DFS și notăm, în nodurile care conțin monede, adîncimea acelor noduri. În nodurile care nu conțin monede nu notăm nimic. Pentru a găsi cea mai de jos monedă din subarborele unui nod $u$, găsim maximul pe intervalul subîntins de $u$. Pentru a muta moneda, scriem 0 în locul acelui maxim (moneda dispare) și scriem adîncimea lui $u$ la poziția nodului $u$ (moneda apare acolo). Apoi creștem numărul total de mutări cu diferența dintre cele două adîncimi. Avem nevoie de RMQ cu actualizare, deci putem folosi varianta pe arbori de segmente. Rezultă o complexitate de $\bigoh(n \log n)$. Codul este puțin mai lent și consumă mai multă memorie decît implementarea cu \textit{small-to-large}.
 
+\subsection{Problema Blood Cousins Return (Codeforces)}
+\label{problem:blood-cousins-return}
+
+\href{https://codeforces.com/contest/246/problem/E}{enunț}
+$\bullet$
+\hyperref[code:blood-cousins-return]{surse}
+
+Toate soluțiile încep prin a transforma numele în numere. Cea mai la îndemînă implementare folosește un \ccode{unordered_map}.
+
+\subsubsection*{Implementarea cu \textit{small-to-large}}
+
+O soluție destul de brutală cu \textit{small-to-large} este: fiecare nod $u$ ține un vector de set-uri, unde setul de pe poziția $i$ reține numerele distincte regăsite la adîncime $i$ (raportat la adîncimea lui $u$) în subarborele lui $u$. Cînd combinăm doi vectori, combinăm două cîte două seturile reprezentînd aceeași adîncime. Trebuie să avem grijă să folosim \textit{small-to-large} în două locuri:
+
+\begin{enumerate}
+  \item Copiem vectorul mai mic în cel mai mare.
+  \item Pentru fiecare pereche de seturi, îl copiem pe cel mai mic în cel mai mare.
+\end{enumerate}
+
+Note de implementare:
+
+\begin{enumerate}
+  \item \ccode{unsorted_set} este mai lent decît \ccode{set}, deși algoritmic vorbind ne-ar trebui prima, care oferă timp constant. Dar tabelele hash (adică \ccode{unsorted_set}) au o mărime minimă dată de vectorul pe care se bazează.
+
+  \item Reprezentarea listelor de adiacență cu \ccode{deque} este de două ori mai lentă decît cu \ccode{vector}.
+\end{enumerate}
+
+Implementarea este rezonabil de scurtă, dar nu prea eficientă.
+
+\subsubsection*{Implementarea cu tehnici de bază}
+
+Iată și o abordare care necesită doar parcurgeri, liniarizare și căutare binară. Soluția este greu de codat, dar este mai rapidă.
+
+\begin{enumerate}
+  \item Calculăm ordinea BFS. Atunci răspunsul la orice interogare se va traduce în numărarea elementelor distincte de pe un interval contiguu din BFS. Știm să facem asta folosind un simplu AIB și ordonînd interogările după capătul drept (vezi problema \hyperref[problem:dquery-fenwick]{D-query}).
+
+  \item Pentru fiecare interogare, rămîne să aflăm primul și ultimul nod de la o anumită adîncime din subarborele lui $u$, ca să știm pe ce interval din BFS facem numărarea. Putem face asta cu două parcurgeri DFS și o stivă. La intrarea în fiecare nod, notăm valoarea sa pe stivă în dreptul adîncimii sale. La revenirea din nod, lăsăm stiva intactă. Atunci, la revenirea într-un nod $u$ aflat la adîncimea $d$, putem ști care este \textbf{ultimul} său descendent de la adîncimea $d'$: fie nu există, fie este nodul de la poziția $d'$ de pe stivă. Pentru a afla \textbf{primul} descendent de la adîncimea dorită, facem același DFS, dar iterînd prin fiii nodurilor în ordine inversă.
+\end{enumerate}
+
+Sună rezonabil din vorbe, dar \href{https://codeforces.com/contest/246/submission/294410845}{prima implementare} a fost migăloasă.
+
+O soluție considerabil mai scurtă (cea inclusă în anexă) procedează astfel:
+
+\begin{enumerate}
+  \item Calculăm aceeași ordine BFS.
+
+  \item Înlocuim fiecare interogare $\langle u, d \rangle$ cu interogarea $\langle depth[u] + d, t_{in}[u], t_{out}[u]\rangle$. Cu alte cuvinte, fiecare interogare interoghează un interval aflat la o anumită adîncime și cu noduri între timpii dați. Sortăm și procesăm interogările cu un AIB ca de obicei.
+\end{enumerate}
+
+O a treia implementare este: colectăm nodurile separat pe fiecare nivel, în ordinea timpilor de vizitare (care este chiar ordinea DFS). Acum intervalul de interes pentru o interogare referitoare la nodul $u$ este pe un nivel cunoscut și este delimitat de timpii de intrare și de ieșire din $u$.
+
+Este greu să construim cîte un AIB pe fiecare nivel, dar putem folosi un \ccode{set} cu aceeași informație: pozițiile ultimelor apariții ale fiecărui element distinct. Iată \href{https://codeforces.com/contest/246/submission/300415656}{o implementare} curată a fostului olimpic Alex Nuță.
+
 \subsection{Problema Tree and Queries (Codeforces)}
 \label{problem:tree-and-queries}
 
