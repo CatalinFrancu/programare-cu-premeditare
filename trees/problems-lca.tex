@@ -1,0 +1,65 @@
+\section{Probleme}
+
+\subsection{Problema Gold Transfer (Codeforces)}
+\label{problem:gold-transfer}
+
+\href{https://codeforces.com/contest/1535/problem/E}{enunț}
+$\bullet$
+\hyperref[code:gold-transfer]{sursă}
+
+Atenție mare la garanția din enunț: $c_i > c_{p_i}$. Cu alte cuvinte, pentru orice operație de cumpărare trebuie să pornim din rădăcină spre nodul $u$ și să cumpărăm orice cantități disponibile, pînă satisfacem cererea.
+
+Cu timpul, nodurile de la rădăcină se vor goli, deci pare o idee bună să găsim rapid cel mai de jos strămoș care încă are aur disponibil. Dacă reușim să-l găsim în $\bigoh(f(n))$ (intenția problemei fiind $f(n) = \log n$), atunci complexitatea globală va fi $\bigoh(q \cdot f(n) + n)$. De ce? Din acel strămoș putem parcurge lanțul în jos pas cu pas, cumpărînd tot aurul disponibil, pînă satisfacem cererea. Fiecare nod poate fi golit cel mult o dată, deci efortul total pentru parcurgerea lanțurilor este $\bigoh(n)$.
+
+\subsubsection*{Detalii de implementare}
+
+Arborele este dinamic, deci nu putem construi o liniarizare.
+
+Am ales să accelerez urcarea în arbore cu \textit{binary lifting} cu doi pointeri, dar orice altă metodă este acceptabilă.
+
+Odată ce golim un nod, avem nevoie să coborîm în fiul său care duce spre nodul original. Am ales să  fac acest lucru cu o stivă, dar soluția este cam lentă (2x față de altele).
+
+Întrucît nu avem de ce să parcurgem toți fiii unui nod, nu avem nevoie de liste de adiacență, ci doar de pointeri la părinte.
+
+\subsection{Problema A and B and Lecture Rooms (Codeforces)}
+\label{problem:a-and-b-and-lecture-rooms}
+
+\href{https://codeforces.com/contest/519/problem/E}{enunț}
+$\bullet$
+\hyperref[code:a-and-b-and-lecture-rooms]{sursă}
+
+Problema cere să răspundem la $m$ întrebări de forma: Date fiind nodurile $u$ și $v$ (posibil egale), cîte noduri din arbore se află la distanță egală de $u$ și de $v$?
+
+Pentru soluția teoretică, următoarea vizualizare este utilă. Să „atîrnăm” arborele de nodurile $u$ și $v$, ca pe o ghirlandă bine întinsă.  Atunci calea cea mai scurtă $u-v$ va fi orizontală, iar de lanțurile de pe cale vor atîrna restul subarborilor.
+
+Dacă distanța $u-v$ este impară, atunci răspunsul este 0. Dacă distanța este pară, atunci fie $w$ nodul de la jumătatea distanței. Nodurile aflate la distanță egală de $u$ și de $v$ vor fi $w$ și orice nod din subarborii care atîrnă din $w$.
+
+În practică vom alege o rădăcină și vom precalcula informații pentru LCA. Apoi, eu am redus problema la următoarele cazuri (poate se poate și mai simplu):
+
+\begin{enumerate}
+  \item Dacă distanța $u-v$ este impară, răspunsul este 0.
+
+  \item Dacă $u=v$, răspunsul este $n$.
+
+  \item Dacă $u$ și $v$ au adîncimi egale, atunci răspunsul este: mărimea subarborelui lui $LCA(u,v)$ minus mărimile subarborilor fiilor lui $LCA(u,v)$ care pornesc către $u$, respectiv către $v$.
+
+  \item Altfel, să presupunem că $u$ are adîncime mai mare decît $v$. Atunci nodul $w$ este undeva mai jos de LCA, mergînd către $u$. Răspunsul este: mărimea subarborelui lui $w$ minus mărimea subarborelui fiului lui $w$ care pornește către $u$.
+\end{enumerate}
+
+\subsubsection*{Detalii de implementare}
+
+Punctul (4) presupune să calculăm al $k$-lea strămoș. De exemplu, dacă adîncimile sînt $d[u]=50$, $d[v]=20$ și $d[LCA]=10$, atunci distanța $u-v$ este $40+10=50$, jumătatea distanței este $25$, iar nodul $w$ este al $25$-lea strămoș al lui $u$.
+
+De aceea, metoda lui Tarjan nu ne prea ajută, ci avem nevoie de o metodă cu \textit{jump pointers}.
+
+La punctele (3) și (4), pentru a afla „fiul lui $w$ care pornește către $u$”, putem refolosi informațiile pentru al $k$-lea strămoș. Dacă notăm cu $k$ diferența pe înălțime între $w$ și $u$, atunci răspunsul este al $k-1$-lea strămoș al lui $u$.
+
+La arbori, multe informații sînt redundante și putem stoca doar o submulțime. Exemple:
+
+\begin{itemize}
+  \item Mărimea subarborelui lui $u$ nu trebuie stocată implicit dacă cunoaștem timpii DFS, ci poate fi calculată ca $t_o[u]-t_i[u]+1$.
+
+  \item Paritatea distanței poate fi calculată fără a calcula distanța efectivă. Calculăm doar suma adîncimilor.
+
+  \item Al $k$-lea strămoș al unui nod poate fi găsit ca strămoșul de la adîncimea $d[u]-k$ al unui nod, dacă cunoaștem adîncimile nodurilor.
+\end{itemize}
