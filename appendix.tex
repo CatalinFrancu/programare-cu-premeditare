@@ -462,7 +462,7 @@ Sursă cu liniarizare și RMQ (\href{https://www.codechef.com/viewsolution/12247
 
 \inputminted{cpp}{src/trees/tokens-on-a-tree-3.cpp}
 
-\section{Problema Cousins Return (Codeforces)}
+\section{Problema Blood Cousins Return (Codeforces)}
 \label{code:blood-cousins-return}
 \backlink{blood-cousins-return}
 
@@ -485,6 +485,50 @@ Sursă cu PBDS (\href{https://codeforces.com/contest/375/submission/294200831}{v
 Sursă cu DFS cu acces exclusiv (\href{https://codeforces.com/contest/375/submission/294328719}{versiune online}).
 
 \inputminted{cpp}{src/trees/tree-and-queries-exclusive-small-to-large.cpp}
+
+\chapter{Cel mai apropiat strămoș comun}
+
+\section{LCA cu descompunere în radical}
+\label{code:tree-lca-sqrt}
+\backlink{tree-lca-sqrt}
+
+\inputminted{cpp}{src/trees/lca-sqrt.cpp}
+
+\section{LCA cu binary lifting (\texorpdfstring{$\log n$}{log n} pointeri per nod)}
+\label{code:tree-lca-binary-lifting}
+\backlink{tree-lca-binary-lifting}
+
+Implementare cu urcare în paralel.
+
+\inputminted{cpp}{src/trees/lca-binary-lifting.cpp}
+
+Implementare cu test de strămoș.
+
+\inputminted{cpp}{src/trees/lca-binary-lifting-ancestor-test.cpp}
+
+\section{LCA cu binary lifting (2 pointeri per nod)}
+\label{code:tree-lca-two-pointers}
+\backlink{tree-lca-two-pointers}
+
+Implementare cu urcare în paralel.
+
+\inputminted{cpp}{src/trees/lca-two-pointers.cpp}
+
+Implementare cu test de strămoș.
+
+\inputminted{cpp}{src/trees/lca-two-pointers-ancestor-test.cpp}
+
+Implementare cu formula LSB și urcare în paralel.
+
+\inputminted{cpp}{src/trees/lca-two-pointers-lsb.cpp}
+
+\section{LCA cu algoritmul lui Tarjan (offline)}
+\label{code:tree-lca-tarjan}
+\backlink{tree-lca-tarjan}
+
+Implementarea folosește STL, ca să ne putem concentra pe algoritm. Vă reamintesc însă că arborii scriși cu STL sînt de două ori mai lenți și consumă dublul memoriei.
+
+\inputminted{cpp}{src/trees/lca-tarjan-stl.cpp}
 
 \chapter{Probleme diverse}
 

@@ -1,0 +1,221 @@
+\chapter{Cel mai apropiat strămoș comun}
+
+Dat fiind un arbore cu rădăcină, pentru orice două noduri $u$ și $v$ definim \textbf{cel mai apropiat strămoș comun} ca fiind nodul de adîncime maximă (sau nodul „cel mai jos”) care le are ca descendenți atît pe $u$, cît și pe $v$. Considerăm că un nod este propriul său descendent, ceea ce înseamnă că cel mai apropiat strămoș comun al lui $u$ și $v$ poate fi chiar unul dintre aceste noduri, dacă este strămoș al celuilalt.
+
+În literatura română am întîlnit și denumirea „cel mai mic strămoș comun”, doar că această denumire mi se pare improprie. Nu comparăm nodurile ca mărime, ci ca adîncime. Pentru abreviere, o vom folosi pe cea din limba engleză (LCA - \textit{lowest common ancestor}).
+
+Formal, dat fiind un arbore cu $n$ noduri, dorim să răspundem la $q$ întrebări de forma:
+
+\begin{itemize}
+  \item $LCA(u, v)$: găsește nodul de adîncime maximă care este strămoș atît al lui $u$, cît și al lui $v$.
+\end{itemize}
+
+\href{https://cp-algorithms.com/graph/lca.html}{CP Algorithms} inventariază multe dintre metodele disponibile.
+
+O aplicație directă a LCA-ului este aflarea distanțelor între noduri. Notăm cu $d[u]$ adîncimea unui nod $u$. Atunci
+
+$$dist(u,v) = (d[u] - d[LCA]) + (d[v] - d[LCA]) = d[u] + d[v] - 2 \cdot d[LCA]$$
+
+\section{Sumar: RMQ (\textit{range minimum query})}
+
+RMQ este o problemă clasică pe vectori. Dat fiind un vector $V$ cu $n$ elemente, trebuie să răspundem la $q$ întrebări de forma $\langle l, r \rangle$ cu semnificația: să se găsească minimul valorilor $V[l \dots r]$.
+
+Problema are diverse variațiuni. Ni se poate cere \textit{valoarea} minimă sau \textit{poziția} valorii minime. Vectorul poate fi static sau poate avea actualizări.
+
+Acest curs nu are un capitol dedicat pentru RMQ, dar o vom trata superficial aici întrucît ea se leagă de algoritmii pentru LCA. Iată un sumar al metodelor folosite în programarea competitivă.
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{SlSlSlSl}
+    \textbf{metodă} & \textbf{preprocesare} & \textbf{interogări} & \textbf{memorie extra} \\
+    \hline
+    Arbore de intervale & $\bigoh(n)$ & $\bigoh(q \log n)$ & $\bigoh(n)$ \\
+    Arbore Fenwick (AIB) & $\bigoh(n)$ & $\bigoh(q \log n)$ & $0$ \\
+    Descompunere în radical & $\bigoh(n)$ & $\bigoh(q \sqrt{n})$ & $\bigoh(\sqrt{n})$ \\
+    Tabelă rară (\textit{sparse table}) & $\bigoh(n \log n)$ & $\bigoh(q)$ & $\bigoh(n \log n)$ \\
+    Stivă ordonată & $\bigoh(q \log q)$ & $\bigoh(n + q \log n)$ & $\bigoh(n)$ \\
+    \hline
+  \end{tabular}
+
+  \caption{Metode pentru problema RMQ.}
+\end{table}
+
+Precizări:
+
+\begin{itemize}
+  \item Tabela rară și stiva ordonată nu permit actualizări.
+  \item Arborele Fenwick permite doar interogări pe prefix și doar actualizări descrescătoare.
+\end{itemize}
+
+Să trecem în revistă, doar pentru completitudine, structurile de date.
+
+\subsection{RMQ cu arbore de intervale}
+
+Construim un arbore de intervale în care nodul părinte reține minimul fiilor săi. Admite actualizări punctuale sau, în varianta cu propagare \textit{lazy}, și actualizări pe interval. Am tot studiat aceste structuri de date, nu mai detaliem aici.
+
+\subsection{RMQ cu arbore indexat binar}
+
+Construim un AIB peste vector. Admite doar interogări pe prefix și doar actualizări descrescătoare.
+
+\subsection{RMQ cu descompunere în radical}
+
+Pentru fiecare bloc reținem minimul. Asimptotic operațiile sînt mai lente, dar aș zice că actualizarea pe interval este mai simplu de codat decît la arborii de intervale.
+
+\subsection{RMQ cu tabelă rară}
+
+Elevii se dau în vînt după această metodă. Codul este aproximativ:
+
+\begin{minted}{c}
+void compute_rmq(int* v, int n) {
+  // r[p][i] = minimul pe intervalul v[i]...v[i + 2^p - 1]
+  for (int i = 0; i < n; i++) {
+    r[0][i] = v[i];
+  }
+  for (int p = 1; (1 << p) <= n; p++) {
+    for (int i = 0; i + (1 << p) <= n; i++) {
+      r[p][i] = min(r[p - 1][i], r[p - 1][i + (1 << (p - 1)));
+    }
+  }
+}
+
+int rmq(int left, int right) { // inclusiv
+  int p = 31 - __builtin_clz(right - left + 1); // log_2 din lungime
+  return min(r[p][left], r[p][right - (1 << p) + 1];
+}
+\end{minted}
+
+Totuși, consumul de memorie al metodei \textit{sparse table} este enorm. În afară de cazul în care avem multe interogări, timpul de $\bigoh(1)$ per interogare nu justifică risipa de memorie. Exemplu: Cu \textit{sparse table}, pentru $n = \np{200000}$ vom folosi $\np{200000} \times 18$ întregi, adică 14,4 MB. Pentru arborele de intervale, presupunînd că îl completăm pînă la 256K elemente, vom folosi 512K întregi, adică 2 MB. Nu am rulat benchmark-uri, dar mă aștept să existe o diferență de viteză din cauza cache-ului.
+
+\subsection{RMQ cu stivă ordonată}
+
+Includ și această metodă ad-hoc. Ordonăm interogările după capătul drept. Parcurgem vectorul de la stînga la dreapta și menținem o stivă crescătoare de minime parțiale. La poziția $r$ putem răspunde la toate interogările $[l, r]$. Răspunsul este valoarea minimă din stivă aflată pe o poziție mai mare sau egală cu $l$. Așadar este suficientă o căutare binară.
+
+Exemplu: fie vectorul $V=(6, 3, \mathbf{2}, 10, 8, \mathbf{6}, 9, 15, \mathbf{9}, \mathbf{20}, \dots)$. Cînd ajungem la elementul 20, stiva constă din valorile trecute cu aldin. Cînd răspundem la interogările cu capătul $r$ pe elementul 20, răspunsul va fi una dintre valorile din stivă, în funcție de poziția capătului $l$.
+
+\section{LCA cu liniarizare}
+
+Facem o liniarizare Euler cu repetiție. În vector notăm nodurile, dar ne interesează de fapt adîncimea acelor noduri. Astfel, putem reformula interogările LCA ca „găsește nodul de adîncime minimă dintre ultima apariție a lui $u$ și prima apariție a lui $v$”. Așadar, toate metodele de RMQ pe vector se aplică și aici.
+
+\import{./figures}{lca-linearization.tex}
+
+În continuare, vom mai discuta patru metode specifice arborilor, respectiv:
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{SlSlSlSl}
+    \textbf{metodă} & \textbf{preprocesare} & \textbf{interogări} & \textbf{memorie extra} \\
+    \hline
+    Descompunere în radical & $\bigoh(n)$ & $\bigoh(q \sqrt{n})$ & $\bigoh(n)$ \\
+    Binary lifting ($\log n$ pointeri) & $\bigoh(n \log n)$ & $\bigoh(q \log n)$ & $\bigoh(n \log n)$ \\
+    Binary lifting (2 pointeri) & $\bigoh(n)$ & $\bigoh(q \log n)$ & $\bigoh(n)$ \\
+    Tarjan offline & $\bigoh(q + n \log^{*} n)$ & --- & $\bigoh(n)$ \\
+    \hline
+  \end{tabular}
+
+  \caption{Metode pentru aflarea LCA.}
+\end{table}
+
+\section{LCA cu descompunere în radical}
+
+Următoarele trei metode folosesc noțiunea de \textit{jump pointers}: pointeri la strămoși care ne ajută să accelerăm urcarea din $u$ și din $v$ în căutarea LCA-ului. Pentru descompunerea în radical,
+
+\begin{itemize}
+  \item Fiecare nod ține un pointer la părinte și unul la strămoșul aflat cu $\sqrt{n}$ noduri mai sus.
+
+  \item Construcția evidentă durează $\bigoh(n \sqrt{n})$: din fiecare nod, urcăm $\sqrt{n}$ niveluri. Ea poate fi redusă la $\bigoh(n)$ dacă menținem stiva DFS pe durata parcurgerii.
+
+  \item Fiecare interogare durează $\bigoh(\sqrt{n})$.
+
+  \item Variantă: fiecare nod stochează un pointer la cel mai de jos strămoș de adîncime multiplu de $\sqrt{n}$.
+\end{itemize}
+
+\label{problem:tree-lca-sqrt}
+\hyperref[code:tree-lca-sqrt]{implementare}
+
+\section{LCA cu binary lifting (\texorpdfstring{$\log n$}{log n} pointeri per nod)}
+
+\begin{itemize}
+  \item Fiecare nod ține pointeri la strămoșii aflați mai sus cu 1, 2, 4, 8... niveluri.
+
+  \item Construcția durează $\bigoh(n \log n)$, similară algoritmului de RMQ.
+
+  \item Necesită $\bigoh(n \log n)$ memorie.
+
+  \item Fiecare interogare durează $\bigoh(\log n)$.
+
+  \begin{itemize}
+    \item Deci nu prea mai merită. Pe vector plăteam memoria $\bigoh(n \log n)$ pentru că interogările durau $\bigoh(1)$.
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Detaliu de implementare}
+
+Metodele cu \textit{jump pointers} pot fi implementate în două feluri:
+
+\begin{enumerate}
+  \item Aducem nodurile la aceeași adîncime. Apoi urcăm în paralel cu ambele pînă la strămoșul comun.
+
+  \item Îl urcăm pe $u$ cît timp nu devine strămoș al lui $v$. La final, $u$ este LCA-ul.
+\end{enumerate}
+
+A doua implementare (cu test de strămoș) este mai scurtă și puțin mai rapidă.
+
+\label{problem:tree-lca-binary-lifting}
+\hyperref[code:tree-lca-binary-lifting]{implementări}
+
+\section{LCA cu binary lifting (2 pointeri per nod)}
+
+\begin{itemize}
+  \item Un \href{https://codeforces.com/blog/entry/74847}{articol} bun pe Codeforces (imaginile sînt foarte utile).
+
+  \item Fiecare nod $x$ ține un pointer la părinte și un pointer numit jump, construit după regula:
+
+  \item Fie $y$ părintele lui $x$, fie $z = jump[y]$ și fie $t = jump[z]$.
+
+  \item Dacă distanțele între $y$-$z$ și $z$-$t$ sînt egale, atunci $jump[x] = t$.
+
+  \item Altfel $jump[x] = y$.
+
+  \item Iau naștere niște pointeri cu o \href{https://github.com/CatalinFrancu/nerdvana/blob/main/trees/lca/jump-pointer-pattern.cpp}{structură} curioasă. Cei pasionați pot citi despre secvență pe OEIS, secvențele \href{https://oeis.org/A082850}{A082850} și \href{https://oeis.org/A182105}{A182105}.
+
+  \item Folosim această informație pentru a găsi LCA în $\bigoh(\log n)$.
+
+  \item Orice structură de pointeri „aproximativ” logaritmică funcționează aici. Am făcut și un experiment cu formula LSB (exemplu: un nod la adîncime $20 = 10100_2$ va pointa patru nivele mai sus).
+\end{itemize}
+
+\label{problem:tree-lca-two-pointers}
+\hyperref[code:tree-lca-two-pointers]{implementări}
+
+\section{LCA cu algoritmul lui Tarjan (offline)}
+
+\begin{itemize}
+  \item Funcționează cînd interogările sînt date în avans.
+
+  \item Distribuie interogările după noduri. Interogarea $(u,v)$ este distribuită în listele lui $u$ și $v$.
+
+  \item Răspunde la interogări într-un singur DFS (!).
+
+  \item Principiu de bază: grupăm nodurile deja vizitate („negre”) și pe cele în curs de vizitare („gri”) în mulțimi disjuncte (cu \textit{union-find}).
+
+  \item Fiecare mulțime va conține exact un nod gri, plus toți descendenții săi, cu excepția nodului gri în care se află acum DFS-ul. La terminarea unui nod gri, el este unit cu părintele său.
+
+  \item Putem răspunde la o interogare $(u, v)$ în momentul în care $v$ este negru, iar pe $u$ tocmai îl vizităm. Răspunsul (LCA) este nodul gri din mulțimea lui $v$.
+\end{itemize}
+
+\label{problem:tree-lca-tarjan}
+\hyperref[code:tree-lca-tarjan]{implementare}
+
+\section{Benchmarks}
+
+Am făcut aceste teste pe un arbore cu 200.000 de noduri, cu un lanț de cel puțin 150.000 de noduri. Fișierele de intrare au 5,2 MB.
+
+\begin{itemize}
+  \item Tarjan: 160 ms
+  \item \textit{binary lifting}, doi pointeri (cu test de strămoș sau nu): 190 ms
+  \item \textit{binary lifting}, doi pointeri (metoda LSB): 250 ms
+  \item \textit{binary lifting}, $\log n$ pointeri, cu test de strămoș: 290 ms
+  \item \textit{binary lifting}, $\log n$ pointeri: 320 ms
+  \item descompunere în radical: 900 ms
+\end{itemize}
+
+Concluzii: cînd interogările sînt date în avans, Tarjan cîștigă. În rest, metodele cu \textit{binary lifting} cu doar doi pointeri per nod sînt mai rapide și consumă mai puțină memorie decît metoda cu $\log n$ pointeri per nod.
