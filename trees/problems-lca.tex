@@ -63,3 +63,22 @@ La arbori, multe informații sînt redundante și putem stoca doar o submulțime
 
   \item Al $k$-lea strămoș al unui nod poate fi găsit ca strămoșul de la adîncimea $d[u]-k$ al unui nod, dacă cunoaștem adîncimile nodurilor.
 \end{itemize}
+
+\subsection{Problema Duff in the Army (Codeforces)}
+\label{problem:duff-in-the-army}
+
+\href{https://codeforces.com/contest/587/problem/C}{enunț}
+$\bullet$
+\hyperref[code:duff-in-the-army]{sursă}
+$\bullet$
+\href{https://www.youtube.com/watch?v=EIxsPBbZ_b8}{coloană sonoră} \emoji{slightly-smiling-face}
+
+Rezumat: Se dă un arbore cu $n$ noduri și $m$ locuitori. Locuitorul $i$ locuiește în orașul $c_i$. Răspundeți la $q$ interogări de forma $(u, v, a)$ cu semnificația: tipăriți primii $a$ locuitori, ordonați după ID, care locuiesc pe calea $(u, v)$. Notă: $a \leq 10$.
+
+Problema se duce tot în direcția aflării LCA. Dacă $LCA(u,v)=w$, și dacă aflăm populațiile pe căile $(u, w)$ și $(v, w)$, putem să le interclasăm în $\bigoh(a)$ și să păstrăm cele mai mici $a$ valori.
+
+Cum aflăm populația pe o cale? Nu văd o soluție în $\bigoh(a + \log n)$, dar $\bigoh(a \log n)$ este facilă. Orice algoritm de LCA ne oferă această complexitate dacă precalculăm, împreună cu pointerii în sus, și populația acoperită de acei pointeri. De exemplu, cu metoda \textit{binary lifting}, fiecare din pointerii peste 1, 2, 4, 8, ... niveluri rețin și primii $a$ membri ai populației de pe acea cale. Populația pe calea de lungime 16 se obține interclasînd cele două populații pe căile de lungime 8 și păstrînd cel mult 10 minime.
+
+Atenție la metoda folosită! \textit{Binary lifting} cu memorie $\bigoh(n \log n)$ va necesita $\np{100000} \times 18 \times 10$ întregi, adică 72 MB în plus. Este fezabil, dar este de evitat. Implementarea mea este printre cele mai rapide și nu face nimic deosebit, doar folosește \textit{binary lifting} cu doi pointeri. Economia de memorie înseamnă economie de timp.
+
+Ne întîlnim, din nou, cu o situație care cere să particularizați structurile de date, nu doar să le pictați. Un alt exemplu de astfel de problemă este: să se preproceseze un arbore astfel încît să putem răspunde eficient la interogări de forma $(u,v)$ = maximul pe calea $u-v$. Și aici putem face fiecare \textit{jump pointer} să rețină maximul pe calea subîntinsă. Problema are și soluții mai eficiente, dar aceasta este relativ elementară.
