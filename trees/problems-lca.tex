@@ -64,6 +64,44 @@ La arbori, multe informații sînt redundante și putem stoca doar o submulțime
   \item Al $k$-lea strămoș al unui nod poate fi găsit ca strămoșul de la adîncimea $d[u]-k$ al unui nod, dacă cunoaștem adîncimile nodurilor.
 \end{itemize}
 
+\subsection{Problema Company (Codeforces)}
+\label{problem:company}
+
+\href{https://codeforces.com/contest/1062/problem/E}{enunț}
+$\bullet$
+\hyperref[code:company]{sursă}
+
+Problema poate fi rezumată astfel: dintre toate nodurile cu numere de la $l$ la $r$, cum putem elimina un nod astfel încît LCA-ul celor rămase să aibă o adîncime cît mai mare, raportată la rădăcină?
+
+Întrebarea teoretică la care trebuie să răspundem este: care este LCA-ul unei submulțimi de noduri? Observăm că nu este nevoie să iterăm prin toate, ci este suficient să calculăm LCA-ul între primul și ultimul nod în ordinea descoperirii lor în DFS. De aceea, ca să încercăm să coborîm LCA-ul, trebuie să eliminăm unul dintre aceste noduri. Altfel LCA-ul submulțimii după eliminarea unui nod va rămîne nemodificat față de LCA-ul original.
+
+Să presupunem că găsim aceste noduri, fie ele $x$ și $y$. Încercăm să îl eliminăm pe $x$ și să calculăm LCA-ul submulțimii $[l,x-1] \cup [x+1,r]$. Apoi îl eliminăm pe $y$ și calculăm LCA-ul submulțimii $[l,y-1] \cup [y+1,r]$. Afișăm varianta care duce la un LCA de adîncime maximă.
+
+\subsubsection*{Detalii de implementare}
+
+Ca să găsim timpii DFS minim/maxim ai nodurilor din intervalul $[l,r]$, putem construi un vector $t[]$ unde $t[u]$ este timpul vizitării nodului $u$. Astfel reducem subproblema la una de RMQ. Pentru a deduce, din acești timpi, nodul efectiv (primul nod vizitat dintre toate din $[l,r]$) este suficient un vector $inv[]$ unde $inv[i]$ este nodul vizitat la momentul $i$. Practic $t$ și $inv$ sînt permutări inverse.
+
+Pentru intervalele la care ajungem după eliminarea lui $x$ și $y$ (respectiv $[l,x-1]$, $[x+1,r]$ și celelalte) avem nevoie să aflăm LCA-ul, deci avem nevoie tot de RMQ ca să aflăm primul și ultimul nod în ordinea DFS. Dar am făcut următoarea observație care reduce mult numărul de interogări.
+
+Fie $a,b,c,d$ primul, al doilea, penultimul și respectiv ultimul nod din intervalul $[l,r]$, în ordinea DFS. Atunci iau naștere două cazuri:
+
+\begin{itemize}
+  \item Dacă îl eliminăm pe $a$, LCA-ul nodurilor rămase este $LCA(b,d)$.
+  \item Dacă îl eliminăm pe $d$, LCA-ul nodurilor rămase este $LCA(a,c)$.
+\end{itemize}
+
+De aceea, am proiectat o structură de date care să returneze, pentru o interogare $[l,r]$, primele două minime și primele două maxime din intervalul $[l,r]$. Practic structura returnează exact cele patru valori $a,b,c,d$.
+
+Putem folosi RMQ cu sparse table, cu atenție la detalii la calculul celui de-al doilea maxim/minim (intervalele de lungime putere a lui 2 pot fi suprapuse). Dar nu-mi place ideea de a consuma memorie $\mathcal{O}(n \log n)$ fără rost. \emoji{neutral-face} De aceea, am implementat structura ca pe un arbore de intervale. Operația critică este combinarea a două tupluri $(a', b', c', d')$ și $(a'', b'', c'', d'')$. Implementarea este relativ ușoară:
+
+\begin{itemize}
+  \item Dacă $a' < a''$ atunci primul minim este $a'$, iar al doilea minim este $\min(b', a'')$.
+  \item Dacă $a' \geq a''$ atunci primul minim este $a''$, iar al doilea minim este $\min(b'', a')$.
+  \item Similar pentru maxime.
+\end{itemize}
+
+Sursa mea este printre cele mai rapide, cu excepția celor care parsează intrarea. Suspectez că ajută mult (1) economia de memorie și (2) calculul simultan al minimelor și al maximelor, în aceeași structură de date.
+
 \subsection{Problema Duff in the Army (Codeforces)}
 \label{problem:duff-in-the-army}
 
