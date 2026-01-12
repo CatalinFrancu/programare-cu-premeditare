@@ -1,0 +1,71 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.7,
+    every node/.style={scale=0.7},
+    spanned/.style={fill=blue!20},
+    ]
+    \begin{scope}[
+      every node/.style={
+        circle,
+        draw,
+        inner sep=2pt,
+        minimum size=20pt,
+      },
+      level distance=20mm,
+      level 1/.style={sibling distance=70mm},
+      level 2/.style={sibling distance=45mm},
+      level 3/.style={sibling distance=20mm}
+      ]
+      \node {1}
+      child {node {7}
+        child {node {4}}
+        child {node {9}}
+      }
+      child {node[spanned] {5}
+        child {node[spanned] {11}
+          child {node {2}}
+          child {node[spanned] {14}}
+          child {node {6}}
+        }
+        child {node[spanned] {3}
+          child {node {13}
+            child {node {10}}
+          }
+          child {node[spanned] {8}}
+        }
+      }
+      child {node {12}};
+    \end{scope}
+
+    \begin{scope}[shift={(-10,-9.5)}]
+      % First row: indices
+      \matrix[right] (index) at (0, 0) [
+      matrix of nodes,
+      nodes={anchor=center, minimum size=20pt, color=black!50, font=\small},
+      ] {
+        1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 &
+        15 & 16 & 17 & 18 & 19 & 20 & 21 & 22 & 23 & 24 & 25 & 26 & 27 & 28\\
+      };
+
+      % Second row: Euler linearization
+      \node[label] (label-abstract) at (-0.5, -0.75) {Euler};
+
+      \matrix[right] (abstract) at (0, -0.75) [
+      matrix of nodes,
+      nodes={draw, anchor=center, minimum size=20pt},
+      column sep=-\pgflinewidth,
+      row sep=-\pgflinewidth
+      ] {
+        1 & 7 & 4 & 4 & 9 & 9 & 7 & 5 & 11 & 2 & 2 & 14 & \node[spanned]{14}; &
+        \node[spanned]{6}; & \node[spanned]{6}; & \node[spanned]{11}; & \node[spanned]{3}; &
+        \node[spanned]{13}; & \node[spanned]{10}; & \node[spanned]{10}; & \node[spanned]{13}; &
+        \node[spanned]{8}; & 8 & 3 & 5 & 12 & 12 & 1\\
+      };
+    \end{scope}
+  \end{tikzpicture}
+
+  \caption{Un arbore cu liniarizarea Euler și intervalul corespunzător interogării pe calea $(14, 8)$.}
+  \label{fig:tree-mo}
+\end{figure}

@@ -1,0 +1,66 @@
+\chapter{Algoritmul lui Mo pe arbore}
+
+\section{Limitele liniarizărilor}
+
+Ca o scurtă recapitulare, liniarizările ne ajută:
+
+\begin{itemize}
+  \item pentru interogări pe subarbore: liniarizarea DFS atribuie fiecărui subarbore un interval compact din vector;
+
+  \item pentru interogări pe calea de la un nod la rădăcină: liniarizarea Euler + vectorii de diferențe atribuie fiecărei căi un prefix din vector.
+\end{itemize}
+
+Uneori știm să procesăm și interogări pe căi arbitrare, vezi problema \hyperref[problem:max-flow]{Max Flow}. Dar algoritmii funcționează exprimînd calea $(u,v)$ ca pe o combinație de căi $(u,r)$, $(v,r)$ și $(l,r)$, unde $r$ este rădăcina arborelui, iar $l = LCA(u,v)$. Așadar, avem nevoie ca funcțiile pe fiecare cale să fie \textbf{inversabile} (sume, xor-uri). În probleme de minim/maxim, valori distincte etc., ce știm pînă acum este insuficient.
+
+\section{Reducerea la algoritmul lui Mo}
+
+Putem folosi algoritmul lui Mo pentru a răspunde la interogări pe căi în unele cazuri neinversabile. Găsiți \href{https://codeforces.com/blog/entry/43230}{un tutorial} destul de bun pe Codeforces, pe care îl vom relua aici. În esență,
+
+\begin{enumerate}
+  \item Construim o liniarizare de tip Euler (două apariții pentru fiecare nod).
+  \item Transformăm interogările pe căi $(u,v)$ în interogări pe intervale în liniarizare.
+  \item Sortăm interogările și le aflăm răspunsurile cu algoritmul lui Mo.
+\end{enumerate}
+
+Desigur, misterul este la pasul 2. De aceea, să considerăm...
+
+\section{Un exemplu}
+
+\import{./figures}{tree-mo.tex}
+
+Să considerăm interogarea $(14, 8)$, privitoare la nodurile 14, 11, 5, 3, 8. În liniarizarea Euler, ne interesează intervalul dintre timpii 13 și 22. Am ales acest interval deoarece el se întinde de la \textbf{ultima} apariție a lui 14 pînă la \textbf{prima} apariție a lui 8. Să facem niște observații privitoare la acest interval.
+
+\begin{enumerate}
+  \item Nodurile 14, 11, 3 și 8 apar exact o dată.
+  \item Nodul $5 = LCA(14, 8)$ nu apare.
+  \item Nodurile 6, 13 și 10 apar de două ori.
+  \item Celelalte noduri (1,  2 etc.) nu apar.
+\end{enumerate}
+
+Ne putem convinge ușor că aceste observații sînt generale. Trebuie doar să urmărim evoluția DFS-ului. De exemplu, observația (1): pornim de la momentul cînd DFS-ul părăsește nodul 14, deci va părăsi în curînd și nodul 11. Apoi explorează nodurile 3 și 8, dar nu apucă să pe părăsească în intervalul ales. De aceea, toate aceste noduri apar exact o dată.
+
+\section{Un caz particular}
+
+Mai trebuie să tratăm și cazul cînd, pentru o interogare $(u,v)$, avem $LCA(u,v) = u$, cu alte cuvinte $u$ este strămoș al lui $v$.
+
+Clarificare: mereu vom ordona  perechea $(u,v)$ în ordinea descoperirii în DFS. De aceea LCA-ul poate fi doar $u$, niciodată $v$. Aceasta deoarece un nod este descoperit înaintea tuturor descendenților săi.
+
+Pentru interogarea (5,14), privitoare la nodurile 5, 11, și 14, vom considera intervalul de timp [8, 12], cuprins între primele apariții ale lui 5 și 14. Se schimbă doar observația (2): LCA-ul apare și el exact o dată.
+
+\section{Descrierea completă}
+
+Pentru o interogare $(u,v)$ cu $t_i[u] < t_i[v]$:
+
+\begin{enumerate}
+  \item Dacă $u$ este strămoș al lui $v$, atunci considerăm intervalul din liniarizare $[t_i[u], t_i[v]]$. Nodurile de pe cale sînt cele care apar exact o dată în acest interval.
+
+  \item Dacă $u$ \textbf{nu} este strămoș al lui $v$, atunci considerăm intervalul $[t_o[u], t_i[v]]$. Nodurile de pe cale sînt cele care apar exact o dată, plus nodul $LCA(u,v)$.
+\end{enumerate}
+
+\section{Structura de date necesară}
+
+Acum putem specifica ultimul amănunt: ce anume stochează structura de date pentru intervalul curent? Desigur, depinde de problemă, dar un mecanism este general.
+
+Structura trebuie să țină minte ce noduri apar în ea exact o dată. De exemplu, pentru subsecvența (5 11 2 2 14), structura trebuie să știe că nodurile 5, 11 și 14 apar exact o dată. Dacă extindem spre dreapta secvența și încorporăm încă un 14, informația despre nodul 14 trebuie \textbf{ștearsă} din structură, căci 14 nu mai este pe cale.
+
+Pe măsură ce extindem și contractăm intervalul cu algoritmul lui Mo, la anumite momente structura va reține date pentru intervale care nu corespund unor căi. Dar asta este OK cîtă vreme, în momentul unei interogări, structura este coerentă.

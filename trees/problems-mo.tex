@@ -1,0 +1,75 @@
+\section{Probleme}
+
+\subsection{Problema Dating (Codeforces)}
+\label{problem:dating}
+
+\href{https://codeforces.com/contest/852/problem/I}{enunț}
+$\bullet$
+\hyperref[code:dating]{surse}
+
+Dacă doriți probleme suplimentare, puteți încerca:
+
+\begin{itemize}
+  \item ușoară: \href{https://www.spoj.com/problems/COT2/}{Count on a Tree II} (SPOJ)
+  \item grea: \href{https://www.codechef.com/problems/CLOSEFAR}{So Close Yet So Far} (CodeChef)
+\end{itemize}
+
+Problema se încadrează destul de clar în situația sus-menționată. Interogările sînt pe cale și nu sînt ușor de combinat din bucăți. Dacă notăm cu $l = LCA(u,v)$, nu este evident cum am putea calcula, apoi însuma, valorile pe căile $(u, l)$ și $(l, v)$.
+
+În schimb, dacă ne vine ideea să încercăm algoritmul lui Mo pe arbore, soluția este facilă. Structura curentă menține
+
+\begin{itemize}
+  \item un boolean pentru fiecare nod, ca să știm ce noduri se află în structură;
+  \item frecvența numerelor favorite, separat pentru fete și pentru băieți.
+\end{itemize}
+
+Includerea / excluderea unui nod este ușoară. Pe parcurs, menținem în permanență răspunsul (numărul de perechi pe care le putem forma).
+
+Anexa include tot codul, dar esența este:
+
+\begin{minted}{c}
+struct mo_tracker {
+  bool on[MAX_NODES + 1];  // nodurile care apar exact o dată în interval
+  int f[MAX_NODES + 1][2]; // frecvența numerelor favorite pentru fiecare gen
+  int l, r;
+  unsigned num_pairs;
+
+  void init() {
+    l = 1;
+    r = 0;
+  }
+
+  void toggle(int pos) {
+    int u = euler[pos];
+    on[u] = !on[u];
+    int sign = on[u] ? +1 : -1;
+    f[nd[u].fav][nd[u].gender] += sign;
+    num_pairs += sign * f[nd[u].fav][!nd[u].gender];
+  }
+
+  unsigned query(int target_l, int target_r, int extra_fav, bool extra_gender) {
+    while (l > target_l) {
+      toggle(--l);
+    }
+    while (r < target_r) {
+      toggle(++r);
+    }
+    while (l < target_l) {
+      toggle(l++);
+    }
+    while (r > target_r) {
+      toggle(r--);
+    }
+
+    if (extra_fav) {
+      return num_pairs + f[extra_fav][!extra_gender];
+    } else {
+      return num_pairs;
+    }
+  }
+};
+\end{minted}
+
+\subsubsection*{Comparația implementărilor}
+
+Implementarea pe care o consideram mai eficientă este cea cu Tarjan pentru LCA și cu liste proprii. Dar ea este doar cu 10\% mai rapidă decît implementarea mai scurtă, cu metoda celor doi pointeri pentru LCA și cu vectori STL. Fie Codeforces este foarte neconsecvent, fie eu nu mai înțeleg lumea. \emoji{smiling-face-with-tear}
