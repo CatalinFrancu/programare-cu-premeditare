@@ -141,7 +141,7 @@ $\bullet$
 
 După liniarizare și după normalizarea culorilor, problema se reduce destul de direct la numărarea culorilor distincte dintr-un interval. O variantă este cu algoritmul lui Mo, în $\bigoh(n \sqrt{n})$. O altă variantă posibilă este cu tehnica \textit{small to large} (vom reveni cînd studiem tehnica).
 
-Soluția mai eficientă, în $\bigoh(n \log n)$, este cea studiată în capitolele anterioare (problema \href{https://www.spoj.com/problems/DQUERY/}{DQUERY}). Procesăm interogările în ordinea crescătoare a capătului drept. Pe parcursul procesării, într-un AIB ținem valori de 1 pentru poziția celei mai din dreapta apariții a fiecărei culori.
+Soluția mai eficientă, în $\bigoh(n \log n)$, este cea studiată în capitolele anterioare (problema \href{https://www.spoj.com/problems/DQUERY/}{D-query}). Procesăm interogările în ordinea crescătoare a capătului drept. Pe parcursul procesării, într-un AIB ținem valori de 1 pentru poziția celei mai din dreapta apariții a fiecărei culori.
 
 În practică implementarea se simplifică mult, căci interogările pe liniarizare au o structură foarte specială. Dacă răspundem la interogări la revenirea din nod, atunci în mod evident ele vor fi ordonate după capătul drept, deoarece capătul drept este dat de timpul curent din DFS, care poate doar să crească! De aceea,
 
