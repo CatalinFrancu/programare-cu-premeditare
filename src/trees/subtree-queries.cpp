@@ -48,23 +48,23 @@ struct fenwick_tree {
 };
 
 list adj[2 * MAX_NODES];
-node n[MAX_NODES + 1];
+node nd[MAX_NODES + 1];
 fenwick_tree fen;
-int num_nodes, num_queries;
+int n, num_queries;
 
 void add_neighbor(int u, int v) {
   static int ptr = 1;
-  adj[ptr] = { v, n[u].ptr };
-  n[u].ptr = ptr++;
+  adj[ptr] = { v, nd[u].ptr };
+  nd[u].ptr = ptr++;
 }
 
 void read_input_data() {
-  scanf("%d %d", &num_nodes, &num_queries);
-  for (int u = 1; u <= num_nodes; u++) {
-    scanf("%d", &n[u].val);
+  scanf("%d %d", &n, &num_queries);
+  for (int u = 1; u <= n; u++) {
+    scanf("%d", &nd[u].val);
   }
 
-  for (int i = 0; i < num_nodes - 1; i++) {
+  for (int i = 0; i < n - 1; i++) {
     int u, v;
     scanf("%d %d", &u, &v);
     add_neighbor(u, v);
@@ -75,24 +75,24 @@ void read_input_data() {
 void flatten(int u) {
   static int time = 0;
 
-  n[u].start = ++time;
+  nd[u].start = ++time;
 
-  for (int ptr = n[u].ptr; ptr; ptr = adj[ptr].next) {
+  for (int ptr = nd[u].ptr; ptr; ptr = adj[ptr].next) {
     int v = adj[ptr].val;
-    if (!n[v].start) {
+    if (!nd[v].start) {
       flatten(v);
     }
   }
 
-  n[u].finish = time;
+  nd[u].finish = time;
 }
 
 void build_fenwick_tree() {
-  for (int u = 1; u <= num_nodes; u++) {
-    fen.v[n[u].start] = n[u].val;
+  for (int u = 1; u <= n; u++) {
+    fen.v[nd[u].start] = nd[u].val;
   }
 
-  fen.build(num_nodes);
+  fen.build(n);
 }
 
 void process_queries() {
@@ -102,10 +102,10 @@ void process_queries() {
     if (type == 1) {
       int val;
       scanf("%d", &val);
-      fen.add(n[u].start, val - n[u].val);
-      n[u].val = val;
+      fen.add(nd[u].start, val - nd[u].val);
+      nd[u].val = val;
     } else {
-      printf("%lld\n", fen.range_sum(n[u].start, n[u].finish));
+      printf("%lld\n", fen.range_sum(nd[u].start, nd[u].finish));
     }
   }
 }

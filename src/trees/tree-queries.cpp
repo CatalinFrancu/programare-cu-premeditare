@@ -14,21 +14,21 @@ struct node {
 };
 
 list adj[2 * MAX_NODES];
-node n[MAX_NODES + 1];
-int num_nodes, num_queries;
+node nd[MAX_NODES + 1];
+int n, num_queries;
 
 void add_neighbor(int u, int v, int pos) {
-  adj[pos] = { v, n[u].ptr };
-  n[u].ptr = pos;
+  adj[pos] = { v, nd[u].ptr };
+  nd[u].ptr = pos;
 }
 
 void read_tree() {
-  scanf("%d %d", &num_nodes, &num_queries);
-  for (int u = 1; u <= num_nodes; u++) {
-    n[u].ptr = NIL;
+  scanf("%d %d", &n, &num_queries);
+  for (int u = 1; u <= n; u++) {
+    nd[u].ptr = NIL;
   }
 
-  for (int i = 0; i < num_nodes - 1; i++) {
+  for (int i = 0; i < n - 1; i++) {
     int u, v;
     scanf("%d %d", &u, &v);
     add_neighbor(u, v, 2 * i);
@@ -39,21 +39,21 @@ void read_tree() {
 void euler_tour(int u, int parent) {
   static int time = 0;
 
-  n[u].parent = parent;
-  n[u].time_in = ++time;
-  for (int ptr = n[u].ptr; ptr != NIL; ptr = adj[ptr].next) {
+  nd[u].parent = parent;
+  nd[u].time_in = ++time;
+  for (int ptr = nd[u].ptr; ptr != NIL; ptr = adj[ptr].next) {
     int v = adj[ptr].v;
     if (v != parent) {
       euler_tour(v, u);
     }
   }
-  n[u].time_out = ++time;
+  nd[u].time_out = ++time;
 }
 
 bool is_ancestor(int u, int v) {
   return
-    (n[u].time_in <= n[v].time_in) &&
-    (n[u].time_out >= n[v].time_out);
+    (nd[u].time_in <= nd[v].time_in) &&
+    (nd[u].time_out >= nd[v].time_out);
 }
 
 void process_queries() {
@@ -61,11 +61,11 @@ void process_queries() {
     int size, u, lowest;
     bool has_path = true;
     scanf("%d %d", &size, &lowest);
-    lowest = n[lowest].parent;
+    lowest = nd[lowest].parent;
 
     while (--size) {
       scanf("%d", &u);
-      u = n[u].parent;
+      u = nd[u].parent;
       if (is_ancestor(lowest, u)) {
         lowest = u;
       } else if (!is_ancestor(u, lowest)) {

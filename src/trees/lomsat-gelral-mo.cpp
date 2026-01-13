@@ -12,7 +12,6 @@ struct node {
   int color, orig_pos;
   int start, finish;
   int ptr; // lista de adiacență
-  long long sum;
 };
 
 struct accountant {
@@ -67,26 +66,27 @@ struct accountant {
 };
 
 list adj[2 * MAX_NODES];
-node n[MAX_NODES + 1];
+node nd[MAX_NODES + 1];
 int color[MAX_NODES + 1];
+long long answer[MAX_NODES + 1];
 accountant acc;
-int num_nodes, block_size;
+int n, block_size;
 
 void add_neighbor(int u, int v) {
   static int ptr = 1;
-  adj[ptr] = { v, n[u].ptr };
-  n[u].ptr = ptr++;
+  adj[ptr] = { v, nd[u].ptr };
+  nd[u].ptr = ptr++;
 }
 
 void read_input_data() {
-  scanf("%d", &num_nodes);
+  scanf("%d", &n);
 
-  for (int u = 1; u <= num_nodes; u++) {
-    scanf("%d", &n[u].color);
-    n[u].orig_pos = u;
+  for (int u = 1; u <= n; u++) {
+    scanf("%d", &nd[u].color);
+    nd[u].orig_pos = u;
   }
 
-  for (int i = 0; i < num_nodes - 1; i++) {
+  for (int i = 0; i < n - 1; i++) {
     int u, v;
     scanf("%d %d", &u, &v);
     add_neighbor(u, v);
@@ -97,21 +97,22 @@ void read_input_data() {
 void dfs(int u) {
   static int time = 0;
 
-  n[u].start = ++time;
-  color[time] = n[u].color;
+  nd[u].start = ++time;
+  color[time] = nd[u].color;
 
-  for (int ptr = n[u].ptr; ptr; ptr = adj[ptr].next) {
+  for (int ptr = nd[u].ptr; ptr; ptr = adj[ptr].next) {
     int v = adj[ptr].val;
-    if (!n[v].start) {
+    if (!nd[v].start) {
       dfs(v);
     }
   }
 
-  n[u].finish = time;
+  nd[u].finish = time;
 }
 
 void sort_in_mo_order() {
-  std::sort(n + 1, n + num_nodes + 1, [](node& u, node& v) {
+  std::sort(nd + 1, nd + n + 1, [](node& u, node& v) {
+    // TODO fewer divisions
     int bu = u.start / block_size;
     int bv = v.start / block_size;
     if (bu != bv) {
@@ -124,25 +125,18 @@ void sort_in_mo_order() {
   });
 }
 
-void sort_in_original_order() {
-  std::sort(n + 1, n + num_nodes + 1, [](node& u, node& v) {
-    return u.orig_pos < v.orig_pos;
-  });
-}
-
 void process_queries() {
-  block_size = sqrt(num_nodes);
+  block_size = sqrt(n);
   sort_in_mo_order();
   acc.init(color);
-  for (int u = 1; u <= num_nodes; u++) {
-    n[u].sum = acc.query(n[u].start, n[u].finish);
+  for (int u = 1; u <= n; u++) {
+    answer[nd[u].orig_pos] = acc.query(nd[u].start, nd[u].finish);
   }
-  sort_in_original_order();
 }
 
 void write_output_data() {
-  for (int u = 1; u <= num_nodes; u++) {
-    printf("%lld ", n[u].sum);
+  for (int u = 1; u <= n; u++) {
+    printf("%lld ", answer[u]);
   }
   printf("\n");
 }

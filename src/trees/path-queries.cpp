@@ -44,23 +44,23 @@ struct fenwick_tree {
 };
 
 list adj[2 * MAX_NODES];
-node n[MAX_NODES + 1];
+node nd[MAX_NODES + 1];
 fenwick_tree fen;
-int num_nodes, num_queries;
+int n, num_queries;
 
 void add_neighbor(int u, int v) {
   static int ptr = 1;
-  adj[ptr] = { v, n[u].ptr };
-  n[u].ptr = ptr++;
+  adj[ptr] = { v, nd[u].ptr };
+  nd[u].ptr = ptr++;
 }
 
 void read_input_data() {
-  scanf("%d %d", &num_nodes, &num_queries);
-  for (int u = 1; u <= num_nodes; u++) {
-    scanf("%d", &n[u].val);
+  scanf("%d %d", &n, &num_queries);
+  for (int u = 1; u <= n; u++) {
+    scanf("%d", &nd[u].val);
   }
 
-  for (int i = 0; i < num_nodes - 1; i++) {
+  for (int i = 0; i < n - 1; i++) {
     int u, v;
     scanf("%d %d", &u, &v);
     add_neighbor(u, v);
@@ -71,25 +71,25 @@ void read_input_data() {
 void flatten(int u) {
   static int time = 0;
 
-  n[u].time_in = ++time;
+  nd[u].time_in = ++time;
 
-  for (int ptr = n[u].ptr; ptr; ptr = adj[ptr].next) {
+  for (int ptr = nd[u].ptr; ptr; ptr = adj[ptr].next) {
     int v = adj[ptr].val;
-    if (!n[v].time_in) {
+    if (!nd[v].time_in) {
       flatten(v);
     }
   }
 
-  n[u].time_out = ++time;
+  nd[u].time_out = ++time;
 }
 
 void build_fenwick_tree() {
-  for (int u = 1; u <= num_nodes; u++) {
-    fen.v[n[u].time_in] = n[u].val;
-    fen.v[n[u].time_out] = -n[u].val;
+  for (int u = 1; u <= n; u++) {
+    fen.v[nd[u].time_in] = nd[u].val;
+    fen.v[nd[u].time_out] = -nd[u].val;
   }
 
-  fen.build(2 * num_nodes);
+  fen.build(2 * n);
 }
 
 void process_queries() {
@@ -99,12 +99,12 @@ void process_queries() {
     if (type == 1) {
       int val;
       scanf("%d", &val);
-      int delta = val - n[u].val;
-      fen.add(n[u].time_in, delta);
-      fen.add(n[u].time_out, -delta);
-      n[u].val = val;
+      int delta = val - nd[u].val;
+      fen.add(nd[u].time_in, delta);
+      fen.add(nd[u].time_out, -delta);
+      nd[u].val = val;
     } else {
-      printf("%lld\n", fen.sum(n[u].time_in));
+      printf("%lld\n", fen.sum(nd[u].time_in));
     }
   }
 }
