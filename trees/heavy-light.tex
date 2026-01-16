@@ -1,0 +1,68 @@
+\chapter{Descompunere \textit{heavy-light}}
+
+Descompunerea \textit{heavy-light} (engl. \textit{heavy-light decomposition} sau HLD, numită și \textit{heavy path decomposition}) este încă o tehnică de liniarizare a arborilor, utilă pentru interogări pe căi.
+
+HLD costă un factor suplimentar de $\mathcal{O}(\log n)$, așadar genul de întrebări la care răspundem în $\mathcal{O}(\log n)$ pe vector ne vor costa $\mathcal{O}(\log^2 n)$ pe arbore.
+
+Înainte de a studia HLD, subliniez că este o unealtă puternică, dar greu de codat și lentă. Înainte de a vă repezi la ea, întrebați-vă dacă nu există o soluție mai simplă, adaptată nevoilor problemei. HLD intră doar în materia de lot (nu de baraj).
+
+\section{Limitările structurilor anterioare}
+
+Să pornim de la următoarea cerință. Se dă un arbore cu $n$ noduri. Fiecare nod are o valoare. Trebuie să procesăm $q$ operații de două tipuri:
+
+\begin{enumerate}
+  \item \ccode{update(v, x)}: Valoarea nodului $v$ devine $x$.
+  \item \ccode{max(u, v)}: Găsește valoarea maximă de pe lanțul $u-v$.
+\end{enumerate}
+
+Să trecem în revistă uneltele pe care le-am studiat pînă acum.
+
+\begin{itemize}
+  \item Un simplu DFS nu pare că poate propaga suficiente informații.
+
+  \item Liniarizarea DFS se pretează la interogări pe subarbore, nu pe cale.
+
+  \item Liniarizarea Euler se pretează la interogări pe calea de la un nod $u$ la rădăcină. Pentru interogări de maxime, nu putem descompune căi arbitrare în diferențe de căi pînă la rădăcină.
+
+  \item Tehnica \textit{small-to large} nu ne ajută aici.
+
+  \item LCA + \textit{binary lifting} rezolvă doar problema fără actualizări. Fiecare pointer notează și maximul nodurilor peste care trece. Dar la actualizare, dacă avem un nod cu $\mathcal{O}(n)$ fii, vom fi nevoiți să actualizăm informația din $\mathcal{O}(n)$ pointeri.
+
+  \item Similar și pentru orice tentativă de descompunere în radical.
+
+  \item Algoritmul lui Mo pe arbore funcționează, dar lent. Structura pentru intervalul curent trebuie să admită inserarea și ștergerea de valori și interogarea de maxim. Complexitatea va fi $\mathcal{O}(q \sqrt{n} \log n)$.
+\end{itemize}
+
+\section{Descompunerea}
+
+Știm deja că liniarizarea DFS garantează că orice subarbore corespunde unui interval compact. Dar dorim mai mult de atît. Să examinăm Figura \ref{fig:tree-heavy-light-1}
+
+\import{./figures}{tree-heavy-light-1.tex}
+
+Pentru fiecare nod intern $u$ din arbore, identificăm fiul $v$ cu subarborele maxim (cu cele mai multe noduri). Numim nodul $v$ \textbf{fiu greu} (engl. \textit{heavy}) al lui $u$, iar muchia $(u,v)$ \textbf{muchie grea}. Ceilalți fii ai lui $u$ și celelalte muchii care coboară din $u$ se numesc \textbf{fii ușori} (engl. \textit{light}), respectiv \textbf{muchii ușoare}. De exemplu, fiul greu al rădăcinii 1 este 18. Figura 1 indică muchiile ușoare cu linii subțiri, iar muchiile grele cu linii groase și colorate. Dacă un nod are mai mulți fii cu același număr maxim de noduri în subarbore, îl putem alege pe oricare ca greu.
+
+Observăm că, dacă pornim din orice nod, putem urma muchia grea pînă la o frunză. Astfel iau naștere \textbf{lanțuri grele}. Am colorat muchiile grele din același lanț folosind aceeași culoare.
+
+Mai facem un pas esențial: reorganizăm lista de adiacență a fiecărui nod ca să mutăm fiul greu primul (vom vedea cum implementăm asta în practică). Este important că această modificare nu schimbă răspunsurile la problemele tipice de arbori. Ordinea fiilor nu contează. Pentru arborele din Figura \ref{fig:tree-heavy-light-1}, versiunea reorganizată apare în Figura \ref{fig:tree-heavy-light-2}.
+
+\import{./figures}{tree-heavy-light-2.tex}
+
+Despre acest arbore putem da două garanții foarte puternice.
+
+\begin{enumerate}
+  \item Lanțurile formate din muchii grele corespund la intervale contigue în liniarizare. Într-adevăr, fiecare fiu greu este primul nod pe care îl vizitează părintele său. De exemplu, la intrarea în nodul 32, următoarele noduri vizitate vor fi 8, 14, 24 și 19.
+
+  \item Calea de la orice nod la rădăcină vizitează, total sau parțial, cel mult $\log n$ lanțuri. Echivalent, calea conține cel mult $\log n$ muchii ușoare. Demonstrația este identică cu cea de la metoda small to large: cînd urcăm dintr-un fiu $v$ în părintele $u$ aflat pe alt lanț, prin definiție traversăm o muchie ușoară. Deci $v$ este fiu ușor al lui $u$, ceea ce înseamnă că $v$ are un frate greu $h$. Subarborele lui $h$ este cel puțin la fel de mare ca al lui $v$, deci subarborele lui $u$ este cel puțin dublu față de subarborele lui $v$.
+\end{enumerate}
+
+Proprietatea (1) ne spune că putem trata lanțurile ca pe niște vectori. În particular, putem construi peste ele structuri de date ca arbori Fenwick sau arbori de intervale, care ne dau informații despre porțiuni de lanțuri în $\mathcal{O}(\log n)$. Proprietatea (2) ne spune că orice cale $u-v$ vizitează $\mathcal{O}(\log n)$ lanțuri. Avem, așadar, o metodă generală de a răspunde la interogări pe căi în $\mathcal{O}(\log^2 n)$.
+
+\section{Detalii de implementare}
+
+Facem întîi un DFS pentru calcularea mărimii subarborilor și a fiilor grei. Nu modificăm listele de adiacență, ci doar calculăm un cîmp \ccode{heavy} pe fiecare nod. Apoi facem un al doilea DFS, care liniarizează arborele, apelînd întîi fiul greu, apoi pe ceilalți.
+
+Nu construim cîte o structură (AIB, AINT etc.) pe fiecare lanț! Ca la orice liniarizare, construim o singură structură peste toate cele $n$ noduri. Este datoria programului să nu acceseze intervale care „încalecă” mai multe lanțuri.
+
+Ce structură folosim depinde de natura problemei. Dacă problema cere informații pe căi de la noduri la rădăcină, atunci căile vizitează doar prefixe (capetele de sus) ale lanțurilor. Deci s-ar putea ca un AIB să fie suficient. Dacă problema cere informații între orice două noduri, atunci căile pot vizita și porțiuni din mijlocul lanțurilor. Deci probabil avem nevoie de arbori de segmente.
+
+Nu este necesar să implementăm LCA. În loc de asta, fiecare nod menține un pointer la capătul superior al lanțului. Astfel urcăm „naiv” din lanț în lanț, căci știm deja că numărul de lanțuri este logaritmic.

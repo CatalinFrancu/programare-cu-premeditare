@@ -1,0 +1,291 @@
+\section{Probleme}
+
+\subsection{Problema Heavy Path Decomposition (Infoarena)}
+\label{problem:heavy-path-decomposition}
+
+\href{https://www.infoarena.ro/problema/heavypath}{enunț}
+$\bullet$
+\hyperref[code:heavy-path-decomposition]{surse}
+
+Aceasta este exact problema studiată la teorie. Vom citi codul.
+
+Prima versiune este cea „canonică”. A doua versiune face o optimizare minoră care elimină nevoia calculării înălțimii nodurilor. Ea pornește de la următoarea observație. Dorim ca, odată ce $u$ ajunge pe lanțul comun, să se oprească din urcat și să-l aștepte și pe $v$ (pe acel lanț comun vom face ultima interogare). Dar, dacă $u$ a ajuns pe lanțul comun, iar $v$ încă nu, atunci în mod necesar $t_{in}[u] < t_{in}[v]$, căci toate nodurile de pe acel lanț sînt vizitate primele în DFS, fiind noduri heavy. Așadar, este suficient să comparăm timpii DFS ai lui $u$ și $v$.
+
+Subliniem că în funcția \ccode{query} parcurgem mereu lanțul al cărui capăt de sus are adîncime mai mare. De ce nu comparăm pur și simplu înălțimile lui $u$ și $v$? Dați un contraexemplu!
+
+O problemă echivalentă este \href{https://cses.fi/problemset/task/2134}{Path Queries II} (CSES).
+
+\subsection{Problema Disruption (USACO)}
+\label{problem:disruption}
+
+\href{https://usaco.org/index.php?page=viewproblem2\&cpid=842}{enunț}
+$\bullet$
+\hyperref[code:disruption]{surse}
+
+Vom discuta trei soluții, de amorul artei.
+
+\subsubsection*{Soluția cu HLD}
+
+Să considerăm o cale de înlocuire $(u,v)$. Căror muchii le poate ea suplini dispariția? Doar celor de pe calea $u-v$ din arbore. Așadar, o soluție teoretică este: pentru fiecare cale de înlocuire $(u,v)$ de cost $c$, notifică toate muchiile de pe calea $u-v$ că au la dispoziție o înlocuire de cost $c$. După procesarea tuturor căilor, pentru fiecare muchie tipărește costul minim despre care a fost notificată, sau -1 dacă muchia nu a primit notificări.
+
+Concret, ce înseamnă aceste notificări? Fie $l = LCA(u,v)$. Atunci vrem să marcăm costul $c$ pe căile $u-l$ și $v-l$. De aici ne poate veni ideea descompunerii \textit{heavy-light}, care garantează că o cale de înlocuire va genera cel mult $\bigoh(\log n)$ intervale de actualizat.
+
+Ce structură folosim? Pe fiecare lanț avem nevoie de operațiile:
+
+\begin{enumerate}
+  \item \ccode{range_set(l, r, c)}: pe fiecare poziție $l \leq i \leq r$, atribuie $v[i] = \min(v[i], c)$.
+  \item \ccode{query(i)}: returnează $v[i]$.
+\end{enumerate}
+
+Desigur, \ccode{range_set} va descompune $[l,r]$ în niște intervale și va scrie valoarea $c$ pe acele intervale. Cum procedăm după aceasta? Nu vă repeziți la implementarea cu propagare \textit{lazy}! Interogările sînt punctuale, nu pe interval, deci este suficient să vizităm toți strămoșii unui nod (din aint) și să returnăm minimul valorilor găsite. Mai mult, toate interogările vor veni după toate actualizările. Deci putem face o singură propagare top-down la sfîrșitul actualizărilor. Atunci în fiecare frunză din aint vom avea exact răspunsul dorit.
+
+Mai sînt două mici goluri de umplut:
+
+\begin{enumerate}
+  \item Arborele de segmente trebuie inițializat cu $\infty$.
+
+  \item Conceptual, problema cere informații despre muchii. Dar, datorită DFS-ului, fiecare muchie unește un fiu de părintele său. Vom stoca informațiile în fiu.
+\end{enumerate}
+
+\subsubsection*{Soluția cu \textit{small-to-large}}
+
+Soluția oficială pornește de la altă observație teoretică. Orice muchie $(u,v)$ poate fi înlocuită de o cale de înlocuire $(x,y)$ cu proprietatea că $x$ și $y$ se află de părți diferite ale muchiei $(u,v)$. Formulată în termeni de DFS, condiția este: muchia de la orice nod $u$ la părintele său poate fi înlocuită de orice cale de înlocuire $(x,y)$ care are \textbf{exact} un capăt în subarborele lui $u$. Să denumim o astfel de cale de înlocuire \textbf{viabilă pentru $u$}.
+
+Așadar, dorim ca fiecare nod $u$ să-și calculeze mulțimea de căi viabile și să o raporteze pe cea de cost minim. Atunci mulțimea unui nod $u$ provine din:
+
+\begin{enumerate}
+  \item reuniunea mulțimilor fiilor,
+
+  \item plus căile care au un capăt chiar în $u$,
+
+  \item minus căile care apar de două ori în (1) și (2), deoarece o cale care începe și se termină în subarborele lui $u$ nu este viabilă pentru $u$.
+\end{enumerate}
+
+Putem folosi tehnica \textit{small-to-large} pentru a garanta că fiecare element este transferat între mulțimi de cel mult $\log m$ ori. Mulțimile însăși trebuie să poată raporta valoarea minimă, deci vor avea un cost logaritmic (de exemplu, cu \ccode{std::set}). Complexitatea totală este $\bigoh(n \log m + m \log^2 m)$.
+
+Puteți găsi o implementare foarte concisă (dar cam lentă) \href{https://starcoder.org/video/usacovideo-usaco-2018-platinum-open-p3/}{aici}. Ea stochează în seturi perechi $(cost, id)$: costul unei căi servește la găsirea costului minim, iar ID-ul servește la găsirea duplicatelor, pentru eliminarea lor. Eu am ales o modalitate diferită: am sortat căile de înlocuire după cost, astfel încît ID-urile mai mici să corespundă la costuri mai mici.
+
+Iată încă un detaliu de folosire a \ccode{set}-urilor. O implementare naivă va insera sau șterge căi cu următorul cod:
+
+\begin{minted}{c}
+if (s.count(id)) {
+  s.erase(id);
+} else {
+  s.insert(id);
+}
+\end{minted}
+
+Totuși, acest cod face două căutări per operație: una pentru găsirea elementului și a doua pentru inserare sau ștergere, după caz. Dar se poate și cu o singură căutare! Funcția \href{https://en.cppreference.com/w/cpp/container/set/insert}{insert}, dacă eșuează, returnează un iterator la elementul care a cauzat eșecul.
+
+\begin{minted}{c}
+std::pair<set::iterator, bool> p = s.insert(id);
+if (!p.second) {
+  // Inserarea a eșuat, iar p.first pointează chiar la elementul-duplicat.
+  s.erase(p.first);
+}
+\end{minted}
+
+\subsubsection*{Soluția cu structură globală}
+
+Dacă vă amintiți, la problema \hyperref[problem:tree-and-queries]{Tree and Queries} am discutat un DFS special care folosește o singură structură de date globală. DFS-ul garantează că fiecare nod $u$ va avea acces, la un moment dat în timp, la structura de date care conține informații doar despre subarborele lui $u$.
+
+Putem folosi acest algoritm și aici. Avem nevoie să includem/excludem noduri din structură, ceea ce presupune să includem/excludem căile care au un capăt în acele noduri. Așadar, avem nevoie de o structură de date cu operațiile:
+
+\begin{enumerate}
+  \item Activează/dezactivează o poziție.
+  \item Returnează poziția minimă activă (sau o valoare specială dacă nu există poziții active).
+\end{enumerate}
+
+Un AIB este suficient, cu căutare binară pentru (2). Ce complexitate are această soluție?
+
+\subsubsection*{Benchmarks}
+
+Testele sînt mici, deci nu prea concludente, dar iată rezultatele:
+
+\begin{itemize}
+  \item Cu descompunere \textit{heavy-light}: 30 ms, 7 MB.
+  \item Cu \textit{small-to-large}: 74 ms, 18 MB.
+  \item Cu \textit{small-to-large} exclusiv: 55 ms, 12 MB.
+\end{itemize}
+
+\subsection{Problema Doi arbori (Lot 2024)}
+\label{problem:doi-arbori}
+
+\href{https://kilonova.ro/problems/2799}{enunț}
+$\bullet$
+\hyperref[code:doi-arbori]{surse}
+
+Facem întîi o observație teoretică. Drumul cel mai scurt de la $G_u$ la $H_v$ este calea $u-v$ plus un ocol dus-întors de la unul dintre nodurile de pe calea $u-v$ la o frunză activă. Așadar problema se reduce la două subprobleme:
+
+\begin{enumerate}
+  \item (simplă) Aflarea distanțelor între noduri.
+  \item (grea) Aflarea distanței minime de la orice drum de pe calea $u-v$ la o frunză activă.
+\end{enumerate}
+
+Facem și o altă observație: nodul 1 poate fi și el frunză (în sensul că poate avea grad 1). Dacă înrădăcinați arborele în nodul 1 ca toată lumea, aceasta poate fi o sursă de buguri. Pare totuși că testele nu acoperă acest caz.
+
+\subsubsection*{Soluția cu HLD}
+
+Să înrădăcinăm arborele în 1 și să construim HLD. Acum fie o interogare $(u,v)$ și fie $w=LCA(u,v)$. Prin definiție, orice cale în arbore întîi urcă, apoi coboară (și urcușul și coborîșul pot avea lungime 0). De aceea, cînd căutăm calea spre cea mai apropiată frunză activă de orice nod de pe calea $u-v$ este suficient să tratăm cazurile:
+
+\begin{enumerate}
+  \item Pornim dintr-un nod de pe cale și coborîm pînă la frunză.
+  \item Pornim din $w$, urcăm și apoi coborîm.
+\end{enumerate}
+
+Vom stoca pe lanțuri informații care să ne permită să tratăm aceste două cazuri.
+
+\textbf{Cazul I: Drumul spre frunză coboară}
+
+Să considerăm unul dintre lanțurile vizitate pe calea $(u-w)$. Din acest lanț vom interoga o porțiune $[x,y]$. $x$ este fie capătul de sus al lanțului, fie $w$. $y$ este fie $u$, fie nodul în care se ancorează lanțul vizitat anterior.
+
+Dacă drumul spre o frunză pornește chiar din $y$, atunci ne-ar ajuta să aflăm rapid adîncimea minimă a unei frunze active din subarborele lui $y$. Știm să facem asta cu un arbore de segmente $S_1$ cu actualizări punctuale și interogări de minim. La activarea unei frunze, notăm chiar adîncimea frunzei pe poziția corespunzătoare în liniarizare. La dezactivarea frunzei, notăm $\infty$. Putem afla adîncimea minimă a unei frunze din subarborele lui $y$ cu o interogare în $S_1$ pe intervalul subîntins de $y$. Distanța pînă la frunza $f$ este diferența de adîncimi dintre $f$ și $y$.
+
+Dacă drumul spre frunză pornește de undeva dintr-un nod-ancoră $a \in [x,y)$, atunci distanța pînă la frunză este diferența de adîncimi dintre frunză și $a$. Desigur, nu vrem să interogăm fiecare nod din $[x,y)$, dar facem următoarea observație. O frunză de adîncime 30 ancorată într-un nod de adîncime 20 are aceeași distanță (10) ca și o frunză de adîncime 31 ancorată într-un nod de adîncime 21. De aceea, menținem un al doilea arbore de segmente $S_2$ care stochează pentru un nod $u$ \textbf{diferența} dintre adîncimea oricărei frunze din subarborele lui $u$ și adîncimea lui $u$.
+
+\textbf{Cazul II: Drumul spre frunză urcă din $w$}
+
+Vom urca pe lanțuri pînă la rădăcină. Din nou, fie $[x,y]$ porțiunea din lanțul curent pe care o interogăm.
+
+Dacă drumul spre frunză pornește chiar din $y$, atunci ne interesează chiar adîncimea frunzei, iar din lanțul $w-y-\textrm{frunză}$ aflăm imediat distanța de la calea $u-v$ la frunză. Arborele de segmente $S_1$ este util și aici.
+
+Dacă drumul spre frunza $f$ pornește dintr-un nod-ancoră $a \in [x,y)$, atunci distanța totală de la calea $u-v$ la $f$ este (notînd cu $d(u)$ adîncimea nodului $u$):
+
+$$[d(w)-d(a)] + [d(f) - d(a)] = d(w) + [d(f) - 2 \cdot d(a)]$$
+
+De aceea, avem nevoie de un al treilea arbore de segmente, $S_3$, care stochează pentru un nod $u$ diferența dintre adîncimea oricărei frunze din subarborele lui $u$ și \textbf{dublul} adîncimii lui $u$.
+
+\textbf{Detaliu (esențial)}
+
+La schimbarea stării unei frunze $f$ vom recalcula în arborii de segmente valorile următoarelor noduri:
+
+\begin{itemize}
+  \item frunza $f$;
+  \item nodul în care se ancorează lanțul frunzei;
+  \item nodul în care se ancorează lanțul anterior;
+  \item etc.
+\end{itemize}
+
+Remarcăm, în particular, că frunza $f$ nu notifică alți strămoși de pe propriul ei lanț. Fie $x$ un astfel de strămoș. Se poate întîmpla următorul scenariu:
+
+\begin{itemize}
+  \item Frunza $f$ este activată.
+  \item O altă frunză $f'$ din subarborele lui $x$ este activată.
+  \item $f'$ declanșează actualizarea lui $x$, care va include și informații despre $f$.
+  \item Frunza $f$ este deactivată.
+  \item $x$ nu mai află niciodată despre dezactivarea lui $f$.
+\end{itemize}
+
+Soluția este ca, la propagarea în sus a unei modificări, să interogăm în $S_1$ \textbf{doar subarborele light al unui nod}. Ce modificare este necesară ca să putem identifica intervalul corespunzător din liniarizare?
+
+\subsubsection*{Soluția cu descompunere în radical}
+
+Menționez foarte pe scurt și o soluție în $\bigoh((n + q) \log q)$. Ea nu trece testele mari. Dar, în general, soluțiile cu descompunere în radical sînt o alternativă viabilă și posibil mai ușor de înțeles. Iar matematic $\sqrt{n}$ nu este departe de $\log^2 n$ pe plaja de valori pentru $n$ din problemele obișnuite.
+
+Precalculăm liniarizarea Euler cu repetiție a arborelui, peste care construim tabela rară de RMQ. Astfel putem răspunde la interogări de LCA în $\bigoh(1)$ (avem nevoie de $\bigoh(1)$ deoarece vom face $\bigoh(q \sqrt{q})$ astfel de interogări).
+
+Precalculăm \textit{binary lifting}, preferabil varianta cu doar doi pointeri. Astfel vom putea calcula în $\bigoh(\log n)$ o anumită informație pe căi.
+
+Procesăm interogările în blocuri de mărime $\sqrt{q}$. Clasificăm frunzele active în două categorii:
+
+\begin{enumerate}
+  \item Frunze safe: frunze active pe durata întregului bloc.
+  \item Frunze unsafe: frunze active pe porțiuni din bloc.
+\end{enumerate}
+
+La începutul fiecărui bloc, facem următoarea preprocesare în $\bigoh(n)$:
+
+\begin{enumerate}
+  \item Clasifică frunzele active în \textit{safe} și \textit{unsafe}.
+  \item Calculează distanța minimă de la fiecare nod la o frunză \textit{safe}. Este suficient un BFS multi-sursă.
+  \item Pentru fiecare pointer de salt, calculează distanța minimă de la orice nod acoperit de salt la o frunză \textit{safe}. Este suficient un DFS.
+\end{enumerate}
+
+Efortul total pentru preprocesări este $\bigoh(n \sqrt{q})$. Procesăm operațiile din bloc și ținem evidența mulțimii de frunze \textit{unsafe}. Pentru o interogare $(u,v)$, răspunsul va fi minimul dintre
+
+\begin{enumerate}
+  \item Distanța minimă de la cale la o frunză \textit{safe}, calculată în $\bigoh(\log n)$ cu \textit{jump pointers}.
+  \item Pentru fiecare frunză \textit{unsafe} $f$, distanța $d(u, f) + d(f, v)$.
+\end{enumerate}
+
+Deoarece fiecare dintre cele $q$ interogări poate consulta $\bigoh(\sqrt{q})$ frunze \textit{unsafe}, efortul total este $\bigoh(q \log q)$ pentru interogări.
+
+\subsubsection*{Momentul de inginerie: măsurarea timpului}
+
+Pentru soluția cu descompunere în radical, nu am reușit să reduc timpul de rulare sub 4-5 secunde pe testele mari. Nevenindu-mi să cred că poate fi nevoie de atît de mult timp, am măsurat numărul de apeluri la diverse funcții și timpul petrecut în ele. Las aici codul pe care l-am folosit, în caz că îl ajută pe inginerul din voi.
+
+\begin{minted}{c}
+#include <sys/time.h>
+
+long long t0, t_total, cnt;
+
+void start_clock() {
+  timeval tv;
+  gettimeofday(&tv, NULL);
+  t0 = 1'000'000LL * tv.tv_sec + tv.tv_usec;
+}
+
+void stop_clock() {
+  timeval tv;
+
+  gettimeofday(&tv, NULL);
+  long long t = 1'000'000LL * tv.tv_sec + tv.tv_usec;
+  t_total += t - t0;
+}
+
+int preprocess_block(int start) {
+  cnt++;
+  start_clock();   // <---------------
+  int end = classify_leaves(start);
+  bfs_from_safe_leaves();
+  jdist_dfs(1);
+  stop_clock();    // <---------------
+
+  return end;
+}
+
+int main() {
+  ...
+  fprintf(stderr, "Time: %0.6lf cnt: %lld\n", t_total * 0.000001, cnt);
+}
+\end{minted}
+
+\subsection{Problema Query on a Tree VI (CodeChef)}
+\label{problem:qtree6}
+
+\href{https://www.codechef.com/problems/QTREE6}{enunț}
+$\bullet$
+\hyperref[code:qtree6]{sursă}
+
+Problema are un enunț simplu și elegant, dar este foarte laborioasă.
+
+Am „trișat” un pic la rezolvare, căci știam că este problemă de HLD și mi-am pus întrebarea: HLD ne ajută să facem operații pe căi, deci cum aș folosi-o la o problemă despre subarbori? Așa am ajuns la o soluție parțială.
+
+Definim \textbf{domeniul unui nod} $u$ ca fiind mulțimea de noduri din subarborele lui $u$, de aceeași culoare cu $u$, și legate de $u$ prin noduri de aceeași culoare. Fie $S(u) =$ mărimea domeniului lui $u$. Atunci, ca să răspundem la o interogare despre $u$, urcăm din $u$ cît timp se poate, mergînd pe noduri de aceeași culoare. Fie $w$ ultimul nod atins. Răspunsul este $S(w)$.
+
+Dacă folosim HLD, îl putem găsi pe $w$ dacă menținem pe fiecare lanț un AIB de culori (0/1) cu suport pentru căutare binară.
+
+Treburile se complică la actualizare. Cînd un nod $u$ își schimbă culoarea, schimbările necesare sînt:
+
+\begin{enumerate}
+  \item Toți strămoșii consecutivi care au vechea culoare a lui $u$ pierd $S(u)$ din domeniu.
+
+  \item Recalculăm $S(u)$.
+
+  \item Toți strămoșii consecutivi care au noua culoare a lui $u$ cîștigă $S(u)$ la domeniu.
+\end{enumerate}
+
+Operațiile (1) și (3) sînt operații de adăugare / scădere pe interval. Dar nu am reușit să implementez eficient operația (2). Astfel ajungem la soluția oficială. Menținem pentru fiecare nod \textbf{două valori}:
+
+\begin{enumerate}
+  \item $S_B(u)$ = mărimea domeniului lui $u$ dacă $u$ ar fi negru.
+  \item $S_W(u)$ = mărimea domeniului lui $u$ dacă $u$ ar fi alb.
+\end{enumerate}
+
+Actualizarea acestor valori presupune niște cazuri particulare. De exemplu, dacă un nod $u$ devine alb, atunci toți strămoșii săi negri, \textbf{dar și primul strămoș alb}, pierd $S_B(u)$ din $S_B(w)$.
+
+\subsubsection*{Temă de gîndire: „Aint pe timp”}
+
+Am implementat și o \href{https://www.codechef.com/viewsolution/1120838233}{altă soluție} bazată pe metoda TODO:referință-internă ștergerii dintr-o structură care nu admite (ușor) ștergeri, cu un arbore de intervale indexat după timp. Problema fiind una de conectivitate online, ideea mi s-a părut bună. Dar am făcut o greșeală copilărească: aici nu activăm și dezactivăm muchii, ci noduri. Deci o operație poate cauza $\bigoh(n)$ operații în pădurea de mulțimi disjuncte. Sursa mea ia TLE pe teste adversariale.
+
+Nu știu dacă putem reduce complexitatea. Voi ce credeți?
