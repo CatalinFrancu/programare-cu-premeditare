@@ -1,4 +1,4 @@
-// Small-to-large eficient. Rescris după
+// Small-to-large cu DFS exclusiv. Rescris după
 // https://codeforces.com/contest/375/submission/5508178
 //
 // Folosește o singură structură de date globală conținînd:
@@ -8,7 +8,7 @@
 // 3. Un AIB peste (2) care permite sume pe sufix.
 //
 // Funcționarea DFS-ului îi garantează fiecărui nod un moment cînd structura
-// conține doar informații despre subarborele nodului.
+// conține doar informații despre subarborele acelui nod.
 #include <stdio.h>
 #include <vector>
 

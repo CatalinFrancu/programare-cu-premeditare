@@ -1,0 +1,43 @@
+\section{DFS exclusiv}
+
+Am învățat această tehnică din \href{https://codeforces.com/contest/375/submission/5508178}{sursa} unui legendary grandmaster. \emoji{star-struck} Ulterior am aflat că ea se mai numește și \href{https://codeforces.com/blog/entry/44351}{Sack sau DSU pe arbori}. Pot fi de acord cu prima denumire, dar nu și cu a doua, în primul rînd pentru că DSU este un nume greșit pentru DSF (engl. \textit{disjoint set forest}) și în al doilea rînd pentru că structura face adăugări și ștergeri care n-au nicio legătură cu implementarea canonică de mulțimi disjuncte. Prefer să îi spun \textbf{DFS exclusiv}, care descrie mult mai bine cum funcționează tehnica.
+
+Implementarea din acel tutorial mi se pare criptică. Sper că o pot clarifica.
+
+Să ne gîndim la clasa de probleme care fac interogări pe subarbore: frecvențe, sume, numere distincte etc. De exemplu, problema următoare, Tree and Queries, face interogări pe un arbore cu valori în fiecare nod. Interogările au forma $(v,k) = $ numărul de valori distincte care apar de cel puțin $k$ ori în subarborele lui $v$. Multe din aceste probleme se pot rezolva cu tehnica \textit{small-to-large} deja studiată.
+
+Iată și o rezolvare cu un DFS „pe steroizi”. În loc să calculăm cîte o structură în fiecare nod, vom menține o singură structură globală, $S$. DFS-ul va adăuga și va șterge din $S$ informații despre noduri la diverse momente. El garantează că, pentru orice nod $u$, va exista un moment în DFS cînd $S$ va conține informații exact despre subarborele lui $u$. La acel moment vom putea răspunde la interogările despre $u$.
+
+Desigur, nu putem face un DFS simplu, căci atunci la intrarea într-un nod $S$ va fi deja populată cu date din afara subarborelui său, ceea ce va da răspunsuri incorecte la orice interogări despre $u$. În loc de aceasta, începem prin a calcula pentru fiecare nod $u$ care este fiul său cu subarborele cel mai mare. Notăm această informație cu $h[u]$ (de la \textit{heavy}). Acum, $DFS(u)$ procedează astfel:
+
+\begin{enumerate}
+  \item Apelează recursiv toți fiii cu excepția lui $h[u]$.
+
+  \item La revenirea din fiecare fiu $v$, elimină recursiv din $S$ toate nodurile din subarborele lui $v$.
+
+  \item Apelează recursiv $DFS(h[u])$. De data aceasta, lasă informațiile în $S$.
+
+  \item Adaugă la loc subarborii eliminați la pasul (2).
+
+  \item Adaugă în $S$ nodul $u$ însuși.
+
+  \item Răspunde la interogări despre subarborele lui $u$.
+\end{enumerate}
+
+Se nasc două întrebări. Prima: de ce funcționează corect algoritmul? Mai exact, de ce la pasul (6) vectorii conțin doar informații despre subarborele lui $u$? Să considerăm un alt nod $w$, din afara subarborelui lui $u$. Există trei posibilități.
+
+\begin{enumerate}
+  \item $w$ este strămoș al lui $u$ („nod gri”). Atunci, în mod garantat, $w$ nu apare în structura de date la momentul procesării lui $u$, deoarece $w$ este adăugat în structură doar la finalul recursivității.
+
+  \item $w$ este un „nod negru” într-un subarbore deja vizitat. Fie $a$ strămoșul comun al lui $u$ și $v$ și fie $a_w$ și $a_u$ fiii lui $a$ care pornesc către $w$, respectiv către $u$. Deoarece sîntem în procesul de vizitare a lui $a_u$, înseamnă că $a_w$ și tot subarborele său (inclusiv $w$) au fost temporar șterși din structură.
+
+  \item $w$ este un „nod alb”, undeva într-un subarbore încă nevizitat. Atunci $w$ încă nu a fost descoperit de DFS.
+\end{enumerate}
+
+A doua întrebare: care este complexitatea algoritmului? Dacă nu am trata special nodul $h[u]$, atunci complexitatea ar fi pătratică. Fiecare nod este eliminat la pasul (2) și readăugat la pasul (5) pentru fiecare strămoș al său.
+
+Dacă tratăm special fiii \textit{heavy}, să analizăm numărul de eliminări și readăugări. Ori de cîte ori un strămoș $w$ cauzează eliminarea unui descendent $u$, înseamnă că $w$ \textbf{nu} este fiu \textit{heavy} al părintelui său. Echivalent, părintele lui $w$ este cel puțin de două ori mai mare decît $w$. Așadar, eliminarea nodului $u$ poate fi cauzată de cel mult $\log n$ dintre strămoșii săi. Complexitatea parcurgerii este $\bigoh(n \log n)$.
+
+Cum fiecare eliminare și adăugare necesită o operație în AIB, rezultă că complexitatea întregului algoritm este $\bigoh(n \log^2 n)$.
+
+Vom citi codul care rezolvă problema următoare.

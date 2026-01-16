@@ -79,7 +79,7 @@ struct node {
   // populația proprie
   roster ids;
 
-  // populația pînă la destinația saltului, exclusivdestination
+  // populația pînă la destinația saltului, exclusiv
   roster jids;
 
   void compute_jump();

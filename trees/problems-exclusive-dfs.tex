@@ -1,0 +1,40 @@
+\section{Probleme}
+
+\subsection{Problema Tree and Queries (Codeforces)}
+\label{problem:tree-and-queries}
+
+\href{https://codeforces.com/contest/375/problem/D}{enunț}
+$\bullet$
+\hyperref[code:tree-and-queries]{surse}
+
+\subsubsection*{Implementare brută}
+
+Să vedem mai întîi abordarea cu \textit{small-to-large} clasic. Proiectăm o structură de date care:
+
+\begin{enumerate}
+  \item Să mențină frecvențele culorilor din subarborele curent.
+  \item Să raporteze numărul de frecvențe cel puțin egale cu o valoare dată.
+\end{enumerate}
+
+Pentru (2) am dori un vector de frecvențe ale frecvențelor: $g[x]$ stochează numărul de culori care au frecvența $x$. Pe acest vector, răspunsul la o interogare $(u, x)$ este suma pe sufixul $g[x \dots n]$. Dar implementarea este alunecoasă, căci dorim ca structura să ocupe spațiu $\bigoh(\text{subarbore})$, nu $\bigoh(n)$. Deci orice AIB sau arbore de intervale construit peste $g$ trebuie extins dinamic pe măsură ce urcăm în arbore.
+
+În schimb, putem folosi un multiset: un set ordonat al tuturor frecvențelor (nenule). Ca să putem răspunde la întrebarea „cîte frecvențe mai mari sau egale cu $x$ există?”, avem nevoie de PBDS (\textit{policy-based data structure}), o colecție extinsă de structuri de date din STL. Ne-am mai întîlnit cu seturi PBDS la problema \hyperref[problem:give-away]{Give Away}, în capitolul de descompunere în radical.
+
+Soluția este relativ directă, dar ca să o puteți scrie în timp de concurs trebuie să memorați două lucruri:
+
+\begin{enumerate}
+  \item Incantația magică necesară pentru a declara o structură de date PBDS.
+
+  \item Codul necesar pentru ștergerea dintr-un multiset. Cînd o frecvență se modifică, noi dorim să ștergem din multiset o singură apariție a vechii frecvențe, dar un simplu apel la \ccode{erase} le-ar șterge pe toate.
+\end{enumerate}
+
+\subsubsection*{Implementare cu DFS exclusiv}
+
+Vom menține aceleași informații, dar global:
+
+\begin{itemize}
+  \item un vector de frecvențe;
+  \item un AIB peste vectorul de frecvențe ale frecvențelor.
+\end{itemize}
+
+Notă de implementare: putem stoca listele de adiacență și listele de interogări ca \ccode{vector} sau ca \ccode{list}, căci nu avem nevoie de acces aleatoriu. \href{https://codeforces.com/contest/375/submission/294270594}{Implementarea} cu \ccode{list} este considerabil mai lentă și consumă mai multă memorie.
