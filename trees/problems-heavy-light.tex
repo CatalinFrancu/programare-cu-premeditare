@@ -42,7 +42,7 @@ Desigur, \ccode{range_set} va descompune $[l,r]$ în niște intervale și va scr
 Mai sînt două mici goluri de umplut:
 
 \begin{enumerate}
-  \item Arborele de segmente trebuie inițializat cu $\infty$.
+  \item Arborele de intervale trebuie inițializat cu $\infty$.
 
   \item Conceptual, problema cere informații despre muchii. Dar, datorită DFS-ului, fiecare muchie unește un fiu de părintele său. Vom stoca informațiile în fiu.
 \end{enumerate}
@@ -108,6 +108,95 @@ Testele sînt mici, deci nu prea concludente, dar iată rezultatele:
   \item Cu \textit{small-to-large} exclusiv: 55 ms, 12 MB.
 \end{itemize}
 
+\subsection{Problema Rafaela (Lot 2014)}
+\label{problem:rafaela}
+
+\href{https://kilonova.ro/problems/1979}{enunț}
+$\bullet$
+\hyperref[code:rafaela]{surse}
+
+Ca observație preliminară, interogările pot fi reformulate astfel: dacă aș înrădăcina arborele în nodul $u$, care este populația maximă a unui subarbore al rădăcinii?
+
+În practică vom fixa rădăcina în nodul 1. Fie $S(u)$ populația subarborelui nodului $u$. Iau naștere două cazuri:
+
+\begin{enumerate}
+  \item Răspunsul la interogare este $S(1) - S(u)$ dacă populația maximă sosește pe muchia de la $u$ la părinte. Desigur, $S(1)$ este populația întregului arbore, care este trivial de întreținut.
+  \item Răspunsul la interogare este $\max S(v)$, unde $v$ este un fiu al lui $u$.
+\end{enumerate}
+
+\subsubsection*{Soluție doar cu arbore de intervale}
+
+Pare natural să încercăm să menținem $S(u)$ pentru toate nodurile. Cînd populația lui $u$ se modifică cu $\Delta$, toți strămoșii lui $u$ cîștigă $\Delta$ populație, deci parcurgem toate lanțurile de la $u$ la rădăcină și adăugăm $\Delta$ pe prefixele corespunzătoare ale acestor lanțuri.
+
+Cum stabilim maximul pentru cazul (2) de mai sus? Este nevoie de puțin spirit de observație. Dacă insistăm să interogăm doar fiii lui $u$, aceștia sînt dispersați prin liniarizare. Dar este suficient să interogăm \textbf{tot subarborele} lui $u$, fără $u$ însuși. Nu avem cum să greșim, căci, dacă maximul s-ar afla într-un nepot sau strănepot al lui $u$, cu atît mai mult fiul din care provine acel nepot sau strănepot ar avea populație și mai mare. Așadar, aflăm subarborele maxim cu o interogare pe intervalul $[t_{in}[u] + 1, t_{out}[u]]$.
+
+Implementarea necesită doar un arbore de intervale cu adăugare pe interval și maxim pe interval.
+
+\subsubsection*{Soluție cu arbore de intervale + caz separat pentru fiul greu}
+
+Nu-mi place să dau doar soluții de idee. Pentru aceea există matematica. \emoji{beaming-face-with-smiling-eyes} Iată și o soluție mai muncitorească.
+
+Din nou, la actualizarea unui nod facem operații de adăugare pe interval pe toate lanțurile. Acum diferențiem cazul (2) în două subcazuri: Subarborele cu populație maximă îl are fiul greu sau unul dintre fiii ușori. Ca să evităm confuzia, reamintesc că fiul greu este ales după numărul de noduri, care nu are neapărat și populația maximă.
+
+Fiul greu îl putem interoga în $\bigoh(\log n)$. Putem chiar să folosim doar un arbore Fenwick (AIB) cu actualizare pe interval și interogare punctuală.
+
+Nu ne permitem să interogăm toți fiii ușori, dar este suficient să-l aflăm eficient pe cel mai populat. Cel mai „ciobănește”, fiecare nod poate menține un \ccode{std::multiset} cu mărimile subarborilor ușori (așadar nu și mărimea subarborelui greu). Atunci pentru a răspunde la interogări comparăm trei valori:
+
+\begin{enumerate}
+  \item Părintele (populația totală minus populația nodului însuși).
+  \item Fiul greu.
+  \item Fiul ușor (maximul din \ccode{multiset}).
+\end{enumerate}
+
+Ce implică actualizările în această structură? Partea frumoasă este că \textbf{nu} trebuie să actualizăm seturile nodurilor de pe fiecare lanț vizitat, căci acele lanțuri constau, prin definiție, din muchii grele. Trebuie actualizate doar nodurile-părinte ale fiecărui lanț, căci doar acele muchii sînt ușoare.
+
+De amorul artei, putem folosi și o structură mai elegantă decît seturile STL. O parcurgere BFS este suficientă, căci în acea parcurgere fiii fiecărui nod devin vecini. Așadar, ne este suficient un arbore de intervale peste parcurgerea BFS, cu actualizare punctuală și interogare de maxim pe interval. Iată \href{https://kilonova.ro/submissions/515909}{o implementare}.
+
+Am observat că testele nu pedepsesc iterarea naivă prin fiii ușori. Am trimis și \href{https://kilonova.ro/submissions/515914}{o ultimă sursă} care ia 100p astfel.
+
+\subsubsection*{Soluție cu descompunere în radical}
+
+Includ și această soluție pentru familiarizarea cu astfel de alternative la HLD. Ea obține 70 de puncte.
+
+Procesăm operațiile în blocuri de mărime circa $\sqrt{q}$. La începutul fiecărui bloc facem un DFS ca să calculăm $S(u)$ pentru toate nodurile. Acum, pentru o interogare în nodul $u$, am dori să luăm maximul dintre valorile pentru fiii lui $u$ ai căror arbori nu au suferit modificări (valori pe care le știm deja) și valorile fiilor modificați, aduse la zi. Similar, exteriorul subarborelui lui $u$ poate să fi suferit modificări.
+
+Dacă avem 10 interogări într-un singur nod $u$, pe permitem să consultăm toți fiii lui $u$ \textbf{o singură dată}. Asta face, de exemplu, DFS-ul, al cărui efort total este $\bigoh(n)$. Nu ne permitem să iterăm prin toți fiii lui $u$ pentru fiecare interogare, căci ajungem la $\bigoh(q·n)$, de exemplu pentru un arbore-stea cu toate interogările în centrul arborelui.
+
+Observațiile-cheie sînt că există interogări despre cel mult $\sqrt{q}$ noduri, iar pentru fiecare nod $u$ cel mult $\sqrt{q}$ dintre subarborii lui $u$ au modificări.
+
+Restul nu este trivial, dar sînt doar detalii de implementare care urmăresc să obțină:
+
+\begin{enumerate}
+  \item Efort $\bigoh(n)$ la începutul blocului.
+
+  \item Vizitarea fiilor nemodificați ai lui $u$ o singură dată per bloc $\to$ efort total $\bigoh(n)$ per bloc.
+
+  \item Vizitarea fiilor modificați o dată per interogare $\to$ efort $\bigoh(\sqrt{q})$ per interogare.
+\end{enumerate}
+
+Dacă facem asta, obținem complexitatea totală $\bigoh((n + q) \sqrt{q})$.
+
+Distribuim actualizările din bloc în noduri. Colectăm actualizările din bloc și le sortăm după timpul DFS. Este important să avem în vedere că nu toate actualizările se aplică tuturor interogărilor. Depinde de ordinea lor cronologică dinaintea sortării. Din punct de vedere al unui nod $u$, actualizările vor fi:
+
+\begin{itemize}
+  \item actualizări în afara subarborelui lui $u$;
+  \item actualizări în $u$ însuși;
+  \item actualizări în primul fiu al lui $u$;
+  \item $\dots$
+  \item actualizări în ultimul fiu al lui $u$;
+  \item actualizări în afara subarborelui lui $u$.
+\end{itemize}
+
+Astfel putem afla trei cantități pentru fiecare interogare
+
+\begin{enumerate}
+  \item modificările din afara subarborelui (spre părinte);
+  \item modificările pe cel mai populat fiu nemodificat;
+  \item modificările pe fiecare fiu modificat.
+\end{enumerate}
+
+Calculăm aceste informații într-o singură trecere prin fiii lui $u$. Categoriile (1) și (2) cer efort $\bigoh(1)$, iar categoria (3) cere efort $\bigoh(1)$ per interogare, căci trebuie să decidem dacă modificarea se aplică fiecărei interogări sau nu.
+
 \subsection{Problema Doi arbori (Lot 2024)}
 \label{problem:doi-arbori}
 
@@ -139,25 +228,25 @@ Vom stoca pe lanțuri informații care să ne permită să tratăm aceste două 
 
 Să considerăm unul dintre lanțurile vizitate pe calea $(u-w)$. Din acest lanț vom interoga o porțiune $[x,y]$. $x$ este fie capătul de sus al lanțului, fie $w$. $y$ este fie $u$, fie nodul în care se ancorează lanțul vizitat anterior.
 
-Dacă drumul spre o frunză pornește chiar din $y$, atunci ne-ar ajuta să aflăm rapid adîncimea minimă a unei frunze active din subarborele lui $y$. Știm să facem asta cu un arbore de segmente $S_1$ cu actualizări punctuale și interogări de minim. La activarea unei frunze, notăm chiar adîncimea frunzei pe poziția corespunzătoare în liniarizare. La dezactivarea frunzei, notăm $\infty$. Putem afla adîncimea minimă a unei frunze din subarborele lui $y$ cu o interogare în $S_1$ pe intervalul subîntins de $y$. Distanța pînă la frunza $f$ este diferența de adîncimi dintre $f$ și $y$.
+Dacă drumul spre o frunză pornește chiar din $y$, atunci ne-ar ajuta să aflăm rapid adîncimea minimă a unei frunze active din subarborele lui $y$. Știm să facem asta cu un arbore de intervale $S_1$ cu actualizări punctuale și interogări de minim. La activarea unei frunze, notăm chiar adîncimea frunzei pe poziția corespunzătoare în liniarizare. La dezactivarea frunzei, notăm $\infty$. Putem afla adîncimea minimă a unei frunze din subarborele lui $y$ cu o interogare în $S_1$ pe intervalul subîntins de $y$. Distanța pînă la frunza $f$ este diferența de adîncimi dintre $f$ și $y$.
 
-Dacă drumul spre frunză pornește de undeva dintr-un nod-ancoră $a \in [x,y)$, atunci distanța pînă la frunză este diferența de adîncimi dintre frunză și $a$. Desigur, nu vrem să interogăm fiecare nod din $[x,y)$, dar facem următoarea observație. O frunză de adîncime 30 ancorată într-un nod de adîncime 20 are aceeași distanță (10) ca și o frunză de adîncime 31 ancorată într-un nod de adîncime 21. De aceea, menținem un al doilea arbore de segmente $S_2$ care stochează pentru un nod $u$ \textbf{diferența} dintre adîncimea oricărei frunze din subarborele lui $u$ și adîncimea lui $u$.
+Dacă drumul spre frunză pornește de undeva dintr-un nod-ancoră $a \in [x,y)$, atunci distanța pînă la frunză este diferența de adîncimi dintre frunză și $a$. Desigur, nu vrem să interogăm fiecare nod din $[x,y)$, dar facem următoarea observație. O frunză de adîncime 30 ancorată într-un nod de adîncime 20 are aceeași distanță (10) ca și o frunză de adîncime 31 ancorată într-un nod de adîncime 21. De aceea, menținem un al doilea arbore de intervale $S_2$ care stochează pentru un nod $u$ \textbf{diferența} dintre adîncimea oricărei frunze din subarborele lui $u$ și adîncimea lui $u$.
 
 \textbf{Cazul II: Drumul spre frunză urcă din $w$}
 
 Vom urca pe lanțuri pînă la rădăcină. Din nou, fie $[x,y]$ porțiunea din lanțul curent pe care o interogăm.
 
-Dacă drumul spre frunză pornește chiar din $y$, atunci ne interesează chiar adîncimea frunzei, iar din lanțul $w-y-\textrm{frunză}$ aflăm imediat distanța de la calea $u-v$ la frunză. Arborele de segmente $S_1$ este util și aici.
+Dacă drumul spre frunză pornește chiar din $y$, atunci ne interesează chiar adîncimea frunzei, iar din lanțul $w-y-\textrm{frunză}$ aflăm imediat distanța de la calea $u-v$ la frunză. Arborele de intervale $S_1$ este util și aici.
 
 Dacă drumul spre frunza $f$ pornește dintr-un nod-ancoră $a \in [x,y)$, atunci distanța totală de la calea $u-v$ la $f$ este (notînd cu $d(u)$ adîncimea nodului $u$):
 
 $$[d(w)-d(a)] + [d(f) - d(a)] = d(w) + [d(f) - 2 \cdot d(a)]$$
 
-De aceea, avem nevoie de un al treilea arbore de segmente, $S_3$, care stochează pentru un nod $u$ diferența dintre adîncimea oricărei frunze din subarborele lui $u$ și \textbf{dublul} adîncimii lui $u$.
+De aceea, avem nevoie de un al treilea arbore de intervale, $S_3$, care stochează pentru un nod $u$ diferența dintre adîncimea oricărei frunze din subarborele lui $u$ și \textbf{dublul} adîncimii lui $u$.
 
 \textbf{Detaliu (esențial)}
 
-La schimbarea stării unei frunze $f$ vom recalcula în arborii de segmente valorile următoarelor noduri:
+La schimbarea stării unei frunze $f$ vom recalcula în arborii de intervale valorile următoarelor noduri:
 
 \begin{itemize}
   \item frunza $f$;
@@ -289,3 +378,51 @@ Actualizarea acestor valori presupune niște cazuri particulare. De exemplu, dac
 Am implementat și o \href{https://www.codechef.com/viewsolution/1120838233}{altă soluție} bazată pe metoda TODO:referință-internă ștergerii dintr-o structură care nu admite (ușor) ștergeri, cu un arbore de intervale indexat după timp. Problema fiind una de conectivitate online, ideea mi s-a părut bună. Dar am făcut o greșeală copilărească: aici nu activăm și dezactivăm muchii, ci noduri. Deci o operație poate cauza $\bigoh(n)$ operații în pădurea de mulțimi disjuncte. Sursa mea ia TLE pe teste adversariale.
 
 Nu știu dacă putem reduce complexitatea. Voi ce credeți?
+
+\subsection{Problema Adă caii (Lot 2025)}
+\label{problem:ada-caii}
+
+\href{https://kilonova.ro/problems/3819}{enunț}
+$\bullet$
+\hyperref[code:ada-caii]{sursă}
+
+Să pornim de la o descompunere \textit{heavy-light} tradițională. Nu ne batem prea mult capul cu operația de interogare. Aceea este punctuală, deci probabil că orice structură vom construi peste lanțuri vom putea să aflăm o valoare punctuală. În schimb, să analizăm migrația spre un nod $u$. Observăm că:
+
+\begin{enumerate}
+  \item Pe un lanț $L$ aflat între $u$ și rădăcină, caii migrează către nodul în care calea către $u$ se desprinde din $L$.
+  \item Pe alte lanțuri, caii migrează în sus.
+  \item Caii pot sări de pe un lanț pe altul.
+\end{enumerate}
+
+De exemplu, în figura \ref{fig:tree-heavy-light-2}, migrația către nodul 28 (albastru-deschis) înseamnă că:
+
+\begin{enumerate}
+  \item Pe lanțul roșu 1-30, caii migrează către nodul 20.
+  \item Caii din nodul 20 coboară pe lanțul violet în nodul 32.
+  \item Pe lanțul violet 32-19 caii migrează către nodul 14.
+  \item Caii din nodul 14 coboară pe lanțul albastru deschis în nodul 38.
+  \item Pe alte lanțuri, caii migrează în sus.
+  \item Caii aflați în nodurile din vîrful altor lanțuri migrează pe lanțul-părinte.
+\end{enumerate}
+
+Așadar, pe fiecare lanț dorim să stocăm o structură de date care implementează rezonabil de eficient operațiile:
+
+\begin{enumerate}
+  \item Migrează toate valorile spre stînga (spre rădăcină).
+  \item Migrează toate valorile spre o poziție din structură.
+  \item Citește / modifică o poziție.
+\end{enumerate}
+
+Operațiile (1) și (3) sînt ușor de implementat în $\bigoh(1)$ cu un buffer circular pe fiecare lanț. Am ales să stochez aceste buffere într-un singur vector global, separat de nodurile arborelui.
+
+În schimb, operația (2) pare a fi $\bigoh(\textrm{lungime\_lanț})$. De aceea, vom pune o limită de $\bigoh(\sqrt{n})$ pe lungimea oricărui lanț. Dacă un lanț ar fi, în mod natural, mai lung de atît, după primele $\bigoh(\sqrt{n})$ noduri vom forța începerea unui lanț nou. Aceasta va cauza apariția mai multor lanțuri, dar nu multe.
+
+Cu această modificare, și pentru o optimizare posibil valoroasă, vom implementa (2) copiind naiv jumătatea mai scurtă a vectorului și shiftînd-o pe cea mai lungă conform bufferului circular.
+
+În plus, ținem evidența lanțurilor nevide, deoarece doar pe acelea avem de implementat operația (1). Pot exista $\bigoh(n)$ lanțuri, de exemplu într-un arbore stea, dar pare imposibil să menținem populații de cai pe $\bigoh(n)$ lanțuri. Cu fiecare operație de migrare, unele populații de cai se vor ciocni și se vor însuma.
+
+Sînt 99\% sigur că acest algoritm este eficient, dar demonstrația este alunecoasă. Intuiția mea îmi spune astfel. Temerea noastră este că poate exista o migrație (sau mai multe) care să necesite efort $\bigoh(n)$. Aceasta s-ar putea întîmpla dacă există $\bigoh(\sqrt{n})$ lanțuri pe calea de la $u$ la rădăcină (datorită limitei de lungime), iar pe fiecare lanț este nevoie să facem operația (2) și să copiem naiv $\bigoh(\sqrt{n})$ elemente.
+
+Dar, dacă drumul de la $u$ la rădăcină include vreun lanț complet, pe acela nu vom face efort $\bigoh(\textrm{lungime})$, ci doar $\bigoh(1)$, deoarece migrația în acel lanț va fi doar în jos, spre $u$! De exemplu, în figura \ref{fig:tree-heavy-light-2}, pentru $u = 30$ elementele de pe lanțul roșu migrează doar în jos.
+
+De aceea, un caz adversarial ar fi o cale de la $u$ la rădăcină care, ori de cîte ori schimbă lanțul, se „înțeapă” undeva la jumătatea noului lanț. Or acest lucru este imposibil datorită modului în care funcționează decompunerea \textit{heavy-light}. Din punct de vedere al nodului de înțepare, lanțul ar prefera să continue pe calea spre $u$, dacă aceasta este destul de lungă. Așadar, dacă am avea $\bigoh(\sqrt{n})$ lanțuri, toate de lungime $\bigoh(\sqrt{n})$, numărul total de noduri de pe acea cale ar deveni $\bigoh(n)$ și majoritatea lanțurilor s-ar înțepa în capătul de jos al lanțului anterior.
