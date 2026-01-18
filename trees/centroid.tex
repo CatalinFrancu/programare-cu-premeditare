@@ -1,0 +1,55 @@
+\chapter{Descompunere în centroizi}
+
+Încheiem studiul arborilor cu tehnica descompunerii în centroizi. Ea ne permite să rezolvăm probleme rezistente la alte abordări.
+
+Ca și descompunerea \textit{heavy-light}, descompunerea în centroizi este o unealtă avansată. Este bine să o știți, căci uneori nu găsim o soluție mai elementară. Dar problemele de ONI și Baraj ONI se pot rezolva și cu tehnici mai simple.
+
+\section{Definiție}
+
+Fiind dat un arbore cu $n$ noduri, un \textbf{centroid} este un nod al arborelui cu proprietatea că toți fiii săi au cel mult $\lfloor n / 2\rfloor$ noduri.
+
+Centroidul este un centru de masă, definit în funcție de greutatea subarborilor (ca număr de noduri). A nu se confunda cu \textbf{centrul}, care este definit în funcție de distanțe (el minimizează distanța maximă pînă la alt nod).
+
+\section{Proprietăți}
+
+Orice arbore are un singur centroid sau doi centroizi adiacenți. Pentru demonstrație, să considerăm figura următoare.
+
+\import{./figures}{tree-adjacent-centroids.tex}
+
+Să presupunem că $u$ și $w$ ar fi centroizi aflați la distanță 2. Din punctul de vedere al lui $u$, subarborele $S_1$ are cel mult $\lfloor n / 2\rfloor$ noduri. Din punctul de vedere al lui $w$, subarborele $S_2$ are, de asemenea, cel mult $\lfloor n / 2\rfloor$ noduri. Rezultă că
+
+$$|S_1| + |S_2| \leq n$$
+
+Dar acest lucru este imposibil, căci în mod evident $S_1$ și $S_2$ acoperă întreg arborele, iar nodul $v$ (și orice eventuali subarbori ai săi) sînt acoperiți de două ori. Deci $|S_1| + |S_2| \geq n + 1$.
+
+Așadar, dacă există mai mulți centroizi, atunci ei sînt adiacenți. Dar într-un arbore nu putem amplasa mai mult două noduri astfel încît oricare două să fie adiacente. Deci există cel mult doi centroizi.
+
+\section{Găsirea unui centroid}
+
+După cum vom vedea în problema TODO:ref Finding a Centroid, algoritmul de găsire a unui centroid este simplu. Facem un DFS pentru calculul mărimilor subarborilor. Apoi, pornind din rădăcină, căutăm succesiv fii cu mai mult de $n/2$ noduri și coborîm în ei pînă cînd nu mai găsim niciunul. Complexitatea este $\bigoh(n)$.
+
+\section{Descompunerea în centroizi}
+
+Descompunerea în centroizi repetă de mai multe ori următoarea procedură:
+
+\begin{enumerate}
+  \item Găsește un centroid pentru subarborele curent.
+
+  \item Colectează informații din subarborele curent care ajută la rezolvarea problemei. Probabil folosește unul sau mai multe DFS-uri pornind din centroid.
+
+  \item Elimină centroidul.
+
+  \item Reapelează recursiv algoritmul pentru subarborii disjuncți care iau naștere.
+
+  \item Cazul de bază este un subarbore cu un singur nod. Nodul este centroid.
+\end{enumerate}
+
+Iată un exemplu în care descompunerea în centroizi necesită cinci niveluri de adîncime.
+
+\import{./figures}{tree-centroid-decomp.tex}
+
+Această abordare are avantajul că fiecare nod face parte din cel mult $\log n$ descompuneri. De aceea, o implementare care face efort $\bigoh(\textrm{mărime\_subarbore})$ în fiecare subarbore, cum ar fi de exemplu un DFS, va ajunge la o complexitate totală de $\bigoh(n \log n)$. \textbf{Atenție!} Efortul trebuie să depindă de mărimea subarborelui, \textbf{nu} de $n$. Fiecare nod va deveni centroid la un nivel mai mare sau mai mic de fărîmițare. Așadar, dacă orice bucată din cod face efort $\bigoh(n)$ per nod, atunci complexitatea totală va deveni $\bigoh(n^2)$.
+
+Dacă efortul într-un subarbore este mai mare decît liniar, atunci descompunerea în centroizi adaugă un factor logaritmic. De exemplu, dacă efortul într-un subarbore de mărime $k$ este $\bigoh(k \log k)$, atunci complexitatea totală devine $\bigoh(n \log^2 n)$. Pentru detalii, vedeți \href{https://en.wikipedia.org/wiki/Master\_theorem\_(analysis\_of\_algorithms)}{Master Theorem}, cazul 2.
+
+Descompunerea în centroizi ne spune „este OK să apelezi un DFS din fiecare nod”. Desigur, ce face acel DFS depinde de la problemă la problemă. Dar ocazional putem scrie algoritmi relativ naivi (plus șablonul de cod pentru descompunere) și totuși să obținem complexitate $\bigoh(n \log n)$.
