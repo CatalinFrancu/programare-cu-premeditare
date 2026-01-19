@@ -1,0 +1,300 @@
+\section{Probleme}
+
+\subsection{Problema Finding A Centroid (CSES)}
+\label{problem:finding-a-centroid}
+
+\href{https://cses.fi/problemset/task/2079}{enunț}
+$\bullet$
+\hyperref[code:finding-a-centroid]{surse}
+
+Nu este foarte mult de spus, problema este directă. Reținem șablonul util pentru toate problemele de descompunere în centroizi:
+
+\begin{enumerate}
+  \item DFS-ul inițial dintr-un nod oarecare, cu aflarea mărimii subarborilor.
+  \item Caută un fiu greu al nodului curent.
+  \item Dacă există un fiu greu, coboară în el și mergi la pasul anterior.
+  \item Ultimul nod găsit este centroidul.
+\end{enumerate}
+
+Există două implementări. Cea recursivă (la coadă) combină pașii (2) și (3) într-o singură funcție. Odată identificat fiul greu, reapelăm căutarea centroidului din acel fiu. Implementarea iterativă separă pașii (2) și (3) și rezolvă pasul (3) cu un \ccode{while}.
+
+\subsection{Problema Mystery Tree (CodeChef)}
+\label{problem:mystery-tree}
+
+\href{https://www.codechef.com/problems/MYS00T}{enunț}
+$\bullet$
+\hyperref[code:mystery-tree]{sursă}
+
+Iată o problemă simpatică, interactivă. Se dă un arbore cu $n \leq \np{200000}$ de noduri, cu valori în noduri. Structura arborelui este cunoscută, dar valorile nu. Trebuie să găsim un maxim local: un nod cu valoarea mai mare sau egală cu valorile tuturor vecinilor săi. Putem pune cel mult 20 de întrebări de forma „Este $u$ un maxim local?”. Interactorul ne răspunde cu -1 dacă am găsit un maxim local sau, în caz contrar, cu un nod $v$ cu valoare strict mai mică decît a lui $u$.
+
+Cum am rezolva problema pe un vector?
+
+Pentru generalizarea pe arbore, trebuie să punem fiecare întrebare despre un nod care reduce problema la jumătate sau mai puțin. Acesta este exact centroidul subproblemei curente.
+
+Ca implementare, aici putem vedea cum ștergem un nod. Nu modificăm listele de adiacență, ci doar îl marcăm ca fiind șters.
+
+Din păcate, la această problemă nu putem trimite surse. Dar am încredere în corectitudinea soluției mele!
+
+\subsection{Problema Ciel the Commander (Codeforces)}
+\label{problem:ciel-the-commander}
+
+\href{https://codeforces.com/contest/321/problem/C}{enunț}
+$\bullet$
+\hyperref[code:ciel-the-commander]{surse}
+
+\subsubsection*{Soluția cu descompunere în centroizi}
+
+Problema se reduce absolut elementar la decompunerea în centroizi. În centroidul întregului arbore scriem $A$, în centroizii de nivel 2 scriem $B$ etc. Alfabetul este suficient deoarece $\lceil \log_2 \np{100000} \rceil = 17$.
+
+\subsubsection*{Soluție cu un singur DFS și măști de biți}
+
+Putem folosi și următoarea abordare \textit{greedy}. În frunze scriem $Z$, căci nu avem niciun motiv să nu facem asta. În părinții frunzelor putem scrie $Y$. Complicațiile apar cînd un nod are un fiu $Y$ și un fiu $Z$. Ce facem în cazul general?
+
+Să introducem noțiunea de \textbf{vizibilitate}. Spunem că o literă $X$ este \textbf{vizibilă} dintr-un nod $u$ dacă există o apariție a lui $X$ undeva în subarborele lui $u$ care să nu fie \textbf{mascată} de o literă mai mică decît $X$ pe calea pînă la $u$.
+
+Ideea centrală este că o literă mai mică maschează toate literele mai mari din subarbore, care nu mai necesită alte acțiuni.
+
+Atunci am putea pune în $u$ cea mai mare literă care satisface două condiții:
+
+\begin{enumerate}
+  \item Trebuie să fie mai mică decît orice literă care este vizibilă din doi fii diferiți ai lui $u$, deoarece trebuie să separăm cele două apariții.
+  \item Trebuie să fie diferită de orice literă vizibilă din $u$.
+\end{enumerate}
+
+Odată ce ia această decizie, $u$ returnează la părinte mulțimea de litere vizibile. Putem folosi măști de biți și operații de aflare a LSB pentru a obține o soluție în $\bigoh(n)$.
+
+\subsection{Problema Fixed-Length Paths I (CSES) (din nou)}
+\label{problem:fixed-length-paths-1-centroid}
+
+\href{https://cses.fi/problemset/task/2080}{enunț}
+$\bullet$
+\hyperref[code:fixed-length-paths-1-centroid]{sursă}
+
+Ne reîntîlnim cu această problemă, pe care \hyperref[problem:fixed-length-paths-1]{am rezolvat-o} cu tehnica \textit{small-to-large}. În lipsa acelei idei, descompunerea în centroizi ne poate da o idee mai directă.
+
+O cale de lungime $k$ (și orice cale în general) fie trece prin centroidul arborelui, fie este conținută complet într-unul dintre subarbori. Deci putem însuma răspunsurile întrebărilor, pentru fiecare centroid, „Cîte căi de lungime $k$ trec prin tine?”.
+
+Iar răspunsul la această întrebare este comparativ mai simplu decît tehnica \textit{small-to-large}. Facem un DFS din centroid. Fiecare fiu al centroidului raportează distribuția pe adîncimi a nodurilor din subarborele său. Părintele (centroidul) combină aceste informații. Putem face asta în diverse feluri, dar esența este: un nod aflat la adîncime $d$ formează căi de lungime $k$ cu toate nodurile aflate la adîncime $k-d$ în fiii centroidului vizitați anterior.
+
+Această implementare este de peste 2 ori mai lentă decît implementarea cu \textit{small-to-large}.
+
+Întrebare despre cod: care este rostul variabilei \ccode{max_depth}?
+
+\subsection{Problema Xenia and Tree (Codeforces)}
+\label{problem:xenia-and-tree}
+
+\href{https://codeforces.com/contest/342/problem/E}{enunț}
+$\bullet$
+\hyperref[code:xenia-and-tree]{surse}
+
+\subsubsection*{Soluția cu descompunere în radical}
+
+Menționăm sumar și această soluție, ca să fiți mereu alerți la posibilitățile de rezolvare. Este o soluție lunguță, dar nu grea. Soluția seamănă mult cu cea de la \hyperref[problem:doi-arbori]{Doi arbori} și este mai simplă decît aceea.
+
+Procesăm operațiile în blocuri de circa $\sqrt{q}$. La începutul unui bloc facem o parcurgere BFS din toate nodurile roșii. Acesta ne va oferi pentru fiecare nod $u$ o cantitate $d[u]$ care reprezintă distanța minimă de la $u$ pînă la orice nod roșu.
+
+Acum, răspunsul la o interogare din acel bloc va fi minimul dintre $d[u]$ și distanța de la $u$ pînă la orice nod colorat în roșu cîndva în blocul curent. Dar în blocul curent colorăm în roșu cel mult $\sqrt{q}$ noduri, deci putem răspunde la interogări calculînd cel mult $\sqrt{q}$ distanțe.
+
+Pentru a obține timp $\bigoh(\sqrt{q})$ per interogare, este necesar să putem calcula distanțe în $\bigoh(1)$, ceea ce se reduce la a calcula LCA în $\bigoh(1)$. Vom folosi structura cu care ne-am mai întîlnit: o parcurgere Euler peste care construim tabela rară de RMQ.
+
+Soluția se încadrează lejer în timp (sub 1s pe limită de timp de 5s).
+
+\subsubsection*{Soluția cu descompunere în centroizi}
+
+Și acum, la subiectul zilei! Calea de la un nod $u$ la orice nod roșu (sau, în general, orice alt nod) va fi cuprinsă complet într-un subarbore centroid: în cel mai rău caz subarborele centroid al nodului 1 (care este întregul arbore), dar posibil într-un subarbore mai mic.
+
+Prin natura ei, descompunerea în centroizi garantează că orice nod $u$ face parte din cel mult $\log n$ subarbori centroizi sau, echivalent, are cel mult $\log n$ strămoși centroizi. Și atunci, la o interogare, am putea să-i verificăm pe toți acești strămoși. Așadar, pentru interogarea $u$ și pentru fiecare $v$ strămoș centroid al lui $v$, ne întrebăm:
+
+\begin{enumerate}
+  \item Care este distanța de la $u$ la $v$?
+  \item Care este distanța de la $v$ pînă la orice nod roșu din subarborele centroid al lui $v$?
+\end{enumerate}
+
+Partea frumoasă este că putem accesa aceste distanțe în $\bigoh(1)$ fără \textit{binary lifting}, LCA, RMQ sau alte structuri suplimentare. Reamintiți-vă că \textbf{ne permitem cîte un DFS din fiecare centroid}. Într-un astfel de DFS dintr-un centroid de nivel $k$ vom calcula distanțele de la fiecare nod din subarborele centroidului pînă la centroid. Facem această preprocesare înainte de a procesa interogările.
+
+Memoria necesară pentru aceste informații este $\bigoh(n \log n)$.
+
+Ce implică actualizările? La colorarea unui nod $u$, toți strămoșii centroizi ai lui $u$ trebuie notificați că în subarborele lor a apărut un nod nod roșu. Fiecare strămoș $v$ își reține distanța pînă la cel mai apropiat nod roșu din subarborele său și și-o minimizează cu distanța $u-v$ (pe care $u$ o cunoaște din DFS-urile de preprocesare).
+
+Complexitatea provine din:
+
+\begin{enumerate}
+  \item Descompunerea în centroizi, care știm că este $\bigoh(n \log n)$.
+  \item Procesarea celor $q$ operații. Colorările și interogările presupun modificarea sau consultarea unui vector de $\log n$ elemente.
+\end{enumerate}
+
+Rezultă o complexitate totală de $\bigoh((n + q) \log n)$. Cum este și de așteptat, sursa este de peste două ori mai rapidă decît cea bazată pe descompunere în radical.
+
+\subsection{Problema Flareon (Lot 2017)}
+\label{problem:flareon}
+
+\href{https://kilonova.ro/problems/593}{enunț}
+$\bullet$
+\hyperref[code:flareon]{sursă}
+
+Să presupunem că ne-a venit deja ideea să folosim descompunerea în centroizi. \emoji{smiling-face-with-horns} Să considerăm o flacără care pornește dintr-un nod $u$. Fie $c_1, c_2, \dots, c_k$ strămoșii centroizi ai nodului $u$, unde $c_1$ este rădăcina arborelui (nodul 1 în majoritatea implementărilor), iar $c_k$ este chiar nodul $u$. Vom contabiliza separat contribuția flăcării pe căi care trec prin $c_1$, pe căi care trec prin $c_2$ fără să ajungă la $c_1$ etc.
+
+Deci vom încerca o soluție în doi pași. Fie $r$ rădăcina (centroidul) subarborelui curent.
+
+\begin{enumerate}
+  \item Colectăm în $r$ lista de flăcări care provin din subarborele lui $r$. Pentru fiecare flacără ne interesează puterea cu care ajunge în rădăcină.
+
+  \item Propagăm această listă de flăcări în tot subarborele. Nu avem voie să propagăm o flacără în subarborele din care provine.
+\end{enumerate}
+
+Notînd cu $s$ mărimea subarborelui curent, este important ca ambii pași să funcționeze în $\bigoh(s)$. În particular, nu putem colecta flăcările într-o listă, ci trebuie să le compactăm cumva într-o structură de mărime cel mult $s$.
+
+\subsubsection*{Reprezentarea flăcărilor}
+
+Ideea compactării este următoarea. Dacă dintr-un nod pornesc 3 flăcări de mărime 2, 5 și 10, le putem unifica într-o singură flacără de mărime 17, a cărei putere scade cu 3 la fiecare muchie parcursă. Așadar, reținem doar suma puterilor și numărul de flăcări. La fiecare deplasare, suma puterilor scade cu numărul de flăcări.
+
+Aceasta funcționează... o vreme. În primul nod avem putere 17, în următorul 14 (= 1 + 4 + 9), iar în următorul 11 (= 0 + 3 + 8). Dar aici flacăra mică se stinge, iar puterea trebuie să continue să scadă doar cu 2. Următoarea putere este 9 (= 2 + 7).
+
+Totuși, sîntem pe calea bună. Putem grupa flăcările după putere. Să spunem că în rădăcina $r$ am acumulat $f[p]$ flăcări de putere $p$, unde $p \geq 1$. Atunci cînd propagăm aceste flăcări în subarbore, la un nod de la adîncimea $d$ trebuie însumate doar flăcările cu $p \geq d$. Cînd reapelăm DFS-ul pentru un fiu, ne aflăm la adîncime $d+1$, deci le scădem din numărul total de flăcări pe cele $f[d]$ care s-au stins.
+
+Remarcăm că puterile pot fi mari (problema nu specifică, dar ele se apropie de $10^9$). Nu putem stoca un vector atît de mare, dar nici nu este nevoie. Față de abordarea inițială (doar cu numărul de flăcări și numărul puterilor), ne interesează și frecvențele \textbf{doar pentru flăcările care se vor stinge cîndva}. Flăcările care au o putere mai mare sau egală cu $s$ nu se vor stinge în acest subarbore.
+
+Recapitulînd, informațiile necesare în rădăcină sînt (1) numărul de flăcări, (2) suma puterilor acestora și (3) distribuția pe frecvențe a flăcărilor de putere mai mică decît $s$.
+
+\subsubsection*{Evitarea propagării în același fiu}
+
+Cum spuneam, o flacără nu trebuie propagată din $r$ înspre același fiu din care flacăra a ajuns în $r$. Văd două abordări aici.
+
+Una este să stocăm informații despre fiecare fiu în parte: ce flăcări ajung acolo și cu ce puteri rămase? Cînd propagăm flăcările printr-un fiu $u$, calculăm în fiecare nod diferența dintre informațiile din $r$ și $u$.
+
+Dintr-o \href{https://kilonova.ro/submissions/363653}{sursă} de pe Kilonova am învățat și o altă abordare elegantă.
+
+\begin{enumerate}
+  \item Inițial contabilizăm toate flăcările cu semnul „+”.
+
+  \item Înainte de propagarea flăcărilor într-un fiu, facem un DFS ca sa contabilizăm flăcările din acel fiu cu semnul „-”.
+
+  \item După terminarea propagării, apelăm același DFS ca să contabilizăm flăcările din acel fiu, de data aceasta cu semnul „+”.
+\end{enumerate}
+
+Din păcate, incluzînd și DFS-ul pentru găsirea centroidului, ajungem la 5 DFS-uri din fiecare centroid. Este o constantă măricică.
+
+\subsubsection*{Idee de implementare: ștergerea nodurilor}
+
+Tocmai fiindcă codul include multiple DFS-uri, mi-am dat seama că „tîrăsc” după mine peste tot condiția \ccode{!nd[u].dead} prin tot codul. Astfel mi-a venit ideea: nu este mai scurt/rapid/clar să ștergem efectiv nodul?
+
+Mai scurt nu este, căci la ștergerea lui $u$ trebuie consultate toate listele de adiacență ale vecinilor lui $u$ și șterse aparițiile lui $u$ din acele liste. Deci codul se lungește cu 10-15 linii.
+
+Mai rapid... discutabil. A doua sursă a mea este mai rapidă cu 14\%, dar poate fi și un dram de noroc acolo. Eliminarea unui nod face totuși un efort proporțional cu suma gradelor vecinilor. Paradoxal, am optimizat codul ca să fac eliminarea în $\bigoh(1)$ per muchie ștearsă și a devenit mai lent.
+
+Dar aș argumenta că codul devine mai clar. Efectiv, arborele devine o pădure prin fărîmițare, iar subarborii nu au cunoștință unul de celălalt. Listele de adiacență nu mai sînt poluate de gunoaie.
+
+Rămîne la alegerea voastră ce variantă folosiți.
+
+\subsection{Problema Digit Tree (Codeforces)}
+\label{problem:digit-tree}
+
+\href{https://codeforces.com/contest/715/problem/C}{enunț}
+$\bullet$
+\hyperref[code:digit-tree]{surse}
+
+Problema amintește puțin de \hyperref[problem:fixed-length-paths-1]{Fixed Length Paths I}, doar că nu trebuie să numărăm căile de o anumită lungime, ci pe cele care, citite ca număr zecimal, sînt divizibile cu $M$.
+
+Din nou, vom arăta cum să rezolvăm problema pentru o rădăcină fixată, iar descompunerea în centroizi va face restul pentru noi.
+
+\subsubsection*{Căi în sus și în jos}
+
+Cum procesăm o cale care trece prin rădăcină? Pare natural să o spargem în:
+
+\begin{itemize}
+  \item calea care urcă  pînă la rădăcină, care dă restul $r_1$ modulo $M$;
+  \item calea care coboară din rădăcină, de lungime $d$ muchii, care dă restul $r_2$ modulo $M$.
+\end{itemize}
+
+Întreaga cale va avea atunci restul $r_1 \cdot 10^d + r_2 \pmod{M}$. Dacă dorim ca acest rest să fie 0, atunci putem scrie
+
+$$r_1 = (-r_2) \cdot 10^{-d}$$
+
+Deci, pentru fiecare nod $u$, calculăm restul $r_2$ al căii de la rădăcină la $u$, apoi căutăm numărul de căi de la alte noduri $v$ la rădăcină care dau restul $r_1$ dorit. Atenție, $u$ și $v$ trebuie să se găsească \textbf{în fii diferiți ai rădăcinii}. De asemenea, perechile $(u,v)$ sînt ordonate. Cel mai corect pare să facem două DFS-uri separate, întîi pentru căile care urcă, apoi pentru cele care coboară.
+
+Recapitulînd, pentru fiecare centroid:
+
+\begin{enumerate}
+  \item Facem o parcurgere DFS. Calculăm resturile pe care le putem obține pe căi care urcă pînă în rădăcină și frecvențele acestor resturi.
+
+  \item Facem o a doua parcurgere DFS. Menținem lungimea căii curente și restul modulo $M$. În fiecare nod, calculăm restul-pereche necesar pentru a obține restul total 0. Aflăm frecvența acelui rest-pereche, ignorînd frecvența din fiul rădăcinii în care se află DFS-ul curent.
+\end{enumerate}
+
+Mai trebuie tratate și două cazuri particulare, relativ simple:
+
+\begin{enumerate}
+  \item Căi care doar urcă. După primul DFS, creștem răspunsul cu frecvența restului 0, indiferent din ce fiu.
+
+  \item Căi care doar coboară. În al doilea DFS, ori de cîte ori restul căii curente este 0, incrementăm răspunsul.
+\end{enumerate}
+
+\subsubsection*{\ccode{map} și \ccode{unordered_map}}
+
+Concret, ce structură de date stocăm? Prima mea încercare a fost cu doar două tabele. Dat fiind un rest $r$ pe o cale care urcă din $u$ în rădăcină, într-un fiu $v$ al rădăcinii, am incrementat două valori:
+
+\begin{enumerate}
+  \item $t[r]$, unde $r$ este un \ccode{map} de la întreg (restul) la întreg (frecvența restului). Așadar, $t$ menține frecvențele resturilor indiferent din ce fiu provin.
+
+  \item $c[\langle r, v \rangle]$, unde $c$ este un map de la (întreg,întreg) (restul și fiul rădăcinii pe care am pornit) la întreg (frecvența).
+\end{enumerate}
+
+Atunci, în al doilea DFS, pornind pe un fiu al rădăcinii $v$ și aflîndu-ne în nodul curent $u$, calculăm restul căii care coboară, $r_2$. Apoi calculăm restul corespunzător necesar $r_1$. În sfîrșit, aflăm numărul de apariții utile ale lui $r_1$ cu expresia
+
+$$t[r_1] - c[\langle r_1, v \rangle]$$
+
+Procedăm astfel deoarece calea nu poate să urce și să coboare tot prin $v$.
+
+Am avut surpriza (deși nu mai este chiar surpriză) că \ccode{unordered_map} este mult mai lent decît \ccode{map}. O explicație poate fi că pentru fiecare centroid (așadar, de $n$ ori) instanțiem două \ccode{unordered_maps}, ceea ce este lent. Cu \ccode{map} am obținut un timp mediu pe CF (1500-1600 ms). Complexitatea teoretică a crescut la $\bigoh(n \log^2 n)$.
+
+\subsubsection*{\ccode{map} cu eliminare și reinserare}
+
+Pentru un cod mai lent, dar considerabil mai scurt, folosim același artificiu ca la problema Flareon:
+
+\begin{enumerate}
+  \item Menținem un singur map de frecvențe, $t$.
+
+  \item În acesta stocăm, ca mai sus, frecvențele resturilor pe căi care urcă.
+
+  \item La al doilea DFS, pe căile care coboară, iterăm prin fiii rădăcinii.
+
+  \item Înainte de a lansa DFS-ul dintr-un fiu, eliminăm căile care urcă prin acel fiu.
+
+  \item După revenirea din fiu, adăugăm la loc căile care urcă prin acel fiu.
+\end{enumerate}
+
+Astfel evităm să combinăm căile care urcă și coboară prin acel fiu. Esența codului este:
+
+\begin{minted}{c}
+void count_pairs_through(int u) {
+  // ...
+
+  for (edge e: nd[u].adj) {
+    if (!nd[e.v].dead) {
+      head_dfs(e.v, u, 1, e.digit, +1);
+    }
+  }
+
+  for (edge e: nd[u].adj) {
+    if (!nd[e.v].dead) {
+      head_dfs(e.v, u, 1, e.digit, -1);
+      tail_dfs(e.v, u, 1, e.digit);
+      head_dfs(e.v, u, 1, e.digit, +1);
+    }
+  }
+
+  // ...
+}
+\end{minted}
+
+\subsubsection*{Vectori + sortare + căutare binară}
+
+De amorul artei, am încercat și următoarea abordare. Să observăm că întîi facem toate inserările în structura noastră de date, apoi toate interogările de frecvență. De aceea, am înlocuit \ccode{map}-urile cu doi vectori:
+
+\begin{enumerate}
+  \item În locul lui $t$, un vector de perechi <rest, frecvență>.
+  \item În locul lui $c$, un vector de tripleți <rest, fiu, frecvență>.
+\end{enumerate}
+
+După primul DFS, am sortat tripleții și am comasat duplicatele (însumînd frecvențele). Pentru a căuta informații, am folosit căutarea binară.
+
+Timpul de rulare s-a înjumătățit. De reținut!

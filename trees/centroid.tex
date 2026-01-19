@@ -6,7 +6,7 @@ Ca și descompunerea \textit{heavy-light}, descompunerea în centroizi este o un
 
 \section{Definiție}
 
-Fiind dat un arbore cu $n$ noduri, un \textbf{centroid} este un nod al arborelui cu proprietatea că toți fiii săi au cel mult $\lfloor n / 2\rfloor$ noduri.
+Fiind dat un arbore cu $n$ noduri, un \textbf{centroid} este un nod al arborelui cu proprietatea că, dacă îl eliminăm, atunci toți arborii rezultați au cel mult $\lfloor n / 2\rfloor$ noduri.
 
 Centroidul este un centru de masă, definit în funcție de greutatea subarborilor (ca număr de noduri). A nu se confunda cu \textbf{centrul}, care este definit în funcție de distanțe (el minimizează distanța maximă pînă la alt nod).
 
@@ -48,7 +48,18 @@ Iată un exemplu în care descompunerea în centroizi necesită cinci niveluri d
 
 \import{./figures}{tree-centroid-decomp.tex}
 
-Această abordare are avantajul că fiecare nod face parte din cel mult $\log n$ descompuneri. De aceea, o implementare care face efort $\bigoh(\textrm{mărime\_subarbore})$ în fiecare subarbore, cum ar fi de exemplu un DFS, va ajunge la o complexitate totală de $\bigoh(n \log n)$. \textbf{Atenție!} Efortul trebuie să depindă de mărimea subarborelui, \textbf{nu} de $n$. Fiecare nod va deveni centroid la un nivel mai mare sau mai mic de fărîmițare. Așadar, dacă orice bucată din cod face efort $\bigoh(n)$ per nod, atunci complexitatea totală va deveni $\bigoh(n^2)$.
+Această abordare are avantajul că fiecare nod face parte din cel mult $\lceil \log n \rceil$ descompuneri. De exemplu, nodul 8 face parte din:
+
+\begin{itemize}
+  \item Arborele inițial (cu centroidul 1).
+  \item Arborele cu centroidul 5 (chenar portocaliu).
+  \item Arborele cu centroidul 6 (chenar galben).
+  \item Arborele constînd doar din nodul 8, cu centroidul 8.
+\end{itemize}
+
+De aceea, o implementare care face efort $\bigoh(\textrm{mărime\_subarbore})$ în fiecare subarbore, cum ar fi de exemplu un DFS, va ajunge la o complexitate totală de $\bigoh(n \log n)$.
+
+\textbf{Atenție!} Efortul trebuie să depindă de mărimea subarborelui, \textbf{nu} de $n$. Fiecare nod va deveni centroid la un nivel mai mare sau mai mic de fărîmițare. Așadar, dacă orice bucată din cod face efort $\bigoh(n)$ per nod, atunci complexitatea totală va deveni $\bigoh(n^2)$. Uneori această condiție necesită un efort conștient, de exemplu la dimensionarea, inițializarea și ștergerea structurilor de date pentru subarborele curent.
 
 Dacă efortul într-un subarbore este mai mare decît liniar, atunci descompunerea în centroizi adaugă un factor logaritmic. De exemplu, dacă efortul într-un subarbore de mărime $k$ este $\bigoh(k \log k)$, atunci complexitatea totală devine $\bigoh(n \log^2 n)$. Pentru detalii, vedeți \href{https://en.wikipedia.org/wiki/Master\_theorem\_(analysis\_of\_algorithms)}{Master Theorem}, cazul 2.
 
