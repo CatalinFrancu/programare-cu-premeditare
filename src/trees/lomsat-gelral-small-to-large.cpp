@@ -28,11 +28,12 @@ struct freq_info {
     }
 
     for (auto [color, f]: src.map) {
-      map[color] += f;
-      if (map[color] > max_f) {
-        max_f = map[color];
+      // Salvează noua frecvență ca să nu o tot recăutăm în map.
+      int new_f = (map[color] += f);
+      if (new_f > max_f) {
+        max_f = new_f;
         sum = color;
-      } else if (map[color] == max_f) {
+      } else if (new_f == max_f) {
         sum += color;
       }
     }

@@ -21,21 +21,12 @@ void read_input_data() {
   }
 }
 
-int min(int x, int y) {
-  return (x < y) ? x : y;
-}
-
-int max(int x, int y) {
-  return (x > y) ? x : y;
-}
-
 // Presupune că src.size() <= dest.size().
 void merge_into(deque& src, deque&dest) {
-  int min_i = max(0, k - 1 - dest.size());
-  int max_i = min(src.size() - 1, k - 2);
+  int min_i = std::max(k - (int)dest.size() + 1, 0);
+  int max_i = std::min((int)src.size() - 1, k);
   for (int i = min_i; i <= max_i; i++) {
-    int j = k - 2 - i;
-    answer += (long long)src[i] * dest[j];
+    answer += (long long)src[i] * dest[k - i];
   }
   for (int i = 0; i < (int)src.size(); i++) {
     dest[i] += src[i];
@@ -43,10 +34,11 @@ void merge_into(deque& src, deque&dest) {
 }
 
 deque dfs(int u, int parent) {
-  deque result = { };
+  deque result = { 1 }; // nodul însuși
   for (int v: adj[u]) {
     if (v != parent) {
       deque d = dfs(v, u);
+      d.push_front(0);
       if (d.size() > result.size()) {
         // Întotdeauna folosește swap(), care schimbă pointeri. Niciodată nu
         // folosi atribuirea, care copiază date.
@@ -56,11 +48,7 @@ deque dfs(int u, int parent) {
     }
   }
 
-  result.push_front(1); // nodul însuși la distanță 0
-  if ((int)result.size() >= k + 1) {
-    answer += result[k];
-  }
-  if ((int)result.size() > k + 1) {
+  if ((int)result.size() > k) {
     // Nu are rost să ținem statistici peste distanța k.
     result.pop_back();
   }

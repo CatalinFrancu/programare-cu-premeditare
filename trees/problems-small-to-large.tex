@@ -88,7 +88,7 @@ Fiecare nod $u$ calculează un vector/listă $f$ unde $f[i]$ pentru $i \geq 0$ e
 
 \subsubsection*{Implementare cu liniarizare + RMQ}
 
-Construim o liniarizare DFS și notăm, în nodurile care conțin monede, adîncimea acelor noduri. În nodurile care nu conțin monede nu notăm nimic. Pentru a găsi cea mai de jos monedă din subarborele unui nod $u$, găsim maximul pe intervalul subîntins de $u$. Pentru a muta moneda, scriem 0 în locul acelui maxim (moneda dispare) și scriem adîncimea lui $u$ la poziția nodului $u$ (moneda apare acolo). Apoi creștem numărul total de mutări cu diferența dintre cele două adîncimi. Avem nevoie de RMQ cu actualizare, deci putem folosi varianta pe arbori de segmente. Rezultă o complexitate de $\bigoh(n \log n)$. Codul este puțin mai lent și consumă mai multă memorie decît implementarea cu \textit{small-to-large}.
+Construim o liniarizare DFS și notăm, în nodurile care conțin monede, adîncimea acelor noduri. În nodurile care nu conțin monede nu notăm nimic. Pentru a găsi cea mai de jos monedă din subarborele unui nod $u$, găsim maximul pe intervalul subîntins de $u$. Pentru a muta moneda, scriem 0 în locul acelui maxim (moneda dispare) și scriem adîncimea lui $u$ la poziția nodului $u$ (moneda apare acolo). Apoi creștem numărul total de mutări cu diferența dintre cele două adîncimi. Avem nevoie de RMQ cu actualizare, deci putem folosi varianta pe arbori de segmente. Rezultă o complexitate de $\bigoh(n \log n)$. Codul este de 2-3 ori mai lent și consumă mai multă memorie decît implementarea cu \textit{small-to-large}.
 
 \subsection{Problema Blood Cousins Return (Codeforces)}
 \label{problem:blood-cousins-return}
@@ -113,7 +113,7 @@ Note de implementare:
 \begin{enumerate}
   \item \ccode{unsorted_set} este mai lent decît \ccode{set}, deși algoritmic vorbind ne-ar trebui prima, care oferă timp constant. Dar tabelele hash (adică \ccode{unsorted_set}) au o mărime minimă dată de vectorul pe care se bazează.
 
-  \item Reprezentarea listelor de adiacență cu \ccode{deque} este de două ori mai lentă decît cu \ccode{vector}.
+  \item Reprezentarea listelor de seturi cu \ccode{deque} este de două ori mai lentă decît cu \ccode{vector}.
 \end{enumerate}
 
 Implementarea este rezonabil de scurtă, dar nu prea eficientă.
