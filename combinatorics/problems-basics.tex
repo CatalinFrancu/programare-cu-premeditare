@@ -1,0 +1,233 @@
+\section{Probleme}
+
+Primele 8 probleme sînt educaționale, clasice.
+
+\subsection{Problema Binomial Coefficients (CSES)}
+\label{problem:binomial-coefficients}
+
+\href{https://cses.fi/problemset/task/1079}{enunț}
+$\bullet$
+\hyperref[code:binomial-coefficients]{sursă}
+
+Este o problemă clasică de calcul al combinărilor. Pentru a calcula $C_n^k = \frac{n!}{k!(n-k)!}$ avem nevoie de inversele factorialelor. Repet că le putem calcula pe toate $n$ în $\bigoh(n)$.
+
+\subsection{Problema Creating Strings II (CSES)}
+\label{problem:creating-strings-2}
+
+\href{https://cses.fi/problemset/task/1715}{enunț}
+$\bullet$
+\hyperref[code:creating-strings-2]{sursă}
+
+Este o problemă clasică de permutări cu repetiție. Ca optimizare, cum rezolvăm problema fără memorie $\bigoh(n)$, ci doar $\bigoh(\Sigma)$?
+
+\subsection{Problema Distributing Apples (CSES)}
+\label{problem:distributing-apples}
+
+\href{https://cses.fi/problemset/task/1716}{enunț}
+$\bullet$
+\hyperref[code:distributing-apples]{sursă}
+
+Este o problemă clasică de combinări cu repetiție (\textit{Stars and bars}). Atenție la implicația tacită: copiii sînt distincți (contează dacă Gigel primește un măr și Ionel două sau invers), dar merele sînt identice (nu contează care sînt cele două mere primite de Ionel).
+
+\subsection{Problema Christmas Party (CSES)}
+\label{problem:christmas-party}
+
+\href{https://cses.fi/problemset/task/1717}{enunț}
+$\bullet$
+\hyperref[code:christmas-party]{surse}
+
+Este o problemă clasică de numărare a permutărilor fără puncte fixe. Includ trei surse, două cu principiul includerii și excluderii și una cu formula de recurență.
+
+\subsection{Problema Bracket Sequences I (CSES)}
+\label{problem:bracket-sequences-1}
+
+\href{https://cses.fi/problemset/task/2064}{enunț}
+$\bullet$
+\hyperref[code:bracket-sequences-1]{sursă}
+
+Este o problemă elementară de calcul al numărului lui Catalan.
+
+\subsection{Problema Bracket Sequences II (CSES)}
+\label{problem:bracket-sequences-2}
+
+\href{https://cses.fi/problemset/task/2187}{enunț}
+$\bullet$
+\hyperref[code:bracket-sequences-2]{sursă}
+
+Probleme cere să calculăm numărul de parantezări cu prefix impus.
+
+\subsection{Problema Counting Necklaces (CSES)}
+\label{problem:counting-necklaces}
+
+\href{https://cses.fi/problemset/task/2209}{enunț}
+$\bullet$
+\hyperref[code:counting-necklaces]{sursă}
+
+Este o aplicație directă a Lemei lui Burnside.
+
+\subsection{Problema Counting Grids (CSES)}
+\label{problem:counting-grids}
+
+\href{https://cses.fi/problemset/task/2209}{enunț}
+$\bullet$
+\hyperref[code:counting-grids]{sursă}
+
+Și acestă problemă este o aplicație directă a Lemei lui Burnside.
+
+\subsection{Problema Number of Permutations (Codeforces)}
+\label{problem:number-of-permutations}
+
+\href{https://codeforces.com/contest/1207/problem/D}{enunț}
+$\bullet$
+\hyperref[code:number-of-permutations]{sursă}
+
+Problema este directă, rezolvabilă cu principiul includerii și excluderii. Din toate cele $n!$ permutări,
+
+\begin{itemize}
+  \item le scădem pe cele sortate după $a$;
+  \item le scădem pe cele sortate după $b$;
+  \item le adunăm pe cele sortate simultan după $a$ și după $b$.
+\end{itemize}
+
+Sursa include și un exemplu de inginerie care vă poate ajuta. Ca să evităm duplicarea (sau triplicarea) codului, putem trimite funcții ca parametru.
+
+\subsection{Problema Counting Factorizations (Codeforces)}
+\label{problem:counting-factorizations}
+
+\href{https://codeforces.com/contest/1794/problem/D}{enunț}
+$\bullet$
+\hyperref[code:counting-factorizations]{sursă}
+
+Soluția urmează \href{https://codeforces.com/blog/entry/113500}{editorialul}, care este bine scris.
+
+Să remarcăm că, dacă $f(m) = \{a_1, a_2, \dots, a_{2n}\}$, atunci $n$ dintre cele $2n$ numere citite la intrare trebuie să fie bazele, numere prime și distincte. Altfel problema nu are soluție. Sursa nu tratează special acest caz, dar el merita remarcat. Deoarece $n$ dintre numere trebuie să fie prime, să citim cele $n$ numere și să le clasificăm în prime și compuse (pe 1 îl tratăm ca număr compus). Putem folosi testul naiv de primalitate, fiind vorba despre doar $\np{2022}$ de numere mici.
+
+Mai departe, să remarcăm că exponenții nu trebuie neapărat să fie distincți. De aceea, cele $n$ numere rămase după alegerea bazelor pot fi permutate, dar cu eliminarea repetițiilor. De aceea, nu ne interesează numerele însele, ci frecvențele acestora. Să spunem că avem $p$ numere prime distincte cu frecvențele $g_1, g_2,\dots, g_p$ și $c$ numere compuse distincte cu frecvențele $h_1, h_2, \dots, h_c$.
+
+Orice mod de a construi un $m$ înseamnă că $n$ dintre frecvențele numerelor prime vor scădea cu 1 (acelea sînt bazele alese). Să notăm frecvențele rămase cu $g_1', g_2', \dots, g_p'$, unde $g_i' = g_i$ sau $g_i' = g_i - 1$. Celelalte numere rămase reprezintă cei $n$ exponenți, iar frecvențele lor sînt $g_1', g_2', \dots, g_p', h_1, h_2, \dots h_c$ (unele dintre aceste valori pot fi 0). Numărul de moduri de a permuta acești exponenți pentru a obține $m$-uri diferite este:
+
+$$\frac{n!}{g_1'! g_2'! \dots g_p'! h_1! h_2! \dots h_c!}$$
+
+Acum trebuie să însumăm această cantitate peste toate modalitățile de atribuire a valorilor $g_i'$. Scoatem factor comun expresia
+
+$$T = \frac{n!}{h_1! h_2! \dots h_c!}$$
+
+și rămîne să însumăm rezultatele posibile pentru
+
+$$\frac{1}{g_1'! g_2'! \dots g_p'!}$$
+
+Aici ne permitem să aplicăm o programare dinamică de complexitate $\bigoh(n^2)$. Fie $d(i, j)$ suma termenilor de forma
+
+$$\frac{1}{g_i'! g_{i+1}'! \dots g_p'!}$$
+
+unde exact $j$ dintre factorii $g'$ sînt \textbf{diferiți} de factorul $g$ corespunzător (adică am ales un număr prim din acea frecvență). Atunci pe poziția $i$ putem să alegem valoarea $g_i' = g_i$ sau valoarea $g_i' = g_i - 1$. Rezultă recurența:
+
+$$d(i, j) = \frac{1}{g_i!} \cdot d(i + 1, j) + \frac{1}{(g_i - 1)!} \cdot d(i + 1, j - 1)$$
+
+Aici, primul termen semnifică că \textbf{nu} am folosit un număr prim din frecvența $g_i$, deci de la $i+1$ încolo încă avem de ales $j$ numere prime, iar al doilea termen semnifică că am folosit un număr prim din frecvența $g_i$, deci de la $i+1$ încolo mai avem de ales $j-1$ numere prime. Răspunsul la problemă va fi $T \cdot d(1, n)$.
+
+Putem implementa programarea dinamică folosind un singur vector.
+
+\subsection{Problema Monocarp and the Set (Codeforces)}
+\label{problem:monocarp-and-the-set}
+
+\href{https://codeforces.com/contest/1886/problem/D}{enunț}
+$\bullet$
+\hyperref[code:monocarp-and-the-set]{sursă}
+
+Problema necesită o mică observație, dar sper să aveți deja acest reflex format. Este mult mai simplu să considerăm operațiile de la sfîrșit spre început. Iau naștere trei cazuri:
+
+\begin{itemize}
+  \item Dacă ultimul caracter este \texttt{>}, atunci ultimul număr inserat este $n$. Reducem problema la una identică de mărime $n-1$.
+
+  \item Similar, dacă ultimul caracter este \texttt{<}, atunci ultimul număr inserat este $1$.
+
+  \item Dacă ultimul caracter este \texttt{?}, atunci avem $n-2$ variante pentru ultimul număr inserat. Problema se reduce tot la una identică de mărime $n-1$, dar nu direct, ci printr-o renumerotare. De exemplu, dacă am alege să punem \texttt{3} pe ultima poziție, atunci mulțimea numerelor anterioare ar fi $\{ 1, 2, 4, 5, 6 \}$, pe care însă o putem trata ca și pe $\{ 1, 2, 3, 4, 5 \}$ fără a schimba natura problemei.
+\end{itemize}
+
+De aceea, este suficient să menținem produsul valorilor $p$ pentru pozițiile $p$ care conțin caracterul \texttt{?}. Aritmetica ține cu noi dacă indexăm șirul natural, de la 0. Apoi, ori de cîte ori poziția $pos$ capătă valoarea \texttt{?}, înmulțim acest produs cu $pos$. Ori de cîte ori poziția $pos$ capătă valoarea \texttt{<} sau \texttt{>} înmulțim produsul cu inversul lui $pos$.
+
+Este nevoie de un caz special cînd \ccode{s[1] = '?'}, deoarece 0 nu are invers. În acel caz, răspunsul este oricum 0, deoarece după primul număr inserat, al doilea va fi obligatoriu fie minim (\texttt{<}), fie maxim (\texttt{>}).
+
+\subsection{Problema Lengthening Sticks (Codeforces)}
+\label{problem:lengthening-sticks}
+
+\href{https://codeforces.com/contest/571/problem/A}{enunț}
+$\bullet$
+\hyperref[code:lengthening-sticks]{sursă}
+
+\subsubsection*{Soluție directă}
+
+Există o soluție bazată pe numărare directă, dar are multe cazuri particulare. Fie $x$, $y$ și $z$ cantitățile adăugate la $a$, $b$ și respectiv $c$. Iterăm prin toate valorile lui $z$ de la $0$ la $l$ și scriem inegalitățile în $x$ și $y$ care rezultă din inegalitatea triunghiului. De exemplu:
+
+$$(a + x) < (b + y) + (c + z) \implies x - y < b + c - a + z$$
+
+Astfel deducem limite superioare și inferioare pentru $x+y$ și $x-y$. Acestea delimitează un dreptunghi în planul $xOy$ rotit cu 45˚. Aria acestui dreptunghi este ușor de aflat. Din păcate, dreptunghiul mai trebuie decupat cu condițiile suplimentare $x \geq 0$ și $y \geq 0$, ceea ce duce la figuri complicate.
+
+\subsubsection*{Soluție prin excludere}
+
+O altă abordare este să numărăm toate modurile de a distribui cel mult $l$ unități, apoi să excludem tripletele ilegale.
+
+Știm că putem distribui \textbf{exact} $l$ unități în $C_{l+2}^l$ moduri (este o problemă clasică de \textit{stars and bars}). Rezultă că numărul de moduri de a distribui cel mult $l$ unități este
+
+$$C_{l+2}^{l} + C_{(l-1)+2}^{l-1} + \dots + C_2^0$$
+
+Această sumă este egală cu $C_{l + 3}^{3}$ (vezi equația \ref{eq:comb-sum-3}). Dacă preferați, putem introduce un al patrulea băț fictiv care să preia surplusul din $l$ nefolosit cu $a$, $b$ și $c$. Ajungem la aceeași formulă. Ea poate fi calculată și cu un \ccode{for} în $\bigoh(l)$.
+
+Acum să trecem la excludere. Din nou, fie $x$, $y$ și $z$ cantitățile adăugate la $a$, $b$ și respectiv $c$. Presupunem că dorim ca $a+x \geq b + y + c + z$ (vom proceda similar pentru $b+y$ și pentru $c+z$). Obținem inegalitățile:
+
+$$
+\begin{cases}
+y + z & \leq l - x\\
+y + z & \leq a + x - b - c
+\end{cases}
+$$
+
+Fie $h = \min(l - x, a + x - b - c)$ limita superioară pentru $y+z$. Dacă $h$ este negativ, nu există combinații valide pentru $x$ și $y$. Dacă $h \geq 0$, atunci numărul de combinații valide este
+
+$$0 + 1 + \dots + (h + 1) = \frac{(h + 1)(h + 2)}{2}$$
+
+\subsection{Problema Shuffle (Codeforces)}
+\label{problem:shuffle}
+
+\href{https://codeforces.com/contest/1622/problem/D}{enunț}
+$\bullet$
+\hyperref[code:shuffle]{surse}
+
+\subsubsection*{Soluția în \texorpdfstring{$\bigoh(n^2)$}{O(n²)}}
+
+Este tentant să încercăm următoarea abordare: pentru fiecare subsecvență $W = [l, r]$ adăugăm la răspuns cantitatea $C_{x+y}^x$, unde $x$ este numărul de zerouri, iar $y$ numărul de unu din $W$. Dar este incorect, căci vom număra și unele permutări care lasă nemodificate porțiuni din $W$. Din această cauză, două subsecvențe parțial suprapuse, $W$ și $W'$, vor număra de două ori permutările care modifică doar zona comună $W \cap W'$.
+
+Să contabilizăm subsecvențele într-un mod care elimină duplicatele. Fie $[l,r]$ o subsecvență amestecată astfel încît $l$ și $r$ sînt prima, respectiv ultima poziție modificată. Secvența merită luată în calcul dacă întrunește patru condiții:
+
+\begin{enumerate}
+  \item Are lungime cel puțin 2. O secvență de lungime 1 nu poate fi amestecată. \emoji{thinking-face}
+
+  \item Conține cel mult $k$ cifre 1. Mai multe nu avem voie să selectăm, dar putem selecta mai puține (ne prefacem că amestecăm o secvență care include $[l,r]$, dar lasă nemodificate prefixul și sufixul). Însă de aici decurge...
+
+  \item Șirul original $s$ conține cel puțin $k$ cifre 1.
+
+  \item Secvența conține cifrele necesare pentru a nega pozițiile $l$ și $r$. De exemplu, dacă $s[l] = s[r] = 1$, secvența trebuie să conțină și două zerouri.
+\end{enumerate}
+
+Odată fixate capetele, adăugăm la răspuns o cantitate de forma $C_{x+y}^x$.
+
+\subsubsection*{Soluția în \texorpdfstring{$\bigoh(n)$}{O(n)}}
+
+Putem optimiza soluția de mai sus astfel. Să fixăm doar capătul stîng, $l$. Atunci capătul drept $r$ poate fi oriunde începînd de la $l$ pînă la punctul în care include cel mult $k$ de 1 (plus toate zerourile următoare). Apoi, impunem doar două condiții:
+
+\begin{enumerate}
+  \item Șirul original $s$ conține cel puțin $k$ cifre 1 (ca mai sus).
+
+  \item Undeva în $[l,r]$ există un caracter diferit de $s[l]$. Altfel nu ne putem  asigura că prima modificare este pe poziția $l$.
+\end{enumerate}
+
+Odată fixat capătul stîng, orice amestecare distinctă a caracterelor din $[l+1,r]$ este o soluție distinctă (numărată o singură dată). Dacă am grupa acum aceste amestecări după poziția ultimului caracter modificat, am regăsi subsecvențele $[l,x]$ din soluția anterioară.
+
+Ca la orice problemă de numărare, merită să ne gîndim la întrebările:
+
+\begin{enumerate}
+  \item Sîntem siguri că am numărat toate posibilitățile?
+
+  \item Sîntem siguri că nu am numărat unele posibilități de mai multe ori?
+\end{enumerate}

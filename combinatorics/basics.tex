@@ -1,0 +1,173 @@
+\chapter{Elemente de bază}
+
+\section{Formule pentru combinări}
+
+Încercați să memorați formule de combinatorică. Oricare dintre ele vă poate servi la un moment dat.
+
+Coeficientul binomial:
+
+\begin{equation}
+  \binom{n}{k} = \frac{n!}{k!(n - k)!}
+\end{equation}
+
+O formulă echivalentă:
+
+\begin{equation}
+  \binom{n}{k} = \frac{n \cdot (n-1) \cdot \dots \cdot (n - k + 1)!}{k!}
+\end{equation}
+
+O exprimare recurentă, care duce la triunghiul lui Pascal:
+
+\begin{equation}
+  \binom{n}{k} = \binom{n - 1}{k - 1} + \binom{n - 1}{k}
+\end{equation}
+
+O listă de proprietăți, preluate din articolul foarte bun de pe \href{https://cp-algorithms.com/combinatorics/binomial-coefficients.html}{CP Algorithms}:
+
+\begin{equation}
+  \binom{n}{k} = \binom{n}{n - k}
+\end{equation}
+
+\begin{equation}
+  \binom{n}{k} = \frac{n}{k} \binom{n - 1}{k - 1}
+\end{equation}
+
+\begin{equation}
+  \sum_{k=0}^{n} \binom{n}{k} = 2^{n}
+\end{equation}
+
+\begin{equation}
+  \sum_{m=0}^{n} \binom{m}{k} = \binom{n + 1}{k + 1}
+\end{equation}
+
+\begin{equation}
+  \label{eq:comb-sum-3}
+  \sum_{k=0}^{m} \binom{n + k}{k} = \binom{n + m + 1}{m}
+\end{equation}
+
+\begin{equation}
+  \sum_{k=0}^{n} \binom{n}{k}^2 = \binom{2n}{n}
+\end{equation}
+
+\begin{equation}
+  \sum_{k=0}^{n} k \binom{n}{k} = n \cdot 2^{n-1}
+\end{equation}
+
+\section{Calculul combinărilor}
+
+Pentru valori mari, de regulă problema ne va cere să operăm modulo un număr prim. În această situație, putem precalcula inversele modulare ale tuturor factorialelor: \ccode{inv_fact[k]} = $(k!)^{-1} \bmod M$. Apoi, putem calcula în $\mathcal{O}(1)$ orice $C_n^k$.
+
+Ca optimizare, putem calcula toate inversele factorialelor în $\mathcal{O}(n)$, apelînd o singură dată funcția de calcul al inversei. Secretul este să pornim de la $n$ spre 0:
+
+\begin{minted}{c}
+inv_fact[MAX_N] = inverse(fact[MAX_N]);
+for (int i = MAX_N - 1; i >= 0; i--) {
+  inv_fact[i] = (long long)inv_fact[i + 1] * (i + 1) % MOD;
+}
+\end{minted}
+
+\section{Permutări cu repetiție}
+
+O mulțime de $n$ elemente distincte are, desigur, $n!$ permutări. Cînd elementele nu sînt distincte (mulțimea este un multiset), atunci numărul de permutări este
+
+$$\frac{n!}{n_1! \cdot n_2! \cdot \dots \cdot n_k!}$$
+
+Unde $n_1, n_2, \dots, n_k$ sînt multiplicitățile elementelor din set și $n_1 + n_2 + \dots + n_k = n$. Vezi \href{https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets}{Wikipedia} pentru detalii.
+
+\subsection{Aplicație}
+
+Dacă desfacem parantezele polinomului $(a + b + c + d)^{10}$ și simplificăm, care este coeficientul monomului $a^2bc^4d^3$?
+
+\section{Combinări cu repetiție}
+
+Problema clasică de combinări cu repetiție este: în cîte moduri putem așeza $n$ obiecte (identice) în $k$ cutii?
+
+Metoda \href{https://en.wikipedia.org/wiki/Stars\_and\_bars\_(combinatorics)}{Stars and bars} reduce problema la una de combinări obișnuite, iar soluția este $C_{n + k - 1}^{n}$. Ea procedează astfel:
+
+\begin{itemize}
+  \item Reprezintă fiecare obiect printr-o stea. Vor exista $n$ stele.
+  \item Separă fiecare două cutii printr-o bară. Vor exista $k - 1$ bare.
+  \item Orice mod de a amesteca stelele și barele corespunde în mod unic unei soluții. De exemplu, reprezentarea \texttt{**|***||*} înseamnă că sînt 4 cutii, care conțin respectiv 2, 3, 0, 1 obiecte.
+\end{itemize}
+
+O altă interpretare este: încărcăm un robot cu cele $n$ obiecte și îl lăsăm să viziteze cele $k$ cutii. Stelele și barele reprezintă instrucțiuni în programul robotului. O stea înseamnă „lasă un obiect în cutia curentă”, iar o bară înseamnă „avansează la cutia următoare”.
+
+\subsection{Aplicații}
+
+\begin{itemize}
+  \item (Variantă) În cîte moduri putem așeza $n$ obiecte în $k$ cutii astfel încît fiecare cutie să conțină \textbf{cel puțin un obiect}?
+  \item În cîte moduri îl putem scrie pe $n$ ca sumă de $k$ termeni numere naturale? Ordinea termenilor contează.
+  \item (Variantă) În cîte moduri îl putem scrie pe $n$ ca sumă de $k$ termeni numere naturale \textbf{nenule}?
+  \item Cîte soluții în numere naturale are ecuația $a + b + c + d = 10$?
+  \item Cîte soluții în numere naturale are inecuația $a + b + c + d \leq 10$?
+  \item Cîți termeni are polinomul $(a + b + c + d)^{10}$ după ce desfacem parantezele și simplificăm?
+\end{itemize}
+
+\section{Numărarea permutărilor fără punct fix}
+
+Am întîlnit inițial problema ca puzzle de logică: $n$ persoane vin la o petrecere și își pun pălăriile în cuier. La plecare, ei se întreabă: cîte moduri există de a redistribui pălăriile, cîte una fiecărei persoane, astfel încît nimeni să nu plece acasă cu pălăria proprie? Vezi pagina \href{https://en.wikipedia.org/wiki/Derangement}{Wikipedia} pentru (muuuulte) informații.
+
+Valoarea teoretică converge către $\frac{n!}{e}$.
+
+Formula de recurență este $D_n = (n-1) \cdot (D_{n-1} + D_{n-2})$. Vom urmări \href{https://en.wikipedia.org/wiki/Derangement#Counting_derangements}{demonstrația}.
+
+Există și o formulă de calcul cu principiul includerii și excluderii. Vom urmări \href{https://en.wikipedia.org/wiki/Derangement#Derivation_by_inclusion\%E2\%80\%93exclusion_principle}{demonstrația}. Implementarea clasică, cu inverse factoriale, merge, dar există și una mai simplă.
+
+\section{Numerele lui Catalan}
+
+Al $n$-lea număr al lui Catalan, $C_n$, indică numărul de șiruri de $n$ paranteze deschise și $n$ paranteze închise care sînt parantezate corect. Pagina Wikipedia listează numeroase \href{https://en.wikipedia.org/wiki/Catalan_number#Applications_in_combinatorics}{probleme echivalente}. Reținem în special problema: cîte căi există de la (0,0) la ($n$, $n$), mergînd doar la dreapta și în sus, care nu trec deasupra diagonalei?
+
+Pe baza acestei formulări vom urmări \href{https://en.wikipedia.org/wiki/Catalan_number#Second_proof}{demonstrația a 2-a} (una dintre multele). Rezultă formula
+
+$$C_n = \frac{1}{n + 1} \binom{2n}{n}$$
+
+Demonstrația ne ajută să rezolvăm problema generalizată: cîte parantezări există care să înceapă obligatoriu cu $k \leq n$ paranteze deschise? Demonstrația este identică cu cea pentru problema originală:
+
+\begin{itemize}
+  \item Pornind de la coordonatele $(k,0)$ mai avem de făcut $n-k$ pași la dreapta și $n$ în sus.
+  \item Există o bijecție între căile rele și căile răsturnate.
+  \item Căile răsturnate ajung la $(n-1,n+1)$, deci orice cale răsturnată mai are de făcut $n-k-1$ pași la dreapta și $n+1$ în sus.
+\end{itemize}
+
+De aceea, numărul total de căi pornind de la $(k,0)$ este $C_{2n-k}^{n}$, iar numărul de căi rele este $C_{2n-k}^{n+1}$. Atunci numărul de căi bune este
+
+\begin{align*}
+  \binom{2n-k}{n} - \binom{2n-k}{n+1}\\
+  = \frac{(2n-k)!}{n!(n-k)!} \ - \ \frac{(2n-k)!}{(n+1)!(n-k-1)!}\\
+  = \Big[\frac{1}{n-k} - \frac{1}{n+1}\Big] \cdot \frac{(2n-k)!}{n!(n-k-1)!}\\
+  = \frac{k+1}{(n-k)(n+1)} \cdot \frac{(2n-k)!}{n!(n-k-1)!}\\
+  = \frac{k+1}{n+1} \cdot \frac{1}{n-k} \cdot \frac{(2n-k)!}{n!(n-k-1)!}\\
+  = \frac{k+1}{n+1} \cdot \binom{2n-k}{n}
+\end{align*}
+
+Așadar,
+
+$$C_n^{(k)} = \frac{k + 1}{n + 1} \binom{2n - k}{n}$$.
+
+\section{Lema lui Burnside}
+
+Din secțiunea următoare, ultimele două probleme de pe CSES sînt rezolvabile cu această \href{https://en.wikipedia.org/wiki/Burnside's_lemma}lemă. Din păcate, demonstrația este formulată doar în termeni de grupuri și nu am investit timpul necesar ca să o înțeleg. Dar principiul este următorul. Lema ne ajută să numărăm obiectele-unicat dintr-o colecție, în condițiile în care unele transformări (rotații, simetrii etc.) transformă un obiect într-altul. Procedăm astfel:
+
+\begin{itemize}
+  \item Fie $n$ numărul de transformări posibile.
+  \item Fie $C_r$ numărul de obiecte care rămîn nemodificate în urma unei transformări de tipul $r$.
+  \item Atunci numărul de obiecte-unicat din colecție este $\frac{1}{n} \sum_r C_r$.
+\end{itemize}
+
+Pentru problema cu colierele de lungime $n$ și $k$ culori, definim transformarea $r$ drept rotirea colierului cu $r$ poziții. Atunci
+
+\begin{itemize}
+  \item $C_0 = k^n$, deoarece dacă nu rotim nimic există $k^n$ coliere distincte.
+  \item $C_1 = k$, deoarece dacă un colier nu se modifică prin rotirea cu o poziție, atunci mărgeaua 1 are aceeași culoare cu mărgeaua 2, mărgeaua 2 are aceeași culoare cu mărgeaua 3 etc. Deci toate mărgelele au aceeași culoare.
+  \item $C_2 = k$ dacă $n$ este impar. De exemplu, pentru $n = 7$, mărgeaua 1 va urma pozițiile 3, 5, 7, 2, 4, 6, 1. Din nou, este necesar ca toate mărgelele să aibă aceeași culoare.
+  \item $C_2 = k^{2}$ dacă $n$ este par. Putem alege culorile primelor două mărgele, iar ele vor dicta culorile restului de mărgele.
+  \item În general, $C_r = k^{\gcd(r, n)}$.
+\end{itemize}
+
+Pentru problema Counting Grids, raționamentul este foarte similar, dar numărul de rotații este fixat (4), iar numărul de libertăți pentru o transformare aleasă trebuie calculat. Pentru $r = 0$, numărul de posibilități este $2^{n^2}$ etc.
+
+Suspectez că unele dintre probleme pot fi rezolvate și cu PIE.
+
+\section{Un puzzle}
+
+Iată și \href{https://gurmeet.net/puzzles/100-prisoners-and-100-boxes/index.html}{un puzzle} care se rezolvă cu una dintre tehnicile de mai sus. Nu spunem care. \emoji{slightly-smiling-face}
