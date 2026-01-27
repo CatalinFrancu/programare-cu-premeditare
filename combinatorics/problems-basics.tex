@@ -149,6 +149,42 @@ De aceea, este suficient să menținem produsul valorilor $p$ pentru pozițiile 
 
 Este nevoie de un caz special cînd \ccode{s[1] = '?'}, deoarece 0 nu are invers. În acel caz, răspunsul este oricum 0, deoarece după primul număr inserat, al doilea va fi obligatoriu fie minim (\texttt{<}), fie maxim (\texttt{>}).
 
+\subsection{Problema Devu and Flowers (Codeforces)}
+\label{problem:devu-and-flowers}
+
+\href{https://codeforces.com/contest/451/problem/E}{enunț}
+$\bullet$
+\hyperref[code:devu-and-flowers]{sursă}
+
+Problema este o formă de \textit{stars and bars}. În loc să punem $s$ obiecte în $n$ cutii, trebuie să le luăm, dar matematica este aceeași. În plus, cutiile au capacități. Spunem că o distribuție \textit{saturează} o cutie de capacitate $f_i$ dacă ia strict mai mult de $f_i$ obiecte din cutie.
+
+Limita $n \leq 20$ este un indiciu puternic că soluția va fi exponențială în numărul de cutii. De aici ajungem la următoarea soluție cu principiul includerii și excluderii:
+
+\begin{itemize}
+  \item Numărăm toate cele $C_{s + n - 1}^{n-1}$ distribuții, care saturează 0 sau mai multe cutii.
+  \item Scădem toate distribuțiile care saturează cel puțin o cutie.
+  \item Adăugăm toate distribuțiile care saturează cel puțin două cutii.
+  \item etc.
+\end{itemize}
+
+Odată ce fixăm mulțimea de cutii de saturat, cum anume le saturăm? Răspunsul este: plasăm $f_{i} + 1$ obiecte în fiecare cutie saturată $i$. Apoi distribuim restul de obiecte cu metoda \textit{stars and bars} simplă, ceea ce, eventual, va adăuga și alte obiecte în cutiile saturate. Astfel ne asigurăm că generăm toate distribuțiile cu care am putea satura respectivele cutii.
+
+\subsubsection*{Detalii de implementare}
+
+Toate combinările de calculat for avea forma $C_x^{n-1}$, unde $n$ este constant, iar $x$ este de ordinul a $10^{14}$. De aceea, nu putem folosi formula naturală
+
+$$\frac{x!}{(x - n + 1)! \cdot (n-1)!}$$
+
+întrucît nu putem calcula factoriale atît de mari. În schimb, putem folosi formula
+
+$$\frac{x \cdot (x - 1) \cdot \dots \cdot (x - n + 2)}{(n-1)!}$$
+
+Ca optimizare, putem precalcula numitorul la începutul problemei. Astfel ia naștere prima sursă.
+
+Putem chiar să definim constante pentru numitorul $1/(n-1)!$ pentru cele 20 de valori posibile pentru $n$. Sursa se scurtează, căci putem renunța la codul pentru calcularea inverselor. Totuși, sursa pierde din claritate.
+
+Pentru elevii care se dau în vînt după programe scurte, indiferent de claritate, am scris și o ultimă \href{https://codeforces.com/contest/451/submission/303384615}{sursă} aliniată la standardele de lizibilitate ale lui Codeforces!
+
 \subsection{Problema Lengthening Sticks (Codeforces)}
 \label{problem:lengthening-sticks}
 
