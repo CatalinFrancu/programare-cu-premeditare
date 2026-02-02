@@ -1,0 +1,266 @@
+\section{Probleme}
+
+\subsection{Problema Misha and Permutation Summation (Codeforces)}
+\label{problem:misha-and-permutation-summation}
+
+\href{https://codeforces.com/contest/504/problem/B}{enunț}
+$\bullet$
+\hyperref[code:misha-and-permutation-summation]{sursă}
+
+Este o problemă directă de calcul al rangului unei permutări (\textit{ranking}) și de aflare a permutării cu un rang dat (\textit{unranking}). Singura neplăcere este că nu putem stoca rangul pe un tip de date scalar. Îl vom stoca pe un vector în baza factorial (adică poziția $i$ poate lua valori între $0$ și $i$).
+
+\subsection{Problema Inversion Sort (SPOJ)}
+\label{problem:inversion-sort}
+
+\href{https://www.spoj.com/problems/INVESORT/}{enunț}
+$\bullet$
+\hyperref[code:inversion-sort]{sursă}
+
+Problema este una de BFS. Trebuie să aflăm distanțele (în număr de operații) de la \textit{abcdefghij} la toate celelalte permutări ale șirului.
+
+Este nevoie de o observație ca să rezolvăm cazul cînd permutarea de pornire este diferită de \textit{abcdefghij}. Putem rescrie permutarea de pornire, redenumind literele ca să ajungem la \textit{abcdefghij}, și aplicăm aceeași redenumire și permutării-destinație. Atunci soluția trebuie să fie identică, doar cu alte nume pentru litere.
+
+Cum tratăm BFS-ul? O variantă este să stocăm un \ccode{map} de la șiruri la distanțe. Dar cred că această metodă va fi lentă. Este mai eficient să mapăm fiecare permutare la rangul său. Astfel ne ajunge un vector de $10! \approx \np{3600000}$ octeți pentru distanțe.
+
+Noi nu știm să facem mutări pe ranguri, ci doar pe permutări. De aceea, avem două variante:
+
+\begin{enumerate}
+  \item Ținem coada BFS doar de ranguri. La scoaterea din coadă, apelăm \textit{unrank} ca să recuperăm permutarea, pe care facem mutări.
+
+  \item Ținem coada BFS de perechi (permutare, rang). Va fi probabil mai rapid și nu mai este nevoie să scriem funcția \textit{unrank}.
+\end{enumerate}
+
+Dat fiind că $n$ este fixat și mic, putem calcula rangul în  $\bigoh(1)$ per poziție cu măști de biți.
+
+Am încercat și 3 optimizări:
+
+\begin{enumerate}
+  \item v2 calculează mai eficient mutările, făcînd o singură transpoziție per mutare. Efectul este mic, semn că apelurile la \textit{rank} sînt predominante.
+
+  \item v3 calculează \textit{popcount} cu tabel predefinit. Timpul de rulare scade sub jumătate. Aceasta este varianta pe care am inclus-o în anexă.
+
+  \item v4 operează pe cifre în loc de litere. Timpul de rulare scade cam cu 5\%.
+\end{enumerate}
+
+\subsection{Problema Four Chips (SPOJ)}
+\label{problem:four-chips}
+
+\href{https://www.spoj.com/problems/ADV04F1/}{enunț}
+$\bullet$
+\hyperref[code:four-chips]{sursă}
+
+Problema este similară cu Invesort, în sensul că necesită un BFS de la starea inițială. Ca și acolo, putem evita partea de \textit{unranking}.
+
+Este nevoie de ceva mai multă logistică, în special la generarea mutărilor. Există cel mult 20 de mutări posibile din fiecare poziție: 4 piese $\times$ (2 deplasări + 3 salturi). Ca să nu includ acel cod în bucla principală a BFS-ului, am decis să parametrizez generatorul de mutări, ca să accepte un parametru între 0 și 19.
+
+Putem discuta despre diverse idei de optimizare a generatorului de mutări. De exemplu, putem simplifica testul dacă o celulă este goală (funcția \ccode{empty()}) dacă stocăm și un bitset de 70 de biți pentru ocuparea tablei.
+
+\subsection{Problema Long Permutation (Codeforces)}
+\label{problem:long-permutation}
+
+\href{https://codeforces.com/contest/1443/problem/E}{enunț}
+$\bullet$
+\hyperref[code:long-permutation]{sursă}
+
+Problema este relativ clasică de \textit{ranking}. Este nevoie doar de următoarea observație teoretică. Pot exista cel mult $2 \cdot 10^5$ operații de avansare a rangului cu cel mult $10^5$ fiecare, deci rangul maxim la care putem ajunge este $2 \cdot 10^{10}$.
+
+De cîte elemente este nevoie ca să atingem acest rang? Există $14! \approx 8,7 \cdot 10^{14}$ moduri de a permuta ultimele 14 elemente, deci primele $n-14$ elemente nu se modifică niciodată.  De aceea, spargem permutarea în:
+
+\begin{enumerate}
+  \item Primele $n-14$ elemente (nu mai puțin de 0), care vor avea întotdeauna valorile $1, 2, \dots, n-14$.
+
+  \item Restul, pe care chiar le vom permuta. Pentru simplitate, le putem renumerota de la 0, iar la operațiile de sumă parțială ne vom aminti să adunăm la fiecare cîte $n-14$.
+\end{enumerate}
+
+Cele două operații se reduc la:
+
+\begin{enumerate}
+  \item Menține rangul curent al permutării (suma $x$-urilor de pînă acum). La fiecare nou $x$, generăm permutarea de 14 elemente.
+
+  \item Descompune intervalul dat într-unul inclus în prefixul imutabil și unul inclus în permutarea generată.
+\end{enumerate}
+
+Pentru claritate, sursa încapsulează separat permutarea „clasică” și permutarea „din bucăți”.
+
+\subsection{Problema Arbperm2 (NerdArena)}
+\label{problem:arbperm2}
+
+\href{https://www.nerdarena.ro/problema/arbperm2}{enunț}
+$\bullet$
+\hyperref[code:arbperm2]{sursă}
+
+Remarcăm că definiția rangului este semnificativ diferită, dar rangul este încă ușor de calculat. Teoretic problema constă tot din \textit{ranking} -- adaugă $k$ -- \textit{unranking}. Dar rangul depășește rapid \ccode{long long}.
+
+\subsubsection*{Rezolvarea greșită}
+
+Să socotim rangurile de la dreapta spre stînga. Atunci vrem să calculăm permutarea cu rang cu $k$ mai mic.
+
+Începem să scoatem elemente din permutare și să calculăm rangul. Elementul $n$ va contribui cu $0 \leq x < n$, în funcție de poziția sa. Elementul $n-1$ va contribui cu $y(n-1)$, unde $0 \leq y < n - 1$, etc. Cînd ajungem la un rang cel puțin egal cu $k$, ne oprim din eliminat. Scădem $k$ din rang și reinserăm elementele în ordinea impusă de rangul rămas. Practic, urcăm în arbore pînă cînd nodul curent subîntinde cel puțin $k$ frunze la dreapta.
+
+Nici măcar nu este nevoie de structuri de date pe vectori. Putem face operațiile de eliminare/inserare în  vector în $\bigoh(n)$, căci sînt puține. \href{https://www.nerdarena.ro/job_detail/807889?action=view-source}{Această sursă} ia 100p... dar de fapt greșește. Doar că testele din problema originală (\href{https://www.nerdarena.ro/problema/arbperm}{Arbperm}) nu expun cazul special care trebuie tratat. De aceea am creat problema Arbperm2, cu ultimul test modificat.
+
+Unde este greșeala?
+
+Greșeala apare pe testul:
+
+\begin{verbatim}
+100000 1
+2 1 3 4 5 6 7 8 ... 99999 100000
+\end{verbatim}
+
+Răspunsul este:
+
+\begin{verbatim}
+100000 99999 ... 8 7 6 5 4 3 1 2
+\end{verbatim}
+
+Exemplul arată că pot exista $\bigoh(n)$ elemente care migrează și pe care soluția de mai sus trebuie să le elimine și să le reinsereze. Mai rău, trebuie să urcăm în arbore pînă cînd subîntindem $100!/2$ noduri, ceea ce depășește reprezentarea.
+
+\subsubsection*{Rezolvarea corectă}
+
+Facem următoarea observație. Valoarea $n$ migrează circular prin pozițiile $0, 1, \dots, n-1$, începînd de la poziția pe care o are la intrare. Deci îi putem afla poziția finală. Pentru exemplul 2 din enunț, valoarea 4 începe de pe poziția 2 și ciclează prin pozițiile 3, 0, 1, 2, 3, 0, 1.
+
+Mult mai interesantă este valoarea $n-1$. Acesta migrează cu o poziție spre dreapta ori de cîte ori valoarea $n$ ajunge pe prima poziție. De asemenea, pozițiile acestei valori trebuie calculate între $0$ și $n-2$, ignorînd aparițiile lui $n$.
+
+Pe cazul general al unei valori $v$, aflată pe poziția inițială $a[v]$:
+
+\begin{itemize}
+  \item Poziția finală $b[v]$ este dată de $a[v]$ și numărul de avansuri modulo $v$.
+
+  \item $a[v]$ și $b[v]$ țin cont doar de elementele mai mici decît $v$.
+
+  \item Numărul de avansuri al valorii $v-1$ este dat de numărul de treceri peste 0 ale lui $v$.
+\end{itemize}
+
+Putem găsi pozițiile inițiale $a[v]$ ale fiecărei valori cu un AIB. Apoi calculăm în mod banal pozițiile finale $b[v]$. Din acestea putem recupera permutarea finală. Procesăm valorile $v$ de la mare la mic. Valoarea $n$ stă fix pe poziția $b[n]$. Apoi, fiecare valoare $x$ stă pe a $b[x]$-a poziție încă liberă din permutarea finală.
+
+\subsection{Problema Hipersimetrie (ONI 2019 clasele 11-12)}
+\label{problem:hipersimetrie}
+
+\href{https://kilonova.ro/problems/13}{enunț}
+$\bullet$
+\hyperref[code:hipersimetrie]{sursă}
+
+În acest capitol ne-am concentrat pe rangul permutărilor și al combinărilor, dar iată și o problemă de \textit{unranking} pe matrice / pe șiruri binare. Este genul meu de problemă:  \emoji{beaming-face-with-smiling-eyes} un experiment de gîndire interesant care duce la un program clar și relativ scurt.
+
+\subsubsection*{O imagine}
+
+Aceasta este figura pe care am folosit-o la rezolvarea problemei, redesenată pentru claritate, dar altfel nemodificată. Mi se pare că pe baza acestei figuri, codul se scrie singur (Hans Niemann dă din cap aprobator). Vă recomand și vouă ca, dacă ideea problemei nu este clară, să alegeți exemple mai mari decît $n=3$ sau $n=4$. Investiți timp într-un exemplu mare, căci el va simplifica înțelegerea algoritmului.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.66\linewidth]{hipersimetrie.jpg}
+  \caption{O imagine pentru $n = 42$.}
+\end{figure}
+
+Apropo de acest efort, menționez \href{https://jacobian.org/2021/apr/7/embrace-the-grind/}{un citat} favorit al meu:
+
+\begin{quote}
+  People said I did the impossible, but that’s wrong: I merely did something so boring that nobody else had been willing to do it. -- \textit{Jacob Kaplan-Moss, creatorul Django}
+\end{quote}
+
+Este trist că o olimpiadă se poate numi „de informatică” în timp ce concurenților nu le este permis accesul în sală cu foi de matematică la discreție. Mai degrabă aș concura fără o mînă decît fără hîrtie de matematică.
+
+Și acum, să vedem ce învățăm din figură.
+
+\subsubsection*{Algoritmul teoretic}
+
+Dacă desenăm cîteva simboluri și urmărim unde se propagă ele prin hipersimetrie, observăm că:
+
+\begin{itemize}
+  \item O matrice de dimensiune pară este formată din patru sferturi identice.
+  \item O matrice impară este formată din patru sferturi identice și o cruce cu patru brațe identice.
+\end{itemize}
+
+Fie $L(n)$ numărul de libertăți al unei matrici, adică numărul de biți independenți pe care îi putem alege. Atunci:
+
+\begin{itemize}
+  \item $L(2k) = L(k)$ deoarece, după ce completăm un sfert, celelalte trei sînt impuse.
+  \item $L(2k + 1) = L(k) + k + 1$ deoarece, după ce completăm un sfert, mai putem da valori independente unia dintre brațele crucii (inclusiv centrul).
+\end{itemize}
+
+Astfel am ales pentru figura de mai sus $n = 42$, care ilustrează ambele cazuri. Există 15 libertăți, pe care le-am denumit alfabetic, și deci există $2^{15}$ matrice hipersimetrice binare. Șirul de la intrare va avea cel mult 15 biți. A $k$-a matrice (\textit{0-based}) este cea în care scriem biții lui $k$ în locul literelor, apoi îi propagăm prin hipersimetrie. Deoarece în enunț $k$ pornește de la 1, trebuie să îl decrementăm înainte de a începe.
+
+Problema ne cere să tratăm matricea rezultată ca pe un număr cu $n^2$ biți, citit de la stînga la dreapta și de sus în jos.
+
+\subsubsection*{Detalii de implementare}
+
+Am preferat să operez în colțul din dreapta-jos al matricei (acolo unde sînt biții mai puțin semnificativi). Astfel restul matricei poate fi completat prin înmulțiri, nu prin împărțiri. Am reprezentat și acolo cele 15 libertăți, de data aceasta cu valori de la 0 la 14 corespunzătoare biților lui $k$ (unde 0 = cel mai puțin semnificativ bit).
+
+Se vede că biții sînt distribuiți pe $\bigoh(\log n)$ coloane, unde fiecare coloană este cel mult jumătate din precedenta. Mai vedem că vom avea nevoie de coloane de biți, dar prioritatea lor crește pe linie, deci coloanele \textbf{nu} constau din subsecvențe contigue din $k$ de la intrare, ci pe sărite.
+
+Nu în ultimul rînd, suma înălțimilor coloanelor poate fi de sute de milioane. Cum $k \leq \np{1000000}$, rezultă că o mare parte dintre biți vor fi implicit 0. Este important ca programul să nu-i proceseze decît pe cei de la intrare. Putem face asta dacă îl parcurgem pe $k$ de la LSB spre MSB, iar libertățile de la centru spre periferie. Ne oprim cînd epuizăm biții lui $k$, deoarece restul ar fi zerouri, care nu afectează valoarea matricei.
+
+Așadar, am izolat într-o clasă numită \ccode{bit_stream} codul care
+
+\begin{itemize}
+  \item primește dimensiunea $n$;
+  \item iterează prin biții lui $k$ și îi distribuie pe coloanele potrivite;
+  \item la cerere, returnează una cîte una coloanele în ordinea descrescătoare a înălțimii (astfel le va cere codul principal).
+\end{itemize}
+
+\subsubsection*{Recurența}
+
+Ne dorim ca funcția recursivă \ccode{compute_matrix(int s)} să genereze matricea de $s \times s$ din colțul dreapta-jos al matricei totale. Funcția returnează valoarea matricei generate. Atenție: matricea nu va ocupa $s \times s$ biți compacți, ci fiecare $s$ biți vor ocupa porțiunea cel mai puțin semnificativă dintr-un grup de $n$ biți. De exemplu, o matrice de $3 \times 3$ va ocupa $9$ biți dintre primii $3n$, și anume biții $0, 1, 2, n, n + 1, n + 2, 2n, 2n + 1, 2n + 2$.
+
+Procedăm astfel deoarece ne  va fi mult mai ușor să translatăm un colț în celelalte trei colțuri. O matrice pară de mărime $s$ trebuie copiată astfel:
+
+\begin{itemize}
+  \item La stînga cu $s$ coloane, prin înmulțirea valorii sale cu $2^s$.
+  \item În sus cu $s$ linii, prin înmulțirea valorii sale cu $2^{sn}$.
+  \item În sus-stînga cu $s$ linii și $s$ coloane, prin înmulțirea cu $2^{sn + s}$.
+\end{itemize}
+
+Așadar, dacă notăm cu $V_s$ valoarea matricei de latură $s$, atunci
+
+$$V_{2s} = V_s \cdot (1 + 2^s) \cdot (1 + 2^{sn})$$
+
+Același raționament se aplică și pentru matricele impare, dar pentru acestea trebuie să inserăm și crucea centrală. Este acceptabil să facem efort $\bigoh(1)$ per element, căci efortul total nu va depăși $\bigoh(k)$ (din nou, dacă avem grijă să nu cerem decît primii $k$ biți). Iar cu efort $\bigoh(1)$ per element, completarea crucii este ușoară:
+
+\begin{itemize}
+  \item Centrul trebuie amplasat într-un singur loc.
+  \item Celelalte elemente trebuie amplasate de cîte patru ori.
+\end{itemize}
+
+Amplasarea unui bit la linia $i$ și coloana $j$ (numărînd din colțul de jos-dreapta) înseamnă pur și simplu creșterea valorii matricei cu $2^{ni + j}$.
+
+\subsubsection*{Puterile lui 2}
+
+O ultimă componentă necesară este posibilitatea de a calcula puteri mari ale lui 2. Din secțiunea de mai sus vedem că exponenții pot ajunge la $n^2$, adică $10^{18}$. Știm să facem asta cu exponențiere binară, dar se poate și în $\bigoh(1)$ (vezi capitolul TODO). Reiau aici ideea pe scurt.
+
+În primul rînd, deoarece rezultatul este modulo $M = \np{1000000007}$, putem aplica mica teoremă a lui Fermat, conform căreia $2^e \equiv 2^{e \mod (M-1)} \pmod{M}$. Deci am redus exponenții la valori mai abordabile.
+
+Apoi aplicăm descompunerea în radical. Calculăm doi vectori:
+
+\begin{itemize}
+  \item $2^0, 2^1, 2^2, \dots, 2^{32767}$ și
+  \item $2^0, 2^{1 \cdot 32768}, 2^{2 \cdot 32768}, \dots, 2^{32767 \cdot 32768}$
+\end{itemize}
+
+Astfel putem scrie $2^e = 2^{(e / 32768) \cdot 32768} \cdot 2^{e \mod 32768}$, pe care îl putem calcula în $\bigoh(1)$ operații.
+
+\subsection{Problema Trim (Baraj ONI 2023)}
+\label{problem:trim}
+
+\href{https://kilonova.ro/problems/564}{enunț}
+$\bullet$
+\hyperref[code:trim]{sursă}
+
+Nu am citit editorialul, dar este posibil ca la această problemă Comisia să fi scăpat din vedere o soluție. Cel puțin pe Kilonova, la o limită de 0,9 secunde, există multe soluții în sub 0,1 secunde.
+
+Pare natural să sortăm interogările, apoi să începem să emitem șirul de biți. Doar că nu îl vom emite unul cîte unul, ci în tranșe mai mari. La fiecare tranșă emisă, calculăm răspunsurile pentru interogările aflate în acea tranșă.
+
+Fie $N = 13$. Atunci vom emite, în această ordine, numerele cu 1, 2, 3, ..., 13 biți de 1. Să considerăm numerele cu 7 biți de 1. Cel de-al doilea criteriu este valoarea numărului. La rîndul ei, valoarea numărului este dată în primul rînd de lungimea numărului: un număr cu 7 biți de 1, de lungime totală 10, va fi cuprins între 513 și 1023 și va fi întotdeauna mai mic decît un număr cu 7 biți de 1, de lungime totală 11, care va fi cuprins între 1025 și 2047.
+
+Abordarea mea denumește \textbf{tranșă} o astfel de combinație de (număr de biți 1) × (lățimea numerelor). Algoritmul emite o tranșă de lățime $w$ biți în $\bigoh(1 + w \cdot \text{nr\_interogări})$. Deoarece numărul de tranșe este $\bigoh(n^2)$, va rezulta o complexitate totală de $\bigoh(n^2 + qn)$.
+
+Să considerăm tranșa de numere cu 7 biți 1 de lățime 10. Cum arată această tranșă?
+
+\begin{enumerate}
+  \item Toate numerele au forma $1bbbbbbbb1$, unde exact 5 dintre cei 8 biți centrali au valoarea 1.
+  \item Fiecare număr are o multiplicitate: el apare de 4 ori consecutiv, deoarece operăm pe numere care aveau inițial 13 biți. Numărul de 10 biți poate fi completat cu 3 zerouri la stînga sau la dreapta în 4 moduri distincte.
+  \item Există $C_8^5$ grupe de cîte 4 numere, ordonate conform ordinii lexicografice a combinărilor.
+  \item Lungimea totală a tranșei este $C_8^5 \cdot  4 \cdot 10$ biți.
+\end{enumerate}
+
+Piesa finală din puzzle este să tipărim al $p$-lea bit din tranșă. Calculînd cîtul împărțirii lui $p$ la 40 știm în zona cărei combinări se află el, iar calculînd restul împărțirii lui $p$ la 10 știm al câtelea bit din combinare îl dorim. Aceasta este o operație clasică de \textit{combination unranking}, implementată în funcția \ccode{find_bit()}.

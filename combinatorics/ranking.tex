@@ -1,0 +1,151 @@
+\chapter{Rangul permutărilor și al combinărilor}
+
+\href{https://sepi.ro/assets/upload-file/oni2024/Programa\%20pentru\%20olimpiada\%20de\%20informatica_gimnaziu\%20si\%20liceu.pdf}{Programa de clasa a 10-a conține} și \textit{Determinarea numărului de ordine pentru elementele combinatoriale}. Ceea ce poate însemna orice din vreo 10 subiecte diferite. \emoji{slightly-smiling-face}
+
+Vom discuta despre permutări și combinări. Aceleași principii se aplică și la alte elemente combinatoriale (aranjamente, submulțimi etc.).
+
+\section{Definiții}
+
+\textbf{Rangul} unui obiect este numărul lui de ordine în lista ordonată a tuturor obiectelor de acel tip. Exemple:
+
+\begin{itemize}
+  \item Rangul permutării (3 1 2) este 4 (pornind de la 0). Cele 4 permutări anterioare, în ordine, sînt (1 2 3), (1 3 2), (2 1 3) și (2 3 1).
+
+  \item Rangul combinării de 5 luate cîte 3 (1 4 5) este 5. Combinările anterioare sînt (1 2 3), (1 2 4), (1 2 5), (1 3 4), (1 3 5).
+\end{itemize}
+
+Vom folosi termenii englezești \textit{ranking} pentru aflarea rangului unui obiect dat și \textit{unranking} pentru aflarea obiectului dîndu-i-se rangul. Ordinea lexicografică nu este unica posibilă. De exemplu, problema TODO Arbperm specifică altă ordine, iar în problemele TODO Invesort și TODO Four Chips sîntem liberi să ne alegem orice ordine, singurul scop fiind să mapăm permutări/combinări la întregi ca să ținem evidența obiectelor deja întîlnite.
+
+\textbf{Următorul obiect} al unui obiect dat este obiectul de rang cu 1 mai mare. Exemple:
+
+\begin{itemize}
+  \item Permutarea care urmează după (3 1 2) este (3 2 1).
+  \item Combinarea de 5 luate cîte 3  care urmează după (1 4 5) este (2 3 4).
+\end{itemize}
+
+Aveți deja toate uneltele ca să calculați ad-hoc toate aceste informații, dar este bine să ne familiarizăm cu unele subtilități.
+
+\section{Rangul permutărilor}
+
+\subsection{Următoarea permutare}
+
+Fie permutările
+
+\begin{align*}
+P &= (2\ 5\ 4\ 8\ 7\ 6\ 3\ 1\ 0)\\
+next(P) &= (2\ 5\ 6\ 0\ 1\ 3\ 4\ 7\ 8)
+\end{align*}
+
+Procedura pentru a trece de la $P$ la $next(P)$ este simplă:
+
+\begin{enumerate}
+  \item Găsește cel mai lung sufix descrescător, $(8\ 7\ 6\ 3\ 1\ 0)$.
+  \item Schimbă elementul anterior sufixului, $4$, cu cel mai mic element din sufix mai mare decît acesta ($6$).
+  \item Răstoarnă sufixul.
+\end{enumerate}
+
+Complexitatea amortizată pentru mai multe apeluri este $\bigoh(1)$ (de ce?). Cred că funcția din STL \ccode{std::next_permutation()} aplică fix acest algoritm. Ea garantează că face cel mult $n/2$ interschimbări (de ce?).
+
+\subsection{\textit{Ranking}}
+
+Deoarece $21! > 2^{64}$, calculul complet este de interes doar pentru permutări de cel mult 20 de elemente (problema TODO Invesort). În rest, trebuie să operați cu ranguri fără a le calcula efectiv.
+
+Calculați manual rangul pe exemplul de mai sus (103679)! Vom deduce că întrebarea esențială este: pentru o poziție dată $k$, cîte valori mai mici decît $P(k)$ se află pe pozițiile anterioare?
+
+\subsection{\textit{Unranking}}
+
+Întrebarea de bază la \textit{unranking} este cea inversă: care este valoarea potrivită de așezat la poziția curentă? Ea va fi a $k-a$ valoare cu proprietatea că numărul de permutări care încep cu primele $k-1$ valori însumate nu depășește rangul dorit, dar dacă includem și a $k$-a valoare depășim rangul.
+
+Pentru ordinea naturală (lexicografică), algoritmul se reduce la o împărțire la $(n-k)!$ și la întrebarea: care este a $k$-a cea mai mică valoare încă nescrisă la stînga poziției curente?
+
+Calculați permutarea din rangul de mai sus!
+
+\subsection{Implementare}
+
+Putem răspunde la aceste întrebări în timp total $\bigoh(n \log n)$ folosind un AIB sau alte structuri cu interogare în timp logaritmic. Atenție însă, pentru $n$ mic implementarea naivă (pătratică) va fi mai rapidă. În schimb, putem cîștiga timp folosind măști de biți.
+
+Pentru \textit{unranking}, trebuie să răspundem rapid la întrebarea: care este al $k$-lea bit zero dintr-o mască de biți? O variantă este să precalculăm acest răspuns pentru toate măștile. Dar pentru $n = 20$, aceasta va necesita memorie $2^n \cdot n = 20$ MB, ceea ce nu este ideal. Există și o operație primitivă, PDEP, dar ea nu este implementată pe toate arhitecturile și poate funcționa chiar mai lent decît căutarea naivă.
+
+\label{problem:combinatorics-perm-rank}
+
+Vom citi \hyperref[code:combinatorics-perm-rank]{implementările} acestor algoritmi. Iată și un \textit{benchmark} pentru $n = 20$:
+
+\begin{verbatim}
+[cata@neil combinatorics]$ ./permutation-rank
+inițializare: 942 ms pentru 10000000 operații (10 Mops/sec)
+--
+rank naiv: 890 ms pentru 10000000 operații (11 Mops/sec)
+rank cu AIB: 1984 ms pentru 10000000 operații (5 Mops/sec)
+rank cu popcount: 180 ms pentru 10000000 operații (55 Mops/sec)
+--
+unrank naiv: 3424 ms pentru 10000000 operații (2 Mops/sec)
+unrank cu AIB: 4016 ms pentru 10000000 operații (2 Mops/sec)
+unrank cu popcount și tabel: 1195 ms pentru 10000000 operații (8 Mops/sec)
+unrank cu popcount și pdep: 5739 ms pentru 10000000 operații (1 Mops/sec)
+\end{verbatim}
+
+\section{Rangul combinărilor}
+
+În cazul combinărilor, discuțiile sînt mai nuanțate. Problemele de rang au valori mici pentru $k$, dar nu neapărat și pentru $n$. Bunăoară, pentru $k = 3$, valoarea maximă pentru $n$ astfel încît $C_{n}^{k} < 2^{64}$ (adică rangul să încapă pe \ccode{unsigned long long}) este circa 2.000.000, pe cînd pentru $k = 20$, valoarea maximă pentru $n$ este 86.
+
+\subsection{Următoarea combinare}
+
+Să analizăm un exemplu. Fie combinarea de 20 luate cîte 6 (numerotate de la 0):
+
+\begin{align*}
+C &= (4\ 7\ 12\ 17\ 18\ 19) \\
+next(C) &= (4\ 7\ 13\ 14\ 15\ 16)
+\end{align*}
+
+Rezultă că algoritmul este:
+
+\begin{enumerate}
+  \item Găsește ultima poziție $i$ pentru care $C[i] - i < n - k$.
+
+  \item Dacă acea poziție nu există, atunci $C$ este ultima lexicografic.
+
+  \item Altfel, incrementează $C[i]$ și pe toate pozițiile $j > i$ atribuie $C[j] = C[j - 1] + 1$.
+\end{enumerate}
+
+Și acest algoritm are complexitate amortizată $\bigoh(1)$ (de ce?).
+
+\subsection{\textit{Ranking} lexicografic}
+
+Să considerăm combinarea de 4 elemente dintr-un set de 20 (numerotate începînd de la 0):
+
+$$C = (4\ 7\ 13\ 16)$$
+
+Dacă dorim să îi calculăm rangul lexicografic, atunci facem următoarele observații:
+
+\begin{itemize}
+  \item Există $C_{19}^{3} = 969$ combinări care încep cu 0, deoarece dacă îl alegem pe 0 mai rămîn 19 alte elemente din care trebuie să alegem 3.
+  \item Există $C_{18}^{3} = 816$ combinări care încep cu 1.
+  \item Există $C_{17}^{3} = 680$ combinări care încep cu 2.
+  \item Există $C_{16}^{3} = 560$ combinări care încep cu 3.
+  \item Toate combinările de mai sus sînt mai mici lexicografic decît $P$.
+  \item Există $C_{14}^{2} = 91$ combinări care încep cu 4 5, deoarece mai rămîn valorile 6-19 din care trebuie să alegem două.
+  \item Există $C_{13}^{2} = 78$ combinări care încep cu 4 6.
+  \item Există $C_{11}^1 = 11$ combinări care încep cu 4 7 8.
+  \item \dots
+  \item Există $C_{7}^1 = 7$ combinări care încep cu 4 7 12.
+  \item Există $C_{5}^0 = 1$ combinări care „încep cu” 4 7 13 14.
+  \item Există $C_{4}^0 = 1$ combinări care „încep cu” 4 7 13 15.
+\end{itemize}
+
+Rangul lui (4 7 13 16) este suma combinărilor de mai sus, adică 3241.
+
+Algoritmul funcționează în $\bigoh(n)$. El poate fi îmbunătățit pînă la $\bigoh(k)$ cu formula
+
+$$\sum_{m = 0}^{n} C_m^k = C_{n+1}^{k+1}$$
+
+\subsection{\textit{Unranking} lexicografic}
+
+Calculați combinarea din rangul de mai sus! Algoritmul naiv funcționează în $\bigoh(n + k)$ urmînd exact pașii de mai sus. De exemplu, va scădea succesiv valorile 919, 816, 680 și 560 din rangul dat și va constata că nu mai poate scădea încă $C_{15}^3 = 455$, deci primul element trebuie să fie 4.
+
+Putem reduce complexitatea la $\bigoh(k + \log n)$ folosind sume parțiale și căutări binare. Nu sînt sigur dacă există vreun algoritm în $\bigoh(k)$.
+
+\subsection{\textit{Ranking} și \textit{unranking} colexicografic}
+
+\label{problem:combinatorics-comb-rank}
+
+O altă ordine notabilă este \href{https://en.wikiversity.org/wiki/Lexicographic_and_colexicographic_order}{ordinea colexicografică}. Pentru un exemplu complet cu $n=6$ și $k=3$, expandați secțiunea \textit{3-subsets of a 6-set}. Vom studia \hyperref[code:combinatorics-comb-rank]{implementarea}, care este trivială în $\bigoh(k)$ pentru \textit{ranking} și $\bigoh(n)$ pentru \textit{unranking}.
