@@ -9,7 +9,7 @@ $\bullet$
 
 Atenție mare la garanția din enunț: $c_i > c_{p_i}$. Cu alte cuvinte, pentru orice operație de cumpărare trebuie să pornim din rădăcină spre nodul $u$ și să cumpărăm orice cantități disponibile, pînă satisfacem cererea.
 
-Cu timpul, nodurile de la rădăcină se vor goli, deci pare o idee bună să găsim rapid cel mai de jos strămoș care încă are aur disponibil. Dacă reușim să-l găsim în $\bigoh(f(n))$ (intenția problemei fiind $f(n) = \log n$), atunci complexitatea globală va fi $\bigoh(q \cdot f(n) + n)$. De ce? Din acel strămoș putem parcurge lanțul în jos pas cu pas, cumpărînd tot aurul disponibil, pînă satisfacem cererea. Fiecare nod poate fi golit cel mult o dată, deci efortul total pentru parcurgerea lanțurilor este $\bigoh(n)$.
+Cu timpul, nodurile de la rădăcină se vor goli, deci pare o idee bună să găsim rapid cel mai de jos strămoș care încă are aur disponibil. Dacă reușim să-l găsim în $\bigoh(f(n))$ (intenția problemei fiind $f(n) = \log n$), atunci complexitatea globală va fi $\bigoh(q \cdot f(n) + n)$. De ce? Din acel strămoș putem parcurge lanțul în jos pas cu pas, cumpărînd tot aurul disponibil, pînă satisfacem cererea. Fiecare nod poate fi golit cel mult o dată, iar ultimul nod din fiecare interogare poate păstra niște aur. De aceea, efortul total pentru parcurgerea lanțurilor este $\bigoh(n + q)$.
 
 \subsubsection*{Detalii de implementare}
 
