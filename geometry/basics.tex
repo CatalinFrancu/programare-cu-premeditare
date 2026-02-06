@@ -1,0 +1,221 @@
+\chapter{Elemente de bază}
+
+Acest capitol se axează pe formule pentru
+
+\begin{itemize}
+  \item puncte;
+  \item drepte;
+  \item teste de orientare;
+  \item arii;
+  \item intersecții.
+\end{itemize}
+
+Formulele de trigonometrie de la orele de matematică vă vor fi de ajutor!
+
+\section{Principii de implementare}
+
+Evitați împărțirile! Aceasta vă scapă de diverse erori de precizie și cazuri-limită (împărțiri prin zero). Ca bonus, codul devine mai rapid.
+
+Luați în calcul cazurile particulare: unghiuri de 90°, drepte paralele, puncte coliniare etc. De multe ori, programul le tratează fără cod suplimentar.
+
+Preferați comparațiile în locul valorilor exacte. Un exemplu frecvent: ne pasă mai mult dacă $C$ se află pe dreapta $AB$, la stînga sau la dreapta ei. Ne pasă mai puțin care este valoarea exactă a unghiului $ABC$.
+
+Puteți găsi multe tutoriale teoretice utile, de exemplu pe \href{https://cp-algorithms.com/geometry/basic-geometry.html}{CP Algorithms} sau pe \href{https://www.cs.ucf.edu/~dmarino/progcontests/cop4516/notes/Geometry-Nadeem.pdf}{UCF}.
+
+\section{Puncte și vectori}
+
+Vom folosi interschimbabil următoarele trei noțiuni:
+
+\begin{itemize}
+  \item Punctul $P = (x_P, y_P)$.
+  \item Vectorul $\vec{p}$ de la origine la $P$.
+  \item Matricea de $2 \times 1$ $\begin{pmatrix} x_P\\ y_P \end{pmatrix}$.
+\end{itemize}
+
+Notăm cu $|\vec{p}|$ sau pur și simplu cu $p$ lungimea vectorului.
+
+\subsection{Adunare, înmulțire cu o constantă}
+
+Vectorii pot fi adunați între ei și scalați cu o constantă, ceea ce se traduce prin adunarea și înmulțirea cu o constantă a matricelor.
+
+\subsection{Produsul scalar (engl. \textit{dot product})}
+
+Se numește așa pentru că rezultatul este o valoare scalară. Are două definiții echivalente (demonstrați!):
+
+\begin{itemize}
+  \item $\vec{p} \cdot \vec{q} = x_p x_q + y_p y_q$
+  \item $\vec{p} \cdot \vec{q} = p \cdot q \cdot \cos \theta$, unde $\theta$ este unghiul dintre vectori.
+\end{itemize}
+
+Motivație (de exemplu): deplasarea unei greutăți pe orizontală cu o forță oblică.
+
+Produsul scalar este comutativ și distributiv.
+
+Aplicație: \textbf{Proiecții}. Lungimea proiecției vectorului $p$ pe direcția vectorului $q$ este
+
+$$\textrm{proj}_{\vec{q}}\ \vec{p} = \frac{\vec{p} \cdot \vec{q}}{|\vec{q}|}$$
+
+Aplicație: \textbf{Test de perpendicularitate}. Doi vectori sînt perpendiculari dacă produsul lor scalar este 0. Exemplu: pentru punctele $P = (5, 2)$ și $Q = (-4, 10)$, unghiul $POQ$ este drept, iar $-4\cdot 5 + 2\cdot 10 = 0$. Mai mult, produsul este pozitiv / negativ după cum $\theta$ este mai mic sau mai mare de 90°.
+
+Aplicație: \textbf{Comparații de unghiuri}. Vom avea ocazional nevoie să sortăm puncte radial, după unghiul pe care îl fac față de un reper comun. Nu ne interesează unghiurile în sine, ci să le comparăm între ele. Se aplică pe orice domeniu unde funcția cosinus este monotonă (de exemplu 0-180°).
+
+\subsection{Produsul vectorial (engl. \textit{cross product})}
+
+Se numește așa pentru că rezultatul este o valoare vectorială. Vectorul este perpendicular pe planul determinat de $p$ și $q$, cu sensul dat de regula șurubului. Mărimea vectorului are două definiții echivalente (din nou, demonstrați!):
+
+\begin{itemize}
+  \item $|\vec{p} \times \vec{q}| = x_p y_q - y_p x_q$
+  \item $|\vec{p} \times \vec{q}| = p \cdot q \cdot \sin \theta$.
+\end{itemize}
+
+Motivație: mărimea produsului vectorial este aria paralelogramului descris de $\vec{p}$ și $\vec{q}$. Alternativ, este dublul ariei triunghiului. Faptul că produsul este orientat înseamnă că aria poate fi pozitivă sau negativă: produsul vectorial „iese din” sau „intră în” planul tablei după cum unghiul $\theta$ este pozitiv ($p$ se rotește peste $q$ în sensul trigonometric) sau negativ.
+
+Aplicație: \textbf{Coliniaritate}. Dacă trei puncte A, B, C sînt coliniare atunci produsul vectorial $\vec{AB} \times \vec{AC} = 0$.
+
+Aplicație: \textbf{Aria unui poligon} prin două metode: (1) ca sumă de trapeze și (2) ca sumă de triunghiuri cu vîrful în origine.
+
+\subsection{Unghiuri}
+
+Putem afla concret unghiul dintre doi vectori cu funcțiile \ccode{arcsin}, \ccode{arccos}, \ccode{atan} sau \ccode{atan2}. Atenție la cazurile particulare și erorile de precizie! Funcția \ccode{atan2} are meritul că primește la intrare valorile pe componente, \ccode{y} și \ccode{x}.
+
+Funcțiile trigonometrice inverse sînt lente! Dacă problema permite, înlocuiți-le cu comparații de unghiuri, unde produsele de mai sus sînt suficiente.
+
+\subsection{Rotații}
+
+Pentru a roti punctul $(x,y)$ în jurul originii cu $\theta$ radiani, putem aplica o matrice de rotație:
+
+$$
+\begin{pmatrix} x' \\ y' \end{pmatrix}
+=
+\begin{pmatrix} \cos \theta & -\sin \theta \\ \sin \theta & \cos \theta \end{pmatrix}
+\cdot
+\begin{pmatrix} x \\ y \end{pmatrix}
+=
+\begin{pmatrix} x \cos \theta\  - y \sin \theta \\ x \sin \theta + y \cos \theta \end{pmatrix}
+$$
+
+Putem calcula manual un exemplu, să zicem rotația punctului $(\frac{\sqrt{3}}{2}, \frac{1}{2})$ cu 30°.
+
+Pentru a face rotația relativ la un alt punct, $(x_0, y_0)$, putem face întîi o translație cu $(-x_0, -y_0)$, apoi rotația, apoi translația la loc cu $(+x_0, +y_0)$.
+
+\section{Drepte și segmente}
+
+Există multe forme echivalente pentru ecuația unei drepte în plan. Majoritatea rezultă imediat dintr-un desen (cu asemănare de triunghiuri).
+
+\begin{enumerate}
+  \item $ax + by + c = 0$ -- forma generală. Nu are cazuri particulare. Poate descrie cu ușurință drepte verticale ($a = 1$ și $b = 0$) sau orizontale ($a = 0$ și $b = 1$). Doar că nu întotdeauna decurge ușor din datele de la intrare.
+
+  \item $\frac{x - x_1}{x_2 - x_1} = \frac{y - y_1}{y_2 - y_1}$ -- dreapta care trece prin punctele $(x_1, y_1)$ și $(x_2, y_2)$. De regulă aceasta decurge din datele de intrare (puncte). Este nedefinită pentru drepte verticale și orizontale (căci $x_1 = x_2$ sau $y_1 = y_2$), dar putem ușor preveni asta înmulțind mezii și extremii.
+
+  \item $y - y_1 = m(x - x_1)$ --- dreapta care trece prin punctul $(x_1, y_1)$ și are pantă $m$. Panta este tangenta unghiului format de dreaptă cu axa Ox. Este nedefinită pentru drepte verticale, căci unghiul este de 90° și panta este infinită.
+
+  \item $y = m x + y_0$ -- dreapta care trece prin punctul $(0, y_0)$și are pantă $m$ (engl. slope + y-intercept).
+
+  \item $y_0 x + x_0 y - x_0 y_0 = 0$ -- dreapta care taie axele Ox și Oy în punctele $(x_0, 0)$ și $(0, y_0)$ (engl. x-intercept + y-intercept).
+\end{enumerate}
+
+\subsection{Test de paralelism}
+
+Trecînd de la forma (1) la forma (3) aflăm că, în forma generală, panta este $- \frac{a}{b}$. Două drepte $ax + by + c = 0$ și $dx + ey + f = 0$ sînt paralele dacă și numai dacă au aceeași pantă, deci $- \frac{a}{b} = - \frac{d}{e}$ sau, echivalent, $ae = bd$.
+
+\subsection{Test de perpendicularitate}
+
+Două drepte sînt perpendiculare dacă și numai dacă produsul pantelor este egal cu -1:
+
+$$ -\frac{a}{b} \cdot -\frac{d}{e} = -1 \iff ad + be = 0$$
+
+Demonstrație: în figura de mai jos, date fiind pantele $m_1$ și $m_2$ (unde, rețineți, $m_2$ este negativă), construim punctele $Q$ și $R$ pe cele două drepte și scriem teorema lui Pitagora în triunghiul dreptunghic $PQR$:
+
+$$
+PQ^2 + PR^2 = QR^2\\
+1^2 + m_1^2 + 1^2 + m_2^2 = (m_1 - m_2)^2\\
+m_1 m_2 = -1
+$$
+
+\subsection{Intersecția a două drepte}
+
+Se rezolvă prin rezolvarea sistemului de două ecuații cu două necunoscute:
+
+$$
+\begin{cases}
+a x + b y + c &= 0 \\
+d x + e y + f &= 0
+\end{cases}
+$$
+
+Cazuri particulare: dacă $a / d = b / e$ (sau, echivalent, $ae = bd$), atunci dreptele sînt paralele și nu există soluții. Dacă raportul este egal și cu $c / f$, atunci dreptele sînt confundate și există o infinitate de soluții.
+
+\subsection{Separarea planului}
+
+Valoarea $ax + by + c$ va fi 0 pentru toate punctele de pe dreaptă și doar pentru acelea. Dar, mai mult decît atît, valoarea va fi în mod consecvent pozitivă sau negativă pentru punctele de o parte și de cealaltă a dreptei. Așadar, două puncte $(x_1, y_1)$ și $(x_2, y_2)$ se află de aceeași parte a dreptei dacă $ax_1 + by_1 + c$ și $ax_2 + by_2 + c$ au același semn.
+
+\subsection{Distanța punct-dreaptă}
+
+Dacă, în plus, ecuația dreptei are \textbf{forma canonică}, adică $a^2 + b^2 = 1$, atunci înlocuind un punct în ecuația dreptei nu obținem doar un număr pozitiv/negativ oarecare, ci distanța de la punct la dreaptă.
+
+Putem aduce ecuația dreptei la forma canonică împărțind $a$, $b$ și $c$ prin $\sqrt{a^2 + b^2}$.
+
+\subsection{Intersecția a două segmente}
+
+Date fiind segmentele $AB$ și $CD$, dacă avem nevoie de intersecția lor, putem să calculăm intersecția dreptelor și să vedem dacă ea se află în interiorul ambelor segmente. Dacă, în schimb, vrem doar să știm dacă segmentele se intersectează, putem folosi separarea planului, care nu necesită împărțiri:
+
+\begin{itemize}
+  \item Se află $A$ și $B$ de părți diferite ale dreptei $CD$?
+  \item Se află $C$ și $D$ de părți diferite ale dreptei $AB$?
+\end{itemize}
+
+Discuție: ce lipsește din implementarea de mai jos? Are erori de precizie? Erori de împărțire prin zero? Cazuri particulare degenerate?
+
+\begin{minted}{c}
+typedef struct {
+  int x, y;
+} point;
+
+int sgn(long long x) {
+  return (x > 0) - (x < 0);
+}
+
+int det(point a, point b, point c) {
+  return sgn((long long)(b.x - a.x) * (c.y - a.y) -
+             (long long)(c.x - a.x) * (b.y - a.y));
+}
+
+bool segments_intersect(point a, point b, point c, point d) {
+  return
+    (det(a, b, c) != det(a, b, d)) &&
+    (det(c, d, a) != det(c, d, b));
+}
+\end{minted}
+
+\section{Orientare; determinanți}
+
+Am ajuns deja la observația că dreapta separă planul în valori pozitive, negative și nule. Atunci cînd ecuația dreptei are o orientare, de exemplu cînd este specificată prin două puncte $P$ și $Q$ care îi dau un sens, putem căpăta informații ca stînga / dreapta și sens trigonometric / sens orar.
+
+Concret, dîndu-se trei puncte $A$, $B$, și $C$, sunt ele (a) date în ordine trigonometrică sau (b) date în ordine orară sau (c) coliniare? Echivalent, vectorul $\vec{BC}$ cotește, față de vectorul $\vec{AB}$, (a) la stînga sau (b) la dreapta sau (c) nu cotește?
+
+Abordarea directă este să calculăm ecuația dreptei $AB$ sub forma $ax + by + c = 0$ și să înlocuim coordonatele punctului C în această ecuație. Mai simplu, lăsăm ecuația dreptei $AB$ în forma determinată de două puncte. Înlocuind punctul generic $(x, y)$ cu $(x_C, y_C)$ obținem:
+
+$$
+\frac{x_C - x_A}{x_B - x_A} = \frac{y_C - y_A}{y_B - y_A}\\
+(x_C - x_A)(y_B - y_A) - (y_C - y_A)(x_B - x_A) = 0
+$$
+
+Putem scrie partea stîngă ca pe un determinat:
+
+$$
+\begin{vmatrix}
+x_A & y_A & 1\\
+x_B & y_B & 1 \\
+x_C & y_C & 1
+\end{vmatrix} \gtrless 0
+$$
+
+Valoarea determinantului este:
+
+\begin{itemize}
+  \item pozitivă dacă $A$, $B$ și $C$ sînt în sens trigonometric;
+  \item negativă dacă $A$, $B$ și $C$ sînt în sens antitrigonometric;
+  \item 0 dacă $A$, $B$ și $C$ sînt coliniare.
+\end{itemize}
+
+Aplicație: \textbf{test de incluziune a punctului în triunghi} (sau, pe cazul general, într-un poligon convex). Testăm punctul cu fiecare latură a poligonului, $P_{i}P_{i + 1}$. Dacă punctul este în poligon, vom obține în fiecare caz același semn.

@@ -1,0 +1,221 @@
+\section{Probleme}
+
+\subsection{Problema Cuiburi (Baraj ONI 2010)}
+\label{problem:cuiburi}
+
+\href{https://kilonova.ro/problems/1775}{enunț}
+$\bullet$
+\hyperref[code:cuiburi]{sursă}
+
+2010 erau vremuri mai simple. \emoji{grinning-face-with-sweat} Cărămida de bază a problemei este să testăm incluziunea între două figuri geometrice, care pot fi dreptunghiuri sau cercuri. Deci există un \ccode{if} cu patru cazuri, pe care le vom discuta.
+
+Problema cere un fel de drum de lungime maximă într-un graf în care figurile sînt noduri, iar muchiile indică incluziunea. Dar putem observa că graful este aproape aciclic. Poate exista un ciclu doar între figuri identice. Rezultă că putem căuta o sortare topologică astfel încît toate muchiile să meargă doar spre dreapta. Putem sorta după arie sau după perimetru (eu am ales aria).
+
+După sortare, definim $l[i]$ = lungimea maximă a unei cuibăreli terminate cu cuibul $i$ și calculăm vectorul $l$ în complexitate totală $\mathcal{O}(n^2)$.
+
+\subsection{Problema Ace (OJI 2017, clasa a 9-a)}
+\label{problem:ace}
+
+\href{https://kilonova.ro/problems/876}{enunț}
+$\bullet$
+\hyperref[code:ace]{sursă}
+
+Nu este foarte mult de povestit. Examinăm fiecare rază pornind de la $(n,m)$. Pentru o rază cu progresia $(dr, dc)$, iterăm prin toate punctele și menținem maximul. Prin „maxim” înțelegem acul care ne obligă să „ridicăm” privirea cel mai mult de la orizontală, adică acul al cărui vîrf formează un unghi maxim cu orizontala și cu punctul $(n,m)$.
+
+Am ales să citesc matricea invers ca să pot porni razele de la $(0,0)$.
+
+\subsection{Problema Baba Oarba (Lot 2016)}
+\label{problem:babaoarba}
+
+\href{https://kilonova.ro/problems/1916}{enunț}
+$\bullet$
+\hyperref[code:babaoarba]{sursă}
+
+Va fi nevoie să facem $D$ pași pentru a ajunge la Zeratul, deci problema ne permite 50 de apeluri ca să ne așezăm pe direcția potrivită. Este oare suficient?
+
+O idee destul de directă este să folosim căutarea binară pentru a înjumătăți sectorul de cerc în care se poate afla Zeratul relativ la Tassadar. Să detaliem!
+
+La o distanță de cel mult $100.000$ de metri ne este permisă o abatere de cel mult $1$ metru. Ce înseamnă asta ca unghiuri? Cît de precisă trebuie să fie direcția aleasă? Pentru unghiuri foarte mici, știm că $\sin \alpha \approx \alpha$. Așadar, trebuie să calculăm direcția cu o precizie de $1 / 100.000$. Inițial, direcția poate fi oriunde între $0$ și $2 \pi$, deci trebuie să reducem intervalul de circa 6,3 milioane de ori. Rezultă că ne trebuie 23 de iterații și avem dreptul să facem cam două interogări per iterație.
+
+Astfel, am redus problema la întrebarea: știind sectorul curent în care se află Zeratul, cum îl înjumătățim punînd doar două întrebări?  (Cum înjumătățim sectorul, nu pe Zeratul.)
+
+O soluție imperfectă, dar suficient de bună, calculează bisectoarea sectorului curent și face un pas la stînga, \textbf{perpendicular pe bisectoare}. Zeratul este în stînga sau în dreapta bisectoarei după cum Tassadar s-a apropiat sau s-a depărtat de el. Apoi Tassadar face pasul înapoi.
+
+Aș mai preciza și că putem testa problema offline, ca să nu consumăm \textit{submissions} aiurea. Este nevoie să ne scriem propriul babaoarba.h, dar nu este o treabă prea grea.
+
+\subsection{Problema Arhitect (OJI 2023, clasa a 10-a)}
+\label{problem:arhitect}
+
+\href{https://kilonova.ro/problems/504}{enunț}
+$\bullet$
+\hyperref[code:arhitect]{surse}
+
+Problema este elementară. Trebuie să grupăm niște segmente după pante, avînd grijă să numărăm pantele $m$ împreună cu pantele $-1/m$ pentru orice $m$. Ca să nu operez cu pante infinite, am ales să rotesc toate segmentele pentru a le aduce în cadranul I, mai exact, în intervalul [0°, 90°). Putem face asta cu cîteva \ccode{if}-uri, dar mi s-a părut mai simplu să fac efectiv cel mult trei rotații:
+
+\begin{minted}{c}
+while ((dx <= 0) || (dy < 0)) {
+  int tmp = dy;
+  dy = -dx;
+  dx = tmp;
+}
+\end{minted}
+
+De aici, implementarea se ramifică:
+
+\begin{enumerate}
+  \item Putem opera chiar pe perechi de numere. Pentru a testa egalitatea a două pante \texttt{a} și \texttt{b}, testăm egalitatea produselor \texttt{a.dx * b.dy} și \texttt{a.dy * b.dx}.
+
+  \item Putem opera pe \ccode{double}, căci \texttt{dx} este nenul și putem face împărțirea. Nu am întîmpinat erori de precizie, deși în teorie ele sînt posibile.
+
+  \item Pentru numărarea duplicatelor, putem să colectăm pantele și să le sortăm sau să le stocăm într-un map.
+\end{enumerate}
+
+\subsection{Problema Elicoptere (OJI 2016, clasele 11-12)}
+\label{problem:elicoptere}
+
+\href{https://kilonova.ro/problems/29}{enunț}
+$\bullet$
+\hyperref[code:elicoptere]{sursă}
+
+Problema cere:
+
+\begin{enumerate}
+  \item Să stabilim ce perechi de triunghiuri pot fi unite prin segmente orizontale sau verticale de lungime cel mult $k$.
+
+  \item Să construim graful indus în care triunghiurile sînt noduri, iar segmentele sînt muchii.
+
+  \item Să calculăm arborele parțial minim al a cestui graf și să raportăm diverse informații.
+\end{enumerate}
+
+Mai departe, trebuie doar să evităm complicațiile la punctul (1). Cu $n \leq 100$ eficiența este complet irelevantă. Mai important este să programăm îngrijit.
+
+Sper să fie evident că distanța minimă se obține (și) printr-un segment care conține un vîrf al unui triunghi. O demonstrație poate fi: să considerăm că distanța minimă ia naștere undeva între două laturi $AB$ și respectiv $CD$, dar fără a conține niciun vîrf. Atunci:
+
+\begin{itemize}
+  \item fie $AB \nparallel CD$, caz în care putem translata segmentul de lungime „minimă” pentru a îl scurta,
+
+  \item fie $AB \parallel CD$, caz în care putem translata segmentul pînă atinge un vîrf, păstrîndu-i lungimea.
+\end{itemize}
+
+Codul meu evidențiază subprobleme succesiv mai mici. Cărămida de bază este aflarea distanței orizontale de la un punct la un segment. Nu am reușit să evit cazul particular în care segmentul este și el orizontal. Pentru tratarea cazului vertical, am preferat să reflect punctele față de diagonala principală ($(x,y)$ devine $(y,x)$), apoi să rulez tot cazul cu segment orizontal.
+
+\subsection{Problema Arpa and an Exam About Geometry (Codeforces)}
+\label{problem:arpa-and-an-exam}
+
+\href{https://codeforces.com/contest/851/problem/B}{enunț}
+$\bullet$
+\hyperref[code:arpa-and-an-exam]{sursă}
+
+Și această problemă este relativ elementară. Pentru a putea roti $A$ peste $B$, trebuie să alegem un centru $P$ astfel încît $PA=PB$. Așadar, $P$ trebuie să fie pe mediatoarea segmentului $AB$. Similar, $P$ trebuie să fie pe mediatoarea segmentului $BC$. În concluzie, $P$ este centrul cercului circumscris triunghiului $\Delta ABC$. De aici deducem și o primă precondiție: $A$, $B$ și $C$ nu pot fi coliniare.
+
+Pentru a putea roti \textbf{simultan} $A$ peste $B$ și $B$ peste $C$, să ne închipuim că rotim cercul centrat în $P$. Este nevoie ca $\angle APB = \angle BPC$, ceea ce se poate exprima mai simplu ca $AB=BC$.
+
+\subsection{Problema Bear and Floodlight (Codeforces)}
+\label{problem:bear-and-floodlight}
+
+\href{https://codeforces.com/contest/385/problem/D}{enunț}
+$\bullet$
+\hyperref[code:bear-and-floodlight]{sursă}
+
+Problema are două componente, ambele ușoare (la valoarea noastră...).
+
+\subsubsection*{Componenta de geometrie}
+
+Cărămida de bază este: presupunînd că am reușit, folosind o submulțime de reflectoare, să ducem ursul în punctul $(x,0)$, pînă unde îl putem duce folosind un nou reflector aflat la $x_c, y_c$ și de unghi $a$?
+
+\textbf{Metoda 1}: Aflăm, de exemplu cu funcția \ccode{atan2}, unghiul format de vectorul $(x_c, y_c)-(x, 0)$ cu orizontala. Adăugăm $a$ la acest unghi. Obținem ecuația unei drepte care trece prin $(x_c,y_c)$ și are un unghi determinat. În ecuația acestei drepte înlocuim $y$ cu 0 și aflăm noul $x$.
+
+\textbf{Metoda 2}: Aplicăm o matrice de rotație punctului $(x,0)$ raportat la $(x_c, y_c)$. Astfel obținem un punct $(x', y')$. Din punctele coliniare $(x_c,y_c)$,$ (x', y')$ și $(x_{nou}, 0)$ aflăm prin asemănare $x_{nou}$. Mi se pare o metodă mai simplă și este și mai rapidă, întrucît putem precalcula sinusul și cosinusul unghiului de rotație $a$. În rest, facem doar înmulțiri. În metoda 1 nu avem această posibilitate, căci mereu aplicăm arctangenta unui segment diferit.
+
+Este nevoie să tratăm cazul cînd reflectorul ajunge să bată orizontal sau chiar în sus, caz în care noul $x$ poate fi nedefinit sau poate „fugi” înapoi în stînga. Dar este suficient doar un \ccode{if}: dacă $y' \geq y_c$, înseamnă că am rotit reflectorul într-o poziție care acoperă semidreapta orizontală de la $(x_c,y_c)$ spre dreapta.
+
+\subsubsection*{Componenta de programare dinamică}
+
+Dat fiind că $n$ este mic, ne permitem să scriem o programare dinamică pe măști de biți. Pentru o mască $m$ reținem $x$-ul maxim la care putem ajunge folosind doar reflectoarele cu bitul setat în mască, în orice ordine.
+
+Cum calculăm acest maxim? Dintre reflectoarele din $m$, unul trebuie să fie ultimul. Deci, rînd pe rînd, eliminăm cîte un bit, luăm $x$-ul maxim oferit de masca rămasă și îl extindem cu reflectorul al cărui bit l-am eliminat. Astfel obținem complexitatea totală $\bigoh(n \cdot 2^n)$.
+
+\subsection{Problema TrapEZZ (Moisil++ 2023, clasele 11-12)}
+\label{problem:trapezz}
+
+\href{https://kilonova.ro/problems/2093}{enunț}
+$\bullet$
+\hyperref[code:trapezz]{sursă}
+
+Soluțiile relativ evidente sînt $\mathcal{O}(n^4)$, care iterează prin toate mulțimile de 4 puncte, și $\mathcal{O}(n^3 \log n)$ sau chiar $\mathcal{O}(n^3)$, care fixează 3 puncte și îl caută pe al 4-lea.
+
+Pentru o soluție în $\mathcal{O}(n^2 \log n)$, să vedem ce putem face pentru perechi de puncte. Dacă fixăm o bază și ne întrebăm „unde ar putea fi cealaltă bază?”, nu (cred că) ajungem nicăieri, pentru că bazele trebuie să fie bine aliniate pentru ca trapezul să fie isoscel. Însă așa ne poate veni ideea să folosim mediatoarele pe baze: două segmente reprezintă bazele unui trapez isoscel dacă au aceeași mediatoare.
+
+Restul sînt detalii de implementare. Decît să grupez segmentele într-un \ccode{map} după ecuația mediatoarei, am preferat să le sortez după mediatoare, apoi să le procesez în blocuri cu aceeași mediatoare, ceea ce s-a dovedit a fi mai rapid.
+
+Este nevoie de atenție și la condițiile (3) și (4): trebuie să eliminăm trapezele degenerate și dreptunghiurile.
+
+\subsection{Problema Terenuri (Baraj ONI 2011)}
+\label{problem:terenuri}
+
+\href{https://kilonova.ro/problems/406}{enunț}
+$\bullet$
+\hyperref[code:terenuri]{sursă}
+
+Problema definește exact \href{https://en.wikipedia.org/wiki/Voronoi_diagram}{diagramele Voronoi}, dar rezolvarea nu se bazează pe ele (din fericire). Vom studia natura diagramelor Voronoi și vom trage concluzia că un țăran este liber dacă și numai dacă el se află pe înconjurătoarea convexă a setului curent de puncte (inclusiv pe o latură). Deocamdată nu avem nevoie să cunoaștem algoritmi pentru înfășurătoarea convexă. Îi vom studia în lecția viitoare.
+
+Așadar, problema se reduce la menține incremental înfășurătoarea convexă, pe măsură ce setul de puncte crește. Înfășurătoarea poate doar să crească, deci țăranii care sînt liberi pot deveni dominați, niciodată invers. Întrebarea-cheie este: cum procesăm un nou punct? Dacă el se află în interiorul înfășurătoarei, atunci țăranul aferent este dominat de la bun început și îl putem ignora. Dacă punctul se află pe înfășurătoare sau în afara ei, trebuie să îl adăugăm la înfășurătoare și eventual să scoatem punctele care formează unghiuri concave.
+
+Acest lucru poate fi codat scurt și elegant, cu un singur \ccode{map<double, point>}. Alegem un centru arbitrar, de exemplu medianul primelor două puncte de la intrare. Raportat la centru, menținem punctele de pe înfășurătoare sortate polar. Am folosit funcția \ccode{atan2} pentru calculul unghiului, căci datele sînt deja numere reale. Restul implementării cere doar o navigare îngrijită printre vecinii, în \ccode{map}, ai punctului nou inserat.
+
+Merită să avem o discuție aici despre evitarea redundanței în \ccode{std::map}. Dorim să inserăm punctul și să obținem un iterator la el, pentru a elimina unghiurile reflexe. Cel mai scurt cod ar arăta așa:
+
+\begin{minted}{c}
+auto it = hull.find(angle);
+
+if (it == hull.end()) {
+hull[angle] = p;
+it = hull.find(angle);
+} else {
+  it->second = p;
+}
+\end{minted}
+
+Doar că acest cod face căutarea de trei ori! De două ori cu funcția \ccode{find()} și a treia oară cu operatorul \ccode{[]}. Putem reduce aceasta la doar două căutări, căci funcția \ccode{map::insert} \href{https://en.cppreference.com/w/cpp/container/map/insert}{returnează} un iterator la elementul inserat, exact ce ne trebuie:
+
+\begin{minted}{c}
+iter it = h.find(angle);
+
+if (it == h.end()) {
+  it = h.insert({angle, p}).first;
+} else {
+  it->second = p;
+}
+\end{minted}
+
+Sursa completă anexată arată cum putem face o singură căutare, ceea ce mai cîștigă 10\% din timp. Secretul este o combinație de două lucruri.
+
+\begin{itemize}
+  \item Funcția \ccode{lower_bound()} \href{https://en.cppreference.com/w/cpp/container/map/lower_bound}{returnează} un iterator la primul element mai mare sau egal cu cheia căutată, adică exact la poziția inserării.
+  \item Funcția \ccode{insert()} acceptă iteratorul de mai sus ca parametru și face inserarea în $\bigoh(1)$.
+\end{itemize}
+
+\subsection{Problema Metin2 (Finala IIOT 2021-22)}
+\label{problem:metin2}
+
+\href{https://kilonova.ro/problems/348}{enunț}
+$\bullet$
+\hyperref[code:metin2]{sursă}
+
+Ideea de rezolvare nu este excesiv de grea. Totul este să nu cădem în capcana de a menține intersecția poligonului, care pare o abordare nerezonabil de dificilă.
+
+Mai rezonabil este să colectăm toate cele $4n$ laturi ca pe niște drepte \textbf{orientate}. Apoi le sortăm după pantă. Acum știm că poligonul-intersecție trebuie să se afle \textbf{în stînga tuturor dreptelor}. O primă observație este că, dacă există mai multe drepte paralele (cu aceeași pantă), este suficient să o păstrăm pe cea mai din stînga. Dacă intersecția o va respecta pe aceasta, le va respecta automat și pe restul.
+
+Acum să considerăm că am iterat printr-o parte din drepte și am construit o parte din poligon, $ABC \dots OPQ$. Să procesăm următoarea dreaptă în ordinea pantei, $d$. Dacă ea continuă „natural” poligonul, în sens trigonometric, atunci $Q$ se va afla la stînga lui $d$, iar poligonul se continuă cu o porțiune din $d$. Dacă, în schimb, $Q$ se află la dreapta lui $d$, atunci prin definiție $Q$ nu are cum să facă parte din intersecție.
+
+(TODO: figură)
+
+Rezultă că putem ține o stivă de drepte presupuse a forma laturile intersecției. Pentru ușurință, ținem și o stivă de intersecții între perechi de drepte consecutive. Acestea formează vîrfurile poligonului. Fiecare dreaptă procesată elimină din stivă vîrfurile aflate în dreapta ei, precum și dreptele aferente acelor vîrfuri. Apoi se inserează pe ea însăși în stivă, împreună cu punctul de intersecție între ea și ultima dreaptă din stivă.
+
+La final, rezultă o linie frîntă în formă de „6”, care se poate autointersecta și poate conține multe segmente redundante dincolo de poligonul propriu-zis. Acestea trebuie eliminate, de la ambele capete, folosind același test de orientare (stînga = OK, dreapta = elimină).
+
+\subsubsection*{Detaliu de implementare)}
+
+Cînd sortăm dreptele după pantă, la egalitate (drepte paralele) dorim să le sortăm de la stînga la dreapta. Cum definim „stînga” și „dreapta”? Dreapta $d_1$ este în stînga dreptei $d_2$ dacă, înlocuind un punct (orice punct) de pe dreapta $d_1$ în ecuația dreptei $d_2$ obținem o valoare pozitivă.
+
+Cel mai simplu mi-a fost să rețin, pentru fiecare dreaptă, un punct cunoscut a fi pe dreaptă (unul dintre cele două puncte date la intrare). Există și o metodă de a afla un punct de pe dreapta $d_1$ în momentul testului, ceea ce reduce memoria, dar codul devine mai lung și mai greoi.

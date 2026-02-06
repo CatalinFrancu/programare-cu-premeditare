@@ -82,7 +82,7 @@ Aici întîlnim o formă complementară a arborilor de intervale: actualizări p
 
 (Cei dintre voi care stăpînesc arborii de intervale cu propagare \textit{lazy} vor fi tentați să se repeadă la aceia: Pe fiecare nod ținem informația \textit{lazy} că segmentul din $b$ a fost suprascris cu un segment din $a$ începînd de la o poziție $p$ (sau cu o deplasare $\pm p$, cum preferați). La actualizări, propagăm informația la fii după nevoie. La interogare, propagăm informația pînă în frunza cerută, pentru a afla de unde provine. Dar nu este nevoie de aceste complicații.)
 
-Să pornim de la observația de bun simț: Dacă o copiere acoperă o poziție, atunci la descompunerea sa în intervale, unul dintre acele intervale va fi strămoș al poziției poziția (\textit{duh!}).
+Să pornim de la observația de bun simț: Dacă o copiere acoperă o poziție, atunci la descompunerea sa în intervale, unul dintre acele intervale va fi strămoș al poziției respective (\textit{duh!}).
 
 Ne vom folosi și de numerele de ordine ale interogărilor, care vor funcționa ca niște momente de timp între 1 și $q$. Acum, să construim un arbore de intervale care, pentru o operație de copiere $(x, y, k)$:
 
