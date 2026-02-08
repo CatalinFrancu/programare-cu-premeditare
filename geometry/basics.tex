@@ -72,7 +72,7 @@ Motivație: mărimea produsului vectorial este aria paralelogramului descris de 
 
 Aplicație: \textbf{Coliniaritate}. Dacă trei puncte A, B, C sînt coliniare atunci produsul vectorial $\vec{AB} \times \vec{AC} = 0$.
 
-Aplicație: \textbf{Aria unui poligon} prin două metode: (1) ca sumă de trapeze și (2) ca sumă de triunghiuri cu vîrful în origine.
+Aplicație: \textbf{Aria unui poligon} prin două metode: (1) ca sumă de trapeze și (2) ca sumă de triunghiuri cu vîrful în origine (vezi secțiunea \hyperref[sec-arii]{Arii} pentru detalii).
 
 \subsection{Unghiuri}
 
@@ -220,4 +220,38 @@ Valoarea determinantului este:
   \item 0 dacă $A$, $B$ și $C$ sînt coliniare.
 \end{itemize}
 
-Aplicație: \textbf{test de incluziune a punctului în triunghi} (sau, pe cazul general, într-un poligon convex). Testăm punctul cu fiecare latură a poligonului, $P_{i}P_{i + 1}$. Dacă punctul este în poligon, vom obține în fiecare caz același semn.
+Aplicație: \textbf{test de incluziune a punctului în triunghi} sau în orice poligon convex. Testăm determinanții triunghiurilor formate de punct cu fiecare latură a poligonului, $P_{i}P_{i + 1}$. Dacă punctul este strict în poligon, vom obține peste tot același semn. Dacă punctul este pe o latură sau într-un vîrf, vom obține și una sau două valori 0. Dacă punctul este exterior poligonului, vom obține atît valori pozitive, cît și negative. Dacă, în plus, știm ordinea în care sînt specificate vîrfurile poligonului, atunci știm exact ce semn așteptăm, ceea ce scurtează puțin implementarea.
+
+\section{Arii}
+\label{sec-arii}
+
+De fapt, determinantul de mai sus ne spune mult mai mult decît un simplu semn. Valoarea lui, luată în modul, este dublul ariei triunghiului $ABC$:
+
+$$
+\mathcal{A}_{ABC} = \frac{1}{2}
+\begin{vmatrix}
+x_A & y_A & 1\\
+x_B & y_B & 1 \\
+x_C & y_C & 1
+\end{vmatrix}
+$$
+
+\subsection{Aria unui poligon oarecare prin metoda trapezelor}
+
+Pentru fiecare latură a poligonului, $P_{i-1}P_{i}$, să considerăm trapezul dreptunghic determinat de $P_{i-1}$, $P_i$ și proiecțiile lor pe $Ox$.
+
+(TODO: figură).
+
+Acest trapez are aria:
+
+$$\mathcal{A} = (x_i - x_{i-1}) \cdot \frac{y_i + y_{i-1}}{2}$$
+
+Însumăm toate aceste arii și luăm rezultatul în modul. Frumusețea constă în faptul că trapezele pentru care $x_i > x_i - 1$ vor contribui cu arii pozitive, iar celelalte cu arii „negative”. Diferența este exact aria poligonului.
+
+\subsection{Aria unui poligon oarecare prin metoda triunghiurilor}
+
+O metodă similară, dar cu o formulă puțin mai simplă, consideră pentru latura $P_{i-1}P_{i}$ triunghiul $OP_{i-1}P_{i}$. Prin fix același raționament deducem că modulul sumei ariilor triunghiurilor este aria poligonului. Iar, deoarece unul dintre puncte este $(0,0)$, aria se calculează foarte simplu:
+
+$$\mathcal{A}_{OP_{i-1}P_{i}} = x_iy_{i-1} - x_{i-1}y_{i}$$
+
+(TODO: figură)
