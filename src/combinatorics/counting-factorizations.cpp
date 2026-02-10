@@ -71,13 +71,12 @@ void collect_primes() {
   }
 }
 
-// d[i][j] = Suma contribuțiilor dacă alegem j prime începînd cu poziția i.
+// d[i][j] = Suma contribuțiilor dacă alegem j prime pînă la poziția i.
 void build_dp() {
   d[0] = 1;
 
-  for (int i = num_primes - 1; i >= 0; i--) {
-    // Există num_primes - i numere prime de la i la num_primes - 1.
-    for (int j = num_primes - i; j; j--) {
+  for (int i = 0; i < num_primes; i++) {
+    for (int j = i + 1; j > 0; j--) {
       int no_take = (long long)inv_fact[pfreq[i]] * d[j] % MOD;
       int take = (long long)inv_fact[pfreq[i] - 1] * d[j - 1] % MOD;
       d[j] = (take + no_take) % MOD;

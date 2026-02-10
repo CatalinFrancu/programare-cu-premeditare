@@ -118,13 +118,13 @@ $$\frac{1}{g_1'! g_2'! \dots g_p'!}$$
 
 Aici ne permitem să aplicăm o programare dinamică de complexitate $\bigoh(n^2)$. Fie $d(i, j)$ suma termenilor de forma
 
-$$\frac{1}{g_i'! g_{i+1}'! \dots g_p'!}$$
+$$\frac{1}{g_1'! g_2'! \dots g_i'!}$$
 
-unde exact $j$ dintre factorii $g'$ sînt \textbf{diferiți} de factorul $g$ corespunzător (adică am ales un număr prim din acea frecvență). Atunci pe poziția $i$ putem să alegem valoarea $g_i' = g_i$ sau valoarea $g_i' = g_i - 1$. Rezultă recurența:
+unde exact $j$ dintre factorii $g'$ sînt \textbf{diferiți} de factorul $g$ corespunzător (adică am ales $j$ numere prime dintre primele $i$ frecvențe). Atunci pe poziția $i$ putem să alegem valoarea $g_i' = g_i$ sau valoarea $g_i' = g_i - 1$. Rezultă recurența:
 
-$$d(i, j) = \frac{1}{g_i!} \cdot d(i + 1, j) + \frac{1}{(g_i - 1)!} \cdot d(i + 1, j - 1)$$
+$$d(i, j) = \frac{1}{g_i!} \cdot d(i - 1, j) + \frac{1}{(g_i - 1)!} \cdot d(i - 1, j - 1)$$
 
-Aici, primul termen semnifică că \textbf{nu} am folosit un număr prim din frecvența $g_i$, deci de la $i+1$ încolo încă avem de ales $j$ numere prime, iar al doilea termen semnifică că am folosit un număr prim din frecvența $g_i$, deci de la $i+1$ încolo mai avem de ales $j-1$ numere prime. Răspunsul la problemă va fi $T \cdot d(1, n)$.
+Aici, primul termen semnifică că \textbf{nu} am folosit un număr prim din frecvența $g_i$, deci dintre primele $i-1$ numere prime încă avem de ales $j$, iar al doilea termen semnifică că am folosit un număr prim din frecvența $g_i$, deci pînă la $i-1$ mai avem de ales $j-1$ numere prime. Răspunsul la problemă va fi $T \cdot d(p, n)$.
 
 Putem implementa programarea dinamică folosind un singur vector.
 
@@ -145,7 +145,7 @@ Problema necesită o mică observație, dar sper să aveți deja acest reflex fo
   \item Dacă ultimul caracter este \texttt{?}, atunci avem $n-2$ variante pentru ultimul număr inserat. Problema se reduce tot la una identică de mărime $n-1$, dar nu direct, ci printr-o renumerotare. De exemplu, dacă am alege să punem \texttt{3} pe ultima poziție, atunci mulțimea numerelor anterioare ar fi $\{ 1, 2, 4, 5, 6 \}$, pe care însă o putem trata ca și pe $\{ 1, 2, 3, 4, 5 \}$ fără a schimba natura problemei.
 \end{itemize}
 
-De aceea, este suficient să menținem produsul valorilor $p$ pentru pozițiile $p$ care conțin caracterul \texttt{?}. Aritmetica ține cu noi dacă indexăm șirul natural, de la 0. Apoi, ori de cîte ori poziția $pos$ capătă valoarea \texttt{?}, înmulțim acest produs cu $pos$. Ori de cîte ori poziția $pos$ capătă valoarea \texttt{<} sau \texttt{>} înmulțim produsul cu inversul lui $pos$.
+De aceea, este suficient să menținem produsul valorilor $p$ pentru pozițiile $p$ care conțin caracterul \texttt{?}. Aritmetica ține cu noi dacă indexăm șirul natural, de la 0. Cu alte cuvinte, poziția 0 de la intrare corespunde celui de-al doilea element din permutare. Apoi, ori de cîte ori poziția $pos$ capătă valoarea \texttt{?}, înmulțim acest produs cu $pos$. Ori de cîte ori poziția $pos$ capătă valoarea \texttt{<} sau \texttt{>} înmulțim produsul cu inversul lui $pos$.
 
 Este nevoie de un caz special cînd \ccode{s[1] = '?'}, deoarece 0 nu are invers. În acel caz, răspunsul este oricum 0, deoarece după primul număr inserat, al doilea va fi obligatoriu fie minim (\texttt{<}), fie maxim (\texttt{>}).
 
@@ -154,7 +154,7 @@ Este nevoie de un caz special cînd \ccode{s[1] = '?'}, deoarece 0 nu are invers
 
 \href{https://codeforces.com/contest/451/problem/E}{enunț}
 $\bullet$
-\hyperref[code:devu-and-flowers]{sursă}
+\hyperref[code:devu-and-flowers]{surse}
 
 Problema este o formă de \textit{stars and bars}. În loc să punem $s$ obiecte în $n$ cutii, trebuie să le luăm, dar matematica este aceeași. În plus, cutiile au capacități. Spunem că o distribuție \textit{saturează} o cutie de capacitate $f_i$ dacă ia strict mai mult de $f_i$ obiecte din cutie.
 
@@ -198,7 +198,7 @@ Există o soluție bazată pe numărare directă, dar are multe cazuri particula
 
 $$(a + x) < (b + y) + (c + z) \implies x - y < b + c - a + z$$
 
-Astfel deducem limite superioare și inferioare pentru $x+y$ și $x-y$. Acestea delimitează un dreptunghi în planul $xOy$ rotit cu 45˚. Aria acestui dreptunghi este ușor de aflat. Din păcate, dreptunghiul mai trebuie decupat cu condițiile suplimentare $x \geq 0$ și $y \geq 0$, ceea ce duce la figuri complicate.
+Astfel deducem limite superioare și inferioare pentru $x+y$ și $x-y$. Acestea delimitează un dreptunghi în planul $xOy$ rotit cu $45\degree$. Aria acestui dreptunghi este ușor de aflat. Din păcate, dreptunghiul mai trebuie decupat cu condițiile suplimentare $x \geq 0$ și $y \geq 0$, ceea ce duce la figuri complicate.
 
 \subsubsection*{Soluție prin excludere}
 
@@ -230,40 +230,39 @@ $$0 + 1 + \dots + (h + 1) = \frac{(h + 1)(h + 2)}{2}$$
 $\bullet$
 \hyperref[code:shuffle]{surse}
 
+Ca la orice problemă de numărare, trebuie să ne asigurăm de două lucruri:
+
+\begin{enumerate}
+  \item Că numărăm toate posibilitățile.
+
+  \item Că nu numărăm nicio posibilitate de mai multe ori.
+\end{enumerate}
+
+Facem și observația universală că șirul dat trebuie să aibă cel puțin $k$ caractere \texttt{1}.
 \subsubsection*{Soluția în \texorpdfstring{$\bigoh(n^2)$}{O(n²)}}
 
-Este tentant să încercăm următoarea abordare: pentru fiecare subsecvență $W = [l, r]$ adăugăm la răspuns cantitatea $C_{x+y}^x$, unde $x$ este numărul de zerouri, iar $y$ numărul de unu din $W$. Dar este incorect, căci vom număra și unele permutări care lasă nemodificate porțiuni din $W$. Din această cauză, două subsecvențe parțial suprapuse, $W$ și $W'$, vor număra de două ori permutările care modifică doar zona comună $W \cap W'$.
+Este tentant să încercăm următoarea abordare: pentru fiecare subsecvență $W = [l, r]$ adăugăm la răspuns cantitatea $C_{r-l+1}^x$, unde $x$ este numărul de caractere \texttt{1} din $W$. Dar este incorect, căci vom număra și unele permutări care lasă nemodificate porțiuni din $W$. Din această cauză, două subsecvențe parțial suprapuse, $W$ și $W'$, vor număra de două ori permutările care modifică doar zona comună $W \cap W'$.
 
-Să contabilizăm subsecvențele într-un mod care elimină duplicatele. Fie $[l,r]$ o subsecvență amestecată astfel încît $l$ și $r$ sînt prima, respectiv ultima poziție modificată. Secvența merită luată în calcul dacă întrunește patru condiții:
+Să contabilizăm subsecvențele într-un mod care elimină duplicatele. Fie $[l,r]$ o subsecvență amestecată astfel încît $l$ și $r$ sînt prima, respectiv ultima poziție modificată. Secvența merită luată în calcul dacă întrunește trei condiții:
 
 \begin{enumerate}
   \item Are lungime cel puțin 2. O secvență de lungime 1 nu poate fi amestecată. \emoji{thinking-face}
 
-  \item Conține cel mult $k$ cifre 1. Mai multe nu avem voie să selectăm, dar putem selecta mai puține (ne prefacem că amestecăm o secvență care include $[l,r]$, dar lasă nemodificate prefixul și sufixul). Însă de aici decurge...
+  \item Conține cel mult $k$ cifre 1. Mai multe nu avem voie să selectăm, dar putem selecta mai puține (ne prefacem că amestecăm o secvență care include $[l,r]$, dar lasă nemodificate prefixul și sufixul).
 
-  \item Șirul original $s$ conține cel puțin $k$ cifre 1.
-
-  \item Secvența conține cifrele necesare pentru a nega pozițiile $l$ și $r$. De exemplu, dacă $s[l] = s[r] = 1$, secvența trebuie să conțină și două zerouri.
+  \item Secvența conține cifrele necesare pentru a nega pozițiile $l$ și $r$. Dacă $s[l] = s[r] = 1$, secvența trebuie să conțină și două zerouri. Similar dacă $s[l] = s[r] = 0$. Iar dacă $s[l] \neq s[r]$, atunci nu mai punem alte condiții, căci întotdeauna putem interschimba $s[l]$ cu $s[r]$.
 \end{enumerate}
 
 Odată fixate capetele, adăugăm la răspuns o cantitate de forma $C_{x+y}^x$.
 
 \subsubsection*{Soluția în \texorpdfstring{$\bigoh(n)$}{O(n)}}
 
-Putem optimiza soluția de mai sus astfel. Să fixăm doar capătul stîng, $l$. Atunci capătul drept $r$ poate fi oriunde începînd de la $l$ pînă la punctul în care include cel mult $k$ de 1 (plus toate zerourile următoare). Apoi, impunem doar două condiții:
+Iată un alt mod de a privi condiția (2). Cînd alegem o subsecvență care conține \textbf{exact} $k$ de 1 și o permutăm, unele dintre permutări vor lăsa nemodificate un prefix și un sufix al subsecvenței. În acele situații este ca și cînd am permuta o subsecvență cu \textbf{cel mult} $k$ de 1.
+
+Pornind de la această observație, putem optimiza soluția de mai sus astfel. Să fixăm doar capătul stîng, $l$. Atunci capătul drept $r$ poate fi oriunde începînd de la $l+1$ pînă la cea de-a $k$-a apariție a unui \texttt{1}, plus toate zerourile următoare. Apoi, impunem o singură condiție:
 
 \begin{enumerate}
-  \item Șirul original $s$ conține cel puțin $k$ cifre 1 (ca mai sus).
-
-  \item Undeva în $[l,r]$ există un caracter diferit de $s[l]$. Altfel nu ne putem  asigura că prima modificare este pe poziția $l$.
+  \item Undeva în $[l+1,r]$ există un caracter diferit de $s[l]$. Altfel nu ne putem  asigura că prima modificare este pe poziția $l$.
 \end{enumerate}
 
-Odată fixat capătul stîng, orice amestecare distinctă a caracterelor din $[l+1,r]$ este o soluție distinctă (numărată o singură dată). Dacă am grupa acum aceste amestecări după poziția ultimului caracter modificat, am regăsi subsecvențele $[l,x]$ din soluția anterioară.
-
-Ca la orice problemă de numărare, merită să ne gîndim la întrebările:
-
-\begin{enumerate}
-  \item Sîntem siguri că am numărat toate posibilitățile?
-
-  \item Sîntem siguri că nu am numărat unele posibilități de mai multe ori?
-\end{enumerate}
+Odată fixat capătul stîng, orice amestecare distinctă a caracterelor din $[l,r]$, cîtă vreme garantează că îl modifică pe $s[l]$, este o soluție distinctă și numărată o singură dată. Dacă am grupa acum aceste amestecări după poziția ultimului caracter modificat, $r$, am regăsi subsecvențele $[l,r]$ din soluția anterioară.

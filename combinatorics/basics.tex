@@ -13,6 +13,7 @@ Coeficientul binomial:
 O formulă echivalentă:
 
 \begin{equation}
+  \label{eq:comb-reduced}
   \binom{n}{k} = \frac{n \cdot (n-1) \cdot \dots \cdot (n - k + 1)!}{k!}
 \end{equation}
 
@@ -55,7 +56,15 @@ O listă de proprietăți, preluate din articolul foarte bun de pe \href{https:/
 
 \section{Calculul combinărilor}
 
-Pentru valori mari, de regulă problema ne va cere să operăm modulo un număr prim. În această situație, putem precalcula inversele modulare ale tuturor factorialelor: \ccode{inv_fact[k]} = $(k!)^{-1} \bmod M$. Apoi, putem calcula în $\mathcal{O}(1)$ orice $C_n^k$.
+Dacă putem stoca $\bigoh(n^2)$ numere în memorie, putem calcula tabelul de combinări cu triunghiul lui Pascal.
+
+Dacă avem de calculat doar o combinare ocazională și dacă rezultatul încape pe \ccode{long long}, putem folosi formula \ref{eq:comb-reduced}. Nici măcar nu este nevoie să calculăm inverse, căci nu facem împărțiri! Calculăm rezultatul de la dreapta spre stînga:
+
+$$(n - k + 1) / 1 \cdot (n - k + 2) / 2 \cdot (n - k + 3) / 3 ...$$
+
+Ne bazăm pe observația că, atunci cînd vine vremea să împărțim prin $x$, vom fi înmulțit deja $x$ termeni consecutivi, dintre care unul se divide cu $x$.
+
+Pentru valori mari, de regulă problema ne va cere să operăm modulo un număr prim. În această situație, avem nevoie să calculăm factorialele pînă la $n!$ și inversele lor modulare. Apoi, putem calcula în $\mathcal{O}(1)$ orice $C_n^k$.
 
 Ca optimizare, putem calcula toate inversele factorialelor în $\mathcal{O}(n)$, apelînd o singură dată funcția de calcul al inversei. Secretul este să pornim de la $n$ spre 0:
 
@@ -107,7 +116,7 @@ O altă interpretare este: încărcăm un robot cu cele $n$ obiecte și îl lăs
 
 Am întîlnit inițial problema ca puzzle de logică: $n$ persoane vin la o petrecere și își pun pălăriile în cuier. La plecare, ei se întreabă: cîte moduri există de a redistribui pălăriile, cîte una fiecărei persoane, astfel încît nimeni să nu plece acasă cu pălăria proprie? Vezi pagina \href{https://en.wikipedia.org/wiki/Derangement}{Wikipedia} pentru (muuuulte) informații.
 
-Valoarea teoretică converge către $\frac{n!}{e}$.
+Valoarea teoretică este numărul întreg cel mai apropiat de $\frac{n!}{e}$.
 
 Formula de recurență este $D_n = (n-1) \cdot (D_{n-1} + D_{n-2})$. Vom urmări \href{https://en.wikipedia.org/wiki/Derangement#Counting_derangements}{demonstrația}.
 
@@ -131,14 +140,17 @@ Demonstrația ne ajută să rezolvăm problema generalizată: cîte parantezări
 
 De aceea, numărul total de căi pornind de la $(k,0)$ este $C_{2n-k}^{n}$, iar numărul de căi rele este $C_{2n-k}^{n+1}$. Atunci numărul de căi bune este
 
-\begin{align*}
+\begingroup
+\allowdisplaybreaks
+\begin{gather*}
   \binom{2n-k}{n} - \binom{2n-k}{n+1}\\
   = \frac{(2n-k)!}{n!(n-k)!} \ - \ \frac{(2n-k)!}{(n+1)!(n-k-1)!}\\
   = \Big[\frac{1}{n-k} - \frac{1}{n+1}\Big] \cdot \frac{(2n-k)!}{n!(n-k-1)!}\\
   = \frac{k+1}{(n-k)(n+1)} \cdot \frac{(2n-k)!}{n!(n-k-1)!}\\
   = \frac{k+1}{n+1} \cdot \frac{1}{n-k} \cdot \frac{(2n-k)!}{n!(n-k-1)!}\\
   = \frac{k+1}{n+1} \cdot \binom{2n-k}{n}
-\end{align*}
+\end{gather*}
+\endgroup
 
 Așadar,
 
@@ -149,25 +161,35 @@ $$C_n^{(k)} = \frac{k + 1}{n + 1} \binom{2n - k}{n}$$.
 Din secțiunea următoare, ultimele două probleme de pe CSES sînt rezolvabile cu această \href{https://en.wikipedia.org/wiki/Burnside's_lemma}lemă. Din păcate, demonstrația este formulată doar în termeni de grupuri și nu am investit timpul necesar ca să o înțeleg. Dar principiul este următorul. Lema ne ajută să numărăm obiectele-unicat dintr-o colecție, în condițiile în care unele transformări (rotații, simetrii etc.) transformă un obiect într-altul. Procedăm astfel:
 
 \begin{itemize}
-  \item Fie $n$ numărul de transformări posibile.
+  \item Fie $t$ numărul de transformări posibile.
   \item Fie $C_r$ numărul de obiecte care rămîn nemodificate în urma unei transformări de tipul $r$.
-  \item Atunci numărul de obiecte-unicat din colecție este $\frac{1}{n} \sum_r C_r$.
+  \item Atunci numărul de obiecte-unicat din colecție este $\frac{1}{t} \sum_{r=0}^{t-1} C_r$.
 \end{itemize}
 
-Pentru problema cu colierele de lungime $n$ și $k$ culori, definim transformarea $r$ drept rotirea colierului cu $r$ poziții. Atunci
+Pentru problema \hyperref[problem:counting-necklaces]{Counting Necklaces}, definim transformarea $r$ drept rotirea colierului cu $r$ poziții. Atunci
 
 \begin{itemize}
-  \item $C_0 = k^n$, deoarece dacă nu rotim nimic există $k^n$ coliere distincte.
-  \item $C_1 = k$, deoarece dacă un colier nu se modifică prin rotirea cu o poziție, atunci mărgeaua 1 are aceeași culoare cu mărgeaua 2, mărgeaua 2 are aceeași culoare cu mărgeaua 3 etc. Deci toate mărgelele au aceeași culoare.
-  \item $C_2 = k$ dacă $n$ este impar. De exemplu, pentru $n = 7$, mărgeaua 1 va urma pozițiile 3, 5, 7, 2, 4, 6, 1. Din nou, este necesar ca toate mărgelele să aibă aceeași culoare.
-  \item $C_2 = k^{2}$ dacă $n$ este par. Putem alege culorile primelor două mărgele, iar ele vor dicta culorile restului de mărgele.
-  \item În general, $C_r = k^{\gcd(r, n)}$.
+  \item $C_0 = m^n$, deoarece putem asambla $m^n$ coliere, iar dacă nu modificăm nimic... toate colierele rămîn nemodificate. \emoji{nerd-face}
+  \item $C_1 = m$, deoarece dacă un colier nu se modifică prin rotirea cu o poziție, atunci mărgeaua 1 are aceeași culoare cu mărgeaua 2, mărgeaua 2 are aceeași culoare cu mărgeaua 3 etc. Deci toate mărgelele au aceeași culoare.
+  \item $C_2 = m$ dacă $n$ este impar. De exemplu, pentru $n = 7$, mărgeaua 1 va urma pozițiile 3, 5, 7, 2, 4, 6, 1. Din nou, este necesar ca toate mărgelele să aibă aceeași culoare.
+  \item $C_2 = m^{2}$ dacă $n$ este par. Putem alege culorile primelor două mărgele, iar ele vor dicta culorile restului de mărgele.
+  \item În general, $C_r = m^{\gcd(r, n)}$.
 \end{itemize}
 
-Pentru problema Counting Grids, raționamentul este foarte similar, dar numărul de rotații este fixat (4), iar numărul de libertăți pentru o transformare aleasă trebuie calculat. Pentru $r = 0$, numărul de posibilități este $2^{n^2}$ etc.
+Pentru problema \hyperref[problem:counting-grids]{Counting Grids}, raționamentul este foarte similar, dar numărul de rotații este fixat (4), iar numărul de libertăți pentru o transformare aleasă trebuie calculat. Pentru $r = 0$, numărul de posibilități este $2^{n^2}$ etc.
 
-Suspectez că unele dintre probleme pot fi rezolvate și cu PIE.
+Suspectez că unele dintre probleme pot fi rezolvate și cu principiul includerii și excluderii.
 
 \section{Un puzzle}
 
-Iată și \href{https://gurmeet.net/puzzles/100-prisoners-and-100-boxes/index.html}{un puzzle} care se rezolvă cu una dintre tehnicile de mai sus. Nu spunem care. \emoji{slightly-smiling-face}
+Iată și \href{https://math.stackexchange.com/q/5595}{un puzzle} care se rezolvă cu una dintre tehnicile de mai sus. Nu spunem care. \emoji{slightly-smiling-face}
+
+\begin{turn}{180}
+  \begin{minipage}{\linewidth}
+    Soluția pe care o știu eu este inductivă. Fie Ana și Zaharia primul și respectiv ultimul pasager. Pentru $n=2$, desigur probabilitatea ca Zaharia să-și găsească locul liber este $1/2$. Acum să presupunem că am rezolvat problema pentru $1, 2, \dots, n$ și să o rezolvăm pentru $n+1$. Ana poate alege 3 tipuri de loc: $(a)$ propriul său loc, caz în care Zaharia are 100\% șanse să-și ocupe locul; $(b)$ locul lui Zaharia, caz în care Zaharia are 0 șanse să-și ocupe locul; $(c)$ locul unui alt pasager, Xavier, caz în care putem reduce problema la cel mult $n$ pasageri. Vor urca (posibil) un număr de pasageri diferiți de Xavier, care își găsesc locurile libere. Apoi va urca și Xavier.
+
+    În acest moment regăsim exact problema originală! Avem $m < n$ locuri libere, dintre care unul este al Anei, și locul lui Xavier care este ocupat. Efectiv, Xavier joacă în acest moment rolul Anei. Dacă Xavier ocupă locul Anei, ciclul se închide, iar Zaharia își va ocupa locul, similar cum în problema inițială, dacă Ana își ocupă propriul loc, ciclul se închide.
+
+    Media ponderată a celor trei probabilități este $1/2$.
+  \end{minipage}
+\end{turn}
