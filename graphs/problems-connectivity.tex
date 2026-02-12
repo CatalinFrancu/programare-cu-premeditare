@@ -1,0 +1,275 @@
+\section{Probleme}
+
+\subsection{Problema Course Schedule (CSES)}
+\label{problem:course-schedule}
+
+\href{https://cses.fi/problemset/task/1679}{enunț}
+$\bullet$
+\hyperref[code:course-schedule]{sursă}
+
+Problema este educațională de sortare topologică. Includ surse cu cei doi algoritmi studiați.
+
+\subsection{Problema Book (Codeforces)}
+\label{problem:book}
+
+\href{https://codeforces.com/contest/1573/problem/C}{enunț}
+$\bullet$
+\hyperref[code:book]{surse}
+
+Problema se duce destul de direct spre sortarea topologică. Observăm că, dacă vrem să învățăm un capitol $v$ după un capitol $u$, atunci le putem învăța în aceeași trecere dacă $u < v$, altfel este nevoie de o trecere în plus. Problema se poate formaliza ca un graf orientat unde costul unei muchii $(u,v)$ este 0 dacă $u < v$ sau 1 dacă $u > v$. Astfel, trebuie:
+
+\begin{itemize}
+  \item Să tipărim -1 dacă graful nu poate fi sortat topologic (adică dacă conține vreun ciclu).
+  \item Altfel, să tipărim costul maxim al unei căi.
+\end{itemize}
+
+Problema se rezolvă cu sortare topologică și o valoare pentru fiecare nod $u$, care arată numărul de treceri necesar pentru a învăța capitolul $u$. Valoarea lui $u$ se calculează în funcție de valorile succesorilor.
+
+Pentru completitudine, am implementat sortarea topologică și cu DFS, și cu BFS.
+
+\subsection{Problema Ctc (Infoarena)}
+\label{problem:ctc}
+
+\href{https://infoarena.ro/problema/ctc}{enunț}
+$\bullet$
+\hyperref[code:ctc]{surse}
+
+Această problemă este educațională, de componente tare conexe.
+
+Pentru algoritmul lui Kosaraju, subliniez că nu este nevoie de calculul explicit al timpilor $t_{out}$. Ce ne interesează este ca în a doua parcurgere să procesăm nodurile descrescător după $t_{out}$. Așadar, este suficient ca, în prima parcurgere, să colectăm fiecare nod într-un vector chiar înainte de a părăsi DFS-ul (adică în locul unde am incrementa acel contor global \ccode{time}).
+
+De amorul artei, includ și o sursă pentru algoritmul lui Kosaraju cu structuri de date proprii. Ea transpune graful fără memorie suplimentară, este de peste două ori mai rapidă și consumă de 4 ori mai puțină memorie decît implementarea cu STL.
+
+\subsection{Problema Mr. Kitayuta's Technology (Codeforces)}
+\label{problem:mr-kitayuta-s-technology}
+
+\href{https://codeforces.com/contest/505/problem/D}{enunț}
+$\bullet$
+\hyperref[code:mr-kitayuta-s-technology]{sursă}
+
+Problema este mai mult de idee, fiind greu de încadrat la „ceva”: este o problemă \textit{core} de grafuri. O putem rezuma astfel: dîndu-se $n$ noduri izolate și $m$ perechi ordonate de noduri, să se afle numărul minim de arce care trebuie trasate astfel încît pentru fiecare pereche $(u,v)$ să existe o cale de la $u$ la $v$.
+
+Prin analogie cu componentele tare conexe, o \textbf{componentă slab conexă} (CSC) este un subgraf maximal astfel încît orice nod $v$ să fie accesibil din orice nod $u$ dacă ignorăm sensurile arcelor.
+
+Fie $G$ graful cerințelor date la intrare. Observăm că putem rezolva problema individual pe fiecare CSC din $G$, căci nu avem de ce să tragem vreo muchie între două CSC diferite. Acum, să considerăm o componentă cu $k$ noduri. Iau naștere două cazuri.
+
+\begin{enumerate}
+  \item Dacă componenta \textbf{nu conține} cicluri orientate, atunci ea este un dag. Fiind un dag, ea admite o sortare topologică $S$. Putem satisface toate cerințele componentei dacă unim cele $k$ noduri cu $k - 1$ muchii, două cîte două în ordinea din $S$. Putem demonstra că acest rezultat ($k-1$ muchii) este și optim. Să presupunem că ar exista o soluție care satisface toate cerințele componentei cu mai puțin de $k-1$ muchii. Aceste muchii nu ar putea conecta (slab) toate cele $k$ noduri, deci există o tăietură a nodurilor componentei $A \cup B$ astfel încît nicio muchie a soluției să nu traverseze tăietura. Pe de altă parte, există în mod sigur o cerință care traversează tăietura, întrucît componenta este slab conexă. Acea cerință ar rămîne nesatisfăcută.
+
+  \item Dacă componenta \textbf{conține} un ciclu orientat, $C$, atunci putem oferi o soluție cu $k$ muchii: conectăm toate nodurile într-un ciclu, formînd o componentă tare conexă. Din nou, putem demonstra că această soluție este optimă. Să presupunem că ar exista o soluție care satisface toate cerințele componentei cu doar $k-1$ muchii. Prin același argument de mai sus, pentru a păstra conexitatea, cele $k-1$ muchii trebuie să formeze un arbore (ignorînd orientarea). Dar atunci ele nu vor putea satisface toate cerințele de pe ciclul $C$.
+\end{enumerate}
+
+\subsection{Problema Ralph and Mushrooms (Codeforces)}
+\label{problem:ralph-and-mushrooms}
+
+\href{https://codeforces.com/contest/894/problem/E}{enunț}
+$\bullet$
+\hyperref[code:ralph-and-mushrooms]{sursă}
+
+Observăm că, în cadrul unei CTC, putem parcurge toate muchiile de o infinitate de ori, deci vom aduna profitul maxim de pe fiecare muchie. O subproblemă interesantă este: ce profit putem obține pe o muchie cu $x$ ciuperci? Această funcție este \href{https://oeis.org/A060432}{OEIS A060432}. Am încercat să găsesc o formulă în $\mathcal{O}(1)$ fără radicali, dar nu am reușit.
+
+Odată ce părăsim o CTC, putem folosi muchia de plecare o singură dată, căci prin definiție nu mai putem reveni pe ea. Apoi putem consuma integral noua componentă etc. Rezultă că putem construi $G^{SCC}$, care este un dag, în care valoarea fiecărui nod este profitul maxim al muchiilor din toate nodurile din componenta asociată, iar valoarea fiecărei muchii este numărul de ciuperci din graful inițial. În acest nod trebuie să aflăm profitul maxim.
+
+Aceasta este o problemă clasică de sortare topologică + programare dinamică. Vezi de exemplu:
+
+\begin{itemize}
+  \item \href{https://cses.fi/problemset/task/1680}{CSES 1680 Longest Flight Route} (cea mai lungă cale într-un dag)
+  \item \href{https://cses.fi/problemset/task/1681}{CSES 1681 Game Routes} (numărul de căi într-un dag)
+  \item \href{https://cses.fi/problemset/task/1686}{CSES 1686 Coin Collector} (foarte asemănătoare cu problema curentă).
+\end{itemize}
+
+Soluția teoretică este să parcurgem componentele în ordine invers topologică, folosind orice algoritm de CTC. Fie $w[C]$ numărul total de ciuperci pe care le putem culege fără a părăsi componenta $C$. Atunci profitul maxim plecînd dintr-o componentă $C$ este
+
+$$profit[C] = w[C] + \max_{(u,v)} \{ mushrooms[(u,v)] + profit[D] \}$$
+
+unde $D$ este o altă componentă tare conexă, iar $(u,v)$ este o muchie cu $u \in C$ și $v \in D$.
+
+Putem implementa explicit acest algoritm, construind $G^{SCC}$. De amorul artei, putem însă rezolva problema cu o singură parcurgere DFS! Sursa anexată oferă o astfel de implementare.
+
+În majoritatea problemelor întîlnite, nu este strict necesar să construiți graful condensat, deși sînt de acord că implementarea cu o singură parcurgere poate fi alunecoasă.
+
+\subsection{Problema Bertown Roads (Codeforces)}
+\label{problem:bertown-roads}
+
+\href{https://codeforces.com/contest/118/problem/E}{enunț}
+$\bullet$
+\hyperref[code:bertown-roads]{sursă}
+
+Problema cere să orientăm muchiile unui graf neorientat conex astfel încît să obținem un graf tare conex. O problemă identică este \href{https://cses.fi/problemset/task/2177}{CSES 2177}. O observație relativ simplă este că, dacă graful neorientat are punți, atunci problema nu are soluție. Dacă orientăm muchia $(u,v)$ ca $u \to v$, în graful rezultat nu va exista nicio cale de la $v$ la $u$.
+
+Dacă graful neorientat nu are punți, problema are întotdeauna soluție. Interesant este că implementarea este incredibil de simplă. Facem o parcurgere DFS și orientăm muchiile în sensul în care le vizitează parcurgerea. Dintr-un nod $u$, pentru un vecin $v$, orientăm muchia ca $u \to v$ indiferent dacă este muchie de arbore sau muchie înapoi.
+
+Trebuie doar să avem grijă să nu parcurgem aceeași muchie de două ori. Mai exact, muchia $u,v$ va apărea în reprezentarea uzuală de două ori:
+
+\begin{itemize}
+  \item nodul $v$ în lista de adiacență a lui $u$;
+  \item nodul $u$ în lista de adiacență a lui $v$.
+\end{itemize}
+
+Dacă stăm în nodul $u$, iar nodul $v$ este deja vizitat, atunci:
+
+\begin{itemize}
+  \item Dacă $d[v] < d[u]$, atunci $v$ este strămoș al lui $u$, muchia $(u,v)$ este muchie înapoi și o vom orienta în sensul $u \to v$.
+
+  \item Dacă $d[v] > d[u]$, atunci $v$ este descendent al lui $u$, muchia $(u,v)$ a fost deja vizitată și trebuie ca de această dată să o ignorăm.
+\end{itemize}
+
+\subsection{Problema Tourist Reform (Codeforces)}
+\label{problem:tourist-reform}
+
+\href{https://codeforces.com/contest/732/problem/F}{enunț}
+$\bullet$
+\hyperref[code:tourist-reform]{sursă}
+
+Problema este din aceeași sferă cu precedenta. Trebuie să orientăm un graf neorientat pentru a maximiza accesibilitatea minimă, adică să maximizăm numărul minim de noduri accesibile din orice punct de pornire.
+
+Știm de la problemele anterioare că, pentru o CTC, ne putem plimba la infinit printre nodurile ei. Interesant este cum să orientăm punțile din graful original. Fie $X$ componenta 2-conexă (așadar, componenta mărginită de punți) din graful original cu număr maxim de noduri. Presupunem că $X$ este unică, dar raționamentul este similar și dacă nu este. $X$ va deveni o CTC în graful orientat. Rezultă că răspunsul este cel puțin $|X|$: putem orienta toate punțile înspre $X$, astfel că orice nod din $X$ va putea vizita exact $|X|$ noduri, iar orice nod din afara lui $X$ va putea vizita mai mult de $|X|$ noduri.
+
+Acest răspuns este și optim. Să presupunem că orientăm orice punte astfel încît să se îndepărteze de $X$. Atunci ea delimitează din graful orientat o zonă în care toate CTC au mai puțin de $|X|$ noduri. Întrucît graful $G^{SCC}$ este un dag, va exista în el o componentă $Y$ din care nu iese nicio muchie. Pornind din acea componentă vom putea ajunge doar la $|Y| < |X|$ noduri.
+
+Și această implementare necesită o singură parcurgere Tarjan. Mai mult, nu avem nevoie de stivă. Ne pasă doar \textbf{cîte} noduri are o CTC în clipa în care o identificăm, iar pentru aceasta este suficient să ținem un contor, nu toată stiva.
+
+\subsection{Problema We Need More Bosses (Codeforces)}
+\label{problem:we-need-more-bosses}
+
+\href{https://codeforces.com/contest/1000/problem/E}{enunț}
+$\bullet$
+\hyperref[code:we-need-more-bosses]{sursă}
+
+Problema ne cere să calculăm diametrul maxim (ca număr de muchii) în arborele componentelor 2-conexe asociat unui arbore neorientat.
+
+Așa cum am mai văzut, putem proceda incremental:
+
+\begin{enumerate}
+  \item Calculăm punțile.
+  \item Condensăm fiecare componentă 2-conexă într-un nod și obținem arborele.
+  \item Calculăm diametrul arborelui.
+\end{enumerate}
+
+Dar putem rezolva și această problemă cu un singur DFS. Aici este util să cunoașteți algoritmul de aflare a diametrului unui arbore cu un singur DFS, nu cu două. Pentru un nod $u$, diametrul \textbf{subarborelui} lui $u$ poate fi de două feluri:
+
+\begin{enumerate}
+  \item Fie trece prin $u$, caz în care $u$ are nevoie să cunoască suma celor mai lungi două drumuri de la sine la frunze, care pornesc prin doi fii diferiți.
+  \item Fie nu trece prin $u$, caz în care $u$ are nevoie să cunoască maximul diametrelor din subarborii fiilor.
+\end{enumerate}
+
+Peste această recurență rămîne doar să adăugăm algoritmul lui Tarjan pentru găsirea punților. Dacă fiecare nod $u$ își calculează distanța maximă, în număr de punți, pînă la orice frunză, atunci valoarea pentru $u$ va proveni din maximul valorilor fiilor lui $u$. Nodul $u$ adaugă 1 la valoarea returnată de un fiu $v$ dacă muchia $(u,v)$ este punte, altfel o preia ca atare.
+
+\subsection{Problema Forbidden Cities (CSES)}
+\label{problem:forbidden-cities}
+
+\href{https://cses.fi/problemset/task/1705}{enunț}
+$\bullet$
+\hyperref[code:forbidden-cities]{sursă}
+
+Întrebarea teoretică este, pentru fiecare triplet $\langle a, b, c\rangle$: Dacă elimin nodul $c$, mai rămîn $a$ și $b$ conectate? Intuiția ne împinge spre puncte de articulație. Răspunsul este: nu, dacă $c$ este punct de articulație și dacă $a$ și $b$ cad în componente biconexe diferite raportat la $c$.
+
+O variantă ar fi, așadar:
+
+\begin{itemize}
+  \item Să construim graful condensat al componentelor biconexe, care este un arbore.
+
+  \item Să construim LCA pe acest arbore.
+
+  \item Să verificăm, pentru fiecare triplet $\langle a, b, c\rangle$ în care $c$ este punct de articulație, dacă $c$ se află pe calea $a, b$.
+\end{itemize}
+
+Mie îmi sună monstruos. \emoji{fearful-face} Am preferat să investesc puțin timp într-o soluție... cu o singură parcurgere! Ideea de bază este: dacă un nod $c$ observă că are un fiu $d$ care nu poate urca mai sus decît $c$, atunci nodul $c$ este punct de articulație, iar subarborele lui $d$ nu poate comunica cu restul grafului decît prin $c$. Dacă există vreun triplet $\langle a, b, c\rangle$ astfel încît exact unul dintre $a$ și $b$ se află în subarborele lui $d$, atunci răspunsul pentru $\langle a, b, c\rangle$ este „nu”.
+
+Pentru implementare, am extins algoritmul lui Tarjan pentru găsirea punctelor de articulație cu următorul sistem de notificări. Observați că ocazional schimb numele nodului. Fac aceasta ca să clarific perspectiva din care se întîmplă lucrurile, dar rutina DFS este una singură, relativ scurtă.
+
+\begin{itemize}
+  \item La intrarea în nodul $c$, activăm o bifă prin care nodul spune „vreau să fiu notificat ori de cîte ori este vizitat vreun nod $a$ sau $b$ din tripletele pentru care eu sînt centrul”.
+
+  \item La ieșirea din nodul $c$, dezactivăm această bifă. În particular, dacă $a$ și $b$ se regăsesc în afara subarborelui lui $c$, atunci $c$ nu blochează calea $a \rightsquigarrow b$.
+
+  \item Tot la ieșirea dintr-un nod, să-i zicem de această dată $a$, trecem prin toate tripletele în care $a$ este extremitate și notificăm $c$-urile acestor triplete, dacă ele sînt în prezent abonate la notificări.
+
+  \item Revenind în nodul $c$, după fiecare fiu $d$, și dacă $c$ constată că este punct critic pentru $d$, atunci $c$ trece prin lista de triplete care l-au notificat. Dacă pentru orice triplet $\langle a, b, c\rangle$ exact unul dintre $a$ și $b$ este descendent al lui $d$, atunci marcăm tripletul cu răspunsul „nu”.
+
+  \item Indiferent dacă $c$ este sau nu punct critic pentru $d$, $c$ își golește lista de notificări după fiecare fiu. Este important ca, dacă $a$ și $b$ sînt accesibile prin doi fii diferiți, să le tratăm separat.
+\end{itemize}
+
+\subsection{Problema Case of Computer Network (Codeforces)}
+\label{problem:case-of-computer-network}
+
+\href{https://codeforces.com/contest/555/problem/E}{enunț}
+$\bullet$
+\hyperref[code:case-of-computer-network]{sursă}
+
+Dacă am vedea această problemă „de la zero”, probabil nu am avea șanse să o rezolvăm. Dar, după cele anterioare, ea devine abordabilă. Din nou, trebuie să orientăm muchiile unui graf, inițial neorientat, asingurîndu-ne că în graful orientat există $q$ căi impuse, de forma $(u, v)$. Problema este rezonabilă în sensul că ne cere doar răspunsul da/nu, nu și orientarea efectivă.
+
+Ca și mai înainte, putem transforma o componentă 2-conexă într-o componentă tare conexă, în care putem călători între orice două noduri. Mai rămîne să orientăm punțile. Să observăm că, dacă există o punte și două mesaje care au nevoie să traverseze acea punte în sensuri diferite, atunci problema nu are soluție.
+
+Un mod de a implementa această observație este să construim arborele componentelor 2-conexe, în care muchiile sînt punți din graful original. Înrădăcinăm acest arbore în nodul 1. Raportat la un nod $u$ și la muchia sa de intrare $e$, iau naștere patru tipuri de mesaje:
+
+\begin{enumerate}
+  \item Mesaje care încep și se termină în subarborele lui $u$ inclusiv.
+  \item Mesaje care încep și se termină în afara subarborelui lui $u$.
+  \item Mesaje care încep în subarborele lui $u$ și se termină în afara lui.
+  \item Mesaje care încep în afara subarborelui lui $u$ și se termină în el.
+\end{enumerate}
+
+Mesajele de tipurile 1 sau 2 nu limitează în niciun fel orientarea lui $e$. Dacă avem doar mesaje de tipul 3, orientăm $e$ dinspre $u$ înspre rădăcină. Dacă avem doar mesaje de tipul 4, orientăm $e$ dinspre rădăcină înspre $u$. Iar dacă avem mesaje de ambele tipuri (3 și 4), atunci problema nu are soluție.
+
+Rezultă că putem ține evidența mesajelor de tip 3 și 4 în postordine. În plus, avem nevoie de informații LCA ca să putem șterge mesajele din evidență cînd ajungem la strămoșul lor comun. Din nou, putem implementa asta cu cărămizile cunoscute: graful componentelor, LCA cu $\log n$ pointeri per nod \emoji{winking-face} etc.
+
+Dar și aici ne putem descurca cu o singură parcurgere. Dacă tot facem un DFS, ar fi păcat să nu îl folosim și pentru a afla LCA-urile mesajelor. Deci combinăm algoritmul lui Tarjan pentru aflarea punților cu algoritmul lui Tarjan pentru LCA. \emoji{rolling-on-the-floor-laughing}
+
+Un aspect care poate părea straniu este că noi operăm pe un graf, pe cînd algoritmul de LCA funcționează pe arbori. Dar ne putem adapta, cu condiția să lăsăm toate deciziile în seama nodurilor-șef ale componentelor 2-conexe (cele aflate imediat sub o punte). Celelalte noduri dintr-o componentă nu fac decît să propage contoarele către șef. Tot fiindcă operăm pe un graf, este posibil să ajungem într-un descendent de mai multe ori. Este important ca, la propagarea contoarelor spre părinte, să le ștergem din fiu, ca să nu avem surpriza că le-am propagat de mai multe ori.
+
+\subsection{Problema Dog Trick Competition 2 (IIOT 2023-2024 runda 4)}
+\label{problem:dog-trick-competition-2}
+
+\href{https://kilonova.ro/problems/2288}{enunț}
+$\bullet$
+\hyperref[code:dog-trick-competition-2]{sursă}
+
+În esență, problema ne dă un graf orientat și un șir $T$ de noduri și ne cere să vizităm, în ordine, un prefix cît mai lung al lui $T$, în ordinea $T_1, T_2, \dots$, eventual folosind și alte noduri intermediare.
+
+Faptul că sîntem la lecția de tare conexitate ar trebui să fie un indiciu. \emoji{slightly-smiling-face} Să observăm că putem rămîne oricît este nevoie în CTC-ul nodului $T_1$, vizitînd cît de mult se poate din $T$. Fie $T_a$ primul nod nevizitat astfel. Dacă există un drum de la componenta lui $T_1$ la componenta lui $T_a$, putem continua traseul. Vizităm în continuare nodurile din $T$ aflate în componenta lui $T_a$. Fie $T_b$ primul nod nevizitat. Dacă există un drum de la componenta lui $T_a$ la $T_b$, putem continua traseul etc. Remarcăm că, odată ce părăsim o CTC, nu mai putem reveni în ea. Dacă am putea, am închide un ciclu, ceea ce încalcă definiția CTC.
+
+\subsubsection*{Implementare cu construcția grafului condensat}
+
+De aici, implementarea se ramifică. Am citit sursele din statistici și am observat, de regulă, această abordare:
+
+\begin{itemize}
+  \item Algoritmul lui Kosaraju pentru determinarea CTC.
+  \item Construcția explicită a grafului condensat.
+  \item Pentru fiecare pereche $(T_i, T_{i+1})$ din componente diferite, BFS din $T_i$ pe graful condensat pentru a determina dacă există o cale către $T_{i+1}$.
+  \item Ordonarea crescătoare a vecinilor fiecărui nod, ceea ce permite răspunsuri cu căutare binară la întrebări de tipul „există muchia $(T_i, T_{i+1})$”?
+\end{itemize}
+
+Soluția este $\mathcal{O}(m + n)$ în ciuda BFS-urilor repetate, căci mergem mereu înainte prin dag-ul componentelor tare conexe. De aceea, BFS-urile au mereu loc pe porțiuni din dag încă neexplorate în BFS-urile anterioare.
+
+Ca fapt divers, \href{https://kilonova.ro/submissions/442732}{această sursă} sortează topologic componentele, apoi decide dacă există un drum între două componente comparînd pur și simplu poziția componentelor în sortare. Această abordare este insuficientă. Problema răspunde 3, în loc de 2, pe testul
+
+\begin{verbatim}
+2 3
+2 1
+2
+1 3
+2 3
+\end{verbatim}
+
+\subsubsection*{Implementare cu un singur DFS}
+
+Implementarea mea extinde algoritmul lui Tarjan pentru aflarea CTC. Știm că acesta emite componentele în ordinea invers topologică. Noi am prefera exact opusul, ca să pornim din componenta lui $T_1$ și să mergem înainte prin componente. Dar ne putem descurca și cu ordinea inversă.
+
+Să definim \textbf{intervalul unei componente} $C$ ca fiind intervalul de indici din $T$ pe care îl vom vizita pe durata șederii în componenta $C$ (dacă vom ajunge în ea, ceea ce deocamdată nu știm). Acesta este cel mai din stînga interval contiguu format exclusiv din noduri din $C$. Pot exista mai multe astfel de intervale în $T$, dar îl alegem pe cel mai din stînga deoarece, odată ce părăsim componenta $C$, nu mai putem reveni la ea pentru a vizita și alte intervale.
+
+Pentru a determina intervalul componentei, încă de la citirea datelor calculăm, pentru fiecare nod $u$, indicele primei sale apariții în $T$ (sau $+\infty$ dacă $u$ nu apare deloc în $T$). Odată ce explorăm componenta $C$ și îi cunoaștem nodurile, începutul intervalului lui $C$ este minimul primelor apariții în $T$ ale oricărui nod din $C$. Aflăm sfîrșitul intervalului extinzîndu-l naiv spre dreapta, pas cu pas, cît timp întîlnim noduri din $C$. Efortul total pentru aceste extinderi este $\mathcal{O}(n)$.
+
+Acum, algoritmul lui Tarjan, în momentul în care termină de explorat componenta $C$, va fi întîlnit și muchii către alte componente (succesoare în dag-ul componentelor). Deci putem pune întrebarea: dacă ajungem în această componentă, cu ce altă componentă continuăm? \textit{Obligatoriu} cu una care are acces la componenta care extinde spre dreapta intervalul lui $C$. De aceea, dintre toate componentele succesoare, păstrăm intervalul minim. Concret, fie componenta curentă $C$ cu intervalul $I_C$ și fie $I_D$ intervalul minim al unei componente succesoare $D$. Iau naștere trei cazuri:
+
+\begin{itemize}
+  \item Dacă $I_D$ îl precede pe $I_C$, reținem doar $I_D$. Realitatea este că vom sări complet componenta $C$ și doar o vom traversa ca să ajungem la $D$, unde putem vizita noduri din $T$.
+
+  \item Dacă $I_D$ urmează imediat după $I_C$, vom reține $I_C \cup I_D$. Vom vizita nodurile din $C$, apoi călătorim în $D$ și vizităm și acele noduri.
+
+  \item Dacă $I_D$ urmează după $I_C$, dar la o distanță nenulă, reținem doar $I_C$. Realitatea este că ne vom opri după $I_C$, căci nu putem ajunge la următorul nod din $T$.
+\end{itemize}
+
+Cu această recurență, este suficient să facem un singur DFS din $T_1$. La final, ultima componentă explorată îl va conține pe $T_1$, iar intervalul său va avea forma $[1, X]$, semnificînd că putem vizita primele $X$ noduri din $T$.
+
+Pentru a răspunde la întrebări de tipul „există muchia $(u,v)$?”, eu am folosit pur și simplu un \ccode{unordered_set} de \ccode{long long} și am mapat fiecare pereche $(u,v)$ la valoarea $u \cdot n + v$.

@@ -1,0 +1,243 @@
+\chapter{Conectivitate}
+
+\section{Sortarea topologică}
+
+Sortarea topologică a unui graf orientat înseamnă să-i enumerăm cele $n$ noduri într-o ordine astfel încît toate muchiile să meargă doar de la stînga spre dreapta. Un exemplu intuitiv este graful de dependințe între noțiunile învățate la școală: geometria 2D este necesară pentru geometria 3D etc. \href{https://en.wikipedia.org/wiki/Topological_sorting}{Wikipedia} enumeră multe alte exemple.
+
+Un graf orientat admite o sortare topologică dacă și numai dacă este aciclic. Un astfel de graf se numește dag (engl. \textit{\textbf{d}irected \textbf{a}cyclic \textbf{g}raph}). Condiția este necesară deoarece, dacă graful conține un ciclu, atunci orice ordine în care enumerăm nodurile ciclului în sortare va face ca muchia dintre ultimul nod și primul să meargă spre stînga. Condiția este și suficientă, iar demonstrația este constructivă.
+
+Problema educațională \hyperref[problem:course-schedule]{Course Schedule} ne cere exact să sortăm topologic un graf orientat sau să raportăm dacă el conține un ciclu.
+
+Există doi algoritmi clasici, ambii în $\bigoh(m + n)$. Ambii necesită cod similar de lung, cu viteze și consumuri de memorie similare. Este bine să fiți familiari cu ambii, pentru că unele probleme se mulează mai bine peste unul dintre algoritmi.
+
+\subsection{Algoritmul lui Kahn}
+
+Acest algoritm este practic un BFS. Inițializăm o coadă cu nodurile cu grad la intrare 0. Acestea pot fi enumerate primele în sortarea topologică, în orice ordine. Explorăm graful, tipărind nodurile pe măsură ce le scoatem din coadă. De cîte ori un nod a fost explorat de un număr de ori egal cu gradul său la intrare, îl introducem și pe el în coadă, cu semnificația că și el poate fi tipărit.
+
+Graful conține un ciclu dacă coada rămîne goală înainte să explorăm toate nodurile.
+
+\subsection{Algoritmul bazat pe DFS}
+
+Pornim un DFS dintr-un nod oarecare. La fiecare nivel recursiv al DFS-ului, la revenirea din descendenți adăugăm nodul curent la ordinea topologică. Dacă după încheierea DFS-ului mai există noduri nedescoperite, alegem la întîmplare unul dintre acestea și pornim un nou DFS. De remarcat că algoritmul produce o sortare topologică \textbf{inversă}.
+
+Graful conține un ciclu dacă DFS-ul încearcă, la orice moment, să viziteze un nod gri (un nod din stiva DFS).
+
+\section{Componente tare conexe}
+
+Într-un graf orientat $G = (V, E)$, o \textbf{componentă tare conexă} (abr. \textit{CTC}, engl. \textit{strongly connected component}, abr. \textit{SCC}) este un subgraf maximal în care pentru orice pereche de noduri $u$ și $v$, $v$ este accesibil din $u$ și invers. Notăm acest lucru cu $u \rightsquigarrow v$ și $v \rightsquigarrow u$.
+
+Vom folosi \href{https://dl.ebooksworld.ir/books/Introduction.to.Algorithms.4th.Leiserson.Stein.Rivest.Cormen.MIT.Press.9780262046305.EBooksWorld.ir.pdf#page=599}{această figură} din \textit{Introduction to Algorithms}.
+
+Problema educațională \hyperref[problem:ctc]{Ctc} ne cere exact să tipărim componentele tare conexe ale unui graf orientat.
+
+\subsection{Terminologie}
+
+\textbf{Graful transpus} se notează cu $G^{T} = (V, E^{T})$ și se obține inversînd sensul tuturor muchiilor din $E$. Remarcăm că $G^{T}$ are aceleași componente tare conexe ca și $G$: dacă $u \rightsquigarrow v$ și $v \rightsquigarrow u$ în $G$, parcurgînd căile în sens invers obținem că $v \rightsquigarrow u$ și $u \rightsquigarrow v$ în $G^{T}$.
+
+\textbf{Graful componentelor} se notează cu $G^{SCC}$ și este definit astfel:
+
+\begin{itemize}
+  \item Contractăm fiecare componentă tare conexă, cu nodurile și cu muchiile ei, într-un singur nod.
+  \item Unificăm toate muchiile dintre două componente într-o singură muchie.
+\end{itemize}
+
+Graful componentelor este un dag. Demonstrația este prin reducere la absurd: dacă în $G^{SCC}$ ar exista un ciclu prin două noduri $u$ și $v$, atunci în graful original ar exista căi între orice două noduri din componentele tare conexe corespunzătoare lui $u$ și $v$, deci cele două componente ar fi una și aceeași.
+
+Generalizăm \textbf{timpii de descoperire și de părăsire} a unui nod ($t_{in}[u]$ și $t_{out}[u]$) la submulțimi de noduri. Pentru $U \subseteq V$, definim:
+
+\begin{itemize}
+  \item $t_{in}[U] = \min_{u \in U} t_{in}[u]$
+  \item $t_{out}[U] = \max_{u \in U} t_{out}[u]$
+\end{itemize}
+
+Vom studia doi algoritmi, comparabili ca viteză. Ca și în cazul sortării topologice, vă încurajez să fiți familiari cu ambii.
+
+\subsection{Algoritmul lui Kosaraju}
+
+Acest algoritm face două parcurgeri DFS pentru a găsi componentele tare conexe:
+
+\begin{enumerate}
+  \item Face o parcurgere DFS în $G$ și reține $t_{out}[u]$ pentru fiecare nod $u$.
+  \item Calculează $G^{T}$.
+  \item Face o parcurgere DFS în $G^{T}$, considerînd nodurile în ordinea descrescătoare a lui $t_{out}$.
+  \item Fiecare submulțime găsită de DFS-ul de la pasul 3 este o componentă tare conexă.
+\end{enumerate}
+
+De ce funcționează acest algoritm? Să studiem relația între valorile lui $t_{out}$ (în graful original) și graful componentelor. Fie două componente $C$ și $C'$ între care există o muchie $(u, v)$ cu $u \in C$ și $v \in C'$. Atunci putem demonstra că $t_{in}[C] > t_{in}[C']$. Într-adevăr, există două cazuri:
+
+\begin{enumerate}
+  \item Dacă $C$ este descoperită prima, fie $x \in C$ primul nod vizitat. Toate nodurile din $C$ și din $C'$ devin descendenți ai lui $x$ în arborele DFS, deci nodul $x$ va fi ultimul părăsit. Rezultă că $t_{out}[C] = t_{out}[x] > t_{out}[C']$.
+
+  \item Dacă $C'$ este descoperită prima, fie $y \in C'$ primul nod vizitat. Toate nodurile din $C'$ devin descendenți ai lui $y$ în arborele DFS, dar nu și cele din $C$. Componenta $C'$ va fi vizitată complet, apoi DFS-ul va reveni la bucla principală și la un moment viitor va vizita și componenta $C$. Rezultă că $t_{out}[C] > t_{out}[C']$.
+\end{enumerate}
+
+În graful transpus $G^{T}$ avem relația inversă: pentru orice muchie $(u, v) \in E^{T}$ cu $u \in C$ și $v \in C'$ vom avea $t_{out}[C] < t_{out}[C']$. \textbf{Atenție}: valorile $t_{out}$ sînt cele calculate în graful original.
+
+De aici rezultă corectitudinea algoritmului. Pasul 3 începe cu nodul $u$ care maximizează $t_{out}[u]$. Acel DFS va explora o componentă $C$ (în $G^T$) din care nu vor exista muchii spre alte componente. Cu alte cuvinte, DFS-ul nu se va revărsa în nicio altă componentă, ci va tipări strict nodurile din $C$. Apoi va alege alt nod de pornire dintr-o altă componentă $C'$ care nu avea muchii spre alte componente (decît cel mult spre $C$, care a fost deja tipărită). Prin inducție, la orice moment cînd bucla principală va apela algoritmul DFS recursiv, algoritmul va tipări exact o componentă tare conexă.
+
+Nu întîmplător, acest algoritm seamănă (un pic) cu o sortare topologică. Într-adevăr, ordinea în care componentele sînt tipărite este o sortare topologică a grafului $G^{SCC}$ sau, alternativ, o sortare invers topologică a grafului $G^{{SCC}^{T}}$.
+
+\begin{itemize}
+  \item Adevărat sau fals? Putem ca, la pasul 3, să parcurgem tot graful original, dar în ordinea crescătoare a valorilor $t_{out}$? Dați o demonstrație sau un contraexemplu. Indiciu: probabil nu folosim de 50 de ani un algoritm mai complicat decît trebuie. \emoji{slightly-smiling-face}
+\end{itemize}
+
+Iată și un detaliu de implementare. Multe programe de pe Internet (\href{https://cp-algorithms.com/graph/strongly-connected-components.html}{CP Algorithms}, \href{https://www.topcoder.com/thrive/articles/kosarajus-algorithm-for-strongly-connected-components}{Topcoder}, \href{https://www.geeksforgeeks.org/strongly-connected-components/}{GeeksforGeeks}) țin în memorie două grafuri cu cod de genul:
+
+\begin{minted}{c}
+while (m--) {
+  cin >> a >> b;
+  g[a].adj.push_back(b);
+  g[b].rev_adj.push_back(a);
+}
+\end{minted}
+
+Această abordare folosește $\bigoh(M + N)$ memorie suplimentară ($N$ vectori cu un total de $M$ elemente). Putem inversa listele de adiacență în $\bigoh(M)$, atunci cînd devine necesar. Folosim doar $\bigoh(N)$ memorie suplimentară pentru capetele de listă:
+
+\begin{minted}{c}
+for (int u = 1; u <= n; u++) {
+  for (int v: g[u].adj) {
+    g[v].rev_adj.push_back(u);
+  }
+  g[u].adj.resize(0);
+}
+\end{minted}
+
+\subsection{Algoritmul lui Tarjan}
+
+Acest algoritm face o singură parcurgere DFS. Pentru fiecare nod $u$ stocăm două valori:
+
+\begin{itemize}
+  \item $d[u]$ este adîncimea nodului
+  \item $l[u]$ (\textit{lowpoint}) este adîncimea minimă a oricărui vecin al oricărui nod din subarborele lui $u$.
+\end{itemize}
+
+Observația crucială este că, dacă niciun nod din subarborele lui $u$ nu poate urca mai sus decît $u$, adică dacă $l[u] = d[u]$, atunci
+
+
+\begin{itemize}
+  \item $u$ este punctul de intrare într-o CTC;
+  \item muchia de la părintele din DFS al lui $u$ la $u$ este o muchie între două CTC din $G^{SCC}$.
+\end{itemize}
+
+Pentru enumerarea efectivă a nodurilor din fiecare componentă, punem nodurile într-o stivă pe măsură ce le descoperim, dar \textbf{nu le scoatem din stivă} la revenirea din DFS. În schimb, cînd determinăm că un nod $u$ este punctul de intrare într-o CTC, atunci scoatem toate nodurile din stivă, pînă la $u$ inclusiv. Ele formează o CTC și le putem procesa după cum cere problema (de exemplu, le putem eticheta cu aceeași etichetă numerică).
+
+Acest algoritm generează componentele într-o ordine invers topologică a grafului $G$.
+
+\section{Componente biconexe, punți, puncte de articulație}
+
+Ne îndreptăm acum atenția către probleme similare de conexitate în grafuri neorientate. Vom urmări exemplul propus în Cormen, \href{https://dl.ebooksworld.ir/books/Introduction.to.Algorithms.4th.Leiserson.Stein.Rivest.Cormen.MIT.Press.9780262046305.EBooksWorld.ir.pdf#page=604}{fig. 20.10}.
+
+\subsection{Definiții}
+
+\begin{itemize}
+  \item Un \textbf{punct de articulație} este un nod prin a cărui eliminare numărul de componente conexe crește.
+
+  \item O \textbf{punte} este o muchie prin a cărei eliminare numărul de componente conexe crește.
+
+  \item Un graf este \textbf{biconex} dacă, prin eliminarea oricărui nod, graful rămîne conex. Echivalent, un graf biconex este un graf fără puncte de articulație.
+
+  \item O \textbf{componentă biconexă} este un subgraf biconex maximal.
+\end{itemize}
+
+Ultima definiție de mai sus este de pe \href{https://en.wikipedia.org/wiki/Biconnected_component}{Wikipedia}. Cormen propune o definiție alternativă: o componentă biconexă este un set maximal de muchii astfel încît pentru orice pereche de muchii există un ciclu simplu care trece prin ambele. Diferența apare în cazul punților: o punte și nodurile de la capetele ei formează o componentă biconexă conform definiției de mai sus, dar nu și conform definiției din Cormen.
+
+Conform Wikipedia, un punct de articulație poate face parte din mai multe componente biconexe. De aceea, Wikipedia definește componentele biconexe referitor la muchii, nu la vîrfuri. Mai exact, componentele biconexe sînt o partiție a mulțimii de muchii $E$.
+
+Nu trebuie să vă împiedicați de aceste diferențe. Cîtă vreme știți ce doriți să codați, vă va fi ușor.
+
+În problemele de astăzi vom întîlni și conceptul de \textbf{graf $k$-conex pe muchii} ca fiind un graf neorientat care rămîne conex dacă eliminăm mai puțin de $k$ muchii. De exemplu, un graf 1-conex este pur și simplu un graf conex, iar un graf 2-conex este un graf fără punți.
+
+\subsection{Puzzles}
+
+\begin{itemize}
+  \item Adevărat sau fals? O muchie $(u, v)$ aflată între două puncte de articulație este punte.
+
+  \item Adevărat sau fals? Capetele oricărei punți sînt puncte de articulație.
+
+  \item Adevărat sau fals? Un punct de articulație are cel puțin o muchie adiacentă care este punte.
+\end{itemize}
+
+\subsection{Algoritmul Hopcroft-Tarjan}
+
+Este remarcabil că putem calcula toate aceste informații printr-o singură parcurgere DFS. Ca și la aflarea componentelor tare conexe, pentru fiecare nod $u$ stocăm valorile $d[u]$ și $l[u]$. Atunci:
+
+\begin{itemize}
+  \item Rădăcina parcurgerii este punct de articulație dacă și numai dacă are doi sau mai mulți fii.
+
+  \item Un nod $u$ diferit de rădăcină este punct de articulație dacă și numai dacă are cel puțin un fiu $v$ pentru care $l[v] \ge d[u]$. Cu alte cuvinte, un fiu care nu poate accede la restul grafului dincolo de $u$.
+
+  \item O muchie $(u, v)$ vizitată din $u$ spre $v$ este punte dacă $l[v] > d[u]$ sau, echivalent, dacă $l[v] = d[v]$. Cu alte cuvinte, $v$ nu poate ajunge la $u$ decît prin muchia $(u, v)$.
+\end{itemize}
+
+Ca și la aflarea CTC, pentru partiționarea muchiilor în componente biconexe, le vom pune într-o stivă cînd le descoperim. La revenirea din recursivitate, dacă nodul curent $u$ este punct de articulație, el îi datorează asta unui fiu $v$. Scoatem din stivă toate muchiile pînă la $(u, v)$ inclusiv; ele formează o componentă biconexă.
+
+Iată mai jos codul. El calculează toate proprietățile. Dacă problema nu le cere, desigur, codul se scurtează. Bunăoară, stiva nu este necesară decît pentru componentele biconexe.
+
+\begin{minted}{c}
+// Stiva de la (u, v) pînă la vîrf formează o CBC.
+void print_bcc(int u, int v) {
+  printf("CBC:");
+  do {
+    --ss;
+    printf(" %d-%d", st[ss].u, st[ss].v);
+  } while (st[ss].u != u || st[ss].v != v);
+  printf("\n");
+}
+
+void dfs(int u, int parent) {
+  bool is_ap = false;
+  int num_children = 0;
+  nd[u].d = nd[u].low = ++time;
+
+  for (int v: nd[u].adj) {
+    if (!nd[v].d) {
+
+      // Vizitează fiul și vezi cît poate urca.
+      num_children++;
+      st[ss++] = { u, v };
+      dfs(v, u);
+      nd[u].low = min(nd[u].low, nd[v].low);
+
+      // Dacă v nu poate ajunge la u (sau mai sus), atunci (u,v) este punte.
+      // În funcție de definiție, punțile pot sau nu să fie CBC de sine stătătoare.
+      if (nd[v].low > nd[u].d) {
+        printf("punte: %d-%d\n", u, v);
+      }
+
+      // Dacă v nu poate ajunge mai sus de u, atunci (1) o CBC începe la v și
+      // (2) fie u este rădăcina, fie este punct de articulație.
+      if (nd[v].low >= nd[u].d) {
+        is_ap = true;
+        print_bcc(u, v);
+      }
+
+    } else if (v != parent) {
+
+      // Muchie înapoi -- asigură-te că nu o traversăm mergînd înainte.
+      if (nd[v].d < nd[u].d) {
+        nd[u].low = min(nd[u].low, nd[v].d);
+        st[ss++] = { u, v };
+      }
+
+    }
+  }
+
+  // Rădăcina este punct de articulație dacă are copii multipli.
+  // Alte noduri sînt puncte de articulație dacă au fost marcați de vreunul dintre copii.
+  if ((!parent && (num_children > 1)) || (parent && is_ap)) {
+    printf("PA: %d\n", u);
+  }
+}
+\end{minted}
+
+Întrebări despre cod:
+
+\begin{itemize}
+  \item De ce nu este nevoie să mai apelăm \ccode{print_bcc()} o dată la final?
+
+  \item De ce tipărim componenta cînd aflăm că $u$ este punct de articulație și nu cînd aflăm că $(u,v)$ este punte?
+
+  \item De ce optimizăm $l[u]$ o dată cu $l[v]$ și o dată cu $d[v]$?
+
+  \item De ce ne asigurăm că $d[v] < d[u]$ pentru muchiile „înapoi”?
+\end{itemize}
