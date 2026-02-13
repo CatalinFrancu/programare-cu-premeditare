@@ -64,7 +64,7 @@ $\bullet$
 
 Problema este relativ clasică de \textit{ranking}. Este nevoie doar de următoarea observație teoretică. Pot exista cel mult $2 \cdot 10^5$ operații de avansare a rangului cu cel mult $10^5$ fiecare, deci rangul maxim la care putem ajunge este $2 \cdot 10^{10}$.
 
-De cîte elemente este nevoie ca să atingem acest rang? Există $14! \approx 8,7 \cdot 10^{14}$ moduri de a permuta ultimele 14 elemente, deci primele $n-14$ elemente nu se modifică niciodată.  De aceea, spargem permutarea în:
+De cîte elemente este nevoie ca să atingem acest rang? Există $14! \approx 8,7 \cdot 10^{10}$ moduri de a permuta ultimele 14 elemente, deci primele $n-14$ elemente nu se modifică niciodată.  De aceea, spargem permutarea în:
 
 \begin{enumerate}
   \item Primele $n-14$ elemente (nu mai puțin de 0), care vor avea întotdeauna valorile $1, 2, \dots, n-14$.
@@ -95,7 +95,9 @@ Remarcăm că definiția rangului este semnificativ diferită, dar rangul este �
 
 Să socotim rangurile de la dreapta spre stînga. Atunci vrem să calculăm permutarea cu rang cu $k$ mai mic.
 
-Începem să scoatem elemente din permutare și să calculăm rangul. Elementul $n$ va contribui cu $0 \leq x < n$, în funcție de poziția sa. Elementul $n-1$ va contribui cu $y(n-1)$, unde $0 \leq y < n - 1$, etc. Cînd ajungem la un rang cel puțin egal cu $k$, ne oprim din eliminat. Scădem $k$ din rang și reinserăm elementele în ordinea impusă de rangul rămas. Practic, urcăm în arbore pînă cînd nodul curent subîntinde cel puțin $k$ frunze la dreapta.
+Începem să scoatem elemente din permutare și să calculăm rangul. Elementul $n$ va contribui cu $0 \leq x < n$, în funcție de poziția sa. Elementul $n-1$ va contribui cu $y \cdot n$, unde $0 \leq y < n - 1$. De exemplu, elementul $3$ poate contribui cu 0 (pentru cea mai din dreapta grupă de 4 permutări) sau cu 4 pentru a doua cea mai din dreapta grupă de 4. Elementul $n-2$ va contribui cu $z \cdot n(n-1)$, unde $0 \leq z < n - 2$. De exemplu, elementul $2$ va contribui cu 0 pentru cele 12 permutări din dreapta și cu 12 pentru cele 12 permutări din stînga.
+
+Cînd ajungem la un rang cel puțin egal cu $k$, ne oprim din eliminat. Scădem $k$ din rang și reinserăm elementele în ordinea impusă de rangul rămas. Practic, urcăm în arbore pînă cînd nodul curent subîntinde cel puțin $k$ frunze la dreapta.
 
 Nici măcar nu este nevoie de structuri de date pe vectori. Putem face operațiile de eliminare/inserare în  vector în $\bigoh(n)$, căci sînt puține. \href{https://www.nerdarena.ro/job_detail/807889?action=view-source}{Această sursă} ia 100p... dar de fapt greșește. Doar că testele din problema originală (\href{https://www.nerdarena.ro/problema/arbperm}{Arbperm}) nu expun cazul special care trebuie tratat. De aceea am creat problema Arbperm2, cu ultimul test modificat.
 
@@ -172,7 +174,7 @@ Dacă desenăm cîteva simboluri și urmărim unde se propagă ele prin hipersim
   \item O matrice impară este formată din patru sferturi identice și o cruce cu patru brațe identice.
 \end{itemize}
 
-Fie $L(n)$ numărul de libertăți al unei matrici, adică numărul de biți independenți pe care îi putem alege. Atunci:
+Începem să ne dăm seama că sîntem liberi să alegem niște biți, iar restul vor fi impuși. De aici rezultă că numărul de matrice hipersimetrice va fi o putere a lui 2, acesta fiind și motivul pentru care îl primim pe $k$ în baza 2. Fie $L(n)$ numărul de libertăți al unei matrici, adică numărul de biți independenți pe care îi putem alege. Atunci:
 
 \begin{itemize}
   \item $L(2k) = L(k)$ deoarece, după ce completăm un sfert, celelalte trei sînt impuse.
@@ -250,7 +252,7 @@ Nu am citit editorialul, dar este posibil ca la această problemă Comisia să f
 
 Pare natural să sortăm interogările, apoi să începem să emitem șirul de biți. Doar că nu îl vom emite unul cîte unul, ci în tranșe mai mari. La fiecare tranșă emisă, calculăm răspunsurile pentru interogările aflate în acea tranșă.
 
-Fie $N = 13$. Atunci vom emite, în această ordine, numerele cu 1, 2, 3, ..., 13 biți de 1. Să considerăm numerele cu 7 biți de 1. Cel de-al doilea criteriu este valoarea numărului. La rîndul ei, valoarea numărului este dată în primul rînd de lungimea numărului: un număr cu 7 biți de 1, de lungime totală 10, va fi cuprins între 513 și 1023 și va fi întotdeauna mai mic decît un număr cu 7 biți de 1, de lungime totală 11, care va fi cuprins între 1025 și 2047.
+Fie $n = 13$. Atunci vom emite, în această ordine, numerele cu 1, 2, 3, ..., 13 biți de 1. Să considerăm numerele cu 7 biți de 1. Cel de-al doilea criteriu este valoarea numărului. La rîndul ei, valoarea numărului este dată în primul rînd de lungimea numărului: un număr cu 7 biți de 1, de lungime totală 10, va fi cuprins între 513 și 1023 și va fi întotdeauna mai mic decît un număr cu 7 biți de 1, de lungime totală 11, care va fi cuprins între 1025 și 2047.
 
 Abordarea mea denumește \textbf{tranșă} o astfel de combinație de (număr de biți 1) × (lățimea numerelor). Algoritmul emite o tranșă de lățime $w$ biți în $\bigoh(1 + w \cdot \text{nr\_interogări})$. Deoarece numărul de tranșe este $\bigoh(n^2)$, va rezulta o complexitate totală de $\bigoh(n^2 + qn)$.
 

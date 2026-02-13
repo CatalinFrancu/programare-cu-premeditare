@@ -14,7 +14,7 @@ Vom discuta despre permutări și combinări. Aceleași principii se aplică și
   \item Rangul combinării de 5 luate cîte 3 (1 4 5) este 5. Combinările anterioare sînt (1 2 3), (1 2 4), (1 2 5), (1 3 4), (1 3 5).
 \end{itemize}
 
-Vom folosi termenii englezești \textit{ranking} pentru aflarea rangului unui obiect dat și \textit{unranking} pentru aflarea obiectului dîndu-i-se rangul. Ordinea lexicografică nu este unica posibilă. De exemplu, problema TODO Arbperm specifică altă ordine, iar în problemele TODO Invesort și TODO Four Chips sîntem liberi să ne alegem orice ordine, singurul scop fiind să mapăm permutări/combinări la întregi ca să ținem evidența obiectelor deja întîlnite.
+Vom folosi termenii englezești \textit{ranking} pentru aflarea rangului unui obiect dat și \textit{unranking} pentru aflarea obiectului dîndu-i-se rangul. Ordinea lexicografică nu este unica posibilă. De exemplu, problema \hyperref[problem:arbperm2]{Arbperm2} specifică altă ordine, iar în problemele \hyperref[problem:inversion-sort]{Inversion Sort} și \hyperref[problem:four-chips]{Four Chips} sîntem liberi să ne alegem orice ordine, singurul scop fiind să mapăm permutări/combinări la întregi ca să ținem evidența obiectelor deja întîlnite.
 
 \textbf{Următorul obiect} al unui obiect dat este obiectul de rang cu 1 mai mare. Exemple:
 
@@ -48,13 +48,13 @@ Complexitatea amortizată pentru mai multe apeluri este $\bigoh(1)$ (de ce?). Cr
 
 \subsection{\textit{Ranking}}
 
-Deoarece $21! > 2^{64}$, calculul complet este de interes doar pentru permutări de cel mult 20 de elemente (problema TODO Invesort). În rest, trebuie să operați cu ranguri fără a le calcula efectiv.
+Deoarece $21! > 2^{64}$, calculul complet este de interes doar pentru permutări de cel mult 20 de elemente (problema \hyperref[problem:inversion-sort]{Inversion Sort}). În rest, trebuie să operați cu ranguri fără a le calcula efectiv.
 
 Calculați manual rangul pe exemplul de mai sus (103679)! Vom deduce că întrebarea esențială este: pentru o poziție dată $k$, cîte valori mai mici decît $P(k)$ se află pe pozițiile anterioare?
 
 \subsection{\textit{Unranking}}
 
-Întrebarea de bază la \textit{unranking} este cea inversă: care este valoarea potrivită de așezat la poziția curentă? Ea va fi a $k-a$ valoare cu proprietatea că numărul de permutări care încep cu primele $k-1$ valori însumate nu depășește rangul dorit, dar dacă includem și a $k$-a valoare depășim rangul.
+Întrebarea de bază la \textit{unranking} este cea inversă: care este valoarea potrivită de așezat la poziția curentă? Ea va fi a $k$-a valoare cu proprietatea că numărul de permutări care încep cu primele $k-1$ valori însumate nu depășește rangul dorit, dar dacă includem și a $k$-a valoare depășim rangul.
 
 Pentru ordinea naturală (lexicografică), algoritmul se reduce la o împărțire la $(n-k)!$ și la întrebarea: care este a $k$-a cea mai mică valoare încă nescrisă la stînga poziției curente?
 
@@ -128,8 +128,8 @@ Dacă dorim să îi calculăm rangul lexicografic, atunci facem următoarele obs
   \item Există $C_{11}^1 = 11$ combinări care încep cu 4 7 8.
   \item \dots
   \item Există $C_{7}^1 = 7$ combinări care încep cu 4 7 12.
-  \item Există $C_{5}^0 = 1$ combinări care „încep cu” 4 7 13 14.
-  \item Există $C_{4}^0 = 1$ combinări care „încep cu” 4 7 13 15.
+  \item Există $C_{5}^0 = 1$ combinări care încep cu 4 7 13 14.
+  \item Există $C_{4}^0 = 1$ combinări care încep cu 4 7 13 15.
 \end{itemize}
 
 Rangul lui (4 7 13 16) este suma combinărilor de mai sus, adică 3241.
@@ -146,6 +146,80 @@ Putem reduce complexitatea la $\bigoh(k + \log n)$ folosind sume parțiale și c
 
 \subsection{\textit{Ranking} și \textit{unranking} colexicografic}
 
+O altă ordine notabilă este \href{https://en.wikiversity.org/wiki/Lexicographic_and_colexicographic_order}{ordinea colexicografică}. În acestă ordine, combinările sînt ordonate de la dreapta către stînga. Ne ajută mai mult să considerăm că elementele au valori între $0$ și $n-1$, iar pozițiile între $0$ și $k-1$, ca în tabelul următor:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \textbf{rang} & \textbf{combinare} & \textbf{proveniență}\\
+    \hline
+     0 & (0 1 2) & $C_0^1 + C_1^2 + C_2^3$ \\
+     1 & (0 1 3) & $C_0^1 + C_1^2 + C_3^3$ \\
+     2 & (0 2 3) & $C_0^1 + C_2^2 + C_3^3$ \\
+     3 & (1 2 3) & $C_1^1 + C_2^2 + C_3^3$ \\
+     4 & (0 1 4) & $C_0^1 + C_1^2 + C_4^3$ \\
+     5 & (0 2 4) & $C_0^1 + C_2^2 + C_4^3$ \\
+     6 & (1 2 4) & $C_1^1 + C_2^2 + C_4^3$ \\
+     7 & (0 3 4) & $C_0^1 + C_3^2 + C_4^3$ \\
+     8 & (1 3 4) & $C_1^1 + C_3^2 + C_4^3$ \\
+     9 & (2 3 4) & $C_2^1 + C_3^2 + C_4^3$ \\
+    10 & (0 1 5) & $C_0^1 + C_1^2 + C_5^3$ \\
+    11 & (0 2 5) & $C_0^1 + C_2^2 + C_5^3$ \\
+    12 & (1 2 5) & $C_1^1 + C_2^2 + C_5^3$ \\
+    13 & (0 3 5) & $C_0^1 + C_3^2 + C_5^3$ \\
+    14 & (1 3 5) & $C_1^1 + C_3^2 + C_5^3$ \\
+    15 & (2 3 5) & $C_2^1 + C_3^2 + C_5^3$ \\
+    16 & (0 4 5) & $C_0^1 + C_4^2 + C_5^3$ \\
+    17 & (1 4 5) & $C_1^1 + C_4^2 + C_5^3$ \\
+    18 & (2 4 5) & $C_2^1 + C_4^2 + C_5^3$ \\
+    19 & (3 4 5) & $C_3^1 + C_4^2 + C_5^3$ \\
+    \hline
+  \end{tabular}
+
+  \caption{Combinări de $n=6$ luate cîte $k=3$, ordonate colexicografic}
+\end{table}
+
+Calculul rangului unei combinări este facil în $\bigoh(k)$. Să luăm exemplul combinării $X$ = (2 3 5) și să procedăm de la dreapta la stînga.
+
+\begin{itemize}
+  \item Toate combinările terminate cu 2, 3 sau 4 vin înaintea lui $X$. Numărul lor este exact numărul de combinări care folosesc doar valorile 0, 1, 2, 3 sau 4, deci $C_5^3$.
+  \item Similar, combinările terminate cu ($a$ 5), unde $a < 3$, vin înaintea lui $X$. Numărul lor este $C_3^2$.
+  \item În sfîrșit, combinările terminate cu ($b$ 3 5), unde $b < 2$, vin înaintea lui $X$. Numărul lor este $C_2^1$. Astfel obținem rangul lui $X$, 10 + 3 + 2 = 15.
+\end{itemize}
+
+\begin{minted}{c}
+u64 rank_colex(int* c) {
+  u64 result = 0;
+  for (int i = 0; i < K; i++) {
+    result += choose[c[i]][i + 1];
+  }
+  return result;
+}
+\end{minted}
+
+Și partea de \textit{unranking} este simplă în $\bigoh(n)$. Să pornim cu rangul 5. Vom completa combinarea $X$ de la dreapta la stînga.
+
+\begin{itemize}
+  \item Ar putea ultima valoare să fie 5? Știm că există $C_5^3 = 10$ combinări care folosesc doar valorile 0-4 și toate ar trebui să vină înaintea lui $X$. Dar $10 > 5$, deci ultima valoare \textbf{nu} poate fi 5.
+  \item Ar putea ultima valoare să fie 4? Știm că există $C_4^3 = 4$ combinări care folosesc doar valorile 0-3 și toate ar trebui să vină înaintea lui $X$. Deoarece $4 \leq 5$, ultima valoare este 4. Scădem 4 din rang și dorim să aflăm permutarea de rang 1 dintre cele terminate cu 4.
+  \item Ar putea penultima valoare să fie 3? Știm că există $C_3^2 = 3$ moduri de a lua două din valorile 0-2 și toate ar trebui să vină înaintea lui $X$. Deoarece $3 > 1$, penultima valoare \textbf{nu} poate fi 3.
+  \item Ar putea penultima valoare să fie 2? Știm că există $C_2^2 = 1$ mod de a lua două din valorile 0-1 și el ar trebui să vină înaintea lui $X$. Deoarece $1 \leq 1$, penultima valoare este 2. Scădem 1 din rang și dorim să aflăm permutarea de rang 0 dintre cele terminate cu 2 4.
+  \item Similar raționăm că prima valoare nu poate fi 1, dar va fi 0. Aflăm că $X$ = (0 2 4).
+\end{itemize}
+
+\begin{minted}{c}
+void unrank_colex(u64 rank, int* dest) {
+  int n = N - 1;
+  for (int k = K; k; k--) {
+    while (choose[n][k] > rank) {
+      n--;
+    }
+    rank -= choose[n][k];
+    dest[k - 1] = n;
+  }
+}
+\end{minted}
+
 \label{problem:combinatorics-comb-rank}
 
-O altă ordine notabilă este \href{https://en.wikiversity.org/wiki/Lexicographic_and_colexicographic_order}{ordinea colexicografică}. Pentru un exemplu complet cu $n=6$ și $k=3$, expandați secțiunea \textit{3-subsets of a 6-set}. Vom studia \hyperref[code:combinatorics-comb-rank]{implementarea}, care este trivială în $\bigoh(k)$ pentru \textit{ranking} și $\bigoh(n)$ pentru \textit{unranking}.
+\hyperref[code:combinatorics-comb-rank]{Implementarea completă} este anexată.
