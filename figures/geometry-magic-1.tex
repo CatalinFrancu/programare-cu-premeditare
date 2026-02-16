@@ -1,0 +1,27 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[scale=0.8, every node/.style={scale=0.8}]
+    \coordinate (O) at (0,0);
+    \coordinate (X) at (10,0);
+    \coordinate (A) at (1,4);
+    \coordinate (A0) at ($(O)!(A)!(X)$);
+    \coordinate (B1) at (4,3.5);
+    \coordinate (B2) at (4,1.7);
+    \coordinate (P) at (9,0);
+
+    \fill (A) circle(0.05) node[left] {$A$};
+    \fill (B1) circle(0.05) node[above right] {$B_1$};
+    \fill (B2) circle(0.05) node[below left] {$B_2$};
+    \fill (P) circle(0.05) node[above] {$P$};
+
+    \draw[-{Stealth}] (O) -- (X);
+    \draw (A) -- (A0);
+    \draw (A) -- (P);
+    \draw[dashed] (B1) -- (B2);
+    \draw (B2) -- ($(O)!(B1)!(X)$);
+  \end{tikzpicture}
+
+  \caption{Privind din punctul $P$, stîlpul $B_1$ maschează stîlpul $A$ complet, dar stîlpul $B_2$ nu. De aceea, vrăjitorul $P$ l-ar prefera pe $B_1$ față de $A$ ca mentor, dar l-ar prefera pe $A$ față de $B_2$.}
+  \label{fig:geometry-magic-1}
+\end{figure}

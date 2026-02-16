@@ -1,0 +1,32 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={scale=0.8},
+    label distance=3mm,
+    point/.style = { circle, fill, inner sep=2.5pt },
+    ]
+    % coordinate system
+    \draw[->] (-0.2,0) -- (10,0) node[right]{$x$};
+    \draw[->] (0,-0.2) -- (0,8) node[above]{$y$};
+    \node at (0,0) [below left=2mm] {$O$};
+
+    % points P, P' and P''
+    \coordinate[label=below right:$P$] (P) at (5,3);
+    \coordinate[label=above:$P'$] (P2) at (6,7);
+    \coordinate[label=left:$P''$] (P3) at (1,2);
+    \node at (P)[point] {};
+    \node at (P2)[point] {};
+    \node at (P3)[point] {};
+    \draw (P2) -- (P) -- (P3);
+
+    % rays through P, P' and P''
+    \draw[very thin] (0,0) -- ($(0,0)!1.6!(P)$);
+    \draw[very thin] (0,0) -- ($(0,0)!1.1!(P2)$);
+    \draw[very thin] (0,0) -- ($(0,0)!4!(P3)$);
+  \end{tikzpicture}
+
+  \caption{}
+  \label{fig:geometry-ydist-4}
+\end{figure}

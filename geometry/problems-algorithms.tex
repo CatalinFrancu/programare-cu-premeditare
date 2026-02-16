@@ -1,0 +1,253 @@
+\section{Probleme}
+
+\subsection{Problema Copaci (Infoarena)}
+\label{problem:copaci}
+
+\href{https://infoarena.ro/problema/copaci}{enunț}
+$\bullet$
+\hyperref[code:copaci]{sursă}
+
+Soluția aplică direct Teorema lui Pick.
+
+\subsection{Problema Emptri (Lot 2015)}
+\label{problem:emptri}
+
+\href{https://kilonova.ro/problems/1960}{enunț}
+$\bullet$
+\hyperref[code:emptri]{sursă}
+
+Teorema lui Pick ne pune pe direcția corectă. Dorim ca $I = 0$ și $B = 3$, de unde rezultă $A = \frac{1}{2}$. Restul este contabilitate. Fie cele două puncte $(a,b)$ și $(c,d)$ și fie $c \leq a$. Aria triunghiului va fi $\frac{1}{2} |ad - bc|$, calculabilă prin orice metodă preferați. Așadar, dorim ca $ad - bc = \pm 1$. Mai mult, trebuie ca $b \leq a$ și $\text{gcd}(a, b) = 1$, căci altfel segmentul $(0,0)-(a,b)$ va conține puncte în plus.
+
+Încercînd să găsesc o soluție în $\bigoh(n^2)$, m-am împiedicat de cea în $\bigoh(n \log \log n)$. Să fixăm valorile $a$ și $b$. Cîte variante există pentru $c$ și $d$? Observăm că formula $ad - bc = 1$, tocmai pentru că $a$ și $b$ sînt coprime, „seamănă” cu \href{https://en.wikipedia.org/wiki/B\%C3\%A9zout\%27s_identity}{Identitatea lui Bézout} și/sau algoritmul lui \href{https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm}{Euclid extins}, din care știm că soluția este unică modulo $a$. Similar, va exista o soluție unică și pentru $ac - bd = -1$.
+
+De exemplu, pentru punctul $(a,b) = (5,2)$ obținem ecuațiile $5d - 2c = \pm 1$, care ne dă punctele $(c,d) = (2,1)$ și respectiv $(c,d) = (3,1)$.
+
+Dacă pentru fiecare pereche de numere coprime $(a,b)$ există fix două soluții, rezultă că trebuie doar să numărăm aceste perechi. Pentru aceasta ne folosim de funcția Euler, căci prin definiție $\varphi(a)$ este exact numărul de valori $b$ coprime cu $a$. Răspunsul final este suma valorilor $\varphi(a)$, dublată conform raționamentului de mai sus, și +1 pentru triunghiul special $(0,0)-(1,0)-(1,1)$:
+
+$$R = 1 + 2 \sum_{a=2}^{n} \varphi(a)$$
+
+Soluția oficială (descărcabilă de pe Infoarena) pomenește despre \href{https://en.wikipedia.org/wiki/Farey_sequence}{secvențe Farey}. Nu știu ce sînt acelea, misiunea mea se încheie aici. \emoji{slightly-smiling-face}
+
+\subsection{Problema Înfășurătoare convexă (Infoarena)}
+\label{problem:infasuratoare-convexa-1}
+
+\href{https://www.infoarena.ro/problema/infasuratoare}{enunț}
+$\bullet$
+\hyperref[code:infasuratoare-convexa-1]{sursă}
+
+Aceasta este o problemă educațională. Enunțul este permisiv: el promite că nu vor exista puncte coliniare pe înfășurătoare. Funcția \ccode{graham_scan()} implementează strict algoritmul de stivă ordonată, în 10 linii de cod. Orice detalii dorim, le putem obține din sortarea atentă a punctelor. Apoi, algoritmul
+
+\begin{itemize}
+  \item nu are cazuri particulare;
+  \item nu procedează diferit pe jumătatea de sus și pe cea de jos;
+  \item nu tratează special niciun punct în afară de primul.
+\end{itemize}
+
+\subsection{Problema Înfășurătoare convexă (NerdArena)}
+\label{problem:infasuratoare-convexa-2}
+
+\href{https://www.nerdarena.ro/problema/infasuratoare}{enunț}
+$\bullet$
+\hyperref[code:infasuratoare-convexa-2]{sursă}
+
+Problema este aproape identică cu precedenta. Enunțul este mai strict și ne cere să nu includem puncte pe laturile înfășurătorii, ci doar în colțuri. Este nevoie de un \ccode{if} în plus la sortare (la unghi polar egal, luăm în calcul și distanța față de \ccode{p[0]}). De asemenea, trebuie să folosim operatorul corect la scoaterea din stivă, ca să excludem punctele de pe laturile înfășurătorii.
+
+\subsection{Problema Magic (JBOI 2023)}
+\label{problem:magic}
+
+\href{https://kilonova.ro/problems/2022}{enunț}
+$\bullet$
+\hyperref[code:magic]{sursă}
+
+Problema este încadrată la o tehnică numită \textit{Convex Hull Trick}. Puteți citi mai multe despre CHT pe \href{https://codeforces.com/blog/entry/63823}{Codeforces} (de exemplu). Mărturisesc că nu înțeleg diferența față de algoritmul normal de înfășurătoare convexă. Este fix aceeași abordare cu o stivă ordonată. În plus, mă nemulțumesc termenii ca „trick” și „șmen”, pentru că ei induc noțiunea falsă că algoritmica este o colecție de trucuri și șmenuri.
+
+Reducerea la geometrie computațională este destul de clară. Vrăjitorului $i$ îi corespunde punctul în plan $(x_i, e_i)$. Pentru fiecare vrăjitor $i$, trebuie să aflăm un alt vrăjitor $j$ pentru care panta $(x_j, e_j)-(x_i, 0)$ este maximă. Vom rezolva întîi problema la stînga ($j < i$). Pentru a rezolva problema la dreapta, vom oglindi toate coordonatele $x$ și vom reapela aceeași rutină, ca să nu duplicăm cod. La final, vom oglindi la loc coordonatele $x$ ca să tipărim răspunsurile în ordinea corectă.
+
+Să ne imaginăm că vrăjitorul $i$ locuiește în vîrful unui stîlp de înălțime $e_i$ la coordonata $x_i$. Stîlpii maschează parțial sau complet alți stîlpi aflați dincolo de ei. Pentru a alege un mentor la stînga, vrăjitorul $i$ trebuie să coboare la baza stîlpului și să „privească în sus” căutînd stîlpul al cărui vîrf face unghi maxim cu orizontala.
+
+Fie $P$ punctul vrăjitorului curent. Cînd comparăm doi mentori posibili, $A$ și $B$, unde $x_A < x_B < x_P$, $P$ îl va prefera pe $A$ dacă $B$ se află sub segmentul $AP$; altfel $P$ îl va prefera pe $B$. Echivalent, vrăjitorul $A$ va fi preferabil tuturor vrăjitorilor de sub linia $AP$.
+
+\import{./figures}{geometry-magic-1.tex}
+
+Să considerăm acum un exemplu mai complex. În figura \ref{fig:geometry-magic-2}, fiecare vrăjitor de la $A$ la $F$ este mentor pentru vecinul său din dreapta. Remarcăm că arcul $ABCDEF$ este convex. Pentru claritate, am împărțit zona de deasupra arcului în triunghiuri.
+
+\import{./figures}{geometry-magic-2.tex}
+
+Fiecare vrăjitor va fi mentor pentru punctele din triunghiul corespunzător. De exemplu, triunghiul lui $B$ este colorat cu gri. Ce avem de făcut cînd procesăm următorul vrăjitor, $P$? Mai întîi, stînd la $(x_P, 0)$, „privim în sus” către cel mai de sus vrăjitor vizibil. În figură, acela este vrăjitorul $D$, deci îl alegem pe $D$ ca mentor la stînga pentru $P$. Dar putem face mai mult decît atît. Deoarece $x_P > x_{DE}$, vrăjitorul $P$ este în afara triunghiurilor lui $E$ și $F$. \textbf{Indiferent cît de înalt este stîlpul lui $P$}, vrăjitorii $E$ și $F$ nu vor mai fi niciodată mentori pentru coordonate $x > x_P$.
+
+Mai mult, punctul $P(x_P, e_P)$ se află în triunghiul vrăjitorului $B$. Aceasta ne spune că nici vrăjitorii $C$ și $D$ nu vor mai fi vreodată mentori pentru valori mai mari ale lui $x$, deoarece stîlpul lui $P$ separă punctul $C$ de porțiunea din triungi de coordonate $x > x_P$ (și similar pentru $D$). Pentru acele coordonate, doar $A$, $B$ și $P$ mai pot fi mentori.
+
+În practică, vom menține o stivă de vrăjitori care mai au vreo șansă să fie mentori pe viitor. Cînd procesăm vrăjitorul curent $P$, ștergem din vîrful stivei toți vrăjitorii care devin invizibili. Există un mod mai simplu de a decide dacă un vrăjitor trebuie șters, unul care folosește doar testul de orientare stînga-dreapta. Examinăm ultimii doi vrăjitori de pe stivă, $X$ și $Y$. Dacă $\angle XYP$ este reflex (mai mare decît $180\degree$, atunci îl ștergem pe $Y$. Acest proces este echivalent cu raționamentul bazat pe triunghiuri din figura \ref{fig:geometry-magic-1}.
+
+\import{./figures}{geometry-magic-3.tex}
+
+Deoarece fiecare vrăjitor poate fi șters din stivă o singură dată, complexitatea amortizată este $\bigoh(n)$.
+
+\subsection{Problema Triangular Queries (CodeChef)}
+\label{problem:triangular-queries}
+
+\href{https://www.codechef.com/problems/TRIQUERY}{enunț}
+$\bullet$
+\hyperref[code:triangular-queries]{sursă}
+
+Problema nu este de geometrie, dar ilustrează bine conceptul de „eveniment”.
+
+Ideea de baleiere ia naștere din observația că ne este mai simplu să ținem evidența punctelor dacă avem garanția că toate sînt de aceeași parte a liniei de baleiere. Putem alege multe direcții de baleiere; eu am ales direcția NE $\to$ SV. Așadar, considerăm o dreaptă orientată de la NV la SE, care va avea ecuația $x + y = a$, și o translatăm de la $a = +\infty$ la $a = -\infty$.
+
+Să considerăm o interogare, reprezentată în figura de mai jos prin triunghiul $E$. Iau naștere șase zone marcate cu literele $A \dots F$:
+
+\import{./figures}{geometry-triangular-queries.tex}
+
+Calculăm numărul de puncte din $E$ prin diferență:
+\begin{align*}
+E &= (B + E) - B\\
+&= [(A + B + C + D + E + F) - (A + D) - (C + F)] - [(A + B + C) -  (A) - (C)]
+\end{align*}
+
+Toate cele 6 cantități din paranteze sînt ușor disponibile, dar la două momente diferite în timp. Cînd procesăm diagonala  de sumă $x + y + d$ (cea de sus), atunci:
+
+\begin{itemize}
+  \item $A + B + C$ este pur și simplu numărul de puncte văzute pînă atunci.
+  \item $A$ este numărul de puncte de coordonată $x$ mai mică decît $x$-ul interogării. Putem menține ușor această informație într-un AIB.
+  \item $C$  este numărul de puncte de coordonată $y$ mai mică decît $y$-ul interogării. De asemenea, putem menține această informație într-un AIB.
+\end{itemize}
+
+Similar putem afla celelalte cantități cînd procesăm diagonala de sumă $x + y$ (cea de jos). Rezultă că iau naștere trei tipuri de evenimente pe măsură ce linia de baleiere avansează:
+
+\begin{enumerate}
+  \item Întîlnim un punct nou.
+  \item Întîlnim începutul unei interogări (ipotenuza triunghiului).
+  \item Întîlnim sfîrșitul unei interogări (vîrful dreptunghic al triunghiului).
+\end{enumerate}
+
+O necesitate tipică pentru multe probleme este să clarificăm în ce ordine procesăm mai multe evenimente care survin la aceeași coordonată. În cazul nostru,
+
+\begin{itemize}
+  \item Un punct nou trebuie procesat \textbf{după} ce procesăm orice bază care îl conține. Altfel îl vom scădea la contorizarea punctelor din triunghi, ceea ce este incorect.
+  \item Un punct nou trebuie procesat \textbf{înainte} să procesăm vîrful dreptunghic al oricărui triunghi care se suprapune peste punct. De data aceasta vrem să contorizăm punctul.
+  \item Între baza unui triunghi și vîrful altuia care coexistă pe aceeași linie de baleiere nu există niciun conflict; le putem procesa în orice ordine.
+\end{itemize}
+
+Pentru claritate, vă îndemn să definiți și să colectați explicit evenimentele. La procesarea unui eveniment, în funcție de tipul său, apelați o funcție bine denumită. Atunci scrierea programului devine ușoară.
+
+\subsection{Problema Hill Walk (USACO Gold 2013)}
+\label{problem:hill-walk}
+
+\href{https://usaco.org/index.php?page=viewproblem2\&cpid=266}{enunț}
+$\bullet$
+\hyperref[code:hill-walk]{sursă}
+
+Vom face o baleiere de la stînga la dreapta, în care evenimentele sînt cele $2n$ capete de interval, ordonate după $x$. La poziția curentă a liniei de baleiere dorim să avem evidența intervalelor active, ordonate de jos în sus. Atunci ne trebuie o structură de date care să admită operațiile:
+
+\begin{enumerate}
+  \item Adaugă un interval (cînd întîlnim un eveniment de tip capăt stîng).
+  \item Șterge un interval (cînd întîlnim un eveniment de tip capăt drept).
+  \item Dă-mi intervalul anterior celui tocmai șters (pentru a actualiza poziția lui Bessie cînd intervalul ei curent se termină).
+\end{enumerate}
+
+Implementarea este destul de alunecoasă. Intuitiv, am vrea să sortăm intervalele de la „jos” la „sus”. Deci operatorul $a < b$ ar trebui să returneze \ccode{true} dacă și numai dacă $a$ este poziționat „dedesubtul lui” $b$. Dacă două intervale acoperă un $x$ comun (cu alte cuvinte, dacă proiecțiile lor pe axa $Ox$ se suprapun), atunci noțiunea de „dedesubt” este bine definită și poate fi determinată folosind testul standard de orientare trigonometrică.
+
+Dacă două intervale sînt disjuncte pe $x$, atunci noțiunea de „dedesubt” nu este bine definită. În special, nu putem încerca o sortare a tuturor celor $n$ intervale simultan, căci relația de ordine este parțială, nu totală. Este important să comparăm doar intervale care coexistă la o coordonată $x$.
+
+Putem folosi un \ccode{set} și operatorul \ccode{<} redefinit ca test de orientare.
+
+\subsection{Problema Ydist (Lot 2014)}
+\label{problem:ydist}
+
+\href{https://kilonova.ro/problems/2010}{enunț}
+$\bullet$
+\hyperref[code:ydist]{sursă}
+
+Problema ne dă $n$ puncte în plan și $q$ raze (semidrepte) pornind din origine, toate aflate în cadranul I. Pentru fiecare rază, trebuie să determinăm distanța minimă pe verticală pînă la un punct aflat deasupra razei.
+
+Problema este una de baleiere; ne gîndim la asta pentru că este mult mai simplu să răspundem la o întrebare (constînd dintr-o rază) cînd pînă acum am procesat doar puncte aflate deasupra razei. Din același motiv, vom face baleierea în ordine invers polară (de la $90\degree$ spre $0\degree$).
+
+\subsubsection*{Conceptul de baleiere}
+
+Așadar, avem de procesat două tipuri de evenimente: (1) apare un punct nou și (2) trebuie să răspundem la o interogare. Să considerăm un moment al baleierii, ilustrat în figura \ref{fig:geometry-ydist-1}. Fie $R$ o interogare și fie $P$ răspunsul la interogare. Ce putem spune despre restul planului? Mai exact, unde se pot afla puncte, unde nu se pot afla, și pe care le putem șterge?
+
+\import{./figures}{geometry-ydist-1.tex}
+
+\begin{enumerate}
+  \item Nu se pot afla puncte în zona hașurată de sub $P$, situată între $R$ și paralela la $R$ prin $P$. Dacă ar exista vreun punct în acea zonă, el ar fi mai aproape de $R$ decît $P$, deci el ar fi răspunsul.
+
+  \item Dacă există puncte în zona hașurată la nord-est de $P$, ele pot fi șterse, așa cum este cazul lui $A$. Punctul $A$ este mai departe de $R$ decît $P$. Mai mult, pe măsură ce raza de baleiere coboară, ea se va îndepărta de $A$ mai repede decît de $P$. Cu alte cuvinte, niciodată în viitor $A$ nu va mai putea fi răspunsul la vreo interogare.
+
+  \item Dacă există puncte în zona hașurată la nord-vest de $P$, ele pot fi șterse, așa cum este cazul lui $B$. Punctul $B$ este, în prezent, mai departe de $R$ decît $P$. Pe măsură ce raza de baleiere coboară, $B$ recuperează din diferență. Dar la ce moment va egala el situația? La ce moment se vor afla $B$ și $P$ la distanțe egale de raza de baleiere? Doar atunci cînd raza va fi paralelă cu $BP$... adică niciodată. Așadar, nici $B$ nu va mai fi vreodată răspunsul la o interogare.
+\end{enumerate}
+
+\subsubsection*{Ordonarea după $x$ și $y$}
+
+Astfel ne vine ideea să menținem un set de \textit{puncte-candidat}: puncte care ar mai putea fi vreodată răspunsul la o interogare viitoare. Aceste puncte candidat se pot afla doar în triunghiul de la vest de $P$. Să privim din nou Figura 1. Fie $P'$ cel mai din dreapta punct-candidat, cu excepția lui $P$. Punctului $P'$ i se aplică aceeași regulă ca și lui $P$: punctele la nord-vest de el pot fi șterse. Așadar, următorul punct-candidat, $P''$, se va afla la sud-vest de $P'$.
+
+Am demonstrat astfel că punctele-candidat sînt ordonate după $x$ și după $y$.
+
+Dacă ați avut în acest moment intuiția că putem menține punctele-candidat folosind o simplă stivă ordonată, sînteți pe drumul cel bun. Dar mai avem de demonstrat două  lucruri.
+
+\subsubsection*{Concavitatea}
+
+Prima întrebare este: cînd primim o interogare, care dintre punctele-candidat este răspunsul? Trebuie să le evaluăm pe toate? Poate exista o situație ca cea din figura \ref{fig:geometry-ydist-2}, în care punctele ba se apropie, ba se depărtează de raza de baleiere?
+
+\import{./figures}{geometry-ydist-2.tex}
+
+Răspunsul este „nu”. Curba punctelor-candidat este concavă (are forma literei U). (Fapt divers: Aici am pierdut circa 30 de minute încercînd să demonstrez că curba ar fi convexă...) Să urmărim figura \ref{fig:geometry-ydist-3}, în care vedem 3 puncte-candidat $A$, $B$ și $C$ într-o formă convexă. Să încercăm să obținem o contradicție.
+
+\import{./figures}{geometry-ydist-3.tex}
+
+Există două raze de interes, $d_{AB} \parallel AB$ și $d_{BC} \parallel BC$. Să observăm că $B$ este preferabil lui $A$ (adică mai aproape de rază) doar pentru razele de deasupra lui $d_{AB}$ (unghiul roșu).  Similar, $B$ este preferabil lui $C$ doar pentru razele de sub $d_{BC}$ (unghiul albastru). Intersecția celor două unghiuri este vidă, așa că nu există niciun moment cînd $B$ să le fie preferabil și lui $A$, și lui $C$. El poate fi șters. Astfel am demonstrat că lista punctelor-candidat este convexă.
+
+De aici deducem că distanța la o rază, cînd iterăm prin toate punctele-candidat, este bitonă: ea scade pornind de la extreme spre centru. De aceea, putem aplica algoritmul clasic de eliminare din stiva ordonată: cînd primim o interogare, eliminăm ultimul punct din vîrful stivei cît timp penultimul punct are o distanță mai mică pînă la interogare.
+
+\subsubsection*{Ordonarea polară}
+
+Ultima observație necesară privește inserarea punctelor. Cînd linia de baleiere întîlnește un nou punct $P$, unde este locul lui în lista de candidați? Poate fi undeva la mijloc, cauzînd o inserare în $\mathcal{O}(n)$?
+
+Răspunsul este „nu”. Punctul $P$ va avea cel mai mic unghi polar de pînă acum (căci baleierea este polară), iar lista punctelor-candidat este ordonată polar. Ca să ne convingem, să urmărim figura \ref{fig:geometry-ydist-4}.
+
+\import{./figures}{geometry-ydist-4.tex}
+
+Punctul $P$ este cel mai recent descoperit de raza de baleiere. Să presupunem că locul său, conform sortării după $x$ sau $y$, ar fi între punctele anterioare $P'$ și $P''$. Dar acum să observăm că, de fapt, puncul $P'$ se află exact în situația punctului $A$ din Figura 1. El nu va mai fi niciodată răspunsul la o interogare și îl putem șterge.
+
+Aceasta este o veste bună. Punctul nou venit $P$ se va așeza întotdeauna în vîrful unui stive. În prealabil, el elimină din stivă punctele care încalcă ordonarea polară / după $x$ / după $y$.
+
+\subsection{Problema Fossil in the Ice (CodeChef)}
+\label{problem:fossil-in-the-ice}
+
+\href{https://www.codechef.com/problems/TFOSS}{enunț}
+$\bullet$
+\hyperref[code:fossil-in-the-ice]{sursă}
+
+Problema ne cere să găsim diametrul unui poligon.
+
+Să fixăm un vîrf $i$ al poligonului. Cum am putea găsi vîrful $j$ cel mai depărtat de $i$? Remarcăm că, dacă pornim din $i$ și parcurgem complet poligonul, distanța de $i$ este bitonă: întîi crește, atinge maximul în vîrful $j$ dorit, apoi scade. Deci am putea face o căutare binară.
+
+Așadar, o primă soluție ar fi să facem $n$ căutări binare, cîte una pornind din fiecare vîrf $i$. Dar, dacă avem reflexul de la two pointers bine format, știm că $j$ avansează pe măsură ce $i$ avansează. Mai exact, odată ce găsim punctul cel mai depărtat de $P[0]$ în $\bigoh(n)$, putem găsi restul punctelor cele mai depărtate de $P[1], P[2], \dots$ în $\bigoh(1)$ amortizat.
+
+\subsection{Problema Rubarba (Infoarena)}
+\label{problem:rubarba}
+
+\href{https://infoarena.ro/problema/rubarba}{enunț}
+$\bullet$
+\hyperref[code:rubarba]{sursă}
+
+Aceasta este exact problema dreptunghiului de arie minimă care cuprinde o mulțime de puncte.
+
+Începem prin a calcula înfășurătoarea convexă. Acum, facem două observații:
+
+\begin{enumerate}
+  \item Fiecare latură a dreptunghiului va conține cel puțin un vîrf. Demonstrația este banală: dacă o latură nu ar conține niciun vîrf, am putea restrînge dreptunghiul din acea direcție.
+
+  \item Există o latură a dreptunghiului care conține o latură a poligonului. Această demonstrație este netrivială, dar \href{https://dl.acm.org/doi/10.1145/360881.360919}{articolul original} demonstrează că, în caz contrar, putem roti dreptunghiul pînă cînd se sprijină pe o latură a poligonului, iar aria dreptunghiului va scădea.
+\end{enumerate}
+
+De aici, raționamentul seamănă cu cel anterior. Considerăm pe rînd fiecare latură-suport, între două vîrfuri consecutive $i$ și $i+1$ (iar la final, circular, între $n-1$ și $0$). Raportat la direcția acelei laturi, aflăm punctul cel mai depărtat. Am putea afla acel punct printr-o căutare binară, căci distanța de la vîrfuri la latura-suport este bitonă cînd parcurgem poligonul. Distanța maximă găsită ne dă înălțimea dreptunghiului. Prin procedee diferite, dar asemănătoare, putem căuta binar punctul cel mai din stînga și cel mai din dreapta relativ la latura-suport.
+
+De aici, ne dăm seama că putem aplica metoda șublerului rotitor ca să trecem de la o latură-suport la următoarea în $\bigoh(1)$ amortizat. Implementarea mea răspunde elegant (zisei eu cu modestie) la întrebările aparent complexe „Care este punctul cel mai din stînga/dreapta relativ la latura-suport?” și „Care este aria unui dreptunghi rotit?”.
+
+Codul meu are un bug de eficiență, chiar în funcția \ccode{rotating_calipers()}. Îl vedeți?
+
+\begin{turn}{180}
+  \begin{minipage}{\linewidth}
+    Punctul $r$ evoluează corect, avansînd de la poziția anterioară, dar punctele $a$ și $l$ sînt recalculate complet la fiecare iterație. Din fericire, testele nu pedepsesc această greșeală. \href{https://infoarena.ro/job_detail/3291367?action=view-source}{Această versiune} repară bugul eliminînd reinițializările lui $a$ și $l$. Este nevoie de un \ccode{if} ca să decidem dacă $l$ a fost calculat anterior sau nu.
+  \end{minipage}
+\end{turn}

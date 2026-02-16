@@ -1,0 +1,53 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[scale=0.8, every node/.style={scale=0.8}]
+    \coordinate (O) at (0,0);
+    \coordinate (X) at (10,0);
+    \coordinate (A) at (1,4);
+    \coordinate (AB) at (13,0);
+    \coordinate (B) at ($(A)!0.1!(AB)$); % 10% from A and 90% from AB
+    \coordinate (BC) at (11.0,0);
+    \coordinate (C) at ($(B)!0.2!(BC)$);
+    \coordinate (CD) at (9,0);
+    \coordinate (D) at ($(C)!0.2!(CD)$);
+    \coordinate (DE) at (7.5,0);
+    \coordinate (E) at ($(D)!0.2!(DE)$);
+    \coordinate (EF) at (6.7,0);
+    \coordinate (F) at ($(E)!0.4!(EF)$);
+    \coordinate (P) at (7.9, 1.5);
+    \coordinate (XP) at ($(O)!(P)!(X)$);
+
+    \fill (A) circle(0.05) node[below left] {$A$};
+    \fill (B) circle(0.05) node[below left] {$B$};
+    \fill (C) circle(0.05) node[below left] {$C$};
+    \fill (D) circle(0.05) node[below left] {$D$};
+    \fill (E) circle(0.05) node[below left] {$E$};
+    \fill (F) circle(0.05) node[below left] {$F$};
+    \fill (P) circle(0.05) node[below right] {$P$};
+    \fill (XP) circle(0.05) node[below right] {$x_P$};
+
+    \draw[-{Stealth}] (O) -- (X);
+    \draw (A) -- (B) -- (C) -- (D) -- (E) -- (F);
+    \draw[dashed] (C) -- (P);
+    \draw[dashed] (D) -- (P);
+    \draw[dashed] (E) -- (XP);
+    \draw[dashed] (F) -- (XP);
+    \draw[dashed] (P) -- (XP);
+
+    \begin{scope}[
+      myangle/.style = {
+        angle radius=.15cm,
+        draw=red,
+        fill=red,
+      }]
+      \pic[myangle] {angle=B--C--P};
+      \pic[myangle] {angle=C--D--P};
+      \pic[myangle] {angle=D--E--XP};
+      \pic[myangle] {angle=E--F--XP};
+    \end{scope}
+  \end{tikzpicture}
+
+  \caption{Punctul $(x_P, 0)$ șterge vrăjitorii $F$ și $E$ din stivă. Apoi, punctul $P$ șterge vrăjitorii $D$ și $C$ din stivă. Unghiurile marcate cu roșu sînt reflexe.}
+  \label{fig:geometry-magic-3}
+\end{figure}

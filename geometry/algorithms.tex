@@ -1,0 +1,69 @@
+\chapter{Algoritmi specifici}
+
+\section{Teorema lui Pick}
+
+Teorema lui Pick (\href{https://en.wikipedia.org/wiki/Pick's_theorem}{Wikipedia}, \href{https://cp-algorithms.com/geometry/picks-theorem.html}{CP Algorithms}) definește o relație între aria unui poligon cu vîrfuri de coordonate întregi (numit și poligon laticeal) și numărul de puncte laticeale din interiorul său și de pe conturul său. Dacă poligonul are $I$ puncte laticeale interioare și $B$ puncte pe contur (engl. \textit{boundary}), atunci aria sa $A$ este:
+
+$$A = I + \frac{B}{2} - 1$$
+
+Demonstrația nu este grea, dar este laborioasă. Ea demonstrează corectitudinea formulei de la figuri simple spre complexe:
+
+\begin{enumerate}
+  \item Dreptunghiuri cu laturile paralele cu axele.
+  \item Triunghiuri dreptunghice cu laturile paralele cu axele.
+  \item Triunghiuri oarecare, prin completarea lor, în exterior, cu triunghiuri dreptunghice pentru a forma un dreptunghi.
+  \item Poligoane oarecare, prin triangulare.
+\end{enumerate}
+
+\section{Înfășurătoarea convexă}
+
+Definiție: \textbf{Înfășurătoarea convexă} a unei mulțimi de $n$ puncte este cel mai mic poligon convex care include mulțimea, pe contur sau în interior.
+
+Vom descrie trei algoritmi clasici:
+
+\begin{enumerate}
+  \item \href{https://en.wikipedia.org/wiki/Graham_scan}{Graham scan}, de complexitate $\bigoh(n \log n)$.
+  \item \href{https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain}{Lanțuri monotone}, tot de complexitate $\bigoh(n \log n)$.
+  \item \href{https://en.wikipedia.org/wiki/Gift_wrapping_algorithm}{Împachetarea cadoului} (numit și „marșul lui Jarvis”), de complexitate $\bigoh(n \cdot h)$.
+\end{enumerate}
+
+Complexitatea $\bigoh(n \log n)$ este optimă. Dacă ar exista un algoritm asimptotic mai bun, l-am putea folosi ca să sortăm numere mai rapid decît $\bigoh(n \log n)$. Fie $v[1...n]$ vectorul de sortat. Pentru fiecare element $v[i]$ creăm un punct în plan $(v[i], v[i]^2)$. Calculăm înfășurătoarea convexă a mulțimii de puncte. Cum punctele sînt pe o parabolă, toate vor fi pe înfășurătoarea convexă, care va enumera aceste puncte în ordine... adică va sorta vectorul $v$.
+
+Ca la multe alte implementări de geometrie computațională, dificultatea constă în evitarea cazurilor particulare.
+
+\section{Algoritmi de baleiere}
+
+Un \textbf{algoritm de baleiere} (engl. \textit{sweep line algorithm}) este o tehnică prin care iterăm printr-o colecție de obiecte (puncte, segmente, dreptunghiuri etc.) prin translatarea în plan a unei drepte imaginare, de exemplu prin translatarea orizontală a unei drepte verticale. Menținem o structură de date relevantă pentru poziția curentă a dreptei. Examinăm momentele în care dreapta atinge o poziție notabilă: coordonata unui punct, extremitatea stîngă sau dreaptă a unui dreptunghi etc. Aceste momente se numesc \textbf{evenimente}. Pentru fiecare eveniment actualizăm structura de date, ceea ce de regulă ne permite să actualizăm și răspunsul la problemă.
+
+Folosim această tehnică pentru a obține timpi de rulare asimptotic mai buni decît cu o soluție naivă. \href{https://en.wikipedia.org/wiki/Sweep_line_algorithm}{Wikipedia} oferă puțin context istoric și un exemplu vizual pentru calculul diagramelor Voronoi.
+
+Unele dintre problemele de baleiere necesită efectiv geometrie computațională, folosind formule pentru intersecții, orientări etc. Altele sînt rezolvabile și fără, doar cu menținerea unor structuri de date peste numere întregi.
+
+Vom discuta teoretic două probleme clasice:
+
+\begin{enumerate}
+  \item Dîndu-se o colecție de $n$ segmente, găsiți două care se intersectează sau raportați că nu există nicio intersecție. Puteți găsi explicații în detaliu pe \href{https://cp-algorithms.com/geometry/intersecting_segments.html}{CP Algorithms} și o prezentare cu mai multă grafică \href{https://www.cs.rpi.edu/~cutler/classes/computationalgeometry/F23/lectures/02_line_segment_intersections.pdf#page=22}{aici}. Pentru o problemă înrudită, vedeți \href{https://www.codechef.com/problems/LIGHT}{Lights (CodeChef)}.
+
+  \item Calculați aria / perimetrul reuniunii a $n$ dreptunghiuri cu laturile paralele cu axele. Pentru o formulare apropiată, vedeți \href{https://codeforces.com/problemset/problem/610/D}{Vika and Segments (Codeforces)}.
+\end{enumerate}
+
+\section{Șublerul rotitor}
+
+Această metodă (engl. \textit{rotating calipers}) amintește un pic de tehnica celor doi pointeri. Ea reduce la $\bigoh(n)$ timpul de rezolvare pentru probleme pe care le-am putea rezolva în $\bigoh(n \log n)$ prin $n$ căutări binare. Ea rezolvă multe probleme clasice ca:
+
+\begin{itemize}
+  \item Diametrul unui poligon (distanța maximă între două puncte din poligon).
+  \item Lățimea unui poligon (distanța minimă între două drepte paralele care cuprind poligonul).
+  \item Distanța minimă/maximă dintre două poligoane.
+  \item Dreptunghiul de arie/perimetru minim care cuprinde un poligon.
+  \item ... și multe altele, enumerate \textit{pe Wikipedia}.
+\end{itemize}
+
+Există cîteva noțiuni comune acestor probleme:
+
+\begin{enumerate}
+  \item O \textbf{dreaptă-suport} este o dreaptă care trece printr-un vîrf al poligonului fără a trece prin interiorul acestuia.
+  \item O pereche de \textbf{puncte antipodale} constă din puncte care admit drepte-suport paralele.
+  \item Metoda șublerului rotitor se bazează pe enumerarea tuturor perechilor de puncte antipodale.
+  \item Trecerea de la o pereche la următoarea se poate face în $\bigoh(1)$.
+\end{enumerate}

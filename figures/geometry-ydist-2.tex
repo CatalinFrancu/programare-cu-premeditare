@@ -1,0 +1,34 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={scale=0.8},
+    label distance=3mm,
+    point/.style = { circle, fill, inner sep=2.5pt },
+    ]
+    % coordinate system
+    \draw[->] (-0.2,0) -- (10,0) node[right]{$x$};
+    \draw[->] (0,-0.2) -- (0,8) node[above]{$y$};
+    \node at (0,0) [below left=2mm] {$O$};
+
+    % points A-E
+    \coordinate[label=above left:$A$] (A) at (1,1.5);
+    \coordinate[label=above left:$B$] (B) at (4,2);
+    \coordinate[label=above left:$C$] (C) at (5,3);
+    \coordinate[label=above left:$D$] (D) at (8,3.2);
+    \coordinate[label=above left:$E$] (E) at (9,6);
+    \node at (A)[point] {};
+    \node at (B)[point] {};
+    \node at (C)[point] {};
+    \node at (D)[point] {};
+    \node at (E)[point] {};
+    \draw (A) -- (B) -- (C) -- (D) -- (E);
+
+    % a ray
+    \draw (0,0) -- (10,3) node[above right]{$R$};
+  \end{tikzpicture}
+
+  \caption{}
+  \label{fig:geometry-ydist-2}
+\end{figure}

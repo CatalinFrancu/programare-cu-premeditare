@@ -1,0 +1,39 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={scale=0.8},
+    angle eccentricity=1.2,
+    label distance=3mm,
+    point/.style = { circle, fill, inner sep=2.5pt },
+    ]
+    % coordinate system
+    \draw[->] (-0.2,0) -- (10,0) node[right]{$x$};
+    \draw[->] (0,-0.2) -- (0,8) node[above]{$y$};
+
+    % points O, A, B, C
+    \coordinate[label=below left:$O$] (O) at (0,0);
+    \coordinate[label=above left:$A$] (A) at (1,4);
+    \coordinate[label=above left:$B$] (B) at (3,6);
+    \coordinate[label=above left:$C$] (C) at (6,7);
+    \node at (A)[point] {};
+    \node at (B)[point] {};
+    \node at (C)[point] {};
+    \draw (A) -- (B) -- (C);
+
+    % rays parallel to AB and BC
+    \coordinate (AB) at ($(B)-(A)$);
+    \draw (0,0) -- ($(0,0)!3.8!(AB)$) node[above right] {$d_{AB}$};
+    \coordinate (BC) at ($(C)-(B)$);
+    \draw (0,0) -- ($(0,0)!3!(BC)$) node[right] {$d_{BC}$};
+
+    \draw (0,1) coordinate (A1) -- (O) -- (AB)
+    pic [fill=red,angle radius=1cm] {angle = AB--O--A1};
+    \draw (1,0) coordinate (A2) -- (O) -- (BC)
+    pic [fill=blue,angle radius=1cm] {angle = A2--O--BC};
+  \end{tikzpicture}
+
+  \caption{}
+  \label{fig:geometry-ydist-3}
+\end{figure}
