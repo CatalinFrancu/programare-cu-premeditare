@@ -1,0 +1,51 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={scale=0.8},
+    ]
+    % coordinate system
+    \draw[->, very thin] (-0.2,0) -- (10,0) node (ox)[below=2mm] {$x$};
+    \draw[->, very thin] (0,-0.2) -- (0,7) node[left=2mm]{$y$};
+    \node at (0,0) [below left=2mm] {$O$};
+
+    % points
+    \coordinate (A) at (1,4);
+    \coordinate (A2) at (A |- 0,0);
+    \coordinate (B) at (3,5.5);
+    \coordinate (C) at (5,4);
+    \coordinate (D) at (6,6);
+    \coordinate (E) at (8,4.7);
+    \coordinate (E2) at (E |- 0,0);
+    \coordinate (F) at (7,3);
+    \coordinate (G) at (3.8,2.5);
+
+    \node[above left] at (A) {$P_{i-1}$};
+    \node[above left] at (B) {$P_i$};
+
+    \draw[thick] (A) -- (A2);
+    \draw (B) -- (B |- 0,0);
+    \draw (C) -- (C |- 0,0);
+    \draw (D) -- (D |- 0,0);
+    \draw[thick] (E) -- (E2);
+    \draw[thick] (F) -- (F |- 0,0);
+    \draw[thick] (G) -- (G |- 0,0);
+
+    \draw[very thick, pattern={north east lines}, pattern color=black!30]
+    (A) -- node[above left] {$+$}
+    (B) -- node[above right] {$+$}
+    (C) -- node[left] {$+$}
+    (D) -- node[above right] {$+$}
+    (E) -- node[left] {$-$}
+    (F) -- node[above] {$-$}
+    (G) -- node[above] {$-$}
+    cycle;
+
+    \fill[pattern={crosshatch}, pattern color=black!40]
+    (A) -- (G) -- (F) -- (E) -- (E2) -- (A2) -- cycle;
+  \end{tikzpicture}
+
+  \caption{Aria heptagonului cu contur gros se obține prin însumarea ariilor cu semn ale celor 7 trapeze.}
+  \label{fig:geometry-area-trapezoids}
+\end{figure}
