@@ -1,0 +1,123 @@
+\chapter{Distanțe}
+
+Pentru demonstrații și pentru o ordonare mai bună a noțiunilor, vă recomand cu căldură cartea \href{http://mitpress.mit.edu/algorithms}{Introduction to Algorithms}.
+
+\section{Terminologie}
+
+În acest capitol vom discuta în special problema distanțelor minime de la un nod (sursă) la toate celelalte noduri dintr-un graf orientat cu costuri pe muchii. În engleză problema se numește \textit{single source shortest paths (SSSP)}.
+
+Considerăm aceste distanțe ca fiind $\infty$ pentru noduri inaccesibile din sursă. De asemenea, avînd în vedere că costurile pot fi și negative, considerăm distanțele ca fiind $-\infty$ pentru nodurile care pot fi accesate din sursă pe o cale care include un ciclu de cost negativ. Într-adevăr, întotdeauna putem obține un cost mai mic decît cel calculat, urmînd ciclul încă o dată.
+
+În rest, distanțele sînt finite, iar căile de distanță minimă sînt aciclice (de ce?). Mai mult, orice prefix al unei căi minime este tot o cale minimă (de ce?). De aceea, totalitatea căilor minime are forma unui arbore. Pentru a reprezenta toate cele $n$ căi minime ne este suficient un vector de părinți.
+
+Toți algoritmii se bazează pe \textbf{estimarea pesimistă} a distanței: inițializăm distanțele tuturor nodurilor cu $\infty$, apoi le îmbunătățim succesiv pînă ajung la optimul teoretic. Vom nota cu $d[u]$ estimarea curentă pentru distanța de la $s$ la $u$. Tehnica de bază în toți algoritmii este \textbf{relaxarea} unei muchii. Fie o muchie $(u,v)$ și fie $d[u]$ și $d[v]$ estimările curente ale distanțelor. Relaxarea înseamnă că, dacă $d[u] + c(u,v) < d[v]$, atunci atribuim $d[v] \gets d[u] + c(u,v)$.
+
+\section{Algoritmul Bellman-Ford}
+
+Vom începe cu acest algoritm general, deși în practica olimpiadelor sîntem mult mai familiari cu cazurile lui particulare (BFS, Lee, Dijkstra). Dar algoritmul Bellman-Ford funcționează și pe costuri negative.
+
+Esența algoritmului este:
+
+\begin{algorithm}[H]
+  \caption{Algoritmul Bellman-Ford}
+  \begin{algorithmic}[1]
+    \State inițializează $d[u] \gets \infty$ pentru fiecare $u$
+    \State $d[s] \gets 0$
+
+    \For{$i = 1, \dots, n-1$}
+      \For{$e \in E$}
+        \State relaxează muchia $e$
+      \EndFor
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+Dacă nu există cicluri negative, atunci algoritmul Bellman-Ford calculează distanțele corecte. Vom demonstra acest lucru prin inducție după lungimea căilor. După a $k$-a trecere prin muchii, algoritmul va fi calculat distanțele minime pentru toate nodurile pe căi de cel mult $k$ muchii. Deoarece drumurile optime sînt aciclice, ele conțin cel mult $n-1$ segmente, după $n-1$ iterații vom fi aflat distanțele minime.
+
+Dacă graful conține cicluri negative, le putem depista după a $n-1$ iterație: verificăm dacă există muchii care încă mai pot fi relaxate. De ce merge asta? Într-un graf fără cicluri negative, căile optime au lungime de cel mult $n-1$ muchii. Deci după a $n-1$ repetiție nu mai avem ce optimiza. Dacă există un ciclu negativ, atunci îl putem parcurge la infinit, relaxînd încă o muchie și încă una.
+
+\href{https://cp-algorithms.com/graph/bellman_ford.html}{CP Algorithms} oferă multe detalii practice de implementare:
+
+\begin{itemize}
+  \item Terminarea prematură cînd o iterație nu mai aduce îmbunătățiri.
+  \item Găsirea existenței unui ciclu negativ cu minimum de cod în plus.
+  \item Găsirea efectivă a nodurilor unui ciclu negativ.
+\end{itemize}
+
+Complexitatea algoritmului este, desigur, $\mathcal{O}(mn)$.
+
+O variantă mai rapidă în practică este algoritmul SPFA, descris tot pe CP Algorithms. Vom citi problema educațională TODO Bellman-Ford și sursele aferente. Pentru unele teste ale acestei probleme, SPFA este de 10 ori mai rapid decît Bellman-Ford!
+
+\section{Caz particular: graf aciclic (\textit{dag})}
+
+Vom studia un exemplu și vom arăta de ce următorul algoritm în $\mathcal{O}(m + n)$ funcționează:
+
+\begin{algorithm}[H]
+  \caption{Calculul distanțelor minime într-un dag}
+  \begin{algorithmic}[1]
+    \State sortează graful topologic
+    \ForAll{nod $u$ în ordine topologică}
+      \ForAll{muchie $e = (u, v)$}
+        \State relaxează muchia $e$
+      \EndFor
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+\section{Caz particular: muchii ne-negative}
+
+Vom discuta sumar despre algoritmul lui Dijkstra, pe care îl presupunem cunoscut de la clasă. El este destul de asemănător cu algoritmul lui Prim pentru determinarea unui arbore parțial minim: pornește cu o mulțime formată doar din nodul-sursă și adaugă cîte un nod la această mulțime.
+
+\begin{algorithm}[H]
+  \caption{Algoritmul lui Dijkstra}
+  \begin{algorithmic}[1]
+    \State inițializează $d[u] \gets \infty$ pentru fiecare $u$
+    \State $d[s] \gets 0$
+    \State $S = \varnothing$
+
+    \For{$i = 1, \dots, n-1$}
+      \State alege nodul $u$ cu $d[u]$ minim din $V \setminus S$
+      \ForAll{muchie $e = (u, v)$}
+        \State relaxează muchia $e$
+      \EndFor
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+În practică, folosim o coadă de priorități pentru alegerea minimului. Vom avea aceeași discuție ca și la algoritmului lui Prim: avînd în vedere că distanța unui nod din coadă se poate îmbunătăți (poate scădea), avem nevoie de o structură care să ne ofere operația \texttt{decrease-key} în $\mathcal{O}(1)$. Heapurile Fibonacci și \href{https://en.wikipedia.org/wiki/Fibonacci_heap#Summary_of_running_times}{alte cîteva heapuri} oferă această complexitate. Cu acestea, putem implementa algoritmul lui Dijkstra în $\mathcal{O}(m + n \log n)$: vom avea cîte $n$ inserări și eliminări din heap și $m$ relaxări de muchii, fiecare în $\mathcal{O}(1)$.
+
+Dacă folosim heap-uri normale sau \ccode{priority_queue}, atunci complexitatea va fi $\mathcal{O}((m + n) \log n)$. Iau naștere următoarele variante de implementare:
+
+\begin{itemize}
+  \item Implementarea 1: Cu heap scris de mînă, cu suport pentru \texttt{decrease-key}. Avantajul este că putem ține o listă suplimentară de pointeri, cu care putem găsi fiecare nod în heap în $\mathcal{O}(1)$.
+
+  \item Implementarea 2: Cu heap scris de mînă, fără suport pentru \texttt{decrease-key}. Cînd distanța unui nod scade, îl reinserăm în heap. Heapul poate avea mărime $\mathcal{O}(m)$ (de ce?).
+
+  \item Implementarea 3: Cu \ccode{priority_queue}. Considerabil mai scurtă, dar și mai lentă.
+\end{itemize}
+
+Articolul de pe \href{https://cp-algorithms.com/graph/dijkstra_sparse.html}{CP Algorithms} oferă o discuție interesantă despre implementarea cu \ccode{priority_queue} sau cu \ccode{set}. Ideea de bază este că \ccode{set} ne permite să căutăm noduri și să le modificăm distanțele, pe cînd \ccode{priority_queue} nu. Deci implementarea cu \ccode{set} menține coada de mărime $\mathcal{O}(n)$. Totuși, cea cu \ccode{priority_queue} este mai rapidă în practică.
+
+Discuție: cum se comportă algoritmul lui Dijkstra pe grafuri cu cicluri negative? Dar pe grafuri în care nu există cicluri negative, dar există muchii negative?
+
+\section{Caz particular: BFS}
+
+Putem vedea BFS (și Lee) ca pe un caz particular de distanțe în grafuri, în care toate muchiile au cost 1. Atunci putem înlocui coada de priorități cu o coadă normală, căci la orice moment distanțele din coadă vor avea ordinea $k, \dots, k, k + 1, \dots, k + 1$. Complexitatea este, așa cum știam, $\mathcal{O}(m + n)$.
+
+\section{Caz particular: 0-1 BFS}
+
+Dacă muchiile au cost 0 sau 1, putem în continuare să folosim o simplă coadă, mai exact un deque. La relaxarea unei muchii $(u,v)$ de cost 1, vom adăuga nodul $v$ la sfîrșitul cozii. În schimb, la relaxarea unei muchii $(u,v)$ de cost 0, vom adăuga nodul $v$ la începutul cozii. Practic, $v$ va fi următorul nod evaluat.
+
+Articolul de pe \href{https://cp-algorithms.com/graph/01_bfs.html}{CP Algorithms} conține o implementare minimală.
+
+\section{Caz particular: costuri mici}
+
+Dacă toate costurile sînt întregi între 1 și $k$ (sau între 0 și $k$, refolosind ideea din secțiunea anterioară), atunci algoritmul lui Dial (\href{https://www.researchgate.net/profile/Robert-Dial}{Robert B. Dial}) ne oferă o soluție în $\mathcal{O}(m + kn)$. Distanța maximă în graf va fi $(n-1)k$, deci putem înlocui coada de priorități cu un vector $V$ de $(n-1)k$ liste înlănțuite, unde $V[x]$ conține nodurile $u$ a căror estimare curentă este $d[u] = x$. Inițial, $V[0]$ va conține doar elementul $s$, iar restul listelor vor fi vide. Procesăm listele de la stînga la dreapta și, pentru fiecare nod, îi relaxăm muchiile, mutîndu-i vecinii dintr-o listă într-alta dacă distanța lor se schimbă.
+
+Două detalii de implementare:
+
+\begin{itemize}
+  \item Pentru a face relaxarea în $\mathcal{O}(1)$, trebuie să putem găsi rapid un nod și să-l mutăm din lista sa, $V[d[u]]$, în noua listă corespunzătoare noii distanțe. Putem folosi un simplu vector de pointeri.
+
+  \item Putem reduce memoria de la $\mathcal{O}(kn)$ la $\mathcal{O}(k + n)$ astfel. Cînd procesăm nodurile de la distanța $x$, vom face inserări și ștergeri doar din listele de pe pozițiile $x \dots x + k$ (de ce?). Deci putem stoca din vectorul $V$ doar fereastra curentă de lățime $k + 1$, folosind un buffer circular sau o listă înlănțuită.
+\end{itemize}

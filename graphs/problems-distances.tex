@@ -1,0 +1,254 @@
+\section{Probleme}
+
+Primele 6 probleme sînt educaționale, de pe Infoarena și de pe CSES.
+
+\subsection{Problema Bellman-Ford (Infoarena)}
+\label{problem:bellman-ford}
+
+\href{https://www.infoarena.ro/problema/bellmanford}{enunț}
+$\bullet$
+\hyperref[code:bellman-ford]{surse}
+
+Vom vedea două surse, una cu algoritmul Bellman-Ford clasic și una cu SPFA.
+
+O problemă similară este \href{https://cses.fi/problemset/task/1197}{Cycle Finding} (CSES). Pentru găsirea ciclului, notăm și părintele fiecărui nod (adică nodul care îi cauzează relaxarea). Pornim din orice nod care încă este relaxat după a $n$-a iterație și mergem din părinte în părinte pînă revenim la primul nod.
+
+\subsection{Problema Dijkstra (Infoarena)}
+\label{problem:dijkstra}
+
+\href{https://www.infoarena.ro/problema/dijkstra}{enunț}
+$\bullet$
+\hyperref[code:dijkstra]{surse}
+
+Există multe variante de implementare, dintre care am încercat trei:
+
+\begin{enumerate}
+  \item Cu heap propriu, cu suport pentru \texttt{decrease-key}. Avantajul este că putem ține o listă suplimentară de pointeri, cu care putem găsi fiecare nod în heap în $\mathcal{O}(1)$.
+
+  \item Cu heap propriu, fără suport pentru \texttt{decrease-key}. Cînd distanța unui nod scade, îl reinserăm în heap. Heapul poate avea mărime $\mathcal{O}(m)$ (de ce?).
+
+  \item Cu \ccode{priority_queue} din STL. Considerabil mai scurtă, dar ceva mai lentă.
+\end{enumerate}
+
+O problemă identică este \href{https://cses.fi/problemset/task/1671}{Shortest Routes I} (CSES).
+
+\subsection{Problema Monsters (CSES)}
+\label{problem:monsters}
+
+\href{https://cses.fi/problemset/task/1194}{enunț}
+$\bullet$
+\hyperref[code:monsters]{sursă}
+
+Problema se rezolvă direct cu algoritmul lui Lee. Singura (mică) dificultate este cum să găsim celulele în care eroul poate ajunge înaintea monștrilor. Soluția este să rulăm întîi un BFS multisursă din pozițiile monștrilor ca să aflăm, pentru fiecare celulă, timpul minim pînă cînd un monstru poate ajunge acolo. Apoi rulăm un BFS din poziția eroului, permițîndu-i să meargă doar pe acele celule în care poate ajunge mai repede decît monștrii.
+
+\subsection{Problema Shortest Routes II (CSES)}
+\label{problem:shortest-routes-2}
+
+\href{https://cses.fi/problemset/task/1672}{enunț}
+$\bullet$
+\hyperref[code:shortest-routes-2]{sursă}
+
+Problema se rezolvă direct cu algoritmul Floyd-Warshall. Atenție la muchii multiple între aceleași noduri.
+
+\subsection{Problema High Score (CSES)}
+\label{problem:high-score}
+
+\href{https://cses.fi/problemset/task/1673}{enunț}
+$\bullet$
+\hyperref[code:high-score]{sursă}
+
+Problema este rezolvabilă cu algoritmul Bellman-Ford, cu o mică adăugire. Negăm toate costurile muchiilor și căutăm costul minim de la $1$ la $n$. Acum, dacă există vreun ciclu negativ, răspunsul încă s-ar putea să fie finit. Este posibil să existe doar cicluri negative accesibile din $1$, dar din care nu există nicio cale către $n$.
+
+Cum depistăm această situație? O primă abordare este să colectăm nodurile care încă mai sînt relaxate la ultima iterație (a $n$-a). Apoi facem un DFS pe graful transpus, pornind din $n$, și vedem dacă ajungem la unul dintre nodurile sus-menționate.
+
+O variantă cu peste două linii mai scurtă \emoji{slightly-smiling-face} este să calculăm accesibilitatea pe parcursul relaxării. Cînd relaxăm muchia $(u,v)$ și dacă nodul $v$ este accesibil din $n$, atunci marcăm și nodul $u$ ca accesibil din $n$.
+
+\subsection{Problema Flight Discount (CSES)}
+\label{problem:flight-discount}
+
+\href{https://cses.fi/problemset/task/1195}{enunț}
+$\bullet$
+\hyperref[code:flight-discount]{sursă}
+
+Problema este de Dijkstra cu o mică observație suplimentară. Putem menține pentru fiecare nod două valori: costul minim pentru a ajunge în acel nod folosind sau nefolosind reducerea. Rezultă cîteva întrebări despre implementare, în particular: ce ținem în \textit{priority queue}?
+
+\href{https://usaco.guide/problems/cses-1195-flight-discount/solution}{Ghidul USACO} menționează și o altă soluție elegantă. Pentru fiecare nod $u$ calculăm distanța minimă de la nodul $1$ la $u$ și distanța minimă de la $u$ la $n$. Pentru a doua categorie rulăm algoritmul lui Dijkstra din nodul $n$ pe graful transpus. Apoi, pentru fiecare muchie $e = (u,v)$ ne întrebăm: care ar fi costul dacă am folosi reducerea pe această muchie? Răspunsul este suma distanțelor de la $1$ la $u$, de la $v$ la $n$ și jumătate din costul muchiei $e$.
+
+\subsection{Problema Three States (Codeforces)}
+\label{problem:three-states}
+
+\href{https://codeforces.com/contest/590/problem/C}{enunț}
+$\bullet$
+\hyperref[code:three-states]{sursă}
+
+Problema este un pic migăloasă, dar nu foarte grea. Este un exemplu tipic de 0-1 BFS: într-un stat sau între două state ne deplasăm cu costul 0, iar pe o stradă cu costul 1. Dar ne putem încurca în gestiunea muchiilor. De exemplu, traseul stat $\to$ stradă $\to$ stat nu are costul 2, ci costul 1. În fapt, ca și la algoritmul lui Lee, considerăm costul plătit în clipa în care intrăm în nod.
+
+Pornim pe rînd cîte un Lee din fiecare stat. Nu contează din ce pătrat anume, căci distanțele în interiorul țării vor fi 0, iar cele în afara țării nu depind de punctul de pornire.
+
+Apoi, căutăm celula din matrice care minimizează suma distanțelor pînă la cele trei puncte de pornire. Acel punct poate fi:
+
+\begin{itemize}
+  \item O celulă dintr-un stat, caz în care strada are formă liniară.
+
+  \item O celulă de tip stradă, caz în care rețeaua de străzi va avea formă de stea. În acest caz trebuie să scădem 2 din suma distanțelor, deoarece am socotit această celulă de trei ori, dar o folosim o singură dată.
+\end{itemize}
+
+Ce trebuie să reținem din această problemă: BFS-ul se descurcă cu o coadă ordonată, iar Dijkstra are nevoie de un heap (\textit{priority queue}). La 0-1 BFS încă ne este suficientă o coadă, pentru că o putem menține ordonată cîtă vreme inserăm la capătul potrivit.
+
+\subsection{Problema Graph and Graph (Codeforces)}
+\label{problem:graph-and-graph}
+
+\href{https://codeforces.com/contest/2059/problem/D}{enunț}
+$\bullet$
+\hyperref[code:graph-and-graph]{sursă}
+
+Estimez că această problemă este la nivel de OJI clasele 11-12. Să pornim de la o observație teoretică relativ evidentă. Cînd este costul total finit? Atunci cînd există un moment de timp începînd de la care nu mai plătim nimic. Cu alte cuvinte, secvența de noduri vizitate în ambele grafuri este $u-v-w-x - \dots$. În realitate, însă, odată ce găsim muchia comună $u-v$, putem călători pe ea, înainte și înapoi, la infinit.
+
+Așadar, dorim să aflăm (1) dacă există o muchie $u-v$ comună ambelor grafuri, astfel încît să putem ajunge simultan în $u$, și (2) care este costul minim ca să ajungem simultan în $u$.
+
+Implementarea creează un graf indus în care nodurile (stările) sînt perechi $(u_1, u_2)$ cu semnificația că putem ajunge simultan în $u_1$ în primul graf și în $u_2$ în al doilea graf. Nodul de pornire este $(s_1, s_2)$. Din starea $(u_1, u_2)$ putem ajunge în orice stare $(v_1, v_2)$ pentru care există muchii $(u_1, v_1)$ în primul graf și $(u_2, v_2)$ în cel de-al doilea. Costul tranziției este $|v_1 - v_2|$.
+
+Pe acest graf rulăm algoritmul lui Dijkstra. Intenția este să găsim orice stare cu $(v, v)$ în care putem ajunge dintr-o altă stare $(u, u)$.
+
+O particularitate pe care am întîlnit-o în sursele multor elevi este precalcularea nodurilor finale: acele noduri $u$ care au un vecin comun $v$ în ambele grafuri. Acest lucru nu este necesar: putem depista finalul în Dijkstra, în momentul în care expandăm o stare $(u,u)$ și întîlnim același vecin $(v,v)$.
+
+\subsection{Problema President and Roads (Codeforces)}
+\label{problem:president-and-roads}
+
+\href{https://codeforces.com/contest/567/problem/E}{enunț}
+$\bullet$
+\hyperref[code:president-and-roads]{sursă}
+
+Observația necesară pentru rezolvarea problemei este că avem nevoie să apelăm Dijkstra de două ori. Dacă apelăm Dijkstra o singură dată, din sursă, nu avem suficiente informații. Putem discuta următoarele reguli ca să vedem dacă ne ajută la ceva:
+
+\begin{itemize}
+  \item „O muchie $(u, v)$ este pe o cale minimă / pe orice cale minimă dacă $d[u] + c(u,v) = d[v]$.”
+  \item „O muchie $(u, v)$ \textbf{nu} este pe nicio cale minimă dacă $d[u] + c(u,v) > d[v]$.”
+\end{itemize}
+
+Așadar, apelăm Dijkstra din sursă și Dijkstra din destinație în graful transpus. Fie $d_T[u]$ distanța minimă de la destinație la $u$ în graful transpus. O muchie $(u,v)$ poate fi folosită pentru calea minimă $s-t$ dacă și numai dacă
+
+$$d[u] + c(u,v) + d_T[v] = d[t]$$
+
+De ce? Fie $P_1$ calea $s \rightsquigarrow u$ care ne oferă distanța $d[u]$ și fie $P_2$ calea în graful transpus $t \rightsquigarrow v$ care ne oferă distanța $d_T[v]$. Fie $P_2^R$ calea $P_2$ răsturnată (revenind în graful direct). Fie $P = P_1 \cup \{(u,v)\} \cup P_2^R = s \rightsquigarrow u - v \rightsquigarrow t$. Iau naștere trei cazuri:
+
+\begin{itemize}
+  \item Nu se poate ca $d[u] + c(u,v) + d_T[v] < d[t]$, căci ar însemna că distanța pe calea $P$ este mai mică decît $d[t]$.
+
+  \item Dacă $d[u] + c(u,v) + d_T[v] = d[t]$, atunci în mod evident $P$ este o cale minimă.
+
+  \item Dacă $d[u] + c(u,v) + d_T[v] > d[t]$, să presupunem prin absurd că există un drum minim care folosește muchia $(u,v)$. Atunci costul acelui drum ar fi, în mod necesar, $d[t]$. Rezultă că acel drum minim fie ajunge de la $s$ la $u$ pe un cost strict mai mic decît $d[u]$, fie ajunge de la $v$ la $t$ pe un cost strict mai mic decît $d_T[v]$, căci altfel am ajunge fix la inegalitatea inițială. Așadar, una dintre distanțele calculate de Dijkstra nu este optimă, contradicție.
+\end{itemize}
+
+Dar cum știm dacă o muchie apare pe \textbf{orice} drum minim? Intuitiv, ne duce gîndul la punți. Există trei variante:
+
+\begin{itemize}
+  \item Să verificăm, cu algoritmi de tare conexitate, dacă $(u,v)$ este punte.
+
+  \item Soluția din editorial: Să luăm în calcul doar muchiile care apar cel puțin pe o cale minimă. Pentru aceste muchii, să considerăm toate momentele de timp între 0 și $d[t]$. Dacă, la orice moment $k$, există o singură muchie $(u,v)$ cu $d[u] \leq k \leq d[v]$, atunci toate drumurile minime trec prin această muchie. Sînt cîteva cazuri particulare de tratat.
+
+  \item Soluția cu hashing (kudos \href{https://codeforces.com/contest/567/submission/240455412}{andrei\_C1}). Fie $w[u]$ și $w_T[u]$ numărul de moduri de a ajunge în $u$ pe drumuri minime mergînd înainte din $s$, respectiv înapoi din $t$. Putem calcula aceste valori cu programare dinamică. Atunci o muchie apare pe orice drum minim dacă și numai dacă
+\end{itemize}
+
+$$w[u] \cdot w_T[v] = w[t]$$
+
+Demonstrația este relativ directă: știm sigur că avem $w[u]$ drumuri minime pînă la $u$ și, independent, $w_T[v]$ drumuri minime de la $v$ la $t$. Dacă produsul acestora este chiar $w[t]$, atunci nu mai există niciun alt drum minim, separat de muchia $(u,v)$. Din păcate, teoretic nu putem stoca aceste valori, căci ele pot fi foarte mari (demonstrați!). Dar putem opera modulo un număr prim ales de noi, iar aproximarea noastră va fi greu de pedepsit.
+
+Paradoxal, întrebarea „putem ieftini o muchie ca să apară pe orice cale minimă $s-t$?” este mult mai simplă. Din ecuația $d[u] + c(u,v) + d_T[v] < d[t]$ calculăm $c(u,v)$ pentru a face muchia atractivă, iar singura limită este că nu-i putem reduce costul sub 1.
+
+\subsection{Problema Nastya and Unexpected Guest (Codeforces)}
+\label{problem:nastya-and-unexpected-guest}
+
+\href{https://codeforces.com/contest/1341/problem/E}{enunț}
+$\bullet$
+\hyperref[code:nastya-and-unexpected-guest]{sursă}
+
+Problema se rezolvă relativ direct cu algoritmul lui Dial. Singura inspirație necesară este că trebuie să lucrăm în clase de resturi modulo $g$. Odată ce am ajuns pe o insulă $x$ cu un rest $y$, nu vom mai avea nevoie niciodată să revenim pe acea insulă cu același rest. Ia naștere un graf cu $g \cdot m$ noduri în care trebuie să calculăm distanța minimă de la nodul (insula 1, restul 0) pînă la orice rest de pe insula $m$.
+
+Dintr-o pereche $x, y$ putem trece pe insula $x + 1$ dacă $x < m$ și dacă $d_{x + 1} - d_{x} \leq g - y$, pentru că trebuie să apucăm să ajungem pe insula $x + 1$ înainte ca semaforul roșu să ne întrerupă. Noul rest este $y + d_{x + 1} - d_{x} \bmod g$. Un raționament similar facem și pentru trecerea pe insula $x - 1$.
+
+Deoarece la niciun moment nu putem călători mai departe de $g \leq 1000$, rezultă că putem folosi algoritmul lui Dial cu 1001 liste înlănțuite.
+
+Mărturisesc că nu mă simt mulțumit de implementarea mea. Ea este rezonabil de rapidă, dar consumă multă memorie (117 MB), deoarece folosește celule distincte ori de cîte ori un element este adăugat la structură și nu le refolosește pe cele eliberate. S-ar putea ca STL-ul să conducă la memorie redusă.
+
+\href{https://codeforces.com/blog/entry/76479}{Editorialul} vorbește despre o soluție bazată pe 0-1 BFS, pe care eu însă nu o înțeleg.
+
+\subsection{Problema Minimum Path (Codeforces)}
+\label{problem:minimum-path}
+
+\href{https://codeforces.com/contest/1473/problem/E}{enunț}
+$\bullet$
+\hyperref[code:minimum-path]{surse}
+
+Ideea problemei este grea, sau cel puțin prea grea pentru mine. \emoji{smiling-face-with-halo} Iată un indiciu: trebuie rezolvat un caz \textbf{mai general} decît cel în care eliminăm fix maximul și dublăm fix minimul.
+
+Dacă am calcula costul unei căi pe care am eliminat orice muchie și am dublat orice muchie (posibil aceeași)? Atunci reducem problema la un Dijkstra cu 4 stări: în fiecare nod vom avea patru minime, pentru situațiile în care ajungem în nod:
+
+\begin{itemize}
+  \item pe o cale nemodificată;
+  \item pe o cale cu o muchie eliminată;
+  \item pe o cale cu o muchie dublată;
+  \item pe o cale cu ambele operații efectuate.
+\end{itemize}
+
+Acest caz general se reduce de fapt la enunțul problemei. Într-adevăr, algoritmul va genera și căi care elimină / adaugă alte muchii decît maximul / minimul, dar acelea nu vor fi optime.
+
+Am încercat trei implementări, cu rezultate interesante. Prima sursă este cu heap propriu. A doua folosește \ccode{priority_queue}, fără alte modificări, și este cu 30\% mai lentă. În schimb, memoria a scăzut cu 35\%, căci pentru heapul propriu mi-a fost greu să estimez necesarul de memorie.
+
+\href{https://codeforces.com/contest/1473/submission/363749817}{A treia} sursă (neinclusă în anexă) schimbă ușor detaliile inserării în coadă. Mai exact, sursa a doua setează noua distanță a unui nod $v$ în starea $sv$ în momentul în care îl inserează în coadă:
+
+\begin{minted}{c}
+if (new_dist < nd[v].dist[sv]) {
+  nd[v].dist[sv] = new_dist;
+  pq.push({new_dist, v, sv});
+}
+\end{minted}
+
+Sursa a treia setează noua distanță în momentul în care scoate nodul din coadă:
+
+\begin{minted}{c}
+pq_elt top = pq.top();
+pq.pop();
+int u = top.u;
+int su = top.state;
+
+if (nd[u].dist[su] == INFINITY) {
+  nd[u].dist[su] = top.dist;
+  relax_all(u, su);
+}
+\end{minted}
+
+Memoria necesară s-a dublat și chiar mai rău! Deci atenție la formularea exactă.
+
+\subsection{Problema Shortest Path (Codeforces)}
+\label{problem:shortest-path}
+
+\href{https://codeforces.com/contest/59/problem/E}{enunț}
+$\bullet$
+\hyperref[code:shortest-path]{surse}
+
+Ideea teoretică este să reținem și ultimul pas prin care am ajuns într-un nod. Așadar, definim stări de tipul $\langle u, v \rangle$ cu semnificația „ne aflăm în nodul $v$ și am ajuns aici din nodul $u$”. Există $m$ stări, deoarece nu are sens să definim o stare $\langle u, v \rangle$ dacă nu există muchia $(u,v)$ pe care să călătorim.
+
+Între aceste stări putem face tranziții. Din $\langle u, v \rangle$ putem ajunge în $\langle v, w \rangle$ dacă tripletul $(u,v,w)$ nu este interzis.
+
+Stările și tranzițiile definesc, de fapt, un graf extins. Pe acest graf rulăm algoritmul BFS. La final, reconstituim soluția, de exemplu recursiv.
+
+\subsubsection*{Implementare minimalistă}
+
+Prima sursă este orientată spre brevitate, dar nu este prea eficientă. Menținem un \ccode{unordered_set} global de triplete ca să aflăm în $\mathcal{O}(1)$ dacă o tranziție este permisă. Menținem distanțele calculate în BFS chiar într-o matrice de $n \times n$. Cînd explorăm o stare $\langle u, v \rangle$ și descoperim o nouă stare $\langle v, w \rangle$, în aceasta din urmă notăm informația că nodul anterior a fost $u$. Astfel putem reconstitui soluția.
+
+Sursa folosește $\mathcal{O}(n^2)$ memorie, dar se poate mai bine.
+
+\subsubsection*{Implementare eficientă}
+
+A doua sursă stochează distanțele chiar pe muchii pentru a renunța la matricea de $n \times n$. Concret, citim și sortăm toate muchiile și toate tripletele. Apoi:
+
+\begin{itemize}
+  \item Lista de adiacență a nodului $u$ este indicele primei muchii care se referă la $u$. Astfel aflăm vecinii în ordine crescătoare.
+
+  \item Lista de continuări interzise pentru muchia $(u,v)$ este indicele primului triplet care are primele două cîmpuri $u$ și $v$. Astfel aflăm continuările interzise în ordine crescătoare.
+\end{itemize}
+
+La explorarea unei muchii $(u,v)$ accesibilă la distanța $d$, interclasăm lista de succesori $w$ ai lui $v$ cu lista de continuări interzise. Punem distanța $d+1$ doar pe muchiile care nu duc spre un nod interzis.
+
+Astfel obținem memorie $\mathcal{O}(m + n + k)$, adică 5 MB în loc de 39 MB. Timpul scade de la 1 secundă la 0,4 secunde. Am chiar și o sursă mai veche, care folosește \href{https://codeforces.com/contest/59/submission/244230310}{doar 2,2 MB}, dar nu mai știu exact ce am făcut. \emoji{smiling-face-with-tear}
