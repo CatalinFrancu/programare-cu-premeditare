@@ -20,7 +20,7 @@ typedef std::map<double, point>::iterator iter;
 std::map<double, point> hull;
 point center;
 
-// True dacă și numai dacă ∡ABC virează spre dreapta.
+// True dacă și numai dacă ∠ABC virează spre dreapta.
 bool reflex_angle(point a, point b, point c) {
   return (b.x - a.x) * (c.y - b.y) - (c.x - b.x) * (b.y - a.y) < 0;
 }

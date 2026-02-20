@@ -1,0 +1,58 @@
+\chapter{Arbori parțiali minimi}
+
+\textbf{Definiție}: Dat fiind un graf neorientat conex $G=(V,E)$ cu $n$ noduri și $m$ muchii, unde fiecare muchie are asociat un cost, un \textbf{arbore parțial} (engl. \textit{spanning tree}) este o colecție de $n-1$ muchii care conectează toate cele $n$ noduri. Un \textbf{arbore parțial minim} (APM, engl. \textit{minimum spanning tree, MST}) este un arbore parțial care minimizează suma costurilor celor $n-1$ muchii.
+
+\section{Algoritmii lui Kruskal și Prim}
+
+Nu vom relua aici algoritmii, pe care sper că îi cunoașteți deja de la clasă. Ambii algoritmi sînt relativ intuitivi. Totuși, nu strică să ne familiarizăm și cu demonstrațiile. Ele sînt experimente de gîndire (ușoare) care ne ajută în probleme mai puțin directe.
+
+Iată \href{https://www.cs.jhu.edu/~mdinitz/IntroAlgorithms/Lectures/lecture14.pdf}{două demonstrații} foarte elegante. Ele sînt inductive: arătăm că, la orice moment, colecția de muchii $T$ pe care o mențin algoritmii este inclusă într-un APM. APM-ul ne este necunoscut, dar el există, iar algoritmii arată cum să extindem $T$ cu o muchie astfel încît noua colecție $T'$ să fie și ea inclusă într-un APM.
+
+Vom introduce noțiunea de \textbf{tăietură} (engl. \textit{cut}): O partiție a mulțimii de noduri $V$ în două submulțimi $X$ și $Y$. Spunem că o muchie \textbf{traversează tăietura} dacă are un capăt în $X$ și unul în $Y$. Spunem că o tăietură \textbf{respectă} o mulțime de muchii $A$ dacă nicio muchie din $A$ nu traversează tăietura.
+
+Cu această terminologie, vom arăta principiul comun al celor doi algoritmi. Nu pare, dar există unul! Ambii algoritmi construiesc un set de muchii $A$. La fiecare pas, ei definesc o tăietură care respectă mulțimea $A$, apoi caută și adaugă muchia minimă care traversează tăietura. Concret:
+
+\begin{enumerate}
+  \item Algoritmul lui Prim definește tăietura ca fiind $X=$ mulțimea de noduri conectate, $Y=$ restul nodurilor. De aceea menține, pentru fiecare nod din $Y$, distanța minimă pînă la un nod din $X$.
+
+  \item Algoritmul lui Kruskal nu definește explicit tăietura. Orice tăietură este satisfăcătoare, atîta timp cît ea nu taie componentele conexe existente (pentru orice componentă conexă existentă, toate nodurile sînt de aceeași parte a tăieturii). De aceea algoritmul interzice muchii între două noduri din aceeași componentă: acele muchii \textbf{nu} traversează tăietura.
+\end{enumerate}
+
+Cormen (\href{https://dl.ebooksworld.ir/books/Introduction.to.Algorithms.4th.Leiserson.Stein.Rivest.Cormen.MIT.Press.9780262046305.EBooksWorld.ir.pdf#page=609}{Teorema 21.1}) demonstrează următoarea teoremă: Dacă mulțimea curentă $A$ este inclusă într-un APM, și dacă alegem orice tăietură care respectă $A$, atunci muchia minimă $e$ care traversează acea tăietură poate fi adăugată la $A$. Muchia $e$ nu închide cicluri în $A$, iar $A \cup \{e\}$ continuă să fie inclusă într-un APM.
+
+\section{Proprietăți ale arborilor parțiali minimi}
+
+Pagina Wikipedia listează \href{https://en.wikipedia.org/wiki/Minimum_spanning_tree#Cycle_property}{două proprietăți} interesante și relativ evidente: proprietatea ciclului și proprietatea tăieturii.
+
+Proprietatea ciclului spune că este necesar ca orice muchie din afara APM să fie cea mai scumpă de pe ciclul pe care îl închide în APM. \href{https://codeforces.com/blog/entry/22187}{Editorialul} pentru problema \hyperref[problem:mst-for-each-edge]{Minimum Spanning Tree for Each Edge} împinge aceasta cu un pas mai departe, spunînd că condiția este și suficientă: dacă alegem un arbore și dacă toate muchiile din afara acestui arbore au proprietatea ciclului, atunci arborele ales este APM. Editorialul numește asta „criteriul lui Tarjan”. Demonstrația este constructivă: putem elimina din graf toate muchiile care încalcă proprietatea ciclului. Ceea ce rămîne este, în mod necesar, un APM.
+
+Toți arborii parțiali minimi ai unui graf au aceeași distribuție de costuri ale muchiilor. Intuitiv, acest lucru se întîmplă deoarece algoritmul lui Kruskal va grupa, la sortare, muchiile de costuri egale.
+
+\section{Actualizarea APM}
+
+Această secțiune este interesantă teoretic, dar nu am întîlnit-o niciodată în probleme de olimpiadă.
+
+Cum actualizăm un APM, $T$, cînd costul unei muchii se modifică?
+
+\begin{itemize}
+  \item Dacă muchia este în $T$, iar costul ei scade, $T$ rămîne APM.
+
+  \item Dacă muchia nu este în $T$, iar costul ei crește, $T$ rămîne APM.
+
+  \item Dacă muchia nu este în $T$, iar costul ei scade, adăugăm muchia la $T$, ceea ce cauzează închiderea exact a unui ciclu, apoi eliminăm muchia maximă de pe acel ciclu.
+
+
+  \begin{itemize}
+    \item Demonstrație: pornind de la algoritmul de bază (cu tăieturi). Fie $e = (u,v)$ muchia al cărei cost scade. Fie $C$ ciclul închis de $e$ în $T$. Fie $f = (x, y)$ muchia de cost maxim din $C$. Dacă $e = f$, am terminat. Altfel, $c(e) < c(f)$. Să ștergem muchia $f$ din $T$. Rezultă o partiționare a grafului în două. Muchiile $e$ și $f$ (și posibil altele) sînt muchii care traversează tăietura. Muchia $e$ este muchia minimă care traversează tăietura, căci, dacă ar exista o muchie mai mică $g$ cu $c(g) < c(e) < c(f)$, atunci $g$ ar fi făcut parte din $T$ în locul lui $f$. Conform algoritmului, rezultă că $T - f + e$ este noul APM.
+
+    \item Același lucru îl facem și la adăugarea unei muchii: adăugarea este echivalentă cu scăderea costului de la $\infty$ la ceva finit.
+  \end{itemize}
+
+  \item Dacă muchia este în $T$, iar costul ei crește, eliminăm muchia din $T$ și o înlocuim cu cea mai ieftină muchie care reconectează $T$.
+
+  \begin{itemize}
+    \item Demonstrația este identică: ia naștere o tăietură și selectăm cea mai ieftină muchie care traversează tăietura. Nu știu cît de eficient putem face acest lucru.
+  \end{itemize}
+\end{itemize}
+
+Cum actualizăm un APM, $T$, la adăugarea unui nod $z$? Nu putem pur și simplu să privim $(V, \{z\})$ ca pe o tăietură, deoarece $z$ poate aduce cu el muchii foarte ușoare, ceea ce face ca $T$ \textbf{să nu mai fie APM} pentru mulțimea sa de noduri. Putem folosi o \href{https://www.sciencedirect.com/science/article/pii/0022000078900223}{parcurgere DFS} specifică problemei, în $\mathcal{O}(n)$, sau putem rula algoritmii lui Kruskal și Prim pe mulțimea formată din $T$ și muchiile nou adăugate de $z$. De ce?

@@ -1,0 +1,274 @@
+\section{Probleme}
+
+\subsection{Problema Arbore parțial de cost minim (Infoarena)}
+\label{problem:apm}
+
+\href{https://www.infoarena.ro/problema/apm}{enunț}
+$\bullet$
+\hyperref[code:apm]{surse}
+
+Problema este educațională. Vom citi sursele și vom explica algoritmii.
+
+Algoritmul lui Kruskal rulează în $\mathcal{O}(m \log m)$ datorită sortării. Puteam face sortarea în $\mathcal{O}(m + c)$ dacă distribuiam muchiile în liste după cost, dar am decis să nu încarc programul.
+
+Algoritmul lui Prim rulează în $O(m \log n)$. Într-adevăr, fiecare muchie evaluată poate duce la o îmbunătățire a distanței fiului, ceea ce necesită o inserare în coada de priorități. Remarcăm că, în această implementare, un nod $u$ poate avea multiple copii în coadă, dacă distanța lui este optimizată de mai multe ori înainte ca $u$ să fie selectat ca minim și adăugat la arbore.
+
+Putem insista ca coada să conțină noduri distincte, dar nu este banal.
+
+\begin{itemize}
+  \item \href{https://cp-algorithms.com/graph/mst_prim.html#sparse-graphs-om-log-n}{CP Algorithms} folosește un set. Cînd constatăm că distanța unui nod scade, îi cunoaștem vechea distanță $d$, deci putem căuta și șterge vechea pereche $(u, d)$ din set.
+
+  \item Putem folosi și un heap, dar trebuie să ni-l implementăm singuri. Fiecare nod menține și un pointer (un indice întreg) la poziția sa în heap. După modificarea distanței, acel nod din heap poate să urce sau să coboare, după caz.
+\end{itemize}
+
+\subsection{Problema Autobuze3 (AGM 2015)}
+\label{problem:autobuze3}
+
+\href{https://infoarena.ro/problema/autobuze3}{enunț}
+$\bullet$
+\hyperref[code:autobuze3]{sursă}
+
+Și aceasta este o problemă relativ directă. Costul minim este dat de arborele parțial minim. Pentru trasarea drumurilor este necesar să parcurgem arborele din frunze spre rădăcină. Pentru a limita la 25 numărul de transferuri ale șoferilor, trebuie ca, atunci cînd un autobuz sosește din nodul fiu în nodul părinte, să-l comparăm cu autobuzul existent în nodul părinte și să transferăm autobuzul mai gol în cel mai plin (\textit{small to large}).
+
+\subsubsection*{Detalii de implementare}
+
+Am stat puțin pe gînduri dacă să folosesc algoritmul lui Kruskal sau pe al lui Prim. Voi ce părere aveți? Realitatea este că Kruskal pare mai greu de greșit și este mai scurt cu cîteva linii. În cazul de față, \textbf{poate} merita folosit Prim, care oferă pentru fiecare nod $u$ pointerul la părinte (adică la nodul care l-a adăugat pe $u$ la arbore). Sînt destul de sigur că acel cod ar cîștiga la memorie, căci nu mai este necesar DFS-ul. Dar în rest... pare mai greu de scris, iar Prim este ceva mai lent.
+
+Pentru a reduce numărul de transferuri, meritau făcute două iterații în DFS: una pentru identificarea fiului heavy și una pentru transferul celorlalți fii, o singură dată. Dar, așa cum am învățat în capitolul \ref{chapter:small-to-large}, este mai ușor de codat, și suficient de eficient, să facem unificarea la revenirea din fiecare fiu. Încă rămîne valabil că fiecare șofer va fi transferat de cel mult $\log n$ ori.
+
+Pentru reutilizarea \ccode{vector}-ilor între teste, îi ștergem cu \ccode{clear()}. Putem economisi niște memorie (de la 36 MB la 30 MB) dacă apelăm și \ccode{shrink_to_fit()} după \ccode{clear()}. Altfel, \ccode{clear()} nu garantează recuperarea memoriei.
+
+\subsection{Problema Rusuoaica (FMI No Stress 9 Warmup)}
+\label{problem:rusuoaica}
+
+\href{https://infoarena.ro/problema/rusuoaica}{enunț}
+$\bullet$
+\hyperref[code:rusuoaica]{sursă}
+
+(Sper că știți cum se scrie corect \textit{rusoaică}. Probabil scrierea greșită este doar o glumă între colegi.)
+
+Problema este un experiment de gîndire pornind de la Kruskal. Putem opri algoritmul la costul $A$, cu semnificația că vindem toate muchiile mai scumpe decît $A$. Apoi, dacă rămînem cu $k$ componente conexe, le putem interconecta cu $k-1$ muchii de cost $A$. Pentru simplitate, încă de la citire renunțăm la muchiile de cost mai mare decît $A$.
+
+Ca detaliu de implementare, am ales să las structura de mulțimi disjuncte să țină și evidența numărului de arbori din pădure.
+
+\subsection{Problema MinOr Tree (Codeforces)}
+\label{problem:minor-tree}
+
+\href{https://codeforces.com/contest/1624/problem/G}{enunț}
+$\bullet$
+\hyperref[code:minor-tree]{sursă}
+
+Problema este mai mult de idee; implementarea este elementară.
+
+Putem încerca să sortăm crescător muchiile, în ideea să lăsăm algoritmul lui Kruskal să conecteze graful cu muchii ale căror biți sînt cît mai nesemnificativi. Dar garanția de optimalitate nu se mai aplică la OR la fel ca la sume. Odată ce Kruskal decide că este obligatoriu să folosească muchii cu bitul cel mai semnificativ (să spunem) 6, s-ar putea să fie optim să ștergem unele dintre muchiile anterioare, ca să evităm să folosim bitul 5.
+
+În loc de asta, vom construi soluția bit cu bit. Să spunem că masca OR a tuturor costurilor ocupă 20 de biți.
+
+\begin{itemize}
+  \item Încercăm să vedem dacă putem să conectăm graful doar cu muchii care \textbf{nu} folosesc bitul 19. Dacă da, ștergem acele muchii.
+
+  \item Încercăm să vedem dacă putem să conectăm graful doar cu muchii care folosesc sau nu bitul 19, conform răspunsului anterior, dar \textbf{nu} folosesc bitul 18. Dacă da, ștergem acele muchii.
+
+  \item Etc.
+\end{itemize}
+
+Ca optimizare, dacă un bit nu apare deloc în niciuna dintre muchii, putem omite complet acea iterație.
+
+Ideea de APM ne trimite, de fapt, pe o pistă falsă. Problema este una de conexitate. De aceea nici nu trebuie să sortăm muchiile.
+
+\subsection{Problema 0-1 MST (Codeforces)}
+\label{problem:0-1-mst}
+
+\href{https://codeforces.com/contest/1242/problem/B}{enunț}
+$\bullet$
+\hyperref[code:0-1-mst]{surse}
+
+Această problemă simpatică și un pic anapoda ne cere să găsim APM-ul într-un graf complet cu $n$ noduri, în care toate muchiile au cost 0 în afară de $m$ dintre ele, care au cost 1. Provocarea, desigur, este să facem asta în $\mathcal{O}(m + n)$ sau pe-acolo, fără a depinde de numărul real de muchii, care este $\mathcal{O}(n^2)$.
+
+Problema este ușoară și are multiple soluții. Iată două dintre ele.
+
+\subsubsection*{Soluția cu Kruskal}
+
+Putem adapta algoritmul lui Kruskal. Procesăm doar muchiile de 0 (cele care \textbf{nu apar} la intrare). Doar că trebuie să facem asta în $\mathcal{O}(m)$ (numărul de muchii care \textbf{apar} la intrare). Dacă rămînem cu $k$ componente, atunci costul arborelui este $k-1$.
+
+Pornim de la observația cu care ne-am mai întîlnit: nu contează ce muchii selectăm, ci cîte putem selecta fără a închide cicluri. Procesăm nodurile de la 1 la $n$ și construim structura de mulțimi disjuncte ca de obicei. Ne permitem să petrecem în fiecare nod $u$ timp $\mathcal{O}(\text{deg}_1(u))$, unde $\text{deg}_1(u)$ este numărul de muchii de cost 1 care pornesc din $u$ (cele date la intrare).
+
+Menținem pădurea de mulțimi disjuncte ca în algoritmul lui Kruskal, dar în plus reținem și mărimea fiecărei mulțimi. Pentru nodul curent $u$ contorizăm cîte muchii de cost 1 se duc către fiecare mulțime disjunctă. Numim o mulțime \textbf{saturată} dacă în ea intră un număr de muchii de cost 1 egal cu mărimea ei. Dacă o mulțime nu este saturată, atunci există și muchii de cost 0 către ea (nu uitați că graful este complet). Deci, conform algoritmului lui Kruskal, unim mulțimea lui $u$ cu toate mulțimile nesaturate.
+
+Surprinzător, ne permitem să testăm fiecare mulțime din structură. Efortul pare să fie $\bigoh(n)$ per nod, $\bigoh(n^2)$ în total, dar realitatea este mai bună. Pentru un nod $u$, există cel mult $\text{deg}_1(u)$ mulțimi saturate, deci efortul de a considera toate mulțimile saturate este $\bigoh(m)$. Cît despre mulțimile nesaturate, acelea sînt imediat unificate și dispar din lista de componente, deci efortul global necesar pentru a le procesa este $\bigoh(n \log^{*} n)$.
+
+\subsubsection*{Soluția cu BFS}
+
+Există și o soluție frumoasă care folosește doar parcurgeri și conexitate, ca la numărarea componentelor conexe: din fiecare nod nevizitat pornim o parcurgere folosind doar muchiile de cost 0. Trebuie să avem grijă ca vizitarea fiecărui nod să coste $\mathcal{O}(\text{deg}_1(u))$. Să denumim lista de muchii de cost 1 care pleacă din noul $u$ \textbf{lista de nonadiacență} a lui $u$. Implementarea mea stochează listele de nonadiacență în cîte un \ccode{unordered_set} pentru fiecare nod $u$.
+
+Apoi, menținem o listă $L$ de noduri nevizitate. Cînd scoatem din coada BFS un nod $u$ consultăm lista $L$ și inserăm în coada BFS toate nodurile care nu apar în lista de nonadiacență a lui $u$ (așadar, cele aflate la distanță 0 de $u$).
+
+Poate părea că efortul este $\mathcal{O}(n^2)$, căci pentru fiecare nod vom consulta lista $L$ care are $\mathcal{O}(n)$ noduri. Dar, în realitate, există două scenarii pentru fiecare element $v$ din $L$:
+
+\begin{enumerate}
+  \item $v$ este în lista de adiacență a lui $u$, și deci rămîne în lista $L$. Dar $v$ nu se va afla în această situație decît de $\text{deg}(v)$ ori, deci efortul global este $\mathcal{O}(m)$.
+
+  \item $v$ nu este în lista de adiacență a lui $u$. Atunci îl scoatem pe $v$ din $L$ și îl inserăm în coada BFS. Fiecare element poate fi eliminat doar o dată din $L$, deci efortul global este $\mathcal{O}(n)$.
+\end{enumerate}
+
+De aceea, această soluție obține complexitatea $\mathcal{O}(m + n)$.
+
+De amorul artei, am scris și o \href{https://codeforces.com/contest/1242/submission/309974379}{sursă optimizată} care (1) folosește o coadă proprie și (2) folosește un singur vector în loc de \ccode{unordered_set} pentru a testa existența muchiilor.
+
+\subsection{Problema Minimum Spanning Tree for Each Edge (Codeforces)}
+\label{problem:mst-for-each-edge}
+
+\href{https://codeforces.com/contest/609/problem/E}{enunț}
+$\bullet$
+\hyperref[code:mst-for-each-edge]{sursă}
+
+\subsubsection*{Ideea teoretică}
+
+Iată o soluție care dă răspunsul corect, dar este prea lentă. Pentru a forța APM-ul să includă o muchie $(u, v)$, setăm costul acelei muchii la 0. Alternativ, preinițializăm structura de mulțimi disjuncte (în algoritmul lui Kruskal) respectiv mulțimea de noduri incluse (în algoritmul lui Prim) ca să includem muchia $(u, v)$. Dar nu ne permitem să calculăm un APM pentru fiecare muchie.
+
+Soluția eficientă procedează astfel. Calculăm APM-ul o singură dată. Apoi, pentru fiecare muchie $(u,v)$, aflăm un APM care include muchia:
+
+\begin{enumerate}
+  \item Adăugăm muchia $(u,v)$ la APM. Aceasta creează exact un ciclu.
+  \item Eliminăm ciclul ștergînd cea mai grea muchie de pe calea $(u, v)$ din APM.
+\end{enumerate}
+
+Să demonstrăm că această abordare este corectă. Fie $\mathcal{A}$ APM-ul nostru de cost $C$, fie $c$ costul muchiei $(u,v)$ și fie $c_1$ costul celei mai scumpe muchii de pe ciclul închis de $(u,v)$. Atunci vom da răspunsul $C + c - c_1$.
+
+Cînd ar putea fi acest răspuns greșit? Să presupunem că există un al doilea APM $\mathcal{A'}$, cu același cost $C$ dar cu o structură foarte diferită, în care cea mai scumpă muchie de pe ciclul închis de $(u,v)$ are un cost $c_2 > c_1$. Atunci am avea că $C + c - c_2 < C + c - c_1$. Să vedem unde este contradicția.
+
+Observăm că muchia $c_2$ nu poate face parte din $\mathcal{A}$. Într-adevăr, dacă ar face parte, ea s-ar afla pe ciclul închis de $(u,v)$ și am fi selectat-o pe ea în locul lui $c_1$. Dar atunci muchia $c_2$ închide un ciclu în $\mathcal{A}$. De aici apare contradicția. Din $\mathcal{A}$ știm că $c_2$ este cea mai scumpă muchie de pe acel ciclu (altfel am putea optimiza APM-ul $\mathcal{A}$). Dar, din proprietatea ciclului, știm că muchia $c_2$ nu poate face parte din niciun APM, deci nici din $\mathcal{A'}$.
+
+\subsubsection*{Implementare cu LCA și \textit{binary lifting}}
+
+Așadar, trebuie să răspundem la $m$ interogări de maxime pe căi. Știm deja abordarea clasică, în $\mathcal{O}(\log n)$ per interogare: alegem o rădăcină pentru arbore, să zicem nodul 1, și precalculăm informații de LCA cu \textit{binary lifting}. Fiecare pointer reține și valoarea maximă a unei muchii pe care o traversează.
+
+\subsubsection*{Implementare cu mulțimi disjuncte modificate}
+
+Soluția mea împrumută o altă idee, pe care o vom detalia. Ea folosește o structură de date $S$ care este „un fel de” \textit{disjoint set forest} de complexitate $\mathcal{O}(\log n)$ per operație.
+
+Concret, procesăm muchiile în ordine crescătoare a costului. Începem să unificăm componentele conexe conform algoritmului lui Kruskal. Dar nu folosim compresia căii, căci ne interesează ca $S$ să păstreze o informație esențială, care s-ar pierde prin reorganizare. Pentru orice pereche de noduri deja conectate, $u$ și $v$, dorim ca $S$ să faciliteze găsirea muchiei celei mai scumpe de pe calea $u-v$.
+
+Cînd procesăm muchia $(u,v)$ de cost $c$, dacă $u$ și $v$ provin din componente diferite, găsim rădăcinile $u'$ și $v'$ ca de obicei. Apoi legăm $u'$ de $v'$ și notăm costul $c$. Aceasta garantează că, pentru a ajunge (în $S$) de la orice nod din componenta lui $u'$ la orice nod din componenta lui $v'$, trebuie să trecem prin muchia $(u',v')$.
+
+Dacă componenta lui $u'$ este mai mare, legăm $v'$ la $u'$, altfel invers. Aceasta garantează că numărul de muchii de pe orice cale este logaritmic.
+
+Cum folosim, concret, structura $S$ ca să aflăm răspunsul pentru fiecare muchie? Dacă $u$ și $v$ provin din componente diferite, știm din algoritmul lui Kruskal că $(u,v)$ face parte din APM, deci răspunsul pentru ea va fi costul APM-ului, odată ce îl determinăm.
+
+Dacă, în schimb, procesăm o muchie $(u,v)$ și determinăm că nodurile sînt deja conectate, atunci urcăm cu $u$ și $v$ prin $S$ pînă cînd se întîlnesc, apoi returnăm muchia maximă întîlnită pe drum.
+
+\subsection{Problema Apm2 (Infoarena)}
+\label{problem:apm2}
+
+\href{https://infoarena.ro/problema/apm2}{enunț}
+$\bullet$
+\hyperref[code:apm2]{sursă}
+
+Problema este foarte similară cu cea anterioară (\hyperref[problem:mst-for-each-edge]{Minimum Spanning Tree for Each Edge}). Dar merită reluată observația teoretică.
+
+Intuiția ne spune să calculăm un APM. Apoi, pentru o interogare $(u, v)$, răspunsul este $c - 1$, unde $c$ este costul maxim de pe calea $(u, v)$ din APM. Justificarea este că dorim să punem un cost cît mai mare pe $(u, v)$, dar suficient de mic încît, la refacerea APM-ului, muchia $(u, v)$ să rămînă în APM.
+
+Cum demonstrăm asta? Nu putem demonstra doar pe APM-ul particular pe care l-a construit programul nostru, ci pe orice APM. Să studiem mai atent algoritmul lui Kruskal. Motivul pentru care pe o cale $(u,v)$ există o muchie de cost maxim $c$ este că, după procesarea muchiilor de cost $\leq c-1$, componentele lui $u$ și $v$ nu erau încă conectate.
+
+De aceea, dacă pentru interogarea $(u,v)$ alegem costul $c-1$, atunci algoritmul lui Kruskal ar alege garantat muchia. Detaliu la care vom reveni: algoritmul ar alege muchia indiferent unde ar fi ea sortată între alte muchii de cost $c-1$.
+
+Dacă punem costul muchiei $(u, v) = c$, atunci în mod evident algoritmul poate omite muchia $(u, v)$, căci poate uni componentele folosind cealaltă muchie de cost $c$.
+
+Implementarea mea folosește același pseudo-\textit{disjoint set forest} cu timp logaritmic. Dar, ca și mai înainte, soluția cu LCA funcționează și ea perfect.
+
+\subsection{Problema Edges in MST (Codeforces)}
+\label{problem:edges-in-mst}
+
+\href{https://codeforces.com/contest/160/problem/D}{enunț}
+$\bullet$
+\hyperref[code:edges-in-mst]{sursă}
+
+Problema duce un pas mai departe experimentele de gîndire despre APM. Să considerăm că algoritmul lui Kruskal a procesat toate muchiile de cost mai mic decît $c$ și a obținut niște componente conexe. Subliniem că partiționarea în componente nu depinde de sortarea pe care algoritmul lui Kruskal s-a întîmplat să o aleagă pentru muchii de costuri egale. Exemplu: dintr-un triunghi de muchii de cost 4, Kruskal va alege două. Cele trei noduri vor fi conectate indiferent de muchiile alese.
+
+Atunci să considerăm graful componentelor, în care fiecare nod corespunde unei componente conexe, și să considerăm „pachetul” de muchii de cost $c$.
+
+\begin{itemize}
+  \item O muchie va apărea în \textbf{toate APM-urile} dacă este punte.
+
+  \item Altfel, o muchie va apărea în \textbf{unele APM-uri} dacă unește două componente distincte.
+
+  \item Altfel, o muchie unește două noduri din aceeași componentă și nu va apărea în \textbf{niciun APM.}
+\end{itemize}
+
+Vom defini noțiunea de \textbf{punte}, iar deocamdată vom lua fără demonstrație codul de găsire a punților. Vom reveni la el în capitolul \ref{chapter:connectivity}.
+
+Implementarea constă din algoritmul lui Kruskal + un DFS pentru fiecare bloc de muchii egale. Atenție la două detalii de implementare:
+
+\begin{itemize}
+  \item Fiecare DFS pe un pachet de $k$ muchii trebuie să fie $\mathcal{O}(k)$. Orice \ccode{for} neatent, în $\mathcal{O}(n)$, poate duce complexitatea totală la $\mathcal{O}(n^2)$ dacă toate muchiile au costuri distincte.
+
+  \item Deși graful inițial este simplu, în graful componentelor pot exista muchii paralele (între perechi de noduri din aceleași componente). Este nevoie de puțină atenție în algoritmul lui Tarjan de găsire a punților. Este acceptabil (și necesar) să luăm în calcul toate muchiile care duc înapoi la părinte, doar nu fix pe cea pe care am venit. Sursa mea folosește indicele original al muchiei. \href{https://cp-algorithms.com/graph/bridge-searching.html#implementation}{CP Algorithms} oferă o soluție mai generală.
+\end{itemize}
+
+\subsection{Problema Envy (Codeforces)}
+\label{problem:envy}
+
+\href{https://codeforces.com/contest/891/problem/C}{enunț}
+$\bullet$
+\hyperref[code:envy]{sursă}
+
+Să pornim (din nou...) de la algoritmul lui Kruskal. Ne reamintim că, după procesarea muchiilor de cost $\leq c$, structura componentelor conexe va fi identică. Pot varia doar conexiunile interne din fiecare componentă. Așadar, putem procesa muchiile din fiecare interogare grupate după greutăți.
+
+Cînd va avea o interogare răspunsul „nu”? Cînd unul dintre aceste grupuri include muchii care închid cicluri. De exemplu, dacă o interogare include (printre altele) trei muchii de greutate 10, iar la acel moment în algoritmul lui Kruskal muchiile unesc componentele $C_1 - C_2$, $C_2 - C_3$ și $C_3 - C_1$, interogarea are răspunsul „nu”.
+
+Cum testăm existența acestor cicluri? Editorialul propune, pentru fiecare interogare și pentru fiecare grup de muchii de același cost $c$, cîte un DFS doar pe acele muchii \textbf{la momentul potrivit} în algoritmul lui Kruskal, adică înainte de a procesa muchiile de cost $c$.
+
+Soluția mea folosește un \textit{disjoint set forest} cu suport pentru \textit{undo}: procesăm muchiile de cost $c$ din interogare, verificăm dacă vreuna dintre ele închide un ciclu, apoi restaurăm pădurea la starea anterioară. Abia la finalul interogărilor pentru toate greutățile $c$ le încorporăm (permanent) în pădure.
+
+Aveam așteptări mari de la implementare, dar este cam lentă. \emoji{smiling-face-with-tear}
+
+\subsection{Problema DFS Trees (Codeforces)}
+\label{problem:dfs-trees}
+
+\href{https://codeforces.com/contest/1707/problem/C}{enunț}
+$\bullet$
+\hyperref[code:dfs-trees]{sursă}
+
+Aceasta este mai puțin o problemă de APM și mai mult un experiment de gîndire despre DFS.
+
+\subsubsection*{Teoria}
+
+Să definim doi termeni specifici DFS-ului în grafuri neorientate. Cînd ajungem într-un nod $u$,
+
+\begin{itemize}
+  \item \textbf{Muchiile de arbore} sînt acele muchii $(u,v)$ pe care DFS-ul se reapelează din $v$.
+
+  \item \textbf{Muchiile înapoi} sînt acele muchii $(u,v)$ pe care DFS-ul nu se reapelează, căci $v$ a fost vizitat anterior.
+\end{itemize}
+
+Acum, să observăm că APM-ul este unic, costurile fiind distincte. Îl putem calcula cu algoritmul lui Kruskal (este foarte convenabil, căci primim deja muchiile în ordinea crescătoare a costului). Apoi, întrebarea pentru fiecare nod de pornire $1 \leq x \leq n$ este dacă DFS-ul va folosi ca muchii de arbore exact cele $n-1$ muchii din APM.
+
+Să considerăm întrebarea echivalentă: cum știm dacă DFS-ul din $x$ va evita cele $m-n+1$ muchii care nu fac parte din APM? Să considerăm o astfel de muchie, $e=(u,v)$. Dacă $e$ nu face parte din APM, înseamnă că închide un ciclu $(u,v)$ în APM. Acum (pentru a suta oară în acest curs), să schimbăm modul de agregare a datelor. În loc să fixăm $x$ și să luăm în calcul toate muchiile, să fixăm muchia $e$ și să luăm în calcul toate nodurile de pornire $x$. Marcăm ca „rău” orice nod de pornire care vizitează muchia $e$ ca muchie de arbore. După ce luăm în calcul toate muchiile, răspunsul va fi \texttt{0} pentru nodurile care au fost marcate ca „rele” cel puțin o dată, \texttt{1} pentru restul.
+
+Am ajuns astfel la întrebarea: pentru o muchie $e=(u,v) \not\in \textrm{APM}$, ce noduri de pornire $x$ vizitează $e$ ca muchie de arbore? Fie $C$ ciclul format de $e$ cu lanțul $u-v$ din APM. Fie $y$ primul nod descoperit de DFS dintre toate cele din $C$. Dacă $y = u$, atunci DFS-ul nu va pleca pe muchia $e$, care este scumpă, ci va pleca (la un moment dat) spre $v$. Tot lanțul $u-v$, inclusiv $v$, va deveni subarbore al lui $u$ în DFS.
+
+Aceasta este observația crucială despre DFS: odată ce marchează $u$ ca vizitat și pornește pe lanțul care duce spre $v$, DFS-ul nu va mai reveni în $u$ pînă nu termină de explorat toate nodurile noi, care includ tot lanțul $u-v$. Cîndva în acest proces DFS-ul va descoperi nodul $v$ și muchia $e$ și va constata că este muchie înapoi. Nu este garantat că DFS-ul va explora lanțul în ordinea din APM. Pot exista alte muchii și lanțuri care să încîlcească traseul. Dar este garantat că va explora tot lanțul și va ajunge la $v$.
+
+Același argument se aplică și pentru $y=v$. Dacă în schimb $y$ este alt nod de pe lanț, atunci se aplică argumentul invers. Fie $f$ și $g$ muchiile către cele două noduri vecine cu $y$ în $C$. DFS-ul va porni pe una dintre ele, să zicem pe $f$. Tot ciclul va deveni subarbore al lui $y$ prin $f$, iar muchia $g$ va fi muchie înapoi. Aceasta este o greșeală, căci $g$ este muchie din APM și DFS-ul o omite.
+
+\subsubsection*{Implementarea}
+
+Așadar, pentru fiecare muchie $e=(u,v)$ din afara APM-ului, nodurile care o vor traversa în DFS, și care trebuie marcate ca „rele”, sînt cele din care, pornind, descoperim ciclul $C$ printr-un nod diferit de $u$ și de $v$. Sună monstruos de implementat! \emoji{fearful-face}
+
+În realitate, este suficient să considerăm doar APM-ul. Dacă „atîrnăm” acest APM ca pe o frînghie de nodurile $u$ și $v$, atunci trebuie să marcăm ca „rele” toate nodurile dintre $u$ și $v$ și toți subarborii acelor noduri. În practică arborele este înrădăcinat, deci iau naștere două cazuri:
+
+\begin{enumerate}
+  \item Dacă $u$ este strămoș al lui $v$, atunci marcăm ca rău tot subarborele fiului $w$ al lui $u$ care pornește către $v$, cu excepția subarborelui lui $v$. Similar dacă $v$ este strămoș al lui $u$.
+
+  \item Dacă $u$ și $v$ nu sînt în relația strămoș-descendent, atunci marcăm ca rău tot arborele cu excepția subarborilor lui $u$ și $v$.
+\end{enumerate}
+
+Putem face aceste operații cu vectori de diferențe pe arbore:
+
+\begin{enumerate}
+  \item Pentru cazul (1), notăm +1 în $w$ și -1 în $v$.
+  \item Pentru cazul (2), notăm +1 în rădăcină, -1 în $u$ și -1 în $v$.
+  \item Apoi propagăm valorile în jos (fiecare nod calculează suma valorilor de la el la rădăcină).
+\end{enumerate}
+
+La final, nodurile „rele” sînt cele care au valori pozitive, nodurile bune sînt cele care au valori 0.
