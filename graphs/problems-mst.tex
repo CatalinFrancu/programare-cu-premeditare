@@ -122,6 +122,8 @@ De amorul artei, am scris și o \href{https://codeforces.com/contest/1242/submis
 $\bullet$
 \hyperref[code:mst-for-each-edge]{sursă}
 
+O problemă practic identică este \href{https://kilonova.ro/problems/1007}{VS-Movies Group} (finala IIOT 2020-2021).
+
 \subsubsection*{Ideea teoretică}
 
 Iată o soluție care dă răspunsul corect, dar este prea lentă. Pentru a forța APM-ul să includă o muchie $(u, v)$, setăm costul acelei muchii la 0. Alternativ, preinițializăm structura de mulțimi disjuncte (în algoritmul lui Kruskal) respectiv mulțimea de noduri incluse (în algoritmul lui Prim) ca să includem muchia $(u, v)$. Dar nu ne permitem să calculăm un APM pentru fiecare muchie.
