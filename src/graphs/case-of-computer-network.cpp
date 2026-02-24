@@ -68,7 +68,7 @@ void endpoint_action(int u) {
   for (auto v: nd[u].pairs) {
     if (nd[v].depth) {
       int lca = ds.find(v);
-      // Spune-i LCA-ului să închida o pereche (sursă, destinație).
+      // Spune-i LCA-ului să închidă o pereche (sursă, destinație).
       nd[lca].num_src--;
       nd[lca].num_dest--;
     }

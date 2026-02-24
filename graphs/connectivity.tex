@@ -13,13 +13,15 @@ Există doi algoritmi clasici, ambii în $\bigoh(m + n)$. Ambii necesită cod si
 
 \subsection{Algoritmul lui Kahn}
 
-Acest algoritm este practic un BFS. Inițializăm o coadă cu nodurile cu grad la intrare 0. Acestea pot fi enumerate primele în sortarea topologică, în orice ordine. Explorăm graful, tipărind nodurile pe măsură ce le scoatem din coadă. De cîte ori un nod a fost explorat de un număr de ori egal cu gradul său la intrare, îl introducem și pe el în coadă, cu semnificația că și el poate fi tipărit.
+Acest algoritm este practic un BFS. Inițializăm o coadă cu nodurile cu grad la intrare 0. Acestea pot fi enumerate primele în sortarea topologică, în orice ordine. Explorăm graful, procesînd în mod repetat primul nod din coadă. Procesarea înseamnă să tipărim nodul și să incrementăm cîte un contor pe fiecare succesor al nodului, cu semnificația că acelui succesor i-am satisfăcut o cerință. Cînd contorul unui nod devine egal cu gradul său la intrare, îl introducem și pe el în coadă.
 
 Graful conține un ciclu dacă coada rămîne goală înainte să explorăm toate nodurile.
 
 \subsection{Algoritmul bazat pe DFS}
 
 Pornim un DFS dintr-un nod oarecare. La fiecare nivel recursiv al DFS-ului, la revenirea din descendenți adăugăm nodul curent la ordinea topologică. Dacă după încheierea DFS-ului mai există noduri nedescoperite, alegem la întîmplare unul dintre acestea și pornim un nou DFS. De remarcat că algoritmul produce o sortare topologică \textbf{inversă}.
+
+Puzzle: De ce nu este acceptabil să procedăm invers: să adăugăm nodul la ordinea topologică la intrarea în DFS, ca să obținem o ordine topologică normală?
 
 Graful conține un ciclu dacă DFS-ul încearcă, la orice moment, să viziteze un nod gri (un nod din stiva DFS).
 
@@ -64,7 +66,7 @@ Acest algoritm face două parcurgeri DFS pentru a găsi componentele tare conexe
   \item Fiecare submulțime găsită de DFS-ul de la pasul 3 este o componentă tare conexă.
 \end{enumerate}
 
-De ce funcționează acest algoritm? Să studiem relația între valorile lui $t_{out}$ (în graful original) și graful componentelor. Fie două componente $C$ și $C'$ între care există o muchie $(u, v)$ cu $u \in C$ și $v \in C'$. Atunci putem demonstra că $t_{in}[C] > t_{in}[C']$. Într-adevăr, există două cazuri:
+De ce funcționează acest algoritm? Să studiem relația între valorile lui $t_{out}$ (în graful original) și graful componentelor. Fie două componente $C$ și $C'$ între care există o muchie $(u, v)$ cu $u \in C$ și $v \in C'$. Atunci putem demonstra că $t_{out}[C] > t_{out}[C']$. Într-adevăr, există două cazuri:
 
 \begin{enumerate}
   \item Dacă $C$ este descoperită prima, fie $x \in C$ primul nod vizitat. Toate nodurile din $C$ și din $C'$ devin descendenți ai lui $x$ în arborele DFS, deci nodul $x$ va fi ultimul părăsit. Rezultă că $t_{out}[C] = t_{out}[x] > t_{out}[C']$.
@@ -109,7 +111,7 @@ Acest algoritm face o singură parcurgere DFS. Pentru fiecare nod $u$ stocăm do
 
 \begin{itemize}
   \item $d[u]$ este adîncimea nodului
-  \item $l[u]$ (\textit{lowpoint}) este adîncimea minimă a oricărui vecin al oricărui nod din subarborele lui $u$.
+  \item $l[u]$ (\textit{lowpoint}) este adîncimea minimă la care poate urca orice muchie înapoi din subarborele lui $u$.
 \end{itemize}
 
 Observația crucială este că, dacă niciun nod din subarborele lui $u$ nu poate urca mai sus decît $u$, adică dacă $l[u] = d[u]$, atunci
@@ -122,7 +124,7 @@ Observația crucială este că, dacă niciun nod din subarborele lui $u$ nu poat
 
 Pentru enumerarea efectivă a nodurilor din fiecare componentă, punem nodurile într-o stivă pe măsură ce le descoperim, dar \textbf{nu le scoatem din stivă} la revenirea din DFS. În schimb, cînd determinăm că un nod $u$ este punctul de intrare într-o CTC, atunci scoatem toate nodurile din stivă, pînă la $u$ inclusiv. Ele formează o CTC și le putem procesa după cum cere problema (de exemplu, le putem eticheta cu aceeași etichetă numerică).
 
-Acest algoritm generează componentele într-o ordine invers topologică a grafului $G$.
+Acest algoritm generează componentele într-o ordine invers topologică a grafului $G^{SCC}$.
 
 \section{Componente biconexe, punți, puncte de articulație}
 
