@@ -6,7 +6,7 @@
 const int MAX_NODES = 100'000;
 
 struct node {
-  std::vector<int> adj, adjt;
+  std::vector<int> adj;
   int time_in;
   int low;
   bool on_stack;
