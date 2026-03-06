@@ -66,9 +66,9 @@ Putem răspunde la aceste întrebări în timp total $\bigoh(n \log n)$ folosind
 
 Pentru \textit{unranking}, trebuie să răspundem rapid la întrebarea: care este al $k$-lea bit zero dintr-o mască de biți? O variantă este să precalculăm acest răspuns pentru toate măștile. Dar pentru $n = 20$, aceasta va necesita memorie $2^n \cdot n = 20$ MB, ceea ce nu este ideal. Există și o operație primitivă, PDEP, dar ea nu este implementată pe toate arhitecturile și poate funcționa chiar mai lent decît căutarea naivă.
 
-\label{problem:combinatorics-perm-rank}
+\label{problem:math-perm-rank}
 
-Vom citi \hyperref[code:combinatorics-perm-rank]{implementările} acestor algoritmi. Iată și un \textit{benchmark} pentru $n = 20$:
+Vom citi \hyperref[code:math-perm-rank]{implementările} acestor algoritmi. Iată și un \textit{benchmark} pentru $n = 20$:
 
 \begin{verbatim}
 [cata@neil combinatorics]$ ./permutation-rank
@@ -220,6 +220,6 @@ void unrank_colex(u64 rank, int* dest) {
 }
 \end{minted}
 
-\label{problem:combinatorics-comb-rank}
+\label{problem:math-comb-rank}
 
-\hyperref[code:combinatorics-comb-rank]{Implementarea completă} este anexată.
+\hyperref[code:math-comb-rank]{Implementarea completă} este anexată.
