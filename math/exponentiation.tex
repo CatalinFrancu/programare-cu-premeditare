@@ -1,0 +1,124 @@
+\chapter{Rezolvarea recurențelor liniare prin exponențiere rapidă}
+
+Să pornim de la codul binecunoscut pentru calculul lui $a^n$ în $\bigoh(\log n)$:
+
+\begin{minted}{c}
+int mod_pow(int a, int n) {
+  long long result = 1;
+
+  while (n) {
+    if (n & 1) {
+      result = result * a % MOD;
+    }
+    a = (long long)a * a % MOD;
+    n >>= 1;
+  }
+
+  return result;
+}
+\end{minted}
+
+Algoritmul funcționează rapid pentru că accelerează succesiuni lungi de înmulțiri simple, înlocuindu-le cu ridicări la pătrat. Putem folosi aceeași rețetă pentru a ridica la putere orice obiecte care pot fi înmulțite și a căror înmulțire este asociativă, în particular matricele pătrate și permutările. Trebuie doar ca, în loc de o valoare întreagă, \ccode{a} să fie o matrice, iar în loc de operatorul \ccode{*} pentru înmulțire de întregi să implementăm înmulțirea de matrice.
+
+Vom vedea cum exponențierea de matrice ne poate ajuta în probleme de programare dinamică în care trebuie să împingem limita pentru $n$ pînă la valori foarte mari.
+
+\section{Șirul lui Fibonacci. Matrice generatoare}
+
+Să considerăm un exemplu celebru: șirul lui Fibonacci, definit ca
+
+$$
+\begin{cases}
+  F_0 &= 0 \\
+  F_1 &= 1 \\
+  F_n &= F_{n-1} + F_{n-2} \quad \textrm{pentru} \; n \geq 2
+\end{cases}
+$$
+
+Dacă $n$ este foarte mare, de ordinul a $10^{18}$, atunci calculul liniar nu ne mai ajută. Vom încerca să exprimăm recurența cu următoarele elemente:
+
+\begin{itemize}
+  \item Un vector-coloană, $V_n$, pentru pasul curent al formulei. Acesta trebuie să includă cel puțin termenul de calculat, $F_n$.
+  \item Un vector-coloană, $V_{n-1}$, pentru pasul anterior al formulei. Acesta trebuie să includă toți termenii de care depine $F_n$, în cazul nostru $F_{n-1}$ și $F_{n-2}$, și posibil și alte cantități.
+  \item O matrice $A$, numită \textbf{matrice generatoare}, cu proprietatea că
+\end{itemize}
+
+$$V_{n} = A \cdot V_{n-1}$$
+
+Pentru șirul lui Fibonaci, obținem relația:
+
+$$
+\begin{pmatrix} F_{n} \\ F_{n-1} \end{pmatrix}
+=
+\begin{pmatrix} 1 & 1 \\ 1 & 0 \end{pmatrix}
+\begin{pmatrix} F_{n-1} \\ F_{n-2} \end{pmatrix}
+$$
+
+Remarcăm că matricea este constantă (independentă de $n$). De aceea, putem scrie:
+
+$$
+\begin{pmatrix} F_{n} \\ F_{n-1} \end{pmatrix}
+=
+\begin{pmatrix} 1 & 1 \\ 1 & 0 \end{pmatrix}^{n-1}
+\begin{pmatrix} F_{1} \\ F_{0} \end{pmatrix}
+$$
+
+Iar pe $A^{n-1}$ îl putem calcula cu exponențiere rapidă.
+
+Arta pentru acest gen de probleme este tocmai să găsim forma vectorului-coloană și matricea generatoare. Observăm că vectorul-coloană din dreapta trebuie să conțină toate cantitățile necesare pentru calculul lui $F_n$, ceea ce dictează și structura vectorului din stînga (cei doi sînt identici, doar indicii diferă cu 1).
+
+Să vedem două exemple mai complicate.
+
+\section{Alte recurențe liniare}
+
+Să considerăm un exemplu în care recurența implică 4 termeni anteriori. Vom folosi o matrice de $4 \times 4$. Termenii $F_0$, $F_1$, $F_2$ și $F_3$ sînt dați, iar formula de recurență este:
+
+$$F_{n} = a F_{n - 1} + b F_{n - 2} + c F_{n - 3} + d F_{n-4}$$
+
+Atunci recurența exprimată matricial este:
+
+
+$$
+\begin{pmatrix} F_{n} \\ F_{n-1} \\ F_{n-2} \\ F_{n-3} \end{pmatrix}
+=
+\begin{pmatrix}
+  a & b & c & d \\
+  1 & 0 & 0 & 0 \\
+  0 & 1 & 0 & 0 \\
+  0 & 0 & 1 & 0 \\
+\end{pmatrix}
+\begin{pmatrix} F_{n-1} \\ F_{n-2} \\ F_{n-3} \\ F_{n-4} \end{pmatrix}
+$$
+
+\section{Recurențe liniare cu termen constant}
+
+Să considerăm acum recurența:
+
+$$F_{n} = a F_{n - 1} + b F_{n - 2} + c F_{n-3} + d$$
+
+Secretul aici este să nu încercăm să construim vectori-coloană doar de 3 elemente. Dat fiind că există și un termen liber, trebuie să punem și o valoare scalară pe vectorii-coloană. Avem două variante:
+
+$$
+\begin{pmatrix} F_{n} \\ F_{n-1} \\ F_{n-2} \\ 1 \end{pmatrix}
+=
+\begin{pmatrix}
+  a & b & c & d \\
+  1 & 0 & 0 & 0 \\
+  0 & 1 & 0 & 0 \\
+  0 & 0 & 0 & 1 \\
+\end{pmatrix}
+\begin{pmatrix} F_{n-1} \\ F_{n-2} \\ F_{n-3} \\ 1 \end{pmatrix}
+$$
+
+sau
+
+$$
+\begin{pmatrix} F_{n} \\ F_{n-1} \\ F_{n-2} \\ d \end{pmatrix}
+=
+\begin{pmatrix}
+  a & b & c & 1 \\
+  1 & 0 & 0 & 0 \\
+  0 & 1 & 0 & 0 \\
+  0 & 0 & 0 & 1 \\
+\end{pmatrix}
+\begin{pmatrix} F_{n-1} \\ F_{n-2} \\ F_{n-3} \\ d \end{pmatrix}
+$$

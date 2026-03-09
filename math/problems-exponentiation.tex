@@ -1,0 +1,355 @@
+\section{Probleme}
+
+\subsection{Problema Al k-lea termen Fibonacci (Infoarena)}
+\label{problem:kfib}
+
+\href{https://www.infoarena.ro/problema/kfib}{enunț}
+$\bullet$
+\hyperref[code:kfib]{sursă}
+
+Aceasta este exact problema educațională discutată la începutul capitolului. Am scris manual cele patru valori din produsul a două matrice de $2 \times 2$.
+
+\subsection{Problema Iepuri (Infoarena)}
+\label{problem:iepuri}
+
+\href{https://www.infoarena.ro/problema/iepuri}{enunț}
+$\bullet$
+\hyperref[code:iepuri]{sursă}
+
+Și această problemă necesită o recurență relativ simplă. Matricea fiind de $3 \times 3$, am scris înmulțirea cu 3 \ccode{for}-uri.
+
+\subsection{Problema Recurenta2 (Infoarena)}
+\label{problem:recurenta2}
+
+\href{https://www.infoarena.ro/problema/recurenta2}{enunț}
+$\bullet$
+\hyperref[code:recurenta2]{sursă}
+
+Recurența începe să se complice! Să procedăm în etape.
+
+Să presupunem, pentru început, că problema ne-ar cere doar să aflăm $X_n$. Acestă recurență știm să  o scriem deja:
+
+$$
+\begin{pmatrix}
+  X_n \\ X_{n-1} \\ 1
+\end{pmatrix}
+=
+\begin{pmatrix}
+  a & b & c\\
+  1 & 0 & 0\\
+  0 & 0 & 1
+\end{pmatrix}
+\begin{pmatrix}
+  X_{n-1} \\ X_{n-2}\\ 1
+\end{pmatrix}
+$$
+
+Acum să atacăm problema sumelor. Să presupunem că problema ne-ar cere să aflăm suma simplă $S_n = \sum_{k=1}^{n} X_k$. Reținem că matricea de recurență trebuie să fie \textbf{constantă}. Nu putem adăuga valori din șirul $X$ acolo, ci doar constante exprimabile în funcție de $a$, $b$ și $c$. Rezultă că trebuie să „cărăm după noi” și suma $S_n$. Ne folosim, desigur, de recurența:
+
+$$S_n = S_{n-1} + X_n = S_{n-1} + (a X_{n-1} + b X_{n-2} + c)$$
+
+Observăm că am expandat valoarea lui $X_n$. Aceasta deoarece în vectorul-coloană din dreapta ($V_{n-1}$) noi voi avea acces doar la cantități de rangul $n-1$ sau mai mic. Acum nu este greu să construim matricea de recurență:
+
+$$
+\begin{pmatrix}
+  X_n \\ X_{n-1} \\ S_n \\ 1
+\end{pmatrix}
+=
+\begin{pmatrix}
+  a & b & 0 & c\\
+  1 & 0 & 0 & 0\\
+  a & b & 1 & c\\
+  0 & 0 & 0 & 1
+\end{pmatrix}
+\begin{pmatrix}
+  X_{n-1} \\ X_{n-2} \\ S_{n-1} \\ 1
+\end{pmatrix}
+$$
+
+Acum putem ataca și cerința originală a problemei: $S_n = \sum_{k=1}^{n} k \cdot X_k$. Din nou, nu avem voie să punem în matricea de recurență cantități variabile, cum ar fi $k$. Să vedem ce adăugăm la $V_{n-1}$ și cum obținem o formă închisă, minimă și suficientă pentru $V_n$.
+
+Știm că $S_n = S_{n-1} + n X_n$. Dar noi trebuie să exprimăm termenii de rang $n$ în funcție de ranguri mai mici, deci îl vom scrie pe $n X_n$ ca:
+
+\begin{align*}
+  n X_n &= n \cdot (a X_{n-1} + b X_{n-2} + c) \\
+  &= a (n - 1) X_{n - 1} + a X_{n - 1} + b (n - 2) X_{n - 2} + 2 b X_{n - 2} + c (n - 1) + c
+\end{align*}
+
+De aici rezultă $V_{n-1}$ trebuie să includă în plus cantitățile $(n-1)$, $(n-1) X_{n-1}$ și $(n-2) X_{n-2}$, deci $V_{n}$ trebuie să includă cantitățile $n$, $n X_n$ și $(n-1) X_{n-1}$. Recurența completă este un pic (doar un pic) fioroasă. Ea cere doar meticulozitate, dar nu este dificil de dedus.
+
+$$
+\begin{pmatrix}
+  X_n \\ X_{n-1} \\ n X_n \\ (n-1) X_{n-1} \\ S_n \\ n \\ 1
+\end{pmatrix}
+=
+\begin{pmatrix}
+  a & b & 0 & 0 & 0 & 0 & c\\
+  1 & 0 & 0 & 0 & 0 & 0 & 0\\
+  a & 2b & a & b & 0 & c & c\\
+  0 & 0 & 1 & 0 & 0 & 0 & 0\\
+  a & 2b & a & b & 1 & c & c\\
+  0 & 0 & 0 & 0 & 0 & 1 & 1\\
+  0 & 0 & 0 & 0 & 0 & 0 & 1
+\end{pmatrix}
+\begin{pmatrix}
+  X_{n-1} \\ X_{n-2} \\ (n-1) X_{n-1} \\ (n-2) X_{n-2} \\ S_{n-1} \\ n-1 \\ 1
+\end{pmatrix}
+$$
+
+Codul trebuie scris cu atenție și eventual comentat pe alocuri. Altfel devine \textit{a malignant morass of code} (citat din marii clasici).
+
+\subsection{Problema Graph Paths I (CSES)}
+\label{problem:graph-paths-1}
+
+\href{https://cses.fi/problemset/task/1723}{enunț}
+$\bullet$
+\hyperref[code:graph-paths-1]{sursă}
+
+Această problemă amintește de algoritmul Floyd-Warshall:
+
+\begin{minted}{c}
+for (int k = 0; k < n; k++) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+    }
+  }
+}
+\end{minted}
+
+
+Cu costuri pe muchii și cu funcția $\min$, algoritmul calculează distanțele minime. La pasul $k$, $A_{i,j}$ reține distanța minimă între nodurile $i$ și $j$ care trec prin nodurile intermediare $1 \dots k$.
+
+Pentru problema de față, să inițializăm $A_{i,j}$ cu numărul de arce orientate $(i, j)$ (0 sau 1). Atunci cine este $A^2$? Prin definiție,
+
+$$A^2_{i,j} = \sum_{k=1}^{n} A_{i,k} \cdot A_{k,j}$$
+
+Dar acesta este exact numărul de drumuri de lungime 2 care pornesc din $i$, trec prin orice alt nod $k$ și se termină în $j$! Printr-un raționament similar, $A^k$ reține numerele de căi de lungime $k$ între orice două noduri. Răspunsul la problemă este $A^k_{1,n}$.
+
+\subsection{Problema Hprob (Infoarena)}
+\label{problem:hprob}
+
+\href{https://www.infoarena.ro/problema/hprob}{enunț}
+$\bullet$
+\hyperref[code:hprob]{sursă}
+
+Această problemă necesită cîteva cunoștințe de probabilități.
+
+În esență, trebuie să construim un graf cu $4! = 24$ de stări (noduri). O stare reprezintă o ordine a obiectelor, iar o muchie reprezintă o rearanjare făcută de unul dintre clienți, cu una dintre probabilitățile $p_1$, $p_2$, $p_3$ sau $p_4$ (sau 0 dacă permutarea nu este una dintre cele 4 posibile). Dacă reprezentăm graful folosind o matrice de adiacență $A$, atunci pe fiecare linie vom regăsi cîte o dată probabilitățile $p_1$, $p_2$, $p_3$ și $p_4$, precum și 20 de valori 0.
+
+Am putea hard-coda matricea $A$ imediat după citirea datelor, dar procesul este laborios și riscant. Mai sigur este să o construim programatic. De aceea, vom avea nevoie să facem \textit{ranking} și \textit{unranking} la permutările de 4 elemente. Această parte o putem hard-coda, fiind suficient de simplă.
+
+Acum, să analizăm ce semnifică produsul de matrice:
+
+$$A^2_{i,j} = \sum_{k=1}^{n} A_{i,k} \cdot A_{k,j}$$
+
+El arată exact probabilitatea de a ajunge din starea $i$ în starea $j$ după doi clienți, trecînd prin orice stare intermediară $k$. Adunarea este exact operația dorită, căci evenimentele sînt independente: primul client face o tranziție și numai una, nu poate urma mai multe muchii. De aceea, probabilitățile de forma $A_{i,k} \cdot A_{k,j}$ se adună.
+
+Așadar, răspunsul la problemă este $A^n_{0,0}$.
+
+Pentru o problemă similară, vezi \href{https://cses.fi/problemset/task/1724}{Graph Paths II (CSES)}. Ea necesită tot un fel de înmulțire de matrice, dar cu funcția $min$.
+
+\subsection{Problema Chef and Riffles (CodeChef)}
+\label{problem:riffles}
+
+\href{https://www.codechef.com/problems/RIFFLES}{enunț}
+$\bullet$
+\hyperref[code:riffles]{sursă}
+
+Uneltele pe care le-am discutat pentru înmulțirea rapidă a matricelor se aplică și pentru permutări. Problema este directă: ne dă o permutare $P$ și ne cere să o aplicăm de $k$ ori permutării identice.
+
+Tot ce trebuie să știm este că compunerea de permutări este asociativă (atenție, nu și comutativă!). Iată un exemplu școlăresc pentru $n = 10$. Îl includ doar ca să nu uitați că unele noțiuni vi le puteți demonstra singuri în cîteva minute. Șansa să obținem o egalitate dacă compunerea de permutări nu ar fi asociativă este practic nulă.
+
+\begin{align*}
+  P &= (2\; 6\; 3\; 9\; 8\; 5\; 1\; 4\; 10\; 7) \\
+  Q &= (3\; 7\; 6\; 2\; 10\; 1\; 9\; 4\; 5\; 8) \\
+  R &= (6\; 7\; 9\; 1\; 5\; 4\; 3\; 8\; 10\; 2) \\
+  PQ &= (7\; 1\; 6\; 5\; 4\; 10\; 3\; 2\; 8\; 9) \\
+  QR &= (9\; 3\; 4\; 7\; 2\; 6\; 10\; 1\; 5\; 8) \\
+  (PQ)R &= (3\; 6\; 4\; 5\; 1\; 2\; 9\; 7\; 8\; 10) \\
+  P(QR) &= (3\; 6\; 4\; 5\; 1\; 2\; 9\; 7\; 8\; 10)
+\end{align*}
+
+Putem demonstra și formal asociativitatea. Compunerea de permutări este definită ca
+
+$$(P \circ Q)(i) = Q(P(i))$$
+
+Așadar, avem că:
+
+\begin{align*}
+  ((P \circ Q) \circ R)(i) &= R((P \circ Q)(i)) = R(Q(P(i))) \\
+  (P \circ (Q \circ R))(i) &= (Q \circ R)(P(i)) = R(Q(P(i)))
+\end{align*}
+
+Odată demonstrată asociativitatea, putem calcula răspunsul ca $P^k$ prin exponențiere rapidă.
+
+Nu face obiectul acestui capitol, dar, pentru completitudine, enunțăm și o soluție în $\bigoh(n)$, bazată pe descompunerea în cicluri. Să considerăm următorul tabel cu primele 31 de puteri ale unei permutări (dacă nu am spus-o suficient, îmi plac exemplele mari, căci din ele putem face deducții mult mai pertinente decît din exemplele mici).
+
+\begin{verbatim}
+P^1  = [  5  1  8  9 11 10  4  2  6  7  3] = (1 5 11 3 8 2)(4 9 6 10 7)
+P^2  = [ 11  5  2  6  3  7  9  1 10  4  8] = (1 11 8)(2 5 3)(4 6 7 9 10)
+P^3  = [  3 11  1 10  8  4  6  5  7  9  2] = (1 3)(2 11)(4 10 9 7 6)(5 8)
+P^4  = [  8  3  5  7  2  9 10 11  4  6  1] = (1 8 11)(2 3 5)(4 7 10 6 9)
+P^5  = [  2  8 11  4  1  6  7  3  9 10  5] = (1 2 8 3 11 5)(4)(6)(7)(9)(10)
+P^6  = [  1  2  3  9  5 10  4  8  6  7 11] = (1)(2)(3)(4 9 6 10 7)(5)(8)(11)
+P^7  = [  5  1  8  6 11  7  9  2 10  4  3] = (1 5 11 3 8 2)(4 6 7 9 10)
+P^8  = [ 11  5  2 10  3  4  6  1  7  9  8] = (1 11 8)(2 5 3)(4 10 9 7 6)
+P^9  = [  3 11  1  7  8  9 10  5  4  6  2] = (1 3)(2 11)(4 7 10 6 9)(5 8)
+P^10 = [  8  3  5  4  2  6  7 11  9 10  1] = (1 8 11)(2 3 5)(4)(6)(7)(9)(10)
+P^11 = [  2  8 11  9  1 10  4  3  6  7  5] = (1 2 8 3 11 5)(4 9 6 10 7)
+P^12 = [  1  2  3  6  5  7  9  8 10  4 11] = (1)(2)(3)(4 6 7 9 10)(5)(8)(11)
+P^13 = [  5  1  8 10 11  4  6  2  7  9  3] = (1 5 11 3 8 2)(4 10 9 7 6)
+P^14 = [ 11  5  2  7  3  9 10  1  4  6  8] = (1 11 8)(2 5 3)(4 7 10 6 9)
+P^15 = [  3 11  1  4  8  6  7  5  9 10  2] = (1 3)(2 11)(4)(5 8)(6)(7)(9)(10)
+P^16 = [  8  3  5  9  2 10  4 11  6  7  1] = (1 8 11)(2 3 5)(4 9 6 10 7)
+P^17 = [  2  8 11  6  1  7  9  3 10  4  5] = (1 2 8 3 11 5)(4 6 7 9 10)
+P^18 = [  1  2  3 10  5  4  6  8  7  9 11] = (1)(2)(3)(4 10 9 7 6)(5)(8)(11)
+P^19 = [  5  1  8  7 11  9 10  2  4  6  3] = (1 5 11 3 8 2)(4 7 10 6 9)
+P^20 = [ 11  5  2  4  3  6  7  1  9 10  8] = (1 11 8)(2 5 3)(4)(6)(7)(9)(10)
+P^21 = [  3 11  1  9  8 10  4  5  6  7  2] = (1 3)(2 11)(4 9 6 10 7)(5 8)
+P^22 = [  8  3  5  6  2  7  9 11 10  4  1] = (1 8 11)(2 3 5)(4 6 7 9 10)
+P^23 = [  2  8 11 10  1  4  6  3  7  9  5] = (1 2 8 3 11 5)(4 10 9 7 6)
+P^24 = [  1  2  3  7  5  9 10  8  4  6 11] = (1)(2)(3)(4 7 10 6 9)(5)(8)(11)
+P^25 = [  5  1  8  4 11  6  7  2  9 10  3] = (1 5 11 3 8 2)(4)(6)(7)(9)(10)
+P^26 = [ 11  5  2  9  3 10  4  1  6  7  8] = (1 11 8)(2 5 3)(4 9 6 10 7)
+P^27 = [  3 11  1  6  8  7  9  5 10  4  2] = (1 3)(2 11)(4 6 7 9 10)(5 8)
+P^28 = [  8  3  5 10  2  4  6 11  7  9  1] = (1 8 11)(2 3 5)(4 10 9 7 6)
+P^29 = [  2  8 11  7  1  9 10  3  4  6  5] = (1 2 8 3 11 5)(4 7 10 6 9)
+P^30 = [  1  2  3  4  5  6  7  8  9 10 11] = (1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)
+P^31 = [  5  1  8  9 11 10  4  2  6  7  3] = (1 5 11 3 8 2)(4 9 6 10 7)
+\end{verbatim}
+
+Observăm că puterea a $k$-a a permutării inițiale parcurge fiecare ciclu din $k$ în $k$. De exemplu,
+
+\begin{itemize}
+  \item Puterea a 2-a sparge ciclul de lungime 6 în două cicluri de lungime 3.
+
+  \item Puterea a 3-a îl sparge în 3 cicluri de lungime 2.
+
+  \item Puterile 6, 12, 18 etc. pun fiecare element de pe acel ciclu pe poziția sa proprie (p[i] = i).
+
+  \item Puterea 30 este permutarea identică. Acest lucru nu este întîmplător, căci $\text{cmmmc}(6,5) = 30$. Spunem că ordinul permutării $p$ este 30.
+
+  \item Puterea 31 revine la permutarea inițială.
+\end{itemize}
+
+\subsection{Problema Stairs and Lines (Codeforces)}
+\label{problem:stairs-and-lines}
+
+\href{https://codeforces.com/contest/498/problem/E}{enunț}
+$\bullet$
+\hyperref[code:stairs-and-lines]{sursă}
+
+Problema este dură, dar apare în capitolul despre exponențieri de matrice... Cu această informație, ea devine abordabilă.
+
+Problema aduce a programare dinamică, deci am vrea să găsim o recurență, probabil pe coloane. Ne folosim de faptul că înălțimea $h$ este mică, ceea ce ne dă de înțeles că ne permitem o soluție exponențială în $h$. Ce-ar fi să iterăm prin toate măștile pe $h$ biți? Aceasta ar însemna toate configurațiile de pereți pe o coloană verticală. Pentru două măști date, $l$ pe o coloană și $r$ pe coloana următoare, putem ușor să numărăm configurațiile valide de pereți orizontali. O configurație este invalidă dacă, la orice înălțime $i$, măștile $l$ și $r$ au valoarea 1 (pereți verticali), iar configurația are pereți orizontali la înălțimile $i-1$ și $i$. Aceasta necesită doar trei \ccode{for}-uri și niște \ccode{and}-uri pe biți, în esență:
+
+\begin{minted}{c}
+void make_transition_matrix(int h) {
+  for (int left = 0; left < SIZE; left++) {
+    for (int right = 0; right < SIZE; right++) {
+      t[left][right] = 0;
+      // Forțează pereți orizontali la înălțimile 0 și h, deci biții 0 și h
+      // sînt setați.
+      for (int horiz = 1 + (1 << h); horiz < (1 << (h + 1)); horiz += 2) {
+        if ((left & right & horiz & (horiz >> 1)) == 0) {
+          t[left][right]++;
+        }
+      }
+    }
+  }
+}
+\end{minted}
+
+Așadar, cu efort $\bigoh((2^h)^3)$, deci circa $\np{2000000}$ de operații elementare, putem precalcula o matrice de tranziție, $G$, care ne arată în cîte moduri putem trece de la o mască $l$ de pereți verticali la o mască $r$.
+
+De aici obținem o soluție ineficientă. Să definim $D(c, m)$ ca numărul de moduri de a completa primele $c$ coloane, rămînînd cu o mască $m$ de pereți verticali. Se observă că masca $m$ „șterge” istoria: coloanele $c + 1$ și următoarele nu mai depind de nimic din trecut, doar de $m$. De aceea, programarea dinamică funcționează, iar formula de recurență pentru $D(c,m)$ este:
+
+$$D(c,m) = \sum_{a=0}^{2^h - 1} G[a][m] \cdot D(c - 1, a)$$
+
+Problema este că complexitatea totală este $\bigoh(\sum w_i \cdot 2^{2h})$, adică circa 11 miliarde de operații. Ca să o reducem, observăm ca și în problemele anterioare că matricea $G$ este independentă de numărul coloanei curente. Dacă îl percepem pe $D(c)$ ca pe un vector-coloană cu $2^h$ poziții, atunci putem scrie matricial formula de recurență:
+
+$$
+\begin{pmatrix}
+  D(c,0) \\ D(c,1) \\ \dots \\ D(c,m) \\ \dots \\ D(c,2^h - 1)
+\end{pmatrix}
+=
+\begin{pmatrix}
+  G[0][0] & G[1][0] & \dots & G[2^h-1][0] \\
+  G[0][1] & G[1][1] & \dots & G[2^h-1][1] \\
+  \dots & \dots & \dots & \dots \\
+  G[0][m] & G[1][m] & \dots & G[2^h-1][m] \\
+  \dots & \dots & \dots & \dots \\
+  G[0][2^h-1] & G[1][2^h-1] & \dots & G[2^h-1][2^h-1] \\
+\end{pmatrix}
+\begin{pmatrix}
+  D(c-1,0) \\ D(c-1,1) \\ \dots \\ D(c-1,2^h - 1)
+\end{pmatrix}
+$$
+
+sau, echivalent,
+
+$$D(c) = G^T \cdot D(c-1)$$
+
+Putem construi matricea $G$ gata transpusă, dar parcă este mai natural să gîndim vectorii $D(c)$ ca pe vectori-linie și să scriem formula matricială:
+
+$$D(c) = D(c-1) \cdot G$$
+
+În orice caz, acum putem procesa separat fiecare dintre înălțimile $0 \leq i \leq h$. Pentru lățimea $w_i$ corespunzătoare vom avea:
+
+$$D(w_i) = D(0) \cdot G^{w_i}$$
+
+Iar vectorul de intrare $D(0)$ este vectorul de ieșire al etapei anterioare, de înălțime $i-1$. Alternativ, putem privi problema astfel. Pe cele $h=7$ trepte ale scării avem $h$ matrice de tranziție diferite, $G_1 \dots G_h$, fiecare de ridicat la puterea $w_1 \dots w_h$. Produsul acestor puteri de matrice ne arată numărul de moduri de a trece de la o mască la alta după $w_1 + w_2 + \dots w_h$ coloane. Din această matrice finală ne interesează elementul de pe linia și coloana $2^h - 1$, întrucît pe prima și ultima coloană a scării toți pereții verticali sînt marcați (conturul).
+
+Matricea $G$ are dimensiune $2^h$, deci o înmulțire de matrice va costa $8^h$. Vom face $\log w_i$ înmulțiri pentru fiecare înălțime $i$, ceea ce duce la complexitatea totală $\bigoh(8^h \sum_i \log w_i)$.
+
+Ca optimizare observăm că, pentru înălțimi $i < h$, matricea $G$ este goală, cu excepția colțului de jos-dreapta. Putem sări porțiuni mari din înmulțirea matricelor, deoarece cubul dimensiunii scade rapid cu înălțimea. În practică, programul devine de 5 ori mai rapid.
+
+\subsection{Problema Marfa (Lot 2014)}
+\label{problem:marfa}
+
+\href{https://kilonova.ro/problems/2030}{enunț}
+$\bullet$
+\hyperref[code:marfa]{sursă}
+
+Să găsim întîi orice formulă de recurență, fără să ne preocupăm de valoarea mare a lui $z$. Ce ne trebuie ca să definim complet o stare (o zi), ca să putem apoi determina tranziția între zile?
+
+\begin{itemize}
+  \item Numărul zilei. De aici, modulo $n$, putem afla comanda în acea zi.
+  \item Numărul de zile anterioare consecutive în care jumătatea stîngă a fost ocupată.
+  \item Similar pentru jumătatea dreaptă.
+\end{itemize}
+
+Așadar, fie $C[z][s][d]$ numărul de moduri de a transporta marfă timp de $z$ zile, astfel încît după a $z$-a zi cele două jumătăți să fi fost folosite timp de $s$, respectiv $d$ zile consecutive. Vom folosi programarea dinamică de tip înainte pentru a construi $C[z + 1]$ (pare mai natural). Fie $t$ cererea de transport în ziua $z + 1$.
+
+\begin{itemize}
+  \item Dacă $t = 0$, atunci din $C[z][s][d]$ putem ajunge doar în $C[z + 1][0][0]$: nu avem nimic de transportat, deci contoarele celor două jumătăți se resetează.
+
+  \item Dacă $t = 1$, atunci din $C[z][s][d]$ putem ajunge fie în $C[z + 1][s + 1][0]$, fie în $C[z + 1][0][d + 1]$. Contorul pentru jumătatea nefolosită se resetează. În ambele cazuri, înainte de a face propagarea trebuie să verificăm dacă $s < k - 1$, respectiv $d < k - 1$.
+
+  \item Dacă $t = 2$, atunci din $C[z][s][d]$ putem ajunge doar în $C[z + 1][s + 1][d + 1]$ și doar dacă $s < k - 1$ și $d < k - 1$.
+\end{itemize}
+
+Starea inițială este $C[0] = 0$ pe tot stratul 0 în afară de $C[0][0][0] = 1$. Starea finală este suma valorilor de pe stratul $C[z]$ (deoarece putem termina cu orice grad de folosire a camionului). Această soluție merge, dar $\bigoh(zk^2)$ este prea lent.
+
+Desigur, ne dorim să-l înlocuim pe $\bigoh(z)$ cu $\bigoh(\log z)$. Dar recurența de mai sus variază de la o  zi la alta, pentru că depinde de cererea zilnică $t$. Din această cauză nu putem calcula matricea de tranziție. Ce-i de făcut?
+
+Observăm că și $n$ (durata unei săptămîni) este mic. Asta înseamnă că putem calcula naiv matricea de tranziție \textbf{pentru o săptămînă întreagă}. Această matrice va fi identică pentru orice săptămînă. Odată ce o calculăm, o putem ridica la puterea $\lfloor \frac{z}{n}\rfloor$. Apoi, mai avem nevoie de o a doua matrice pentru ultimele $z \mod n$ zile. Am putea calcula naiv aceste ultime zile, dar ar fi păcat, căci am duplica efort. Facem deja acest efort în scopul calculării matricei după $n$ zile.
+
+Trebuie să clarificăm ce reprezintă această matrice. $T_{i,j}$ este modul de a trece din starea $i$ după 0 zile în starea $j$ după $n$ zile. Dar, de fapt, ce este o stare? O stare este o pereche de valori $(s,d)$. Iar $s$ și $d$ iau valori între 0 și $k-1$! Așadar, matricea $T$ are dimensiuni $k^2 \times k^2$.  De exemplu, o reprezentare naturală este să numerotăm cele $k^2$ valori pentru $s$ și $d$. Astfel, dacă
+
+$$i = i_s \cdot k + i_d$$ și $$j = j_s \cdot k + j_d$$
+
+, atunci $T_{i,j}$ înseamnă, conceptual, numărul de moduri de a începe săptămîna cu $i_s$ folosiri ale jumătății stîngi și $i_d$ folosiri ale jumătății drepte și de a o încheia cu $j_s$, respectiv $j_d$ folosiri.
+
+Recapitulînd, algoritmul este:
+
+\begin{itemize}
+  \item Calculăm matricea $T$ pentru o săptămînă.
+
+  \item Calculăm matricea $R$ pentru primele $z \mod n$ zile dintr-o săptămînă.
+
+  \item Calculăm matricea totală $A = T^{\lfloor z/n\rfloor} \cdot R$.
+
+  \item Răspunsul la problemă este suma elementelor de pe linia 0 a matricei $A$, întrucît începem din starea 0 ($s = d = 0$) și putem sfîrși în orice stare.
+\end{itemize}
