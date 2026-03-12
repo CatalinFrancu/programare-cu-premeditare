@@ -233,6 +233,102 @@ Observăm că puterea a $k$-a a permutării inițiale parcurge fiecare ciclu din
   \item Puterea 31 revine la permutarea inițială.
 \end{itemize}
 
+\subsection{Problema Zid (ONI 2024, clasele 11-12)}
+\label{problem:zid}
+
+\href{https://kilonova.ro/problems/2651}{enunț}
+$\bullet$
+\hyperref[code:zid]{sursă}
+
+Pare natural să colectăm întîi informații despre turnuri (ziduri de lățime 1), apoi despre ziduri de lățimi arbitrare.
+
+\subsubsection*{Informații despre turnuri}
+
+Fie $T_{h,e}$ numărul de turnuri de înălțime $h$ în care suma pieselor pare este $e$\footnote{Pentru această problemă am ales inițiale de la cuvintele englezești $h$ = \textit{height}, $w$ = \textit{width}, $e$ = \textit{even}, $l$ = \textit{last}.}. Deducem formula de recurență în funcție de piesa din vîrful turnului, de înălțime $l$:
+
+$$T_{h,e} = \sum_{l = 1, 3, 5, \dots} T_{h - l, e} + \sum_{l = 0, 2, 4, \dots} T_{h - l, e - l }$$
+
+Codul de mai jos decurge ușor, doar că el este $\bigoh(n^3)$, prea lent:
+
+\begin{minted}{c}
+void compute_width_1_tower() {
+  t[0][0] = 1;
+  for (int h = 1; h <= n; h++) {
+    for (int even = 0; even <= h; even += 2) {
+      long long sum = 0;
+      for (int last = 1; last <= h - even; last += 2) {
+        sum += t[h - last][even];
+      }
+      for (int last = 2; last <= even; last += 2) {
+        sum += t[h - last][even - last];
+      }
+      t[h][even] = sum % MOD;
+    }
+  }
+}
+\end{minted}
+
+Putem să reducem timpul de calcul al lui $T$ la $\bigoh(1)$ per element. Să observăm că prima sumă din formula de recurență este o sumă din 2 în 2 pe coloana $e$, iar a doua sumă este o sumă din 2 în 2 pe diagonale. Putem menține aceste sume pe măsură ce baleiem matricea $T$, așa cum procedează sursa finală. Astfel construim matricea $T$ în $\bigoh(n^2)$.
+
+De acum încolo folosim doar informații despre linia $T_{n}$, căci zidurile se compun doar din turnuri de înălțime exact $n$.
+
+\subsubsection*{Informații despre ziduri}
+
+Acum fie $D_{w,e}$ numărul de ziduri de lățime $w$ (și înălțime $n$) în care suma pieselor pare este $e$. Formula de recurență pornește de la suma pieselor pare din ultimul turn:
+
+$$D_{w,e} = \sum_{l = 0, 2, 4, \dots} D_{w - 1, e - l}$$
+
+Și această formulă este ușor de implementat, dar complexitatea este $\bigoh(n^3)$. Putem reduce substanțial memoria dacă observăm că matricele $T$ și $D$ folosesc doar liniile pare ($e$ este întotdeauna par). Așadar, redefinim $T_{n,e}$ ca numărul de turnuri de înălțime $n$ în care suma pieselor pare este $2e$. Similar, redefinim $D_{w,e}$ ca numărul de ziduri de lățime $w$ în care suma pieselor pare este $2e$.
+
+Chiar și așa, încă este nevoie de o îmbunătățire asimptotică.
+
+\subsubsection*{Găsirea unei matrici de tranziție}
+
+Să ne gîndim la $D_w$ ca la un vector-coloană constînd din $D_{w,0}, D_{w,1}, \dots, D_{w,k/2}$. Atunci putem exprima relația dintre $D_w$ și $D_{w-1}$ prin înmulțirea cu o matrice.
+
+$$
+\begin{pmatrix}
+  D_{w,0} \\ D_{w,1} \\ D_{w,2} \\ \dots \\ D_{w,k/2-1} \\ D_{w,k/2}
+\end{pmatrix}
+=
+\begin{pmatrix}
+  T_{n,0} & 0 & 0 & \dots & 0 & 0 \\
+  T_{n,1} & T_{n,0} & 0 & \dots & 0 & 0 \\
+  T_{n,2} & T_{n,1} & T_{n,0} & \dots & 0 & 0 \\
+  \dots & \dots & \dots & \dots & \dots & \dots \\
+  T_{n,k/2-1} & T_{n,k/2-2} & T_{n,k/2-3} & \dots & T_{n,0} & 0 \\
+  T_{n,k/2} & T_{n,k/2-1} & T_{n,k/2-2} & \dots & T_{n,1} & T_{n,0} \\
+\end{pmatrix}
+\begin{pmatrix}
+  D_{w-1,0} \\ D_{w-1,1} \\ D_{w-1,2} \\ \dots \\ D_{w-1,k/2-1} \\ D_{w-1,k/2}
+\end{pmatrix}
+$$
+
+Fie $A$ matricea din mijloc. Remarcăm că $A$ este independentă de $w$. Rezultă că putem începe cu $D_0 = (1, 0, 0, \dots 0)$ și putem calcula
+
+$$D_w = A^m \cdot D_0$$
+
+Apoi, răspunsul care ne trebuie este $D_{m,k/2}$, care datorită înmulțirii cu $D_0$ (care are 1 doar pe prima poziție) va coincide cu $A^m_{k/2,0}$ (colțul din stînga-jos al lui $A^m$).
+
+Îl putem calcula pe $A^m$ prin exponențiere rapidă, dar algoritmul va fi prea lent. Vom face $\bigoh(\log m)$ înmulțiri de matrice, iar fiecare înmulțire este $\bigoh(k^3)$.
+
+\subsection*{Accelerarea înmulțirii de matrice}
+
+Am învățat ultima parte a algoritmului citind \href{https://kilonova.ro/submissions/684891}{sursa} lui Rareș Neculau.
+
+Putem face cîteva deducții facile despre $A^i$ prin inducție:
+
+\begin{enumerate}
+  \item $A^i$ este 0 deasupra diagonalei principale.
+  \item $A^i$ este simetrică față de diagonala secundară.
+  \item În particular, prima coloană și ultima linie sînt egale (dar răsturnate).
+  \item Elementele de pe prima coloană și de pe ultima linie depind doar de valorile lui $T_n$ și de prima coloană și de ultima linie ale lui $A^{i-1}$.
+\end{enumerate}
+
+De aceea, este suficient să calculăm ultima linie (și implicit prima coloană) din $A^i$, ceea ce durează doar $O(k^2)$ per iterație. Complexitatea totală este $\bigoh(n^2 + k^2 \log m)$.
+
+Pentru o economie enormă de memorie, putem reține pe durata construcției doar ultima linie din $T$ și din sumele parțiale pe coloane și pe diagonale. Astfel, sursa finală nu folosește deloc matrice, ceea ce reduce memoria necesară de la 120 MB la sub 1 MB.
+
 \subsection{Problema Stairs and Lines (Codeforces)}
 \label{problem:stairs-and-lines}
 
