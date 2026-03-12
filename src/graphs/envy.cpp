@@ -11,29 +11,24 @@ struct edge {
   int q;
 };
 
-// Pădure de mulțimi disjuncte augmentată. Cînd schimbă un părinte, îl ține
-// minte pe cel vechi. Părinții salvați pot fi uitați sau restaurați în timp
-// O(numărul_de_modificări).
+// Pădure de mulțimi disjuncte augmentată cu suport pentru undo. Reține
+// modificările pe o stivă. Poate confirma modificările golind stiva.
 struct disjoint_set_forest {
   int p[MAX_NODES + 1];
-  int orig_p[MAX_NODES + 1];
-  int save_pos[MAX_NODES + 1];
-  int n, num_saved;
+  int u_stack[MAX_NODES + 1], p_stack[MAX_NODES + 1];
+  int stack_size;
 
   void init(int n) {
-    this->n = n;
-    num_saved = 0;
+    stack_size = 0;
     for (int u = 1; u <= n; u++) {
       p[u] = u;
-      orig_p[u] = 0;
     }
   }
 
   void save(int u) {
-    if (!orig_p[u]) {
-      orig_p[u] = p[u];
-      save_pos[num_saved++] = u;
-    }
+    u_stack[stack_size] = u;
+    p_stack[stack_size] = p[u];
+    stack_size++;
   }
 
   int find(int u) {
@@ -59,21 +54,15 @@ struct disjoint_set_forest {
     }
   }
 
-  void wipe_saves() {
-    for (int i = 0; i < num_saved; i++) {
-      int u = save_pos[i];
-      orig_p[u] = 0;
-    };
-    num_saved = 0;
+  void commit() {
+    stack_size = 0;
   }
 
-  void restore_saves() {
-    for (int i = 0; i < num_saved; i++) {
-      int u = save_pos[i];
-      p[u] = orig_p[u];
-      orig_p[u] = 0;
-    };
-    num_saved = 0;
+  void restore() {
+    while (stack_size) {
+      stack_size--;
+      p[u_stack[stack_size]] = p_stack[stack_size];
+    }
   }
 };
 
@@ -124,7 +113,7 @@ void process_equal_weights(int start, int end) {
     answer[e[k].q] = dsf.unite(e[k].u, e[k].v);
     k++;
   }
-  dsf.restore_saves();
+  dsf.restore();
 }
 
 void process_edges() {
@@ -133,7 +122,7 @@ void process_edges() {
   while (start < m) {
     if (e[start].q == NONE) {
       dsf.unite(e[start].u, e[start].v);
-      dsf.wipe_saves();
+      dsf.commit();
       start++;
     } else {
       int end = find_batch(start);
