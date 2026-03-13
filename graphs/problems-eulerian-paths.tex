@@ -1,0 +1,48 @@
+\section{Probleme}
+
+\subsection{Problema Ciclu eulerian (Infoarena)}
+\label{problem:ciclu-eulerian}
+
+\href{https://www.infoarena.ro/problema/ciclueuler}{enunț}
+$\bullet$
+\hyperref[code:ciclu-eulerian]{surse}
+
+Aceasta este o problemă clasică de găsire a unui ciclu eulerian neorientat. Enunțul nu garantează că graful este conex, dar toate testele par să conțină grafuri conexe. Dacă conexitatea trebuie garantată, cred că cel mai simplu mod este să rulăm algoritmul în mod normal și să verificăm că el a generat un ciclu de lungime $m$.
+
+O problemă similară este \href{https://cses.fi/problemset/task/1691}{Mail Delivery (CSES)}.
+
+\subsection{Problema De Bruijn Sequence (CSES)}
+\label{problem:de-bruijn-sequence}
+
+\href{https://cses.fi/problemset/task/1692}{enunț}
+$\bullet$
+\hyperref[code:de-bruijn-sequence]{surse}
+
+Observația-cheie este că, după un șir de $n$ biți, îi refolosim pe ultimii $n-1$ și mai adăugăm un bit nou pentru a genera un nou șir de $n$ biți. De aceea, putem traduce problema într-un graf astfel:
+
+\begin{itemize}
+  \item Există $2^{n-1}$ noduri corespunzînd la $2^{n-1}$ șiruri binare.
+  \item În fiecare nod $u$ intră două arce (orientate) dinspre șirurile al căror ultimi $n-1$ biți corespund cu primii $n-1$ biți ai lui $u$.
+  \item Invers, din fiecare nod $u$ ies două arce către șirurile al căror primi $n-1$ biți corespund cu ultimii $n-1$ biți ai lui $u$.
+  \item Pe fiecare muchie notăm bitul care trebuie adăugat la nodul-sursă pentru a obține nodul-destinație.
+  \item Un ciclu eulerian în acest graf ar tipări valorile întîlnite pe muchii. Aceste valori coincid (prin definiție) cu ultimul bit al nodului-destinație, deci nu este nevoie să le stocăm explicit.
+\end{itemize}
+
+Articolul de pe Wikipedia include și \href{https://en.wikipedia.org/wiki/De_Bruijn_sequence#Construction} o imagine pentru $n = 3$.
+
+Odată făcută reducerea, codul este remarcabil de scurt. Nu este nevoie să reținem listele de adiacență. Vecinii unui nod decurg din numărul de ordine al nodului. De asemenea, numărul de vecini vizitați / rămași pentru un nod poate fi reprezentat ca un singur număr între 0 și 2, ceea ce ne indică automat și următoarea muchie vizitabilă din acel nod.
+
+Și această problemă poate fi implementată recursiv sau iterativ.
+
+\subsection{Problema Tanya and Password (Codeforces)}
+\label{problem:tanya-and-password}
+
+\href{https://codeforces.com/contest/508/problem/D}{enunț}
+$\bullet$
+\hyperref[code:tanya-and-password]{sursă}
+
+Problema necesită o implementare atentă, dar reducerea ei la găsirea unui drum eulerian este fățișă. Nu cred că problema ar trebui să aibă rating de \np{2500}. Ca și la secvențele de Bruijn, nodurile au lungime cu 1 mai mică decît șirurile date. Așadar, pentru a arăta că tripletele $abc$ și $bcd$ se potrivesc, vom crea stările $ab$, $bc$, $cd$ cu muchii între ele. Rezultă că există cel mult $62^2 = \np{3844}$ noduri. În practică am lucrat în baza 64 pentru a accelera împărțirile.
+
+De data aceasta graful este orientat, deci faptul că algoritmul emite un drum eulerian în ordine inversă devine relevant. Pentru a recupera drumul corect, am ales să inversez toate muchiile. Am stocat lista de adiacență ca pe un vector de 64 de întregi. De exemplu, pentru nodul $ab$, valoarea \ccode{adj['c']} este egală cu numărul de triplete $abc$ de la intrare.
+
+În rest, cea mai complicată parte a programului este găsirea nodului de start. \emoji{slightly-smiling-face}

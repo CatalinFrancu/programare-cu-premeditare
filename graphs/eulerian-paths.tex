@@ -1,0 +1,66 @@
+\chapter{Drumuri euleriene}
+
+Într-un graf orientat sau neorientat, un \textbf{drum eulerian} (engl. \textit{Eulerian path}) este un drum care vizitează fiecare muchie exact o dată. Un \textbf{ciclu eulerian} este un drum eulerian care este și ciclu.
+
+Un graf neorientat admite un ciclu eulerian dacă și numai dacă este conex și toate nodurile au grad par. Similar, un graf orientat admite un ciclu eulerian dacă și numai dacă este tare conex și toate nodurile au gradul la intrare egal cu gradul la ieșire.
+
+Un graf neorientat admite un drum eulerian dacă este conex și are zero sau două noduri de grad impar.
+
+Nu întîmplător folosim aceeași denumire ca la parcurgerea Euler din liniarizarea arborilor. Dacă ne imaginăm că fiecare muchie din acel arbore apare de două ori (o dată la intrarea în DFS și o dată la revenire), atunci liniarizarea produce fix un circuit eulerian! (Corolar, ca fapt divers: dacă schimbăm rădăcina arborelui, atunci noua liniarizare Euler se obține din cea veche, prin rotirea vectorului).
+
+\section{Algoritmi}
+
+Pe cînd eram eu elev, lumea folosea un algoritm intuitiv, dar mai greoi de implementat. Presupunem că am verificat precondițiile și știm că există un ciclu eulerian.
+
+\begin{enumerate}
+  \item Pornește dintr-un nod $u$ arbitrar ales.
+  \item Parcurge muchii la întîmplare pînă cînd revii în $u$.
+  \item Adaugă ciclul obținut la o colecție.
+  \item Repetă pașii 1-3 cît timp mai sînt muchii de parcurs.
+  \item Înnădește ciclurile obținute.
+\end{enumerate}
+
+\href{https://cp-algorithms.com/graph/euler_path.html}{Articolul de pe CP Algorithms} prezintă un algoritm considerabil mai simplu, bazat pe o parcurgere DFS recursivă:
+
+\begin{algorithm}[H]
+  \caption{Găsirea unui ciclu eulerian, algoritm recursiv}
+  \begin{algorithmic}[1]
+    \Procedure{CicluEulerian}{$u$}
+      \ForAll{muchie $(u, v)$}
+        \State șterge muchia $(u, v)$ din graf
+        \State \Call{CicluEulerian}{$v$}
+      \EndFor
+      \State adaugă nodul $u$ la soluție
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+Prima mea sursă de la problema \hyperref[problem:ciclu-eulerian]{Ciclu eulerian} implementează exact acest algoritm recursiv. Cîteva mențiuni:
+
+\begin{itemize}
+  \item O implementare corectă va trata fără cazuri particulare buclele și muchiile multiple.
+  \item Cînd reprezentăm grafuri neorientate, orice muchie $(u,v)$ va apărea de două ori, în listele de adiacență ale lui $u$ și $v$. Este necesar să o ștergem din ambele liste (sau să o marcăm ca ștearsă).
+  \item Acest algoritm generează soluția \textbf{în ordinea inversă} față de ordinea explorării. Detaliul devine important în grafuri orientate.
+  \item Ca orice program recursiv, și acesta poate umple stiva. Spre deosebire de DFS-urile cu care sîntem obișnuiți, care ating adîncime cel mult $\bigoh(n)$, acesta poate atinge adîncimea $\bigoh(m)$.
+\end{itemize}
+
+Putem implementa acest algoritm și iterativ, simulînd pur și simplu stiva de apeluri a DFS-ului:
+
+\begin{algorithm}[H]
+  \caption{Găsirea unui ciclu eulerian, algoritm iterativ}
+  \begin{algorithmic}[1]
+    \Procedure{CicluEulerian}{}
+      \State pune nodul de start pe stivă
+      \While{stiva nu este vidă}
+        \State fie $u$ nodul din vîrful stivei
+        \If{$u$ mai are vreun vecin $v$}
+          \State șterge muchia $(u, v)$ din graf
+          \State pune nodul $v$ pe stivă
+        \Else
+          \State adaugă nodul $u$ la soluție
+          \State scoate nodul $u$ de pe stivă
+        \EndIf
+      \EndWhile
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
