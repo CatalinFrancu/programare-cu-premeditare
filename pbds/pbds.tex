@@ -1,0 +1,207 @@
+\chapter{Policy-based data structures}
+
+Acest capitol este doar un ciot: exemple de folosire și puțin context.
+
+\textit{Policy-based data structures} sînt o colecție de structuri de date din STL cu mai multă flexibilitate decît containerele standard \ccode{set} și \ccode{map} din STL. Declararea lor este un pic alambicată, tocmai datorită flexibilități de a ne alege componentele din care vrem să asamblăm structura.
+
+
+\section{Declararea unui set}
+
+Iată cum declarăm un set PBDS cu suport pentru statistici de ordine.
+
+\begin{minted}{c}
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+typedef __gnu_pbds::tree<
+  int,
+  __gnu_pbds::null_type,
+  std::less<int>,
+  __gnu_pbds::rb_tree_tag,
+  __gnu_pbds::tree_order_statistics_node_update
+  > my_set;
+
+my_set s;
+\end{minted}
+
+Să elucidăm această incantație magică. Ea capătă sens dacă ne amintim că și containerul \ccode{set} din STL este implementat de regulă ca \href{https://en.cppreference.com/w/cpp/container/set.html}{arbore roșu-negru}.
+
+\begin{itemize}
+  \item \ccode{__gnu_pbds::tree}: Declarăm un tip de \href{https://gcc.gnu.org/onlinedocs/libstdc\%2B\%2B/manual/policy_data_structures_design.html#pbds.design.container.tree}{arbore} echilibrat.
+  \item \ccode{int}: Cheile sînt întregi.
+  \item \ccode{__gnu_pbds::null_type}: Nu dorim perechi cheie-valoare (acela ar fi un \ccode{map}), deci specificăm că dorim valori nule.
+  \item \ccode{std::less<int>}: Dorim comparatorul „\ccode{<}” pentru a ordona crescător setul.
+  \item \ccode{__gnu_pbds::rb_tree_tag}: Dorim arbori roșu-negru, nu splay sau alte variante de arbori echilibrați.
+  \item \ccode{__gnu_pbds::tree_order_statistics_node_update}: Dorim menținerea statisticilor de ordine la actualizarea nodurilor.
+\end{itemize}
+
+Precizez că mulți elevi preferă să condenseze acest cod incluzînd complet tot namespace-ul \ccode{__gnu_pbds}:
+
+\begin{minted}{c}
+using namespace __gnu_pbds;
+\end{minted}
+
+Totuși, acest obicei trebuie evitat. Dacă includem alandala toate definițiile din acel namespace, fie că ne trebuie, fie că nu, vom polua spațiul global de nume. În orice proiect ingineresc cu mai multă substanță decît un program de olimpiadă, aceasta este o sursă de conflicte și bătăi de cap. Puteți citi o lungă listă de contraargumente și de alternative mai sănătoase \href{https://stackoverflow.com/q/1452721/6022817}{aici}.
+
+
+\section{Folosirea}
+
+Seturile PBDS respectă specificațiile seturilor din STL, deci putem apela metode ca \ccode{insert}, \ccode{erase} etc. în plus, putem folosi metodele:
+
+\begin{itemize}
+  \item \ccode{find_by_order(k)}: Returnează un \ccode{my_set::iterator} care pointează la al $k$-lea element din set sau \ccode{s.end()} dacă al $k$-lea element nu există.
+  \item \ccode{order_of_key(x)}: Returnează numărul de ordine pe care îl are $x$ în set sau pe care l-ar avea dacă l-aș insera acum.
+\end{itemize}
+
+Iată un exemplu complet.
+
+\begin{minted}{c}
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <stdio.h>
+
+typedef __gnu_pbds::tree<
+  int,
+  __gnu_pbds::null_type,
+  std::less<int>,
+  __gnu_pbds::rb_tree_tag,
+  __gnu_pbds::tree_order_statistics_node_update
+  > my_set;
+
+int main() {
+  my_set s;
+
+  s.insert(2);
+  s.insert(4);
+  s.insert(6);
+  s.insert(8);
+
+  assert(s.find_by_order(-1) == s.end());
+  printf("%d\n", *s.find_by_order(0));  // 2
+  printf("%d\n", *s.find_by_order(1));  // 4
+  printf("%d\n", *s.find_by_order(2));  // 6
+  printf("%d\n", *s.find_by_order(3));  // 8
+  assert(s.find_by_order(4) == s.end());
+
+  printf("%lu\n", s.order_of_key(-1));  // 0
+  printf("%lu\n", s.order_of_key(2));   // 0
+  printf("%lu\n", s.order_of_key(4));   // 1
+  printf("%lu\n", s.order_of_key(5));   // 2
+  printf("%lu\n", s.order_of_key(6));   // 2
+  printf("%lu\n", s.order_of_key(10));  // 4
+
+  return 0;
+}
+\end{minted}
+
+
+\section{Alte variante}
+
+Dacă dorim un \ccode{map}, trebuie doar să specificăm tipul de date al valorilor asociate. În acest caz, căutările, cum ar fi \ccode{find_by_order(k)}, returnează un pointer la o pereche (cheie, valoare), exact ca și \ccode{std::map}.
+
+Iată un exemplu care mapează numere la caractere.
+
+\begin{minted}{c}
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <stdio.h>
+
+typedef __gnu_pbds::tree<
+  int,
+  char,
+  std::less<int>,
+  __gnu_pbds::rb_tree_tag,
+  __gnu_pbds::tree_order_statistics_node_update
+  > my_map;
+
+int main() {
+  my_map s;
+
+  s.insert({2, 'P'});
+  s.insert({4, 'Q'});
+  s.insert({6, 'R'});
+  s.insert({8, 'S'});
+
+  assert(s.find_by_order(-1) == s.end());
+  printf("%c\n", s.find_by_order(0)->second);  // P
+  printf("%c\n", s.find_by_order(1)->second);  // Q
+  printf("%c\n", s.find_by_order(2)->second);  // R
+  printf("%c\n", s.find_by_order(3)->second);  // S
+  assert(s.find_by_order(4) == s.end());
+
+  return 0;
+}
+\end{minted}
+
+Dacă dorim un multiset (un set care să admită valori repetate), la declarare trebuie să specificăm comparatorul \ccode{std::less_equal<int>}. Ștergerea dintr-un multiset necesită atenție suplimentară. Nu putem șterge valori, ci trebuie să aflăm poziția valorii, să obținem un iterator la acea poziție, apoi să ștergem iteratorul.
+
+\begin{minted}{c}
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#include <stdio.h>
+
+typedef __gnu_pbds::tree<
+  int,
+  __gnu_pbds::null_type,
+  std::less_equal<int>,
+  __gnu_pbds::rb_tree_tag,
+  __gnu_pbds::tree_order_statistics_node_update
+  > multiset;
+
+int main() {
+  multiset s;
+
+  s.insert(1);
+  s.insert(2);
+  s.insert(2);
+  s.insert(2);
+  s.insert(3);
+
+  int rank = s.order_of_key(2);
+  multiset::iterator it = s.find_by_order(rank);
+  s.erase(it);
+
+  for (int x: s) {
+    printf("%d\n", x); // 1 2 2 3
+  }
+
+  return 0;
+}
+\end{minted}
+
+
+\section{Statistici de ordine și augmentare}
+
+Cum funcționează statisticile de ordine în PBDS? Nu putem ști sigur fără să citim codul sursă, dar iată o presupune informată, pe care o vom implementa și noi înșine în capitolele următoare.
+
+Un set PBDS este implementat ca un arbore de căutare echilibrat (roșu-negru). Acesta garantează o adîncime $\bigoh(\log n)$. Cînd căutăm cheia $x$, dorim nu doar să returnăm un iterator (un pointer) la ea, ci și să îi raportăm numărul de ordine. Voi cum ați rezolva acest deziderat?
+
+Soluția este ca în fiecare nod $u$ al arborelui de căutare să stocăm, pe lîngă informația obișnuită (cheia, pointeri la fii, la părinte etc.) și mărimea subarborelui lui $u$. Tocmai de aceea numim acest arbore o \textbf{structură de date augmentată}. Containerele stl standard (\ccode{set} și \ccode{map}) nu au fost proiectate cu suport pentru agumentare, de aceea ele nu pot calcula statistici de ordine.
+
+Cum aflăm numărul de ordine al lui $x$? Împărțim problema recursiv în trei cazuri simple. Fie $key(u)$ cheia din nodul $u$ și fie $L$ mărimea subarborelui stîng al lui $u$.
+
+\begin{enumerate}
+  \item Dacă $x = key(u)$, atunci numărul de ordine al lui $x$ este $L$.
+  \item Dacă $x < key(u)$, atunci căutăm recursiv numărul de ordine al lui $x$ în subarborele stîng.
+  \item Dacă $x > key(u)$, atunci căutăm recursiv numărul de ordine al lui $x$ în subarborele drept, iar la rezultat adunăm $L + 1$ pentru subarborele stîng și pentru rădăcină.
+\end{enumerate}
+
+La fel de simplu tratăm și problema inversă, a găsirii cheii cu numărul de ordine $k$.
+
+\begin{enumerate}
+  \item Dacă $k = L$, atunci returnăm $key(u)$.
+  \item Dacă $k < L$, atunci căutăm recursiv cheia numărul $k$ în subarborele stîng.
+  \item Dacă $k > L$, atunci căutăm recursiv cheia numărul $k - L - 1$ în subarborele drept.
+\end{enumerate}
+
+
+\section{Concluzii}
+
+Ca programatori de competiție, este bine să cunoașteți aceste structuri de date, care ocazional vă conduc la o implementare ușoară. Ele vă vor ajuta și în postura inversă, de compunători de probleme, prin care vă doresc să treceți cel puțin o dată în viață. Veți inventa uneori probleme frumoase, care necesită inteligență și tenacitate pentru o implementare cu structuri de date proprii, dar care se rezolvă în 10 linii cu PBDS. Cu tot regretul, acele probleme nu sînt practice pentru un concurs.
+
+În orice caz, vă recomand să nu vă bazați doar pe PBDS, să nu fiți doar utilizatori de STL!
+
+
+\section{Probleme}
+
+Nu am pregătit probleme specifice pentru PBDS, dar ele sînt presărate prin restul cărții: \hyperref[problem:give-away]{Give Away}, \hyperref[problem:medwalk]{Medwalk}, \hyperref[problem:tree-and-queries]{Tree and Queries}.

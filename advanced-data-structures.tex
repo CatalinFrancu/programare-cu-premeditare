@@ -1,0 +1,48 @@
+\part{Structuri de date avansate}
+
+În această parte vom studia structuri de date care, în anumite situații, sînt mai puternice decît arborii de intervale, arborii indexați binar sau structurile de date echilibrate din STL (\ccode{set} sau \ccode{map}). Aceste structuri sînt:
+
+\begin{itemize}
+  \item \textit{policy-based data structures} (PBDS);
+  \item \textit{skip lists};
+  \item treapuri.
+\end{itemize}
+
+Ne dorim structuri care stochează chei (ca un \ccode{set}) sau perechi cheie-valoare (ca un \ccode{map}) și care pot răspunde unor nevoi ca:
+
+\begin{enumerate}
+  \item \ccode{kth_element(k)}: care este a $k$-a cheie din structură, în ordine crescătoare?
+  \item \ccode{order_of(x)}: a cîta cheie este/ar fi $x$, în ordine crescătoare?
+  \item Menținerea de chei implicite.
+  \item Suport pentru chei mari (neindexabile).
+  \item Suport pentru operații complexe, cum ar fi răsturnarea unei porțiuni din structură.
+\end{enumerate}
+
+Operațiile 1 și 2 sînt cunoscute colectiv ca \textbf{statistici de ordine} (engl. \textit{order statistics}). Pentru a le implementa, vom introduce conceptul de \textbf{structuri de date augmentate}. În esență, aceste structuri de date rețin, pentru fiecare nod sau pointer, și numărul de noduri acoperite sau subîntinse de acel nod sau pointer.
+
+Cheile implicite se referă la posibilitatea de a menține numerele de ordine ale tuturor elementelor. Ne dorim o structură asemănătoare unui vector (atribuire / citire pe poziție) sau unui arbore de intervale (sume / maxime pe interval), dar care să admită și inserări și ștergeri. Putem vedea aceasta ca pe o structură în care fiecare element are o cheie egală chiar cu indicele elementului. Doar că nu putem stoca \textbf{explicit} acești indici, deoarece la o inserare sau ștergere trebuie să renumerotăm $\bigoh(n)$ indici. De aceea vom stoca \textbf{implicit} cheile într-o manieră care să ne permită să le calculăm eficient la nevoie.
+
+Iată un rezumat al posibilităților oferite de cîteva structuri deja studiate și de cele pe care urmează să le studiem.
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{lccccc}
+    \textbf{operația} & \textbf{AIB, AINT} & \textbf{set/map STL} & \textbf{PBDS} & \textbf{treap} & \textbf{skip list}\\
+    \hline
+    inserare & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$\\
+    ștergere & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$\\
+    căutarea unei chei & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$\\
+    minim / maxim & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$\\
+    \ccode{kth_element(k)} & $\bigoh(\log n)$ & \xmark & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$\\
+    \ccode{order_of(x)} & $\bigoh(\log n)$ & \xmark & $\bigoh(\log n)$ & $\bigoh(\log n)$ & $\bigoh(\log n)$\\
+    chei implicite & \xmark & \xmark & \xmark & \cmark & \cmark\\
+    chei mari & \xmark & \cmark & \cmark & \cmark & \cmark\\
+    \hline
+  \end{tabular}
+
+  \caption{Structuri de date și posibilitățile lor.}
+\end{table}
+
+În experiența mea, PBDS sînt cele mai rapide. Treapurile sînt un pic mai lente, iar \textit{skip lists} cam de 2-3 ori mai lente. Pe de altă parte, consider că \textit{skip lists} sînt mai ușor de implementat decît treap-urile. \textit{YMMV}.
+
+\import{./pbds}{pbds.tex}
