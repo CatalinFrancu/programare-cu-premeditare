@@ -1,0 +1,242 @@
+\chapter{Skip lists}
+
+Skip lists sînt o structură de date originală, atipică. Pentru cei ca noi, educați exclusiv cu structuri de date deterministe, prima întîlnire cu skip lists poate fi fascinantă, căci ele sînt o structură de date probabilistică.
+
+Vom studia cîteva noțiuni matematice necesare, apoi vom analiza structura de date și codul. \textit{Skip lists} nu sînt la fel de eficiente ca \textit{policy based data structures} sau ca treapurile, dar consider că implementarea lor este relativ facilă.
+
+
+\section{Noțiuni de probabilitate}
+
+Această secțiune ar putea ușor să ocupe cîteva ore, dar ne vom concentra doar pe noțiunile strict necesare.
+
+O \textbf{variabilă aleatorie} este o cantitate care depinde de un fenomen aleatoriu. Exemple din viața reală: aruncarea unei monede; extragerea de cărți dintr-un pachet de cărți de joc; aruncarea unui zar.
+
+Putem clasifica toate rezultatele posibile ale unui fenomen aleatoriu și putem atribui probabilități (valori reale între 0 și 1) acestor rezultate. Acest tabel de probabilități se numește \textbf{distribuția} variabilei aleatorii. Suma probabilităților din tabel trebuie să fie 1.
+
+Există multe tipuri de distribuții, dintre care menționăm 3.
+
+\textbf{Distribuția uniformă}. Dacă extragem o carte la întîmplare dintr-un pachet (cu cărțile numerotate de la 1 la 52), probabilitatea de a vedea orice carte este 1/52. În acest scenariu, variabila aleatorie $X$ este numărul cărții extrase, iar distribuția este $P(X = k) = 1/52$ pentru $1 \leq k \leq 52$.
+
+\textbf{Distribuția binomială}. Să calculăm probabilitatea ca, din 10 aruncări cu zarul, să obținem fix de 3 ori valoarea 6. Putem alege oricum cele 3 aruncări favorabile din totalul de 10. Odată fixate pozițiile, avem probabilitatea de 1/6 ca fiecare dintre acele aruncări să producă un 6 și probabilitatea de 5/6 ca fiecare dintre celelalte aruncări să nu producă un 6. Rezultă formula:
+
+$$P(X = 3) = C_{10}^{3} \bigg(\frac{1}{6}\bigg)^3 \bigg(\frac{5}{6}\bigg)^7$$
+
+Distribuția se numește binomială pentru că, dacă generalizăm formula la $n$ aruncări și $0 \leq k \leq n$ aruncări favorabile, și dacă presupunem că șansa de succes la o aruncare este $p$, formula generală urmează exact binomul lui Newton pentru $[p + (1 - p)]^n$:
+
+$$P(X = k) = C_{n}^{k} p^k (1-p)^{n-k}$$
+
+
+\textbf{Distribuția geometrică}, de interes pentru acest capitol. Ne interesează să calculăm numărul de aruncări cu zarul necesare pînă cînd obținem un 6. Dacă notăm cu $X$ această variabilă aleatorie, atunci:
+
+\begin{itemize}
+  \item Cu probabilitatea de $\frac{1}{6}$, vom obține un 6 din prima aruncare.
+  \item Cu probabilitatea de $\frac{5}{6} \cdot \frac{1}{6}$, vom obține un 6 din a doua aruncare.
+  \item Cu probabilitatea de $\frac{5}{6} \cdot \frac{5}{6} \cdot \frac{1}{6}$, vom obține un 6 din a treia aruncare.
+\end{itemize}
+
+Generalizînd,
+
+$$P(X = k) = \bigg(\frac{5}{6}\bigg)^{k - 1} \cdot \frac{1}{6}$$
+
+Distribuția geometrică este infinită. Pentru orice $k$, putem avea ghinionul să nu obținem un 6 din primele $k$ aruncări. Ea se numește geometrică deoarece probabilitățile diverselor valori formează o progresie geometrică.
+
+\textbf{Valoarea așteptată} a unei variabile aleatorii, notată cu $E[X]$, este media valorilor posibile ponderată cu probabilitățile acestora.
+
+Pentru \textbf{distribuția uniformă}, valoarea așteptată este pur și simplu media valorilor. Pentru un pachet cu 52 de cărți, valoarea așteptată a unei cărți este 26,5.
+
+Pentru \textbf{distribuția binomială} cu $n$ repetiții și probabilitatea $p$ de succes, valoarea așteptată este $np$. Această formulă nu este ușor deductibilă din formula combinatorică, dar poate fi demonstrată mult mai ușor. Cele $n$ experimente sînt independente (o aruncare unui zar nu este influențată de precedentele). De aceea, dintre cele $n$ experimente ne așteptăm ca o fracție de $p$ să aibă succes (să aruncăm un 6).
+
+Pentru \textbf{distribuția geometrică} cu probabilitatea $p$ de succes la fiecare experiment, numărul așteptat de experimente pînă la primul succes este $1/p$. Pentru o monedă, valoarea așteptată este 2, pentru un zar este 6.
+
+Putem demonstra această afirmație și algebric. Pornim de la definiția
+
+$$E[X] = \sum_{k \geq 1} k \cdot (1 - p)^{k-1} \cdot p$$
+
+și formăm un triunghi de termeni:
+
+\begin{align*}
+  E[X] &= p\\
+       &+ (1 - p) \cdot p &&+ (1 - p) \cdot p\\
+       &+ (1 - p)^2 \cdot p &&+ (1 - p)^2 \cdot p &&+ (1 - p)^2 \cdot p\\
+       &+ (1 - p)^3 \cdot p &&+ (1 - p)^3 \cdot p &&+ (1 - p)^3 \cdot p &&+ (1 - p)^3 \cdot p\\
+       &+ \dots
+\end{align*}
+
+Pe fiecare coloană calculăm suma unei progresii geometrice, apoi calculăm suma sumelor. Este un proces laborios. Iată însă o metodă mult mai elegantă. Tocmai pentru că aruncările cu zarul nu au memorie, iau naștere două cazuri:
+
+\begin{itemize}
+  \item Cu probabilitatea $p$ experimentul reușește din prima încercare.
+  \item Cu probabilitatea $1-p$ am irosit prima încercare și reluăm experimentul \textbf{cu aceeași valoare așteptată}.
+\end{itemize}
+
+Rezultă recurența:
+
+$$E[X] = p \cdot 1 + (1 - p) \cdot (1 + E[x])$$
+
+Pe care o rezolvăm trivial și obținem
+
+$$E[X] = 1/p$$
+
+Acest ultim rezultat ne interesează pentru \textit{skip lists}, pentru că analiza lor de complexitate se reduce exact la acest rezultat.
+
+
+\section{Structura de date}
+
+Vom defini o structură de date care seamănă cu o listă simplu înlănțuită, dar care are diverse niveluri de scurtături, pointeri care avansează mai multe elemente deodată.
+
+Să considerăm întîi cazul unei colecții statice de numere (fără modificări) în care dorim doar să căutăm valori. Atunci am putea precalcula următoarea structură:
+
+\import{./figures}{skip-lists-static.tex}
+
+Observăm că pe nivelul 0, toate elementele sînt înlănțuite. Pe nivelul 1, pointerii avansează din două în două elemente. În general, pe nivelul $k$, pointerii avansează cîte $2^k$ elemente, posibil cu excepția ultimului pointer. Pentru simplificarea operațiilor, am inclus santinele la începutul și la sfîrșitul listelor, corespunzătoare valorilor $\pm \infty$. Structura are $\lceil \log (n - 1) \rceil$ niveluri, astfel încît pe ultimul nivel să existe un singur pointer dintr-un nod diferit de santinele.
+
+Într-o astfel de structură, căutările funcționează garantat (deterministic) în timp $\bigoh(\log n)$. Pornind de pe cel mai înalt nivel, din santinela stîngă:
+
+\begin{itemize}
+  \item Urmăm pointerul dacă valoarea căutată este cel puțin egală cu valoarea din destinația pointerului (21).
+  \item Dacă valoarea căutată este mai mică decît 21, nu urmăm pointerul.
+  \item În orice situație, coborîm un nivel și repetăm procedura.
+\end{itemize}
+
+În acest algoritm, ne folosim de observația că între orice două turnuri de pointeri de înălțime $h$ există exact un pointer de înălțime $h-1$.
+
+Limitarea, desigur, este că dorim ca structura să admită și inserări și ștergeri. Dacă toate inserările au loc, să zicem între valorile 10 și 15, aceasta poate denatura structura de pointeri și ne poate face să petrecem foarte mult timp pe un nivel anume, iar timpul de căutare se degradează la $\bigoh(n)$.
+
+De aceea, renunțăm la controlul determinist asupra structurii de pointeri și adoptăm o abordare probabilistică. La inserarea unui element, îi vom genera un turn de pointeri cu înălțime între 1 și $\log n$, aleasă dintr-o distribuție geometrică de probabilitate cu $p=1/2$. Cu alte cuvinte, cu probabilitatea $1/2$ turnul va avea un singur pointer, pe nivelul 0. Cu probabilitatea $1/4$ turnul va avea doi pointeri etc. Pentru siguranță, impunem o limită superioară de $\lceil \log n \rceil$ niveluri. Va rezulta o structură mai puțin uniformă, dar la fel de puternică din punct de vedere asimptotic. Figura \ref{fig:skip-lists-probabilistic} arată un exemplu pentru același set de date.
+
+\import{./figures}{skip-lists-probabilistic.tex}
+
+Algoritmul de căutare funcționează ca mai înainte, doar că între două turnuri de pointeri de înălțime $h$ pot exista zero sau mai multe turnuri de înălțime $h-1$. De exemplu, pentru căutarea valorii 21, algoritmul:
+
+\begin{itemize}
+  \item Pornește de pe nivelul 3, valoarea $-\infty$.
+  \item Avansează la valoarea 10.
+  \item Coboară pe nivelul 2, valoarea 10, întrucît pointerul de pe nivelul 3 ar duce la valoarea 24, prea mare.
+  \item Coboară pe nivelul 1, valoarea 10.
+  \item Avansează la valoarea 17.
+  \item Coboară pe nivelul 0, valoarea 17.
+  \item Avansează la valoarea 17.
+  \item Avansează la valoarea 21.
+\end{itemize}
+
+
+\section{Analiza de complexitate}
+
+Pe măsură ce inserăm și ștergem valori, structura pointerilor se va modifica. Dar numărul așteptat de pointeri de înălțime $h-1$ dintre doi pointeri de înălțime $h$ va fi 1. Raționamentul pornește de la valoarea așteptată a distribuției geometrice. Presupunînd că ne interesează doar turnurile de înălțimi $h-1$ și $h$, cîte turnuri ne așteptăm să vedem pînă cînd întîlnim următorul turn de înălțime $h$? Răspunsul este $1/p = 2$, cu alte cuvinte ne așteptăm să existe, în medie, un turn de înălțime $h-1$.
+
+Aceasta înseamnă că ne așteptăm ca, la fiecare pointer traversat, algoritmul să parcurgă circa jumătate din distanța rămasă pînă la valoarea căutată. În plus, algoritmul va coborî $\log n$ niveluri pe verticală. Rezultă o complexitate de $\bigoh(\log n)$.
+
+\section{Augmentarea pentru statistici de ordine}
+
+Pentru a putea răspunde la statistici de ordine, este suficient ca fiecare pointer să își rețină și distanța, aducă numărul de elemente pe care le sare. Trebuie să actualizăm aceste valori la inserarea și la ștergerea de elemente.
+
+La inserarea unui element, dacă îi generăm un turn de $h$ pointeri, acei pointeri se vor interpune între pointerii anterior și următor de pe același nivel. Așadar, distanțele pointerilor nou creați vor prelua o parte din distanțele pointerilor pe care îi întrerup. În plus, pointerii care trec pe deasupra turnului creat capătă +1 la distanță. (TODO: figură).
+
+La ștergerea unui element se întîmplă fenomenul opus: pointerii a căror destinație era elementul șters cîștigă la distanțele lor distanțele pointerilor care porneau din elementul șters. Pointerii care treceau pe deasupra elementului șters pierd 1 din distanță.
+
+\ref{fig:skip-lists-probabilistic}
+
+
+\section{Implementarea}
+
+\label{problem:skip-lists-basic}
+\label{problem:skip-lists-augmented}
+
+Anexa include implementări de referință și exemple de folosire, atît pentru \hyperref[code:skip-lists-basic]{\textit{skip lists} simple}, cît și \hyperref[code:skip-lists-augmented]{augmentate} cu suport pentru statistici de ordine. Există multe variante de implementare. Am urmărit să păstrez implementarea simplă, dar în același timp și să nu mă îndepărtez prea mult de viteza seturilor STL. Am luat în calcul în special trei criterii.
+
+
+\subsection{Alocarea turnului de pointeri}
+
+Avînd în vedere că fiecare nod are un turn de pointeri de înălțime variabilă și calculată în momentul inserării, este tentant să folosim un \ccode{std::vector}. Dar acele implementări tind să fie cele mai lente, uneori de 5 ori mai lente decît \ccode{std::set}, după cum o arată secțiunea de \textit{benchmarks}.
+
+O altă abordare este să prealocăm vectori (arrays) de înălțime fixă și egală cu $\log n$. Implementarea este încă simplă, dar să calculăm necesarul de memorie. Pentru o structură cu \np{300000} de elemente, dacă toate nodurile au cîte 20 de pointeri și alte informații (88 de octeți pe nod), totalul necesar este de 26,4 MB. În medie, folosim doar 2 pointeri din cei 20 (16 octeți per nod), deci putem reduce totalul la 4,8 MB. Diferența este mare, iar aceasta se traduce în cod mai lent.
+
+De aceea, am inclus în anexă implementarea corectă, cu turnuri de pointeri alocați dintr-un buffer comun. Vom lua din acel buffer doar spațiul strict necesar pentru înălțimea aleasă a turnului. Această implementare duce la probleme de fragmentare, ceea ce ne pune probleme dacă dorim să recuperăm memoria eliberată prin ștergeri. Dar, dacă bufferul este suficient de mare, putem să omitem recuperarea.
+
+
+\subsection{Optimizarea generatorului de numere aleatorii}
+
+Cum generăm înălțimea turnului? Nu putem folosi \ccode{rand()} (sau generatorul vostru favorit de numere aleatorii), căci \ccode{rand()} selectează uniform, or noi dorim o distribuție geometrică. Dar vom apela \mintinline{c}{rand() % 2} în mod repetat pînă cînd experimentul reușește. Această metodă, deși naivă este suficient de bună, căci știm că numărul de apeluri mediu la \ccode{rand()} va fi 2.
+
+\begin{minted}{c}
+int get_height() {
+  int h = 1;
+  while ((rand() & 1) && (h < MAX_LEVELS)) {
+    h++;
+  }
+  return h;
+}
+\end{minted}
+
+Pentru concizia codului, putem și să apelăm \ccode{rand()} o singură dată și să numărăm biții de 0 cei mai puțin semnificativi. Acest artificiu funcționează pentru că răspunsul va fi 0 cu probabilitatea 1/2, 1 cu probabilitatea 1/4 etc.
+
+\begin{minted}{c}
+int get_height() {
+  return 1 + __builtin_ctz(rand());
+}
+\end{minted}
+
+Am mai încercat și să apelez \ccode{rand()} o singură dată, apoi să folosesc biții returnați pentru următoarele 30 de experimente. Din nou, economia este neglijabilă, tocmai pentru că numărul de apeluri la \ccode{rand()} este $\bigoh(n)$, pe cînd complexitatea totală a operațiilor pe \textit{skip lists} este $\bigoh(n \log n)$.
+
+
+\subsection{Alegerea probabilității}
+
+Din curiozitate, am făcut experimente și cu alte probabilități decît 0,5, respectiv cu 0,375 și cu 0,25. Cînd $p$ scade, înălțimea turnurilor scade, dar numărul de pași pe orizontală crește. Invers, cînd $p$ este prea mare vom petrece prea mult timp mergînd pe verticală. Nu am reușit să cîștig mare lucru (nu mai mult de 20\%).
+
+
+\section{Benchmarks}
+
+% Pentru a obține aceste date, am compilat benchmark-urile pe rînd cu fiecare
+% set de opțiuni (pentru generatorul de numere aleatorii și pentru alocarea
+% pointerilor). Apoi am rulat de 10 ori benchmark-ul și am colectat datele:
+%
+% for i in {01..10}; do ./benchmark-basic; done | tee data.txt
+%
+% Din acestea am eliminat maximul și minimul și făcut media restului:
+%
+% grep 'inserare skip' data.txt | cut -d ' ' -f 4 | sort | head -n -1 | tail -n +2 | awk '{s+=$1}END{print "ave:",s/NR}' RS="\n"
+
+Tabelul \ref{table:basic-skip-lists} enumeră timpii obținuți cu diversele variante de \textit{skip lists} simple (fără statistici de ordine). Am testat toate combinațiile de alocare a turnurilor și de generare a numerelor aleatorii. Toate experimentele inserează \np{300000} de elemente într-o tabelă, apoi le caută pe fiecare, și fac 10 astfel de iterații (așadar \np{3000000} de inserări și \np{3000000} de căutări).
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lccccc}
+     & \textbf{array fix de pointeri} & \textbf{array variabil} & \textbf{vector}\\
+    \hline
+    \textbf{\ccode{rand()} simplu} & 2235 ms & 1790 ms & 2511 ms \\
+    \textbf{\ccode{rand()} pe biți, $p=0,5$} & 2216 ms & 1946 ms & 2589 ms \\
+    \textbf{\ccode{rand()} pe biți, $p=0,375$} & 2164 ms & 2156 ms & 2896 ms \\
+    \textbf{\ccode{rand()} pe biți, $p=0,25$} & 2430 ms & 2478 ms & 3159 ms \\
+    \hline
+  \end{tabular}
+
+  \caption{Timpii obținuți pentru \np{6000000} de operații pe \textit{skip lists} simple. Pentru comparație, un \ccode{set} STL obține 1174 ms.}
+  \label{table:basic-skip-lists}
+\end{table}
+
+Tabelul \ref{table:augmented-skip-lists} enumeră timpii obținuți cu diversele variante de \textit{skip lists} augmentate cu statistici de ordine. Din nou, am testat toate combinațiile de alocare a turnurilor și de generare a numerelor aleatorii. Toate experimentele inserează \np{300000} de elemente într-o tabelă, apoi pentru fiecare apelează \ccode{order_of()} și \ccode{kth_element()}. Din nou, am făcut 10 iterații din fiecare experiment, așadar \np{9000000} de operații.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lccccc}
+     & \textbf{array fix de pointeri} & \textbf{array variabil} & \textbf{vector}\\
+    \hline
+    \textbf{\ccode{rand()} simplu} & 2932 ms & 2212 ms & 4236 ms \\
+    \textbf{\ccode{rand()} pe biți, $p=0,5$} & 3033 ms & 1914 ms & 4331 ms \\
+    \textbf{\ccode{rand()} pe biți, $p=0,375$} & 2711 ms & 2068 ms & 3858 ms \\
+    \textbf{\ccode{rand()} pe biți, $p=0,25$} & 2897 ms & 1852 ms & 3855 ms \\
+    \hline
+  \end{tabular}
+
+  \caption{Timpii obținuți pentru \np{9000000} de operații pe \textit{skip lists} augmentate. Pentru comparație, un \ccode{set} PBDS obține 879 ms, iar un treap 1120 ms.}
+  \label{table:augmented-skip-lists}
+\end{table}
+
+Tabelele sînt relativ haotice. Probabil dacă am lăsa fiecare experiment să ruleze cîteva ore am afla cifre mai credibile. Dar putem trage cîteva concluzii.
+
+\begin{enumerate}
+  \item \textit{Skip lists} sînt mai ineficiente decît structurile din STL și decît treaps, cam cu 50\% pentru cele simple și cam de 2,5 ori pentru cele augmentate.
+  \item Implementările cu \ccode{std::vector} sînt semnificativ mai lente.
+  \item Implementările cu array variabil de pointeri sînt preferabile.
+  \item Optimizarea generatorului de numere aleatorii nu ajută semnificativ sau chiar dăunează.
+\end{enumerate}
