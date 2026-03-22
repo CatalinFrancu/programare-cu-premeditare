@@ -1,32 +1,21 @@
 #include <assert.h>
-#include <ext/pb_ds/assoc_container.hpp>
-#include <ext/pb_ds/tree_policy.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-typedef __gnu_pbds::tree<
-  int,
-  __gnu_pbds::null_type,
-  std::less<int>,
-  __gnu_pbds::rb_tree_tag,
-  __gnu_pbds::tree_order_statistics_node_update
-  > ordered_set;
-
-const int MAX_LEVELS = 20;
-const int MAX_NODES = 300'000;
+const int N = 500'000;
+const int MAX_LEVELS = 21;
 const int INF = 2'000'000'000;
 
 struct node {
   int val;
   int height;
-  int* next;
-  int* dist;
+  int next[MAX_LEVELS];
+  int dist[MAX_LEVELS];
 };
 
 struct skip_list {
-  node a[MAX_NODES + 2];
-  int buf[MAX_NODES * 5], buf_ptr; // buffer pentru pointeri și distanțe
+  node a[N + 2];
   int prev[MAX_LEVELS], prev_ord[MAX_LEVELS];
   int size; // următoarea celulă nealocată
 
@@ -38,9 +27,6 @@ struct skip_list {
     a[0].val = -INF;
     a[1].val = +INF;
     a[0].height = a[1].height = MAX_LEVELS;
-    a[0].next = buf;
-    a[0].dist = buf + MAX_LEVELS;
-    buf_ptr = 2 * MAX_LEVELS;
     for (int l = 0; l < MAX_LEVELS; l++) {
       a[0].next[l] = 1;
       a[0].dist[l] = 1;
@@ -48,8 +34,10 @@ struct skip_list {
   }
 
   // Alege o înălțime de turn din distribuția geometrică cu p = 0,5.
+  // Rezultatul returnat este în [1, MAX_LEVELS).
   int get_height() {
-    return 1 + __builtin_ctz(rand());
+    int r = rand() | (1 << (MAX_LEVELS - 2));
+    return 1 + __builtin_ctz(r);
   }
 
   void insert(int val) {
@@ -57,9 +45,6 @@ struct skip_list {
     a[size].val = val;
     int h = get_height();
     a[size].height = h;
-    a[size].next = buf + buf_ptr;
-    a[size].dist = buf + buf_ptr + h;
-    buf_ptr += 2 * h;
 
     int pos = 0, order = 0;
 
@@ -91,6 +76,24 @@ struct skip_list {
     size++;
   }
 
+  void erase(int val) {
+    int pos = 0;
+
+    for (int l = MAX_LEVELS - 1; l >= 0; l--) {
+      while (a[a[pos].next[l]].val < val) {
+        pos = a[pos].next[l];
+      }
+
+      a[pos].dist[l]--;
+      if (a[a[pos].next[l]].val == val) {
+        a[pos].dist[l] += a[a[pos].next[l]].dist[l];
+        a[pos].next[l] = a[a[pos].next[l]].next[l];
+      }
+    }
+
+    size--;
+  }
+
   // Avansează pe fiecare nivel, doar peste valori strict mai mici.
   bool contains(int val) {
     int pos = 0;
@@ -117,8 +120,6 @@ struct skip_list {
       }
     }
 
-    // Ar trebui să returnăm elementul următor, dar pe de altă parte am pornit
-    // de pe santinela -∞.
     return order;
   }
 
@@ -139,28 +140,39 @@ struct skip_list {
 };
 
 skip_list sl;
-ordered_set stl_set;
+int perm[N];
+
+void gen_perm() {
+  // Amestecă mulțimea {0, 1, ..., N - 1}.
+  for (int i = 0; i < N; i++) {
+    int j = rand() % (i + 1);
+    perm[i] = perm[j];
+    perm[j] = i;
+  }
+}
 
 int main() {
   srand(time(NULL));
+  gen_perm();
 
+  // Exemplu de folosire și test de corectitudine.
   sl.init();
 
-  // Exemplu de folosire și test de corectitudine. Inserează aceleași valori
-  // în skip list și într-un set PBDS și verifică că ordinile coincid.
-  for (int i = 0; i < MAX_NODES; i++) {
-    int x = rand() % INF;
-    // For simplicity, don't deal with multisets.
-    if (!sl.contains(x)) {
-      sl.insert(x);
-      stl_set.insert(x);
-      assert(sl.order_of(x) == (int)stl_set.order_of_key(x));
-    }
+  for (int i = 0; i < N; i++) {
+    sl.insert(perm[i]);
+    int j = rand() % N;
+    assert(sl.contains(perm[j]) == (j <= i));
   }
 
-  // Verifică că al k-lea element coincide.
-  for (int i = stl_set.size() - 1; i >= 0; i--) {
-    assert(sl.kth_element(i) == *stl_set.find_by_order(i));
+  for (int i = 0; i < N; i++) {
+    assert(sl.order_of(i) == i);
+    assert(sl.kth_element(i) == i);
+  }
+
+  for (int i = 0; i < N; i++) {
+    sl.erase(perm[i]);
+    int j = rand() % N;
+    assert(sl.contains(perm[j]) == (j > i));
   }
 
   return 0;

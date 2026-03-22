@@ -139,24 +139,25 @@ La ștergerea unui element se întîmplă fenomenul opus: pointerii a căror des
 
 \section{Implementarea}
 
-\label{problem:skip-lists-basic}
-\label{problem:skip-lists-augmented}
+\label{problem:skip-lists}
 
-Anexa include implementări de referință și exemple de folosire, atît pentru \hyperref[code:skip-lists-basic]{\textit{skip lists} simple}, cît și \hyperref[code:skip-lists-augmented]{augmentate} cu suport pentru statistici de ordine. Există multe variante de implementare. Am urmărit să păstrez implementarea simplă, dar în același timp și să nu mă îndepărtez prea mult de viteza seturilor STL. Am luat în calcul în special trei criterii.
+Anexa include \hyperref[code:skip-lists]{o implementare de referință} și exemple de folosire pentru \textit{skip lists} augmentate pentru statistici de ordine. Am inclus doar varianta pe care o consider canonică (cu turnuri de pointeri prealocate ca \ccode{int[]}). Există multe decizii de implementare, pe care le discut mai jos. Puteți regăsi toate implementările într-un \href{https://github.com/CatalinFrancu/nerdvana/tree/main/balanced-ds}{repo pe GitHub}.
 
 
 \subsection{Alocarea turnului de pointeri}
 
-Avînd în vedere că fiecare nod are un turn de pointeri de înălțime variabilă și calculată în momentul inserării, este tentant să folosim un \ccode{std::vector}. Dar acele implementări tind să fie cele mai lente, uneori de 5 ori mai lente decît \ccode{std::set}, după cum o arată secțiunea de \textit{benchmarks}.
+Avînd în vedere că fiecare nod are un turn de pointeri de înălțime variabilă și calculată în momentul inserării, este tentant să folosim un \ccode{std::vector}. Dar acele implementări tind să fie cele mai lente, de 2-3 ori mai lente decît treapurile și seturile PBDS, după cum o arată secțiunea de \textit{benchmarks}.
 
-O altă abordare este să prealocăm vectori (arrays) de înălțime fixă și egală cu $\log n$. Implementarea este încă simplă, dar să calculăm necesarul de memorie. Pentru o structură cu \np{300000} de elemente, dacă toate nodurile au cîte 20 de pointeri și alte informații (88 de octeți pe nod), totalul necesar este de 26,4 MB. În medie, folosim doar 2 pointeri din cei 20 (16 octeți per nod), deci putem reduce totalul la 4,8 MB. Diferența este mare, iar aceasta se traduce în cod mai lent.
+O altă abordare este să prealocăm vectori (\textit{arrays}) de înălțime fixă și egală cu $\log n$. Codul va fi mai rapid, dar necesarul de memorie crește. Pentru o structură cu \np{500000} de elemente, toate nodurile au cîte 21 de pointeri și 21 de distanțe, precum și alte informații, adică 176 de octeți per nod. Totalul necesar este de 88 MB.
 
-De aceea, am inclus în anexă implementarea corectă, cu turnuri de pointeri alocați dintr-un buffer comun. Vom lua din acel buffer doar spațiul strict necesar pentru înălțimea aleasă a turnului. Această implementare duce la probleme de fragmentare, ceea ce ne pune probleme dacă dorim să recuperăm memoria eliberată prin ștergeri. Dar, dacă bufferul este suficient de mare, putem să omitem recuperarea.
+O a treia implementare alocă turnurile de pointeri într-un buffer comun. Un turn nou își ia din acel buffer doar spațiul strict necesar pentru înălțimea aleasă. Aceasta reduce memoria la 22 MB. Este o diferență semnificativă. Un dezavantaj al acestei implementări este fragmentarea memoriei, ceea ce ne pune probleme dacă dorim să recuperăm memoria eliberată prin ștergeri. Dar, dacă bufferul este suficient de mare, putem să omitem recuperarea.
+
+Am inclus în anexă implementarea cu \textit{arrays}, pentru concizie și pentru că este cea mai rapidă. Dacă memoria este o problemă, implementarea cu buffer global diferă doar cu cîteva linii la alocarea unui nod.
 
 
 \subsection{Optimizarea generatorului de numere aleatorii}
 
-Cum generăm înălțimea turnului? Nu putem folosi \ccode{rand()} (sau generatorul vostru favorit de numere aleatorii), căci \ccode{rand()} selectează uniform, or noi dorim o distribuție geometrică. Dar vom apela \mintinline{c}{rand() % 2} în mod repetat pînă cînd experimentul reușește. Această metodă, deși naivă este suficient de bună, căci știm că numărul de apeluri mediu la \ccode{rand()} va fi 2.
+Cum generăm înălțimea turnului? Nu putem folosi \ccode{rand()} (sau generatorul vostru favorit de numere aleatorii), căci \ccode{rand()} selectează uniform, or noi dorim o distribuție geometrică. Dar vom apela \mintinline{c}{rand() % 2} în mod repetat pînă cînd experimentul reușește. Această metodă, deși naivă, este suficient de bună, căci știm că numărul de apeluri mediu la \ccode{rand()} va fi 2.
 
 \begin{minted}{c}
 int get_height() {
@@ -168,11 +169,12 @@ int get_height() {
 }
 \end{minted}
 
-Pentru concizia codului, putem și să apelăm \ccode{rand()} o singură dată și să numărăm biții de 0 cei mai puțin semnificativi. Acest artificiu funcționează pentru că răspunsul va fi 0 cu probabilitatea 1/2, 1 cu probabilitatea 1/4 etc.
+Pentru concizia codului, putem și să apelăm \ccode{rand()} o singură dată și să numărăm biții de 0 cei mai puțin semnificativi. Acest artificiu funcționează pentru că răspunsul va fi 0 cu probabilitatea 1/2, 1 cu probabilitatea 1/4 etc. Dar trebuie să setăm explicit unul dintre biții returnați de \ccode{rand()} ca să ne asigurăm că răspunsul nu va depăși înălțimea maximă.
 
 \begin{minted}{c}
 int get_height() {
-  return 1 + __builtin_ctz(rand());
+  int r = rand() | (1 << (MAX_LEVELS - 2));
+  return 1 + __builtin_ctz(r);
 }
 \end{minted}
 
@@ -181,62 +183,35 @@ Am mai încercat și să apelez \ccode{rand()} o singură dată, apoi să folose
 
 \subsection{Alegerea probabilității}
 
-Din curiozitate, am făcut experimente și cu alte probabilități decît 0,5, respectiv cu 0,375 și cu 0,25. Cînd $p$ scade, înălțimea turnurilor scade, dar numărul de pași pe orizontală crește. Invers, cînd $p$ este prea mare vom petrece prea mult timp mergînd pe verticală. Nu am reușit să cîștig mare lucru (nu mai mult de 20\%).
-
+Din curiozitate, am făcut experimente și cu alte probabilități decît 0,5, respectiv cu 0,375 și cu 0,25. Cînd $p$ scade, înălțimea turnurilor scade, dar numărul de pași pe orizontală crește. Invers, cînd $p$ este prea mare vom petrece prea mult timp mergînd pe verticală. Viteza de execuție scade pe măsură ce ne abatem de la $p = 0,5$.
 
 \section{Benchmarks}
 
-% Pentru a obține aceste date, am compilat benchmark-urile pe rînd cu fiecare
-% set de opțiuni (pentru generatorul de numere aleatorii și pentru alocarea
-% pointerilor). Apoi am rulat de 10 ori benchmark-ul și am colectat datele:
-%
-% for i in {01..10}; do ./benchmark-basic; done | tee data.txt
-%
-% Din acestea am eliminat maximul și minimul și făcut media restului:
-%
-% grep 'inserare skip' data.txt | cut -d ' ' -f 4 | sort | head -n -1 | tail -n +2 | awk '{s+=$1}END{print "ave:",s/NR}' RS="\n"
-
-Tabelul \ref{table:basic-skip-lists} enumeră timpii obținuți cu diversele variante de \textit{skip lists} simple (fără statistici de ordine). Am testat toate combinațiile de alocare a turnurilor și de generare a numerelor aleatorii. Toate experimentele inserează \np{300000} de elemente într-o tabelă, apoi le caută pe fiecare, și fac 10 astfel de iterații (așadar \np{3000000} de inserări și \np{3000000} de căutări).
+Tabelul \ref{table:skip-lists-benchmark} enumeră timpii obținuți cu diversele variante de \textit{skip lists} augmentate cu statistici de ordine. Am testat toate combinațiile de alocare a turnurilor și de generare a numerelor aleatorii. Am rulat 100 de faze pe fiecare structură, iar o fază operează pe $n = \np{500000}$ de numere și face 6 operații pentru fiecare număr (inserări, ștergeri, căutări și statistici de ordine). Așadar, numărul total este de \np{300000000} de operații.
 
 \begin{table}[H]
   \centering
   \begin{tabular}{lccccc}
      & \textbf{array fix de pointeri} & \textbf{array variabil} & \textbf{vector}\\
     \hline
-    \textbf{\ccode{rand()} simplu} & 2235 ms & 1790 ms & 2511 ms \\
-    \textbf{\ccode{rand()} pe biți, $p=0,5$} & 2216 ms & 1946 ms & 2589 ms \\
-    \textbf{\ccode{rand()} pe biți, $p=0,375$} & 2164 ms & 2156 ms & 2896 ms \\
-    \textbf{\ccode{rand()} pe biți, $p=0,25$} & 2430 ms & 2478 ms & 3159 ms \\
+    \textbf{\ccode{rand()} simplu} & 157 s & 186 s & 265 s \\
+    \textbf{\ccode{rand()} cu \ccode{__builtin_ctz}} & 157 s & 187 s & 262 s \\
+    \textbf{\ccode{rand()} pe biți, $p=0,5$} & 157 s & 186 s & 264 s \\
+    \textbf{\ccode{rand()} pe biți, $p=0,375$} & 175 s & 203 s & 299 s \\
+    \textbf{\ccode{rand()} pe biți, $p=0,25$} & 202 s & 228 s & 360 s \\
     \hline
   \end{tabular}
 
-  \caption{Timpii obținuți pentru \np{6000000} de operații pe \textit{skip lists} simple. Pentru comparație, un \ccode{set} STL obține 1174 ms.}
-  \label{table:basic-skip-lists}
+  \caption{Timpii obținuți pentru 300 de milioane de operații pe \textit{skip lists} augmentate. Pentru comparație, un \ccode{set} PBDS obține 117 s, iar un treap 90 s.}
+  \label{table:skip-lists-benchmark}
 \end{table}
 
-Tabelul \ref{table:augmented-skip-lists} enumeră timpii obținuți cu diversele variante de \textit{skip lists} augmentate cu statistici de ordine. Din nou, am testat toate combinațiile de alocare a turnurilor și de generare a numerelor aleatorii. Toate experimentele inserează \np{300000} de elemente într-o tabelă, apoi pentru fiecare apelează \ccode{order_of()} și \ccode{kth_element()}. Din nou, am făcut 10 iterații din fiecare experiment, așadar \np{9000000} de operații.
-
-\begin{table}[H]
-  \centering
-  \begin{tabular}{lccccc}
-     & \textbf{array fix de pointeri} & \textbf{array variabil} & \textbf{vector}\\
-    \hline
-    \textbf{\ccode{rand()} simplu} & 2932 ms & 2212 ms & 4236 ms \\
-    \textbf{\ccode{rand()} pe biți, $p=0,5$} & 3033 ms & 1914 ms & 4331 ms \\
-    \textbf{\ccode{rand()} pe biți, $p=0,375$} & 2711 ms & 2068 ms & 3858 ms \\
-    \textbf{\ccode{rand()} pe biți, $p=0,25$} & 2897 ms & 1852 ms & 3855 ms \\
-    \hline
-  \end{tabular}
-
-  \caption{Timpii obținuți pentru \np{9000000} de operații pe \textit{skip lists} augmentate. Pentru comparație, un \ccode{set} PBDS obține 879 ms, iar un treap 1120 ms.}
-  \label{table:augmented-skip-lists}
-\end{table}
-
-Tabelele sînt relativ haotice. Probabil dacă am lăsa fiecare experiment să ruleze cîteva ore am afla cifre mai credibile. Dar putem trage cîteva concluzii.
+Dar putem trage cîteva concluzii.
 
 \begin{enumerate}
-  \item \textit{Skip lists} sînt mai ineficiente decît structurile din STL și decît treaps, cam cu 50\% pentru cele simple și cam de 2,5 ori pentru cele augmentate.
+  \item \textit{Skip lists} sînt mai ineficiente decît structurile din STL și decît treaps.
   \item Implementările cu \ccode{std::vector} sînt semnificativ mai lente.
-  \item Implementările cu array variabil de pointeri sînt preferabile.
-  \item Optimizarea generatorului de numere aleatorii nu ajută semnificativ sau chiar dăunează.
+  \item Abaterea de la $p = 0,5$ dăunează vitezei.
 \end{enumerate}
+
+Gînduri de final? \textit{Skip lists} pot fi un adaos util la arsenalul vostru de structuri de date. Ele sînt ceva mai lente decît treapurile și nu pot rezolva un spectru de probleme atît de larg. În schimb, sînt mai ușor de implementat decît treapurile -- deși opinia voastră poate diferi.
