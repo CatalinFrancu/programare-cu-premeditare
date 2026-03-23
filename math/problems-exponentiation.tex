@@ -44,7 +44,7 @@ $$
 \end{pmatrix}
 $$
 
-Acum să atacăm problema sumelor. Să presupunem că problema ne-ar cere să aflăm suma simplă $S_n = \sum_{k=1}^{n} X_k$. Reținem că matricea de recurență trebuie să fie \textbf{constantă}. Nu putem adăuga valori din șirul $X$ acolo, ci doar constante exprimabile în funcție de $a$, $b$ și $c$. Rezultă că trebuie să „cărăm după noi” și suma $S_n$. Ne folosim, desigur, de recurența:
+Acum să atacăm problema sumelor. Să presupunem că problema ne-ar cere să aflăm suma simplă $S_n = \sum_{k=1}^{n} X_k$. Reținem că matricea de recurență trebuie să fie \textbf{constantă}. Nu putem adăuga valori din șirul $X$ acolo, ci doar constante exprimabile în funcție de $a$, $b$ și $c$. De asemenea, matricea și vectorii trebuie să fie \textbf{finiți}. Nu putem include toți termenii de la $X_1$ la $X_n$ doar fiindcă $S_n$ îi cere. Rezultă că trebuie să „cărăm după noi” și suma $S_n$ și să o exprimăm recurent:
 
 $$S_n = S_{n-1} + X_n = S_{n-1} + (a X_{n-1} + b X_{n-2} + c)$$
 
@@ -137,7 +137,7 @@ Această problemă necesită cîteva cunoștințe de probabilități.
 
 În esență, trebuie să construim un graf cu $4! = 24$ de stări (noduri). O stare reprezintă o ordine a obiectelor, iar o muchie reprezintă o rearanjare făcută de unul dintre clienți, cu una dintre probabilitățile $p_1$, $p_2$, $p_3$ sau $p_4$ (sau 0 dacă permutarea nu este una dintre cele 4 posibile). Dacă reprezentăm graful folosind o matrice de adiacență $A$, atunci pe fiecare linie vom regăsi cîte o dată probabilitățile $p_1$, $p_2$, $p_3$ și $p_4$, precum și 20 de valori 0.
 
-Am putea hard-coda matricea $A$ imediat după citirea datelor, dar procesul este laborios și riscant. Mai sigur este să o construim programatic. De aceea, vom avea nevoie să facem \textit{ranking} și \textit{unranking} la permutările de 4 elemente. Această parte o putem hard-coda, fiind suficient de simplă.
+Am putea hardcoda matricea $A$ imediat după citirea datelor, dar procesul este laborios și riscant. Mai sigur este să o construim programatic. De aceea, vom avea nevoie să facem \textit{ranking} și \textit{unranking} la permutările de 4 elemente. Această parte o putem hardcoda, fiind suficient de simplă.
 
 Acum, să analizăm ce semnifică produsul de matrice:
 
@@ -181,7 +181,7 @@ Așadar, avem că:
   (P \circ (Q \circ R))(i) &= (Q \circ R)(P(i)) = R(Q(P(i)))
 \end{align*}
 
-Odată demonstrată asociativitatea, putem calcula răspunsul ca $P^k$ prin exponențiere rapidă.
+Odată demonstrată asociativitatea, putem calcula răspunsul ca $P^k$ prin exponențiere rapidă, cu complexitatea $\bigoh(n \log k)$.
 
 Nu face obiectul acestui capitol, dar, pentru completitudine, enunțăm și o soluție în $\bigoh(n)$, bazată pe descompunerea în cicluri. Să considerăm următorul tabel cu primele 31 de puteri ale unei permutări (dacă nu am spus-o suficient, îmi plac exemplele mari, căci din ele putem face deducții mult mai pertinente decît din exemplele mici).
 
@@ -246,7 +246,7 @@ Pare natural să colectăm întîi informații despre turnuri (ziduri de lățim
 
 Fie $T_{h,e}$ numărul de turnuri de înălțime $h$ în care suma pieselor pare este $e$\footnote{Pentru această problemă am ales inițiale de la cuvintele englezești $h$ = \textit{height}, $w$ = \textit{width}, $e$ = \textit{even}, $l$ = \textit{last}.}. Deducem formula de recurență în funcție de piesa din vîrful turnului, de înălțime $l$:
 
-$$T_{h,e} = \sum_{l = 1, 3, 5, \dots} T_{h - l, e} + \sum_{l = 0, 2, 4, \dots} T_{h - l, e - l }$$
+$$T_{h,e} = \sum_{l = 1, 3, 5, \dots} T_{h - l, e} + \sum_{l = 2, 4, 6, \dots} T_{h - l, e - l }$$
 
 Codul de mai jos decurge ușor, doar că el este $\bigoh(n^3)$, prea lent:
 
@@ -278,7 +278,7 @@ Acum fie $D_{w,e}$ numărul de ziduri de lățime $w$ (și înălțime $n$) în 
 
 $$D_{w,e} = \sum_{l = 0, 2, 4, \dots} D_{w - 1, e - l}$$
 
-Și această formulă este ușor de implementat, dar complexitatea este $\bigoh(n^3)$. Putem reduce substanțial memoria dacă observăm că matricele $T$ și $D$ folosesc doar liniile pare ($e$ este întotdeauna par). Așadar, redefinim $T_{n,e}$ ca numărul de turnuri de înălțime $n$ în care suma pieselor pare este $2e$. Similar, redefinim $D_{w,e}$ ca numărul de ziduri de lățime $w$ în care suma pieselor pare este $2e$.
+Și această formulă este ușor de implementat, dar complexitatea este $\bigoh(m n k)$, deoarece avem $m \cdot k$ valori, iar $l$ poate fi cel mult $n/2$. Putem reduce substanțial memoria dacă observăm că matricele $T$ și $D$ folosesc doar liniile pare ($e$ este întotdeauna par). Așadar, redefinim $T_{n,e}$ ca numărul de turnuri de înălțime $n$ în care suma pieselor pare este $2e$. Similar, redefinim $D_{w,e}$ ca numărul de ziduri de lățime $w$ în care suma pieselor pare este $2e$.
 
 Chiar și așa, încă este nevoie de o îmbunătățire asimptotică.
 
@@ -304,7 +304,7 @@ $$
 \end{pmatrix}
 $$
 
-Fie $A$ matricea din mijloc. Remarcăm că $A$ este independentă de $w$. Rezultă că putem începe cu $D_0 = (1, 0, 0, \dots 0)$ și putem calcula
+Fie $A$ matricea din mijloc. Remarcăm că $A$ este independentă de $w$. Rezultă că putem începe cu $D_0 = (1, 0, 0, \dots, 0)$ și putem calcula
 
 $$D_w = A^m \cdot D_0$$
 
@@ -416,14 +416,14 @@ Să găsim întîi orice formulă de recurență, fără să ne preocupăm de va
   \item Similar pentru jumătatea dreaptă.
 \end{itemize}
 
-Așadar, fie $C[z][s][d]$ numărul de moduri de a transporta marfă timp de $z$ zile, astfel încît după a $z$-a zi cele două jumătăți să fi fost folosite timp de $s$, respectiv $d$ zile consecutive. Vom folosi programarea dinamică de tip înainte pentru a construi $C[z + 1]$ (pare mai natural). Fie $t$ cererea de transport în ziua $z + 1$.
+Așadar, fie $C[i][s][d]$ numărul de moduri de a transporta marfă timp de $i$ zile, astfel încît după a $i$-a zi cele două jumătăți să fi fost folosite timp de $s$, respectiv $d$ zile consecutive. Vom folosi programarea dinamică de tip înainte pentru a construi $C[i + 1]$ (pare mai natural). Fie $t$ cererea de transport în ziua $i + 1$.
 
 \begin{itemize}
-  \item Dacă $t = 0$, atunci din $C[z][s][d]$ putem ajunge doar în $C[z + 1][0][0]$: nu avem nimic de transportat, deci contoarele celor două jumătăți se resetează.
+  \item Dacă $t = 0$, atunci din $C[i][s][d]$ putem ajunge doar în $C[i + 1][0][0]$: nu avem nimic de transportat, deci contoarele celor două jumătăți se resetează.
 
-  \item Dacă $t = 1$, atunci din $C[z][s][d]$ putem ajunge fie în $C[z + 1][s + 1][0]$, fie în $C[z + 1][0][d + 1]$. Contorul pentru jumătatea nefolosită se resetează. În ambele cazuri, înainte de a face propagarea trebuie să verificăm dacă $s < k - 1$, respectiv $d < k - 1$.
+  \item Dacă $t = 1$, atunci din $C[i][s][d]$ putem ajunge fie în $C[i + 1][s + 1][0]$, fie în $C[i + 1][0][d + 1]$. Contorul pentru jumătatea nefolosită se resetează. În ambele cazuri, înainte de a face propagarea trebuie să verificăm dacă $s < k - 1$, respectiv $d < k - 1$.
 
-  \item Dacă $t = 2$, atunci din $C[z][s][d]$ putem ajunge doar în $C[z + 1][s + 1][d + 1]$ și doar dacă $s < k - 1$ și $d < k - 1$.
+  \item Dacă $t = 2$, atunci din $C[i][s][d]$ putem ajunge doar în $C[i + 1][s + 1][d + 1]$ și doar dacă $s < k - 1$ și $d < k - 1$.
 \end{itemize}
 
 Starea inițială este $C[0] = 0$ pe tot stratul 0 în afară de $C[0][0][0] = 1$. Starea finală este suma valorilor de pe stratul $C[z]$ (deoarece putem termina cu orice grad de folosire a camionului). Această soluție merge, dar $\bigoh(zk^2)$ este prea lent.
@@ -432,7 +432,7 @@ Desigur, ne dorim să-l înlocuim pe $\bigoh(z)$ cu $\bigoh(\log z)$. Dar recure
 
 Observăm că și $n$ (durata unei săptămîni) este mic. Asta înseamnă că putem calcula naiv matricea de tranziție \textbf{pentru o săptămînă întreagă}. Această matrice va fi identică pentru orice săptămînă. Odată ce o calculăm, o putem ridica la puterea $\lfloor \frac{z}{n}\rfloor$. Apoi, mai avem nevoie de o a doua matrice pentru ultimele $z \mod n$ zile. Am putea calcula naiv aceste ultime zile, dar ar fi păcat, căci am duplica efort. Facem deja acest efort în scopul calculării matricei după $n$ zile.
 
-Trebuie să clarificăm ce reprezintă această matrice. $T_{i,j}$ este modul de a trece din starea $i$ după 0 zile în starea $j$ după $n$ zile. Dar, de fapt, ce este o stare? O stare este o pereche de valori $(s,d)$. Iar $s$ și $d$ iau valori între 0 și $k-1$! Așadar, matricea $T$ are dimensiuni $k^2 \times k^2$.  De exemplu, o reprezentare naturală este să numerotăm cele $k^2$ valori pentru $s$ și $d$. Astfel, dacă
+Trebuie să clarificăm ce reprezintă această matrice. $T_{i,j}$ este modul de a trece din starea $i$ după 0 zile în starea $j$ după $n$ zile. Dar, de fapt, ce este o stare? O stare este o pereche de valori $(s,d)$. Iar $s$ și $d$ iau valori între 0 și $k-1$. Așadar, matricea $T$ are dimensiuni $k^2 \times k^2$.  De exemplu, o reprezentare naturală este să numerotăm cele $k^2$ valori pentru $s$ și $d$. Astfel, dacă
 
 $$i = i_s \cdot k + i_d$$ și $$j = j_s \cdot k + j_d$$
 

@@ -22,13 +22,14 @@ Observația-cheie este că, după un șir de $n$ biți, îi refolosim pe ultimii
 
 \begin{itemize}
   \item Există $2^{n-1}$ noduri corespunzînd la $2^{n-1}$ șiruri binare.
-  \item În fiecare nod $u$ intră două arce (orientate) dinspre șirurile al căror ultimi $n-1$ biți corespund cu primii $n-1$ biți ai lui $u$.
-  \item Invers, din fiecare nod $u$ ies două arce către șirurile al căror primi $n-1$ biți corespund cu ultimii $n-1$ biți ai lui $u$.
+  \item În fiecare nod $u$ intră două arce (orientate) dinspre șirurile al căror ultimi $n-2$ biți corespund cu primii $n-2$ biți ai lui $u$.
+  \item Invers, din fiecare nod $u$ ies două arce către șirurile al căror primi $n-2$ biți corespund cu ultimii $n-2$ biți ai lui $u$.
   \item Pe fiecare muchie notăm bitul care trebuie adăugat la nodul-sursă pentru a obține nodul-destinație.
+  \item Intuitiv, nodul $u$ semnifică că ultimii $n-1$ biți tipăriți au fost reprezentarea binară a lui $u$.
   \item Un ciclu eulerian în acest graf ar tipări valorile întîlnite pe muchii. Aceste valori coincid (prin definiție) cu ultimul bit al nodului-destinație, deci nu este nevoie să le stocăm explicit.
 \end{itemize}
 
-Articolul de pe Wikipedia include și \href{https://en.wikipedia.org/wiki/De_Bruijn_sequence#Construction} o imagine pentru $n = 3$.
+Articolul de pe Wikipedia include și \href{https://en.wikipedia.org/wiki/De_Bruijn_sequence#Construction}{o imagine} pentru $n = 4$.
 
 Odată făcută reducerea, codul este remarcabil de scurt. Nu este nevoie să reținem listele de adiacență. Vecinii unui nod decurg din numărul de ordine al nodului. De asemenea, numărul de vecini vizitați / rămași pentru un nod poate fi reprezentat ca un singur număr între 0 și 2, ceea ce ne indică automat și următoarea muchie vizitabilă din acel nod.
 
