@@ -1,0 +1,323 @@
+\chapter{Treapuri}
+
+Treapurile sînt, ca și \textit{skip lists}, o structură de date probabilistică. Treapurile sînt arbori binari de căutare care adaugă o componentă aleatorie pentru echilibrare.
+
+Un treap (engl. \textit{tree + heap}) este un arbore binar în care fiecare nod conține două valori numerice: o \textbf{cheie} și o \textbf{prioritate}. După chei, arborele este un arbore binar de căutare: fiecare nod are cheia mai mare sau egală cu toate cheile din subarborele stîng și mai mică sau egală cu toate cheile din subarborele drept. După priorități, arborele este un max-heap: fiecare nod are prioritatea mai mare sau egală cu toate prioritățile din subarbore. În particular, rădăcina are prioritate maximă.
+
+\import{./figures}{treaps-example.tex}
+
+Treapurile se aseamănă cu \textit{arborii cartezieni} în privința proprietății de heap.
+
+O proprietate definitorie este că treapurile primesc la intrare doar cheile. Prioritățile sînt atribuite aleatoriu, intern, în momentul inserării nodului, sînt imutabile pe durata vieții nodului și servesc doar pentru echilibrarea probabilistică. Ca să înțelegem de ce echilibrarea funcționează, să considerăm treapul oricînd pe parcursul vieții sale, după un număr arbitrar de inserări și ștergeri. Prioritatea maximă poate apărea pe oricare dintre chei, dar valoarea așteptată a poziției priorității maxime este pe cheia mediană. Așadar, ne așteptăm ca rădăcina să împartă celelalte $n-1$ noduri în două grupe de mărimi relativ egale. Același argument se aplică recursiv tuturor subarborilor. Desigur, ocazional se poate întîmpla ca prioritatea maximă să apară pe nodul cu cheie maximă dintr-un subarbore, ceea ce înseamnă că singura organizare corectă este ca acel nod să nu aibă fiu drept, iar toate celelalte noduri să cadă în subarborele stîng al nodului. Dar acest eveniment va fi excepția, nu regula. Ne așteptăm ca înălțimea treapului să fie logaritmică.
+
+Un mod echivalent (și ușor testabil) de a ne gîndi la echilibrare este: care este lungimea medie a unui drum pînă la o frunză? Să pornim cu un arbore de $n = \np{100000}$ de noduri.  Generăm un număr aleatoriu $k$ între 1 și $n$ cu semnificația că prioritatea maximă apare pe cea de-a $k$-a cheie. Deci reducem problema la un subarbore cu $k-1$ noduri. Dacă sîntem norocoși și $k \ll n$, am redus problema la un subarbore foarte mic. Dacă sîntem ghinioniști și $k \approx n$, reducem problema cu foarte puțin. Dar nu putem fi mereu ghinioniști. Numărul de iterații pînă cînd ajungem la $n = 0$ va fi logaritmic.
+
+
+\section{Reprezentări}
+
+Articolul de pe \href{https://cp-algorithms.com/data_structures/treap.html}{CP Algorithms} folosește pointeri și alocare dinamică:
+
+\begin{minted}{c}
+struct treap {
+  int key, pri;
+  treap *l, *r;
+
+  treap(int key) {
+    this->key = key;
+    pri = rand();
+    l = r = NULL;
+  }
+
+  ...
+};
+\end{minted}
+
+Ca întotdeauna, vă recomand să prealocați static un vector de elemente și să înlocuiți pointerii cu indici în acest vector. Viteza crește cam cu 50\%.
+
+\begin{minted}{c}
+struct node {
+  int key, pri;
+  int l, r;
+};
+
+struct data_structure {
+  node v[N + 1];
+  int n, root;
+
+  void init() {
+    n = 1; // Marchează nodul 0 ca folosit, întrucît 0 înseamnă NULL.
+    root = 0;
+  }
+
+  ...
+}
+\end{minted}
+
+Cîmpul \ccode{root} pointează la rădăcină și poate fi 0 dacă treapul este vid.
+
+\label{problem:treap}
+
+Anexa conține \hyperref[code:treap]{implementări complete} pentru aceste reprezentări. Reprezentarea cu alocare statică este la rîndul ei diferențiată în funcție de metodele folosite pentru operații, despre care vom vorbi îndată.
+
+\section{Căutarea}
+
+Căutarea este 100\% identică cu căutarea într-un arbore binar de căutare. Treapul inovează doar partea de echilibrare.
+
+\begin{minted}{c}
+int search(int key) {
+  int t = root;
+  while (t && (key != v[t].key)) {
+    t = (key < v[t].key) ? v[t].l : v[t].r;
+  }
+  return t;
+}
+
+bool contains(int key) {
+  return search(key) != 0;
+}
+\end{minted}
+
+
+\section{Inserarea}
+
+Cînd inserăm un nod, dorim să păstrăm proprietatea de arbore binar de căutare. Așadar, vom restructura cîțiva pointeri ca să facem loc pentru noul nod. Dar aceasta poate încălca proprietatea de max-heap a priorităților.
+
+Pentru menținerea heapului există două metode, iar de aici implementarea diverge. Menținerea prin rotații este conceptual mai simplă. O metodă mult mai puternică și ceva mai rapidă este menținerea prin spargeri și unificări (engl. \textit{split} și \textit{merge}), folosite respectiv pentru inserări și ștergeri.
+
+\subsection{Menținerea heapului prin rotații}
+
+Istoric vorbind, toți arborii echilibrați au la bază conceptul de rotații, pe care le folosesc pentru echilibrare. Cînd un fiu este mult mai adînc decît celălalt, inversăm niște pointeri astfel încît fiul să urce în locul rădăcinii, păstrînd ordonarea de arbore binar de căutare. Ca lectură suplimentară, puteți citi despre rotații în:
+
+\begin{itemize}
+  \item \href{https://en.wikipedia.org/wiki/AVL_tree}{AVL} (inventați în 1962!);
+  \item \href{https://en.wikipedia.org/wiki/Splay_tree}{Splay Tree} (optimizați pentru accesări frecvente);
+  \item \href{https://en.wikipedia.org/wiki/Red\%E2\%80\%93black_tree}{Red-Black Tree} (foarte folosiți în practică, dar greu de implementat).
+\end{itemize}
+
+Pentru treapuri, rotațiile servesc doar la refacerea heapului. Facem inserarea ca în orice arbore binar de căutare: coborîm din rădăcină urmînd pointerul stîng sau drept după cum dictează cheia. Noul nod devine fiu al uneia dintre frunze. Apoi, vizităm frunza și toți strămoșii ei și verificăm respectarea priorităților. De exemplu, dacă fiul stîng $f$ are prioritate mai mare decît a tatălui $t$, atunci rotim subarborele lui $t$ spre dreapta.
+
+\import{./figures}{treaps-rotate.tex}
+
+Observăm că, atît înainte cît și după rotație, ordinea cheilor este $A \leq f \leq B \leq t \leq C$. Așadar, rotația menține proprietatea de arbore binar de căutare.
+
+Implementarea recursivă a acestui cod (în varianta cu noduri alocate static) este:
+
+\begin{minted}{c}
+// Inserează cheia key în subarborele lui t și scrie în t noua rădăcină.
+void insert(int& t, int key) {
+  if (!t) {
+    // Am ajuns la o frunză. Alocă un nou nod și returnează indicele lui.
+    v[n] = { .key = key, .pri = rand(), .l = 0, .r = 0 };
+    t = n++;
+  } else if (key < v[t].key) {
+    // Inserează în stînga. Contăm pe fiul stîng să se reorganizeze intern.
+    // Rotește spre dreapta dacă t și fiul stîng au prioritățile inversate.
+    insert(v[t].l, key);
+    if (v[v[t].l].pri > v[t].pri) {
+      t = rotate_right(t);
+    }
+  } else {
+    insert(v[t].r, key);
+    if (v[v[t].r].pri > v[t].pri) {
+      t = rotate_left(t);
+    }
+  }
+}
+\end{minted}
+
+
+\subsection{Menținerea heapului prin \textit{split}}
+
+Cu această metodă, inserarea funcționează diferit. Fie $u$ nodul de inserat, cu cheia $k_u$ și prioritatea $p_u$. Pornim din rădăcină și coborîm tot mai jos, urmînd pointerul stîng sau drept după cum dictează cheia $k_u$, dar ne oprim atunci cînd întîlnim un nod $v$ de prioritate $p_v < p_u$ (ceea ce înseamnă că toate nodurile din subarborele lui $v$ au priorități mai mici decît $p_u$). Acum procedăm astfel:
+
+\begin{itemize}
+  \item $u$ îl dezlocuiește pe $v$ din treap, luîndu-i locul.
+  \item Spargem (\textit{split}) subarborele lui $v$ în două treapuri, unul cu chei $k \leq k_u$ și unul cu chei $k > k_u$.
+  \item Aceste două treapuri devin fiul stîng și respectiv fiul drept al lui $u$.
+\end{itemize}
+
+\import{./figures}{treaps-insert-split.tex}
+
+Putem proiecta recursiv operația \ccode{split(int t, int k, int &l, int &r)}. Ea primește la intrare un treap și o cheie $k$ și trebuie să returneze rădăcinile celor două treapuri rezultate (care pot fi și nule). Am denumit aceste valori de returnat $l$ și $r$ (de la \textit{left} și \textit{right}). Începem prin a examina rădăcina $t$.
+
+\begin{enumerate}
+  \item Dacă $k_t \leq k$, atunci $t$ va face parte din $l$, unde va fi tot rădăcină. Cu alte cuvinte, $l$ este $t$. De asemenea, fiul stîng al lui $t$ rămîne nealterat. În continuare, rămîne să spargem fiul drept al lui $t$, tot după cheia $k$. Treapul cu valori mici devine fiul drept al lui $t$. Treapul cu valori mari devine $r$.
+  \item Cazul $k_t > k$ este simetric.
+\end{enumerate}
+
+\begin{minted}{c}
+void split(int t, int key, int& l, int& r) {
+  if (!t) {
+    l = r = 0;
+  } else if (v[t].key <= key) {
+    split(v[t].r, key, v[t].r, r);
+    l = t;
+  } else {
+    split(v[t].l, key, l, v[t].l);
+    r = t;
+  }
+}
+
+void insert(int& t, int elem) {
+  if (!t) {
+    t = elem;
+  } else if (v[elem].pri > v[t].pri) {
+    split(t, v[elem].key, v[elem].l, v[elem].r);
+    t = elem;
+  } else {
+    insert(v[t].key <= v[elem].key ? v[t].r : v[t].l, elem);
+  }
+}
+
+void insert(int key) {
+  v[n] = { .key = key, .pri = rand(), .l = 0, .r = 0 };
+  insert(root, n++);
+}
+\end{minted}
+
+
+\section{Ștergerea}
+
+Și la ștergere detaliile operației diferă în funcție de metoda aleasă. Nu mai includem și codul, ca să nu duplicăm porțiuni mari din anexă, care conține codul complet.
+
+
+\subsection{Menținerea heapului prin rotații}
+
+Dacă cheia $k$ pe care dorim să o ștergem apare într-o frunză (sau dacă nu apare deloc în treap), atunci ștergerea este banală. Dar dacă cheia apare într-un nod intern $u$? Atunci nu putem să ștergem pur și simplu nodul, căci se pune problema cum unificăm cei doi fii ai lui $u$, acum rămași orfani.
+
+În schimb, putem să reducem problema la una cunoscută. Facem o rotație în nodul $u$. Direcția rotației o alegem astfel încît locul lui $u$ să fie luat de fiul cu prioritatea mai mare. Aceasta, cum știm păstrează ordonarea cheilor. În schimb, nodul $u$ a coborît un nivel! Repetăm procedeul pînă cînd $u$ devine frunză, apoi îl ștergem.
+
+
+\subsection{Menținerea heapului prin \textit{merge}}
+
+De fapt, problema enunțată în secțiunea anterioare este o operație standard, perechea lui \textit{split}, numită \textit{merge}. Logica este similară cu \textit{split}, dar în sens invers.
+
+Să proiectăm recursiv operația \ccode{merge(int& t, l, r)}. Ea primește la intrare două treapuri ($l$ și $r$) și returnează în $t$ rădăcina treapului unificat. Iau naștere două cazuri:
+
+\begin{enumerate}
+  \item Dacă prioritatea rădăcinii lui $l$ este mai mare, atunci ea va deveni rădăcina treapului unificat. De asemenea, fiul stîng al lui $l$ rămîne nealterat. Rămîne să unificăm recursiv fiul drept al lui $l$ cu $r$, iar rezultatul să-l „agățăm” ca fiu drept al lui $l$.
+  \item Cazul în care prioritatea rădăcinii lui $r$ este mai mare este simetric.
+\end{enumerate}
+
+Așadar, pentru ștergerea nodului $u$ trebuie doar să unificăm cei doi fii și să „agățăm” rezultatul de părintele lui $u$.
+
+
+\section{Augmentarea pentru statistici de ordine}
+
+După discuțiile purtate în capitolele despre seturi PBDS și despre \textit{skip lists}, cred că vă este ușor să deduceți cum augmentăm treapurile pentru statistici de ordine. Este suficient să păstrăm pe fiecare nod o valoare suplimentară: numărul de noduri din subarbore (inclusiv nodul însuși).
+
+Acest număr trebuie recalculat oricînd reorganizăm arborele. Pentru funcții implementare recursiv, putem scrie o metodă simplă, \ccode{update_cnt}, pe care să o apelăm la revenirea din recursivitate. De exemplu, operația \textit{split} pentru treapuri augmentate devine:
+
+\begin{minted}{c}
+void update_cnt(int t) {
+  if (t) {
+    v[t].cnt = 1 + v[v[t].l].cnt + v[v[t].r].cnt;
+  }
+}
+
+void split(int t, int key, int& l, int& r) {
+  if (!t) {
+    l = r = 0;
+  } else if (v[t].key <= key) {
+    split(v[t].r, key, v[t].r, r);
+    l = t;
+    update_cnt(t);
+  } else {
+    split(v[t].l, key, l, v[t].l);
+    r = t;
+    update_cnt(t);
+  }
+}
+\end{minted}
+
+Cu această informație suplimentară, codul funcției \ccode{order_of()} decurge ușor. Trebuie să însumăm nodurile cu chei mai mici decît cheia dată:
+
+\begin{minted}{c}
+int order_of(int key) {
+  int result = 0;
+  int t = root;
+  while (t) {
+    if (key > v[t].key) {
+      result += 1 + v[v[t].l].cnt;
+      t = v[t].r;
+    } else {
+      t = v[t].l;
+    }
+  }
+
+  return result;
+}
+\end{minted}
+
+Codul funcției \ccode{kth_element()} este de asemenea elementar. Trebuie să nagivăm prin arbore lăsînd în stînga cele $k$ noduri cu cheile cele mai mici:
+
+\begin{minted}{c}
+int kth_element(int k) {
+  int t = root;
+  while (k != v[v[t].l].cnt) {
+    if (k < v[v[t].l].cnt) {
+      t = v[t].l;
+    } else {
+      k = k - 1 - v[v[t].l].cnt;
+      t = v[t].r;
+    }
+  }
+  return v[t].key;
+}
+\end{minted}
+
+
+\section{Treapuri implicite}
+
+Să considerăm acum următorul deziderat: ne dorim un vector / listă / colecție indexată care să suporte următoarele operații în $\bigoh(\log n)$:
+
+\begin{itemize}
+  \item Returnează al $k$-lea element.
+  \item Modifică al $k$-lea element.
+  \item Inserează un element pe poziția a $k$-a.
+  \item Șterge al $k$-lea element.
+\end{itemize}
+
+După cum am spus în introducerea părții, această structură se numește \textbf{treap cu chei implicite} sau \textbf{treap implicit}. Nu vom mai stoca chei ordonate crescător ca pînă acum, ci valorile colecției în ordinea în care apar ele. Dorim ca la o parcurgere în inordine să obținem exact elementele colecției. Cu alte cuvinte, dorim ca al $k$-lea nod în inordine să fie chiar al $k$-lea element din colecție. De exemplu, dacă fiul stîng al rădăcinii este un subarbore cu $k$ noduri, atunci rădăcina trebuie să conțină valoarea $v[k]$.
+
+Oricare dintre implementările de treap se pretează la această adaptare. Exemplificăm implementarea cu \textit{split} și \textit{merge}. Precizăm că am omis verificările de integritate, pentru a nu lungi codul. De exemplu, nu verificăm că poziția inserării este cuprinsă între $0$ și $n$. Includem mai jos doar bucățile de cod care diferă substanțial față de implementările anterioare. Anexa include o implementare completă.
+
+Funcțiile \ccode{int get(int pos)} și \ccode{void set(int pos, int val)} sînt practic o reimplementare a funcției \ccode{kth_element(int k)}. Găsim întîi nodul în cauză, apoi fie îi returnăm valoarea, fie i-o modificăm.
+
+Funcția \ccode{split(int pos, ...)} are o nouă misiune: să spargă treapul dat în două treapuri, din care primul să conțină $k$ noduri, iar al doilea restul. Implementarea este foarte similară cu spargerea după valoare.
+
+Funcția \ccode{insert()} procedează astfel: coboară în arbore cît timp prioritatea nodului de inserat este mai mică decît a nodului curent. Ea coboară pe stînga sau pe dreapta după cum poziția de inserat este mai mică sau egală, sau mai mare decît, mărimea subarborelui stîng. Cînd coboară în fiul drept, funcția contabilizează numărul de elemente lăsate în urmă în fiul stîng. Cînd găsește nodul unde trebuie inserată noua valoare (confom priorității), sparge treapul în alte două treapuri, care devin fiii nodului inserat. Fiul stîng va conține atîtea elemente cîte mai are (încă) de lăsat în urmă nodul inserat.
+
+\begin{minted}{c}
+void insert(int& t, int pos, int elem) {
+  if (!t) {
+    t = elem;
+  } else if (v[elem].pri > v[t].pri) {
+    split(t, pos, v[elem].l, v[elem].r);
+    t = elem;
+  } else if (pos <= v[v[t].l].cnt) {
+    insert(v[t].l, pos, elem);
+  } else {
+    insert(v[t].r, pos - v[v[t].l].cnt - 1, elem);
+  }
+  update_cnt(t);
+}
+
+void insert(int pos, int val) {
+  v[n] = { .val = val, .pri = rand(), .cnt = 1, .l = 0, .r = 0 };
+  insert(root, pos, n++);
+}
+\end{minted}
+
+Funcția \ccode{merge()} este nemodificată. Funcția \ccode{erase(int pos)} procedează similar cu funcția \ccode{get(pos)}: coboară pînă la poziția dorită, apoi apelează \ccode{merge()} pe fiii poziției.
+
+Una peste alta, codul complet pentru structura de treap implicit are circa 110 linii spațiate.
+
+
+\section{Operații pe interval}
+
+Treapurile admit operații pe interval, în același fel în care arborii de intervale admit operații pe interval. În acest caz, avem nevoie de implementarea cu \textit{split} și \textit{merge}, deoarece trebuie să putem izola un treap care conține doar cheile din intervalul dorit.
+
+Introducem noțiunea de informație cu propagare \textit{lazy}, de exemplu o cantitate de adunat la fiecare nod din subarbore. Avantajul față de arborii de intervale este că nodurile pot subîntinde intervale de lungimi arbitrare, cu valori mari, și pot fi reorganizate la nevoie.
+
+Pentru un exemplu de implementare, vedeți problema \hyperref[TODO]{Reversals and Sums (CSES)}.

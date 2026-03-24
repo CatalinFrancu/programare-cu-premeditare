@@ -1,0 +1,67 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={
+      align=center,
+      circle,
+      draw,
+      inner sep=2pt,
+      minimum size=20pt,
+      scale=0.8,
+    },
+    itria/.style={
+      anchor=north,
+      draw,
+      isosceles triangle,
+      shape border rotate=90,
+      shape border uses incircle,
+    },
+    level 1/.style={sibling distance=30mm},
+    level 2/.style={sibling distance=20mm},
+    ]
+
+    \begin{scope}
+      \node[label={0:\scriptsize $p \geq p_u$}] {}
+      child {node {}}
+      child {
+        node[label={0:\scriptsize $p \geq p_u$}] {}
+        child[child anchor=north] {
+          node[itria,label={270:\scriptsize $p < p_u$}] {$V$}
+        }
+        child {node {}}
+      };
+    \end{scope}
+
+    \node[draw=white] at (4,-2) {\huge $+$};
+
+    \begin{scope}[shift={(6,-2)}]
+      \node {$u$};
+    \end{scope}
+
+    \node[draw=white] at (8,-2) {\huge $=$};
+
+    \begin{scope}[shift={(12,0)}]
+      \node[label={0:\scriptsize $p \geq p_u$}] {}
+      child {node {}}
+      child {
+        node[label={0:\scriptsize $p \geq p_u$}] {}
+        child {
+          node {$u$}
+          child[child anchor=north] {
+            node[itria,label={270:\scriptsize $p < p_u$ \\ \scriptsize $k \leq k_u$}] {$V_1$}
+          }
+          child[child anchor=north] {
+            node[itria,label={270:\scriptsize $p < p_u$ \\ \scriptsize $k > k_u$}] {$V_2$}
+          }
+        }
+        child {node {}}
+      };
+    \end{scope}
+
+  \end{tikzpicture}
+
+  \caption{Inserarea unui nod prin \textit{split}.}
+  \label{fig:treaps-insert-split}
+\end{figure}

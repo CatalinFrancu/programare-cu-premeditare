@@ -1,0 +1,35 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    every node/.style={
+      align=center,
+      circle,
+      draw,
+      inner sep=2pt,
+      minimum size=20pt,
+    },
+    level 1/.style={sibling distance=70mm},
+    level 2/.style={sibling distance=40mm},
+    level 3/.style={sibling distance=20mm},
+    ]
+    \node[label={0:\scriptsize $p=100$}] {6}
+    child{
+      node[label={0:\scriptsize $p=90$}] {3}
+      child[missing]
+      child{node[label={0:\scriptsize $p=80$}] {6}}
+    }
+    child{
+      node[label={0:\scriptsize $p=90$}] {11}
+      child{
+        node[label={0:\scriptsize $p=90$}] {10}
+        child{node[label={0:\scriptsize $p=30$}] {8}}
+        child[missing]
+      }
+      child{node[label={0:\scriptsize $p=60$}] {13}}
+    };
+  \end{tikzpicture}
+
+  \caption{Un exemplu de treap. Cheile sînt scrise în noduri, iar prioritățile în afara nodurilor.}
+  \label{fig:treaps-example}
+\end{figure}
