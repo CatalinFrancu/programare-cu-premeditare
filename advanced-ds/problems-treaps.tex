@@ -1,0 +1,85 @@
+\section{Probleme}
+
+\subsection{Problema Cut and Paste (CSES)}
+\label{problem:cut-and-paste}
+
+\href{https://cses.fi/problemset/task/2072}{enunț}
+$\bullet$
+\hyperref[code:cut-and-paste]{sursă}
+
+Problema este o aplicație directă a treap-urilor implicite. Creăm un treap cu o literă în fiecare nod. Pentru o operație $(a, b)$, este suficient să spargem treapul în trei porțiuni, respectiv $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Apoi alipim aceste porțiuni în ordinea $XZY$.
+
+\subsection{Problema Reversals and Sums (CSES)}
+\label{problem:reversals-and-sums}
+
+\href{https://cses.fi/problemset/task/2074}{enunț}
+$\bullet$
+\hyperref[code:reversals-and-sums]{sursă}
+
+Această problemă este un exemplu tipic de treap cu informații cu propagare \textit{lazy}. Merită să luăm în calcul posibilitatea de a folosi un simplu arbore de intervale, dar din păcate acela nu se pretează. Dacă descompunem un interval $[a,b]$ și notăm în fiecare nod din descompunere informația \textit{lazy} booleană „acest interval trebuie răsturnat”, vom greși. Intervalele nu trebuie doar răsturnate, ci și mutate la stînga sau la dreapta, căci vor ajunge să ocupe alte poziții în listă.
+
+Să pornim de la un treap implicit, căci conceptual memorăm valori dintr-un vector. Acest treap vine cu cîmpurile obișnuite în fiecare nod: valoare, prioritate și contor (mărimea subarborelui). În plus, vom adăuga încă două cantități:
+
+\begin{enumerate}
+  \item O valoare întreagă \ccode{subtree_sum} care reține suma valorilor din subarbore. Vom menține în timp real această sumă, ca și pe contor, într-o funcție \ccode{update_node} pe care o apelăm ori de cîte ori structura arborelui se modifică. Știm deja să facem acest lucru pentru treapuri implicite.
+
+  \item O valoare booleană \ccode{flip} care indică că întregul subarbore trebuie răsturnat.
+\end{enumerate}
+
+Să vedem acum cum implementăm cele două operații.
+
+Pentru \ccode{range_sum(a, b)}, putem să spargem treap-ul ca și în problema anterioară în $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Răspunsul va fi valoarea \ccode{subtree_sum} din $Y$. Apoi alipim la loc fragmentele în ordinea inițială.
+
+Pentru \ccode{range_reverse(a, b)}, procedăm la fel, dar pe rădăcina lui $Y$ setăm \ccode{flip} la valoarea 1.
+
+Ca și la arborii de intervale, este important să propagăm informația \textit{lazy} la fii în momentele-cheie. Am indicat aceste momente prin comentarii în cod. Am denumit funcția tot \ccode{push()} ca și la arborii de intervale.
+
+\subsection{Problema T-Shirts (Codeforces)}
+\label{problem:t-shirts}
+
+\href{https://codeforces.com/contest/702/problem/F}{enunț}
+$\bullet$
+\hyperref[code:t-shirts]{sursă}
+
+Chiar dacă găsim problema în vreo colecție de linkuri pe Internet și știm că se rezolvă cu treapuri, folosirea acestora nu este evidentă.
+
+Să începem cu partea simplă. Pare natural să ordonăm oferta de tricouri așa cum le evaluează clienții: descrescător după calitate, apoi crescător după preț. De aici încolo, calitatea nu ne mai interesează. De asemenea, dacă ne ajută putem ordona bugetele clienților, să spunem crescător.
+
+Am încercat să construiesc un treap implicit cu costurile tricourilor, iar în acest treap, dat fiind un buget $b$, să navighez logaritmic spre ultimul tricou cumpărat. Dar problema este că prețurile nu sînt ordonate, iar clienții nu cumpără tricouri dintr-un interval compact, ci pe sărite. Ne-am dori să aflăm rapid cîte tricouri cumpără un client, și cu ce preț total, din fiul stîng al nodului curent (ca să știm cu ce buget rămas coborîm în fiul drept). Dar pare imposibil. Pentru prețuri ca $1, \np{1000000}, 1, \np{1000000}, 1, \np{1000000}$ nu putem evalua ușor situația.
+
+Problema nu include un editorial, dar am găsit ideea rezolvării în \href{https://codeforces.com/blog/entry/46324#comment-307625}{acest comentariu}. Ținem \textbf{un treap de bugete}, inițializat cu bugetele inițiale ale clienților, ordonate. Apoi evaluăm tricourile în ordinea de mai sus. Întrebarea este cum actualizăm rapid clienții care mai au bani să cumpere tricoul $i$. Dorim să adăugăm $+1$ la numărul de tricouri și $-c_i$ la bugetul rămas pentru toți acești clienți.
+
+Pentru tricoul curent $i$, de cost $c_i$, să apelăm \ccode{split(c[i])}. Am numit treap-urile rezultate $T_N$ (de la \textit{no buy} / nu cumpăra) și respectiv $T_B$ (de la \textit{buy} / cumpără). Pe $T_B$ notăm informația \textit{lazy} că toți clienții au $+1$ tricou și $-c_i$ la buget. Dar acum trebuie să refacem treap-ul ordonat după noile bugete. Cum să procedăm? Operația \ccode{merge()} funcționează doar cînd $T_N$ și $T_B$ acoperă intervale disjuncte de chei (orice cheie din $T_N$ este mai mică sau egală cu orice cheie din $T_B$). Dar, după ce toți clienții din $T_B$ au plătit $c_i$, cheile pot fi intercalate.
+
+Soluția este să spargem din nou $T_B$ în valori $<c_i$ și $\geq c_i$ (pe noile bugete). Să numim aceste treap-uri $T_P$ (de la \textit{poor} / sărac) și $T_R$ (de la \textit{rich} / bogat). În cuvinte,
+
+\begin{itemize}
+  \item $T_N$ sînt clienți cu bugete din $[0,c_i)$, care nu au cumpărat tricoul $i$.
+  \item $T_P$ sînt clienți cu bugete din $[0,c_i)$ după ce au cumpărat tricoul $i$.
+  \item $T_R$ sînt clienți cu bugete din $[c_i,\infty)$ după ce au cumpărat tricoul $i$.
+\end{itemize}
+
+Acum unificăm $T_N$, $T_P$ și $T_R$ astfel:
+
+\begin{itemize}
+  \item Inserăm naiv valorile din $T_P$ în $T_N$. Obținem un treap cu toate valorile în $[0, c)$.
+  \item Unificăm acest treap cu $T_R$ apelînd \ccode{merge()}, căci acum cheile sînt separate de $c$.
+\end{itemize}
+
+Pasul  inserării naive îl rezolvăm cu un DFS prin $T_P$. Nu este nevoie să implementăm ștergeri din $T_P$, căci îl dezmembrăm complet. Este suficient să setăm pe \ccode{NULL} pointerii fiecărui nod din $T_P$ pentru a-l transforma într-o frunză.
+
+Toate operațiile sînt $\bigoh(n \log n)$, cu excepția inserărilor naive. Care este efortul total pentru aceste operații? Să considerăm ce se întîmplă într-o inserare naivă. Avem un cost $c$ și un buget $b \in [c, 2c)$ (dacă am fi avut $b \geq 2c$, atunci nodul ar fi stat în $T_R$, nu în $T_P$). Dar atunci să observăm că noul buget, $b-c$, scade sub jumătate din bugetul original $b$:
+
+$$b < 2c \implies \frac{b}{2} < c \implies b - c < \frac{b}{2}$$
+
+În cuvinte, de cîte ori este inserat naiv în $T_N$, bugetul clientului scade la jumătate sau chiar mai jos. Deci fiecare client poate fi inserat naiv de cel mult $\log VAL\_MAX$ ori. Complexitatea inserărilor naive, și a întregului algoritm, este $\bigoh(n \log n \log VAL\_MAX)$.
+
+\subsubsection*{Detaliu de implementare}
+
+În cod veți observa că funcțiile \ccode{split()} și \ccode{insert()} folosesc operatorii $<$ și respectiv $\leq$ pentru a compara bugetele. Această decizie este importantă, iar \href{https://codeforces.com/blog/entry/92340#comment-814503}{acest comentariu} de pe Codeforces explică foarte bine motivul. Pe măsură ce procesăm tricouri, iar bugetele clienților încep să scadă, vom avea tot mai multe bugete egale. În acest moment trebuie să fim atenți cum gestionăm cheile egale într-un treap. Altfel riscăm să dezechilibrăm treapul și să ajungem la adîncime $\bigoh(n)$.
+
+Să ne imaginăm o operație \textit{split($x$)} pe un treap cu toate cheile egale cu $x$. Să spunem că algoritmul alege să mute cheile egale cu $x$ în dreapta, deci după spargere treapul stîng va rămîne gol.
+
+Acum să ne imaginăm operația \textit{insert($x$)}, din nou într-un treap cu toate cheile egale cu $x$. După cum știm, \textit{insert} începe prin a coborî de la rădăcină pînă cînd prioritatea noului nod depășește prioritatea subarborelui curent. Toate cheile fiind egale, noi decidem dacă lăsăm funcția să coboare în nodul stîng sau în cel drept. Cînd prioritatea noului nod este maximă, spargem subarborele în două treapuri care devin fiii nodului inserat.
+
+Aici intervine dezechilibrarea. Dacă lăsăm funcția \textit{insert} să coboare în fiul drept, iar dacă \textit{split} transferă toate nodurile existente tot în fiul drept, putem obține în timp un treap de adîncime $\bigoh(n)$. Este important ca \textit{insert} să prefere direcția opusă lui \textit{split}.

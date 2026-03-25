@@ -269,7 +269,9 @@ int kth_element(int k) {
 
 \section{Treapuri implicite}
 
-Să considerăm acum următorul deziderat: ne dorim un vector / listă / colecție indexată care să suporte următoarele operații în $\bigoh(\log n)$:
+Pînă acum, toate discuțiile despre \textit{skip lists} și despre treapuri ne-au făcut să creștem ca algoritmiști și ca ingineri software. Dar tot ce oferă aceste structuri putem obține și cu un set PBDS „la cheie”. În secțiunea aceasta și în următoarea vom studia, în sfîrșit, două tipuri de treapuri care depășesc puterile unui set PBDS.
+
+Să considerăm următorul deziderat: ne dorim un vector / listă / colecție indexată care să suporte următoarele operații în $\bigoh(\log n)$:
 
 \begin{itemize}
   \item Returnează al $k$-lea element.
@@ -320,4 +322,26 @@ Treapurile admit operații pe interval, în același fel în care arborii de int
 
 Introducem noțiunea de informație cu propagare \textit{lazy}, de exemplu o cantitate de adunat la fiecare nod din subarbore. Avantajul față de arborii de intervale este că nodurile pot subîntinde intervale de lungimi arbitrare, cu valori mari, și pot fi reorganizate la nevoie.
 
-Pentru un exemplu de implementare, vedeți problema \hyperref[TODO]{Reversals and Sums (CSES)}.
+Pentru un exemplu de implementare, vedeți problema \hyperref[problem:reversals-and-sums]{Reversals and Sums (CSES)}.
+
+
+\section{Benchmarks}
+
+Tabelul \ref{table:treaps-benchmark} listează timpii obținuți cu diversele implementări de treapuri augmentate cu statistici de ordine. Programul folosește același schelet de testare ca și tabelul \ref{table:skip-lists-benchmark}, așadar face circa \np{300000000} de operații într-o structură cu $n = \np{500000}$ de numere. Pe aceleași date, un set PBDS rulează în 117 ms.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{varianta} & \textbf{timpul}\\
+    \hline
+    treap cu \textit{split} și \textit{merge} & 90 ms \\
+    treap cu \textit{split} și \textit{merge}, alocat dinamic & 135 ms \\
+    treap cu rotații & 97 ms \\
+    \hline
+  \end{tabular}
+
+  \caption{Timpii obținuți pentru 300 de milioane de operații pe treapuri.}
+  \label{table:treaps-benchmark}
+\end{table}
+
+Toate uneltele pentru benchmark și implementările de treap sînt disponibile și într-un \href{https://github.com/CatalinFrancu/nerdvana/tree/main/balanced-ds}{repo pe GitHub}.
