@@ -40,7 +40,7 @@ struct node {
   int l, r;
 };
 
-struct data_structure {
+struct treap {
   node v[N + 1];
   int n, root;
 
@@ -190,7 +190,7 @@ Dacă cheia $k$ pe care dorim să o ștergem apare într-o frunză (sau dacă nu
 
 \subsection{Menținerea heapului prin \textit{merge}}
 
-De fapt, problema enunțată în secțiunea anterioare este o operație standard, perechea lui \textit{split}, numită \textit{merge}. Logica este similară cu \textit{split}, dar în sens invers.
+De fapt, problema enunțată în secțiunea anterioară este o operație standard, perechea lui \textit{split}, numită \textit{merge}. Logica este similară cu \textit{split}, dar în sens invers.
 
 Să proiectăm recursiv operația \ccode{merge(int& t, l, r)}. Ea primește la intrare două treapuri ($l$ și $r$) și returnează în $t$ rădăcina treapului unificat. Iau naștere două cazuri:
 

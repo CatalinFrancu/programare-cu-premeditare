@@ -9,6 +9,8 @@ $\bullet$
 
 Problema este o aplicație directă a treap-urilor implicite. Creăm un treap cu o literă în fiecare nod. Pentru o operație $(a, b)$, este suficient să spargem treapul în trei porțiuni, respectiv $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Apoi alipim aceste porțiuni în ordinea $XZY$.
 
+Remarcăm că această problemă se mulează perfect peste implementarea cu \textit{split} și \textit{merge}, dar nu și peste cea cu rotații.
+
 \subsection{Problema Reversals and Sums (CSES)}
 \label{problem:reversals-and-sums}
 

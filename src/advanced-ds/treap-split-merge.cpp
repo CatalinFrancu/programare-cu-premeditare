@@ -4,7 +4,7 @@ struct node {
   int l, r;
 };
 
-struct data_structure {
+struct treap {
   node v[N + 1];
   int n, root;
 
