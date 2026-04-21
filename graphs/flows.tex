@@ -1,0 +1,37 @@
+\chapter{Fluxuri}
+
+Voi încerca să nu încarc capitolele de fluxuri și cuplaje cu prea multă teorie, dar uneori nu putem scăpa. \emoji{slightly-smiling-face} Vom demonstra unele teoreme acolo unde ne ajută să înțelegem fenomenul.
+
+Vom împrumuta imagini și probleme din monumentala carte \href{https://github.com/Maria4lexzy/LeetCodeTraining/blob/main/Introduction.to.Algorithms.4th.Leiserson.Stein.Rivest.Cormen.MIT.Press.9780262046305.EBooksWorld.ir.pdf}{Introduction to Algorithms} de Cormen, Leiserson, Rivest și Stein, ediția a 4-a. Ca întotdeauna, vă încurajez să cumpărați o carte dacă vă este utilă, chiar dacă o puteți găsi și pe Internet sau pe torente. Vă recomand de asemenea să citiți și materialele de pe CP Algorithms, \href{https://cp-algorithms.com/graph/edmonds_karp.html}{Flows and related problems} și următoarele.
+
+\section{Descrierea problemei}
+
+\textbf{Definiție}: O \textbf{rețea de flux} este un graf orientat $G = (V,E)$ în care fiecare muchie $(u,v)$ are o capacitate $c(u, v) \geq 0$. Există două noduri speciale în această rețea: o sursă $s$ și o destinație $t$.
+
+Exemple din viața reală:
+
+\begin{itemize}
+  \item rețeaua de apă, de gaz sau de electricitate a unui oraș;
+  \item o rețea de calculatoare care schimbă pachete între ele;
+  \item o mină și o rețea de străzi care transportă minereul la fabrica de procesare.
+\end{itemize}
+
+În toate aceste exemple, capacitatea este un debit, respectiv cantitatea maximă de material / resurse / date care pot trece prin muchie într-o unitate de timp. De asemenea, în aceste rețele se aplică \href{https://en.wikipedia.org/wiki/Kirchhoff\%27s_circuit_laws#Kirchhoff's_current_law}{prima lege lui Kirchhoff}: suma debitelor într-un nod este 0, cu excepția nodurilor $s$ și $t$.
+
+\textbf{Definiție}: Un \textbf{flux} de la $s$ la $t$ printr-o rețea este o funcție $f: E \to \mathbb{R}$ care satisface două proprietăți:
+
+Respectarea capacităților: pentru orice muchie $(u,v)$, $$0 \leq f(u, v) \leq c(u,v)$$
+
+Conservarea fluxului: pentru orice nod $u \in V - \{s, t\}$, $$\sum_{v \in V}{f(u,v)} = \sum_{v \in V}{f(v,u)}$$
+
+Definiție: Valoarea unui flux $f$ este valoarea netă a fluxului care părăsește sursa $s$: $$|f| = \sum_{v \in V}{f(s,v)} - \sum_{v \in V}{f(v,s)}$$
+
+Cu aceste definiții, problema fluxului maxim este: să se găsească un flux de valoare maximă într-o rețea de flux dată.
+
+Exerciții teoretice
+
+Cum tratăm cazul rețelelor cu surse și destinații multiple?
+
+Cormen, exercițiul 24.1-6: dat fiind un graf $G = (V,E)$ și două noduri $s$ și $t$, să se găsească două drumuri de la $s$ la $t$ astfel încît orice muchie $e \in E$ să apară pe cel mult un drum.
+
+Cormen, exercițiul 24.1-7: cum tratăm cazul rețelelor care au capacități atît pe muchii, cît și în noduri? Exemplu din viața reală: routerele.
