@@ -6,7 +6,9 @@ Vom împrumuta imagini și probleme din monumentala carte \href{https://github.c
 
 \section{Descrierea problemei}
 
-\textbf{Definiție}: O \textbf{rețea de flux} este un graf orientat $G = (V,E)$ în care fiecare muchie $(u,v)$ are o capacitate $c(u, v) \geq 0$. Există două noduri speciale în această rețea: o sursă $s$ și o destinație $t$.
+\begin{definition}[Rețea de flux]
+  O rețea de flux este un graf orientat $G = (V,E)$ în care fiecare muchie $(u,v)$ are o capacitate $c(u, v) \geq 0$. Există două noduri speciale în această rețea: o sursă $s$ și o destinație $t$.
+\end{definition}
 
 Exemple din viața reală:
 
@@ -18,20 +20,168 @@ Exemple din viața reală:
 
 În toate aceste exemple, capacitatea este un debit, respectiv cantitatea maximă de material / resurse / date care pot trece prin muchie într-o unitate de timp. De asemenea, în aceste rețele se aplică \href{https://en.wikipedia.org/wiki/Kirchhoff\%27s_circuit_laws#Kirchhoff's_current_law}{prima lege lui Kirchhoff}: suma debitelor într-un nod este 0, cu excepția nodurilor $s$ și $t$.
 
-\textbf{Definiție}: Un \textbf{flux} de la $s$ la $t$ printr-o rețea este o funcție $f: E \to \mathbb{R}$ care satisface două proprietăți:
+\begin{definition}[Flux]
+  Un flux de la $s$ la $t$ printr-o rețea este o funcție $f: E \to \mathbb{R}$ care satisface două proprietăți:
+\end{definition}
 
-Respectarea capacităților: pentru orice muchie $(u,v)$, $$0 \leq f(u, v) \leq c(u,v)$$
+\begin{enumerate}
+  \item Respectarea capacităților: pentru orice muchie $(u,v)$, $$0 \leq f(u, v) \leq c(u,v)$$
+  \item Conservarea fluxului: pentru orice nod $u \in V - \{s, t\}$, $$\sum_{v \in V}{f(u,v)} = \sum_{v \in V}{f(v,u)}$$
+\end{enumerate}
 
-Conservarea fluxului: pentru orice nod $u \in V - \{s, t\}$, $$\sum_{v \in V}{f(u,v)} = \sum_{v \in V}{f(v,u)}$$
-
-Definiție: Valoarea unui flux $f$ este valoarea netă a fluxului care părăsește sursa $s$: $$|f| = \sum_{v \in V}{f(s,v)} - \sum_{v \in V}{f(v,s)}$$
+\begin{definition}[Valoarea fluxului]
+  Valoarea unui flux $f$ este valoarea netă a fluxului care părăsește sursa $s$: $$|f| = \sum_{v \in V}{f(s,v)} - \sum_{v \in V}{f(v,s)}$$
+\end{definition}
 
 Cu aceste definiții, problema fluxului maxim este: să se găsească un flux de valoare maximă într-o rețea de flux dată.
 
-Exerciții teoretice
+\subsection{Exerciții teoretice}
 
-Cum tratăm cazul rețelelor cu surse și destinații multiple?
+\begin{enumerate}
+  \item Cum tratăm cazul rețelelor cu surse și destinații multiple?
+  \item Cormen, exercițiul 24.1-6: dat fiind un graf $G = (V,E)$ și două noduri $s$ și $t$, să se găsească două drumuri de la $s$ la $t$ astfel încît orice muchie $e \in E$ să apară pe cel mult un drum.
+  \item Cormen, exercițiul 24.1-7: cum tratăm cazul rețelelor care au capacități atît pe muchii, cît și în noduri? Exemplu din viața reală: routerele.
+\end{enumerate}
 
-Cormen, exercițiul 24.1-6: dat fiind un graf $G = (V,E)$ și două noduri $s$ și $t$, să se găsească două drumuri de la $s$ la $t$ astfel încît orice muchie $e \in E$ să apară pe cel mult un drum.
+\section{Metoda Ford-Fulkerson}
 
-Cormen, exercițiul 24.1-7: cum tratăm cazul rețelelor care au capacități atît pe muchii, cît și în noduri? Exemplu din viața reală: routerele.
+\subsection{Rețeaua reziduală}
+
+Neformal, rețeaua reziduală indusă de un flux $f$ într-o rețea de flux ne arată, pe fiecare muchie, (1) cîte unități mai putem pompa (posibil 0) și (2) cîte unități mai putem scoate (posibil 0). Vom vedea exemple unde este util să reducem fluxul pe unele muchii pentru a-l putea mări pe altele, obținînd un nou flux de valoare mai mare.
+
+Formal,
+
+\begin{definition}[Rețea reziduală, capacități reziduale]
+  Rețeaua reziduală indusă de un flux $f$ într-o rețea $G$ se notează cu $G_f = (V, E_f)$ și are capacitățile reziduale $c_f$ cu valorile:
+\end{definition}
+
+$$
+c_f(u, v) =
+\begin{cases}
+c(u,v) - f(u,v) & \text{dacă } (u,v) \in E \\
+f(v,u) & \text{dacă } (v,u) \in E \\
+0 & \text{altfel}
+\end{cases}
+$$
+
+Remarcăm că muchiile reziduale (mulțimea $E_f$) se regăsesc printre muchiile originale sau inversele acestora.
+
+Vom urmări figura 24.4 din Cormen pentru un exemplu.
+
+\subsection{Drumuri de creștere}
+
+\begin{definition}[Drum de creștere]
+  Dată fiind o rețea de flux $G$ și un flux $f$ în această rețea, un drum de creștere $p$ este un flux în $G_f$.
+\end{definition}
+
+Cu alte cuvinte, un drum de creștere \textbf{augmentează} fluxul existent, adică găsește un mod de a mai pompa niște unități de flux. Din nou, figura 24.4 din Cormen arată un drum de creștere. Cîte unități mai putem pompa? Răspunsul este minimul dintre capacitățile reziduale pe acel drum. Numim aceasta \textbf{capacitatea reziduală} a drumului de creștere și o notăm cu $c_f(p)$.
+
+\subsection{Metoda Ford-Fulkerson}
+
+Esența metodei este, pur și simplu: Cît timp există un drum de creștere $p$ în rețeaua reziduală, augmentează fluxul cu $c_f(p)$ și recalculează rețeaua reziduală.
+
+O denumim „metodă” și nu „algoritm” deoarece ea nu specifică detaliile găsirii drumului de creștere.
+
+Vom citi o primă implementare, pentru problema \hyperref[problem:download-speed]{Download Speed}. Implementarea folosește DFS pentru a găsi drumuri de creștere. Cîteva detalii:
+
+\begin{itemize}
+  \item Numărul de noduri în probleme de flux poate fi suficient de mic pentru a permite matrice de adiacență. Folosiți-le dacă preferați.
+
+  \item Pentru o muchie $(u, v)$ avem nevoie să găsim ușor muchia inversă $(v, u)$, deoarece capacitatea reziduală pe o muchie scade cînd crește pe cealaltă. Eu am folosit faptul că muchiile ocupă celule adiacente în liste de adiacență. Dacă indicele uneia este pos, în mod garantat indicele celeilalte va fi \ccode{pos ^ 1}.
+
+  \item Pe muchii stocăm doar capacitatea rămasă. Cum putem deduce din această informație fluxul efectiv pe fiecare muchie, fără a stoca informații suplimentare? Acest amănunt va deveni important la problemele de tăietură minimă.
+\end{itemize}
+
+Implementată astfel, metoda Ford-Fulkerson poate necesita $\bigoh(|f|)$ iterații, fiecare în $\bigoh(E)$, așa cum o arată figura 24.7 din Cormen. Mai mult, pentru valori iraționale (teoretice), \href{https://www.sciencedirect.com/science/article/pii/030439759500022O}{este posibil} ca algoritmul cu DFS să nu termine niciodată! De exemplu, la problema \href{https://infoarena.ro/problema/maxflow}{Maxflow} de pe Infoarena testele 8, 9 și 10 durează foarte mult dacă le implementăm în $\bigoh(n)$ per augmentare (pe testul 8 programul meu a durat 5 minute). Similar, testul 20 din problema Download Speed durează foarte mult.
+
+\section{Algoritmul Edmonds-Karp}
+
+Algoritmul Edmonds-Karp doar înlocuiește parcurgerea DFS cu una BFS, la fiecare căutare a unui drum de creștere. Prin aceasta, reușim să obținem o limită a numărului de iterații independentă de $|f|$, respectiv $\bigoh(mn)$.
+
+\begin{definition}[Muchie critică]
+  Muchia critică este muchia de capacitate minimă de pe un drum de creștere (cea care determină cantitatea pompată).
+\end{definition}
+
+Schița demonstrației de complexitate a algoritmului Edmonds-Karp este:
+
+\begin{enumerate}
+  \item Demonstrăm că distanțele minime $d(s, v)$ de la sursă la fiecare nod $v$ nu scad niciodată pe măsură ce graful rezidual evoluează.
+
+  \item Esența demonstrației: Fie $v$ nodul cel mai apropiat de $s$ dintre toate cele ale căror distanțe au scăzut. Cum ar putea scădea distanța lui $v$ de la o iterație $f$ la următoarea iterație $f'$? Doar dacă în $G_{f'}$ a apărut o nouă muchie $(u, v)$ care nu exista în $G_f$. Asta înseamnă că iterația $f'$ a pompat flux în sensul $v \to u$. Dar algoritmul pompează flux doar în direcția BFS-ului. Așadar, $v$ era strămoș al lui $u$ în iterația $f$, dar a devenit succesor al lui $u$ în iterația $f'$, aceasta în condițiile în care $d(s, u)$ nu a scăzut. Așadar, distanța $d(s, v)$ de fapt a crescut, contradicție.
+
+  \item Demonstrăm că, pentru orice muchie $(u, v)$, între două momente succesive cînd muchia devine critică, $d(s, u)$ crește cu cel puțin 2.
+
+  \item Distanțele nu pot fi niciodată mai mult de $n$.
+
+  \item Rezultă că o muchie nu poate fi critică de mai mult de $n/2$ ori, iar toate muchiile în total pot fi critice de $mn/2$ ori.
+\end{enumerate}
+
+Așadar, algoritmul Edmonds-Karp va face cel mult $mn/2$ BFS-uri, avînd o complexitate totală de $\bigoh(m^2n)$.
+
+Implementarea este suficientă pentru problema \hyperref[problem:download-speed]{Download Speed}.
+
+\subsection{Optimizare}
+
+Infoarena menționează o optimizare care îmbunătățește timpii pentru problema Maxflow (dar nu și pentru problema Download Speed, unde chiar merge mai încet pe multe teste). Algoritmul calculează un arbore de părinți BFS cu efort $\bigoh(m)$. Apoi încearcă să obțină beneficiul maxim din acest efort, căutînd mai multe drumuri de creștere. Nu ne oprim după ce găsim un drum de creștere prin predecesorul lui $t$ în arborele BFS, ci căutăm drumuri de creștere pornind de la $t$ prin \textbf{toți} predecesorii lui $t$. Unele dintre aceste căi vor avea valoarea 0, căci vor fi deja saturate. Totuși, algoritmul poate găsi mai multe drumuri de creștere.
+
+Am inclus și o sursă cu această optimizare la problema Download Speed.
+
+\section{Fluxuri și tăieturi}
+
+Să considerăm acum problema \hyperref[problem:police-chase]{Police Chase}. Ea ne cere să eliminăm cît mai puține muchii dintr-un graf (neorientat, dar soluția este identică și în grafuri orientate) astfel încît să deconectăm un nod $s$ de un nod $t$. Să vedem care este legătura acestei cerințe cu subiectul fluxurilor.
+
+Am mai vorbit despre tăieturi în lecția despre arbori parțiali minimi. Vă reamintesc că o tăietură este o partiționare a grafului în două mulțimi de noduri disjuncte. Cînd vorbim despre fluxuri, ne interesează acele tăieturi care separă sursa $s$ de destinația $t$. Convențional, notăm cele două mulțimi cu $S$ și $T$.
+
+\begin{definition}[Fluxul net]
+  Fluxul net printr-o tăietură $(S, T)$ este
+
+  $$\sum_{u \in S} \sum_{v \in T} f(u, v) - \sum_{u \in S} \sum_{v \in T} f(v, u)$$
+\end{definition}
+
+\begin{theorem}
+  Pentru un flux dat $f$, valoarea fluxului net prin orice tăietură $S-T$ este $|f|$.
+\end{theorem}
+
+O demonstrație facilă este inductivă. Pentru $S=\{s\}$ și $T=V-\{s\}$, în mod evident fluxul este $|f|$. Acum, să presupunem că printr-o tăietură $S-T$ avem fluxul net $|f|$. Să „tragem” de frontieră pentru a muta exact un nod $u$ din $T$ în $S$, deci fie $S' = S \cup \{u\}$ și $T' = T - \{u\}$. Ce s-a modificat? Vom vedea că am pierdut și am cîștigat exact muchii care intră și ies din $u$, iar suma contribuțiilor lor (datorită conservării fluxului) este 0. Deci valoarea fluxului net prin tăieturile $S-T$ și $S'-T'$ este aceeași.
+
+\begin{definition}[Capacitatea unei tăieturi]
+  Capacitatea unei tăieturi $(S, T)$ este $$\sum_{u \in S} \sum_{v \in T} c(u, v)$$
+\end{definition}
+
+Este relativ clar că prin nicio tăietură nu putem transmite mai mult flux decît capacitatea tăieturii (pe unde s-ar duce?). Așadar, fluxul maxim este mai mic sau egal cu capacitatea oricărei tăieturi. Alternativ, fluxul maxim este mai mic sau egal cu capacitatea tăieturii minime. Următoarea teoremă arată că, de fapt, cele două valori sînt chiar egale.
+
+\begin{theorem}[Max-flow min-cut]
+  Următoarele trei condiții sînt echivalente:
+
+  \begin{enumerate}
+    \item $f$ este un flux maxim în $G$.
+    \item Nu există niciun drum de creștere în rețeaua reziduală $G_f$.
+    \item Există o tăietură $(S,T)$ în $G$ pentru care $c(S, T) = |f|$.
+  \end{enumerate}
+\end{theorem}
+
+Demonstrația este circulară. Le enunțăm pe cele simple primele:
+
+$(1) \implies (2)$: Dacă ar exista un drum de creștere, l-am putea folosi ca să creștem fluxul, deci $f$ nu ar fi maxim.
+
+$(3) \implies (1)$: Știm deja că orice flux este cel mult egal cu orice tăietură. Deci, dacă găsim un flux egal cu o tăietură, atunci fluxul este maxim.
+
+$(2) \implies (3)$: Esența demonstrației este alegerea tăieturii. Nu întîmplător, fie $S$ mulțimea nodurilor care încă sînt accesibile din $s$ în $G_f$ și fie $T$ mulțimea nodurilor inaccesibile. Desigur, $t \in T$ căci altfel $t$ ar fi accesibil din $S$ și ar contrazice (2). Fie acum orice pereche de noduri $u \in S$ și $v \in T$. Iau naștere trei cazuri posibile:
+
+\begin{enumerate}
+  \item Dacă $(u, v) \in E$, atunci obligatoriu muchia este saturată, altfel am mai putea pompa flux pe ea, deci $(u, v) \in G_f$, deci $v \in S$, contradicție. Așadar, $f(u, v) = c(u, v)$.
+
+  \item Dacă $(v, u) \in E$, atunci obligatoriu muchia este nefolosită, altfel am mai putea scoate flux pe ea, deci $c_f(u, v) > 0$, deci $v \in S$, contradicție. Așadar, $f(u, v) = 0$.
+
+  \item Altfel nu există muchii între $u$ și $v$ și automat $f(u, v) = f(v, u) = 0$.
+\end{enumerate}
+
+Atunci fluxul net prin tăietura $(S,T)$ este:
+
+$$|f| = f(S, T) = \sum_{u \in S} \sum_{v \in T} f(u, v) - \sum_{u \in S} \sum_{v \in T} f(v, u) = \sum_{u \in S} \sum_{v \in T} c(u, v) - \sum_{u \in S} \sum_{v \in T} 0 = c(S, T)$$
+
+\subsection{Aflarea tăieturii minime}
+
+Implementarea (care rezolvă problema \href{https://www.nerdarena.ro/problema/mincut}{Mincut} pe NerdArena) cere doar 1\% efort suplimentar după găsirea fluxului maxim. Ultimul BFS, cel care constată că destinația $t$ nu mai este accesibilă, lasă în cîmpul parent valori pozitive pentru nodurile accesibile, dar valoarea specială NONE pentru noduri inaccesibile. Trebuie doar să tipărim muchiile care unesc noduri accesibile cu noduri inaccesibile.
+
+Există totuși un detaliu semnificativ. Să considerăm figura 24.6 din Cormen. Fluxul maxim este 23. În ultima rețea reziduală, tăietura este $S = \{s, v_1, v_2, v_4\}$ și $T = \{v_3, t\}$. Dar suma muchiilor care traversează tăietura este $12 + 9 + 7 + 4 = 32$. De unde apare discrepanța? Este important să ne amintim că pe muchia $v_3, v_2$ nu circulă flux de valoare 9, ci avem o capacitate de 9, nefolosită! Prin contrast, pe muchiile $12 + 7 + 4$ chiar circulă flux. Cu alte cuvinte, este vital să adunăm doar fluxul efectiv (muchii originale saturate), nu capacitățile reziduale pe care le stocăm de regulă în noduri.

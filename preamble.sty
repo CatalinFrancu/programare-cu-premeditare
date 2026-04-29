@@ -10,7 +10,6 @@
 \usepackage{gensymb} % for \degree etc
 \usepackage[a4paper, margin=1.8cm]{geometry}
 \usepackage{parskip}
-\usepackage{pgfplots} % E.g. for "axis" in TikZ.
 \usepackage{rotating} % For upside-down text.
 \usepackage[onehalfspacing]{setspace}
 \usepackage{typicons}
@@ -33,6 +32,11 @@
 \algrenewcommand\algorithmicreturn{\textbf{returnează}}
 \algrenewcommand\algorithmicthen{\textbf{atunci}}
 \algrenewcommand\algorithmicwhile{\textbf{cât timp}}
+
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{definition}{Definiția}
+\newtheorem{theorem}{Teorema}
 
 % For caption widths (the default seems to be \linewidth, which is ugly.
 \usepackage{caption}
@@ -98,6 +102,10 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
+
+% E.g. for "axis" in TikZ.
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 
 \usepackage{tikz}
 \usetikzlibrary{angles}

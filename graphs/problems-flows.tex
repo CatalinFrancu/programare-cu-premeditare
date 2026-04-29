@@ -1,1 +1,90 @@
 \section{Probleme}
+
+\subsection{Problema Download Speed (CSES)}
+\label{problem:download-speed}
+
+\href{https://cses.fi/problemset/task/1694}{enunț}
+$\bullet$
+\hyperref[code:download-speed]{surse}
+
+Problema este educațională și necesită aflarea fluxului maxim.
+
+
+\subsection{Problema Police Chase (CSES)}
+\label{problem:police-chase}
+
+\href{https://cses.fi/problemset/task/1695}{enunț}
+$\bullet$
+\hyperref[code:police-chase]{sursă}
+
+Problema este educațională și necesită aflarea tăieturii minime. Străzile au capacitate 1 și sînt bidirecționale. Pentru implementare, este suficient să creăm două muchii de capacitate 1, astfel încît fluxul să poată fi 1 în orice sens (și 1 rezidual în sensul opus). Nu este nevoie să creăm două perechi de muchii.
+
+O problemă 99\% identică este \href{https://www.nerdarena.ro/problema/mincut}{Mincut} (NerdArena). Diferența minoră este că muchiile sînt unidirecționale și pot avea capacități naturale. Iată \href{https://www.nerdarena.ro/job_detail/859647?action=view-source}{o sursă} online.
+
+
+\subsection{Problema Distinct Routes (CSES)}
+\label{problem:distinct-routes}
+
+\href{https://cses.fi/problemset/task/1711}{enunț}
+$\bullet$
+\hyperref[code:distinct-routes]{sursă}
+
+Ideea nu este grea. Privim fiecare teleportor ca pe o muchie de capacitate 1. În acest fel, fiecare unitate de flux pe care o putem pompa va merge pe o cale diferită. La final, colectăm și eliminăm rutele una cîte una.
+
+Întrebare: Am putea folosi algoritmul Ford Fulkerson naiv, cu DFS? Avantajul ar fi că putem colecta rutele imediat ce le găsim. Nu este nicio problemă, căci oricum ieșirea problemei este proporțională cu mărimea fluxului. Nu-i așa?
+
+
+\subsection{Problema Soldier and Traveling (Codeforces)}
+\label{problem:soldier-and-traveling}
+
+\href{https://codeforces.com/contest/546/problem/E}{enunț}
+$\bullet$
+\hyperref[code:soldier-and-traveling]{sursă}
+
+De regulă problemele de flux nu sînt formulate ca atare, ci trebuie să le reduceți la calculul unui flux. De asemenea, un mecanism întîlnit frecvent este dublarea nodurilor. Pentru problema de față,
+
+\begin{itemize}
+  \item Construim nodurile $x_1, x_2, \dots, x_n$ și $y_1, y_2, \dots, y_n$, așezate vizual pe două coloane ($x$-ii în stînga, $y$-ii în dreapta). Conceptual, $x$ este configurația trupelor înainte de mutare, iar $y$ după mutare.
+
+  \item Modelăm muchiile grafului original: pentru fiecare muchie $(u, v)$ trasăm muchiile $(x_u, y_v)$ și $(x_v, y_u)$, de capacitate infinită. Astfel arătăm că oricîți soldați se pot muta între orașe pe muchiile existente.
+
+  \item Trasăm muchii între fiecare pereche $(x_i, y_i)$, de asemenea de capacitate infinită. Astfel arătăm că oricîți soldați pot rămîne pe loc în orașul $i$.
+
+  \item Adăugăm o sursă $s$ și o unim cu fiecare $x_i$ printr-o muchie de capacitate $a_i$. Astfel arătăm că numărul total de soldați din orașul $i$ este $a_i$ și pentru fiecare dintre ei trebuie să decidem o acțiune. Acțiunea se traduce prin pomparea unei unități de flux, fie în $y_i$ fie într-un oraș adiacent.
+
+  \item Similar, adăugăm o destinație $t$ și unim fiecare $y_i$ cu aceasta printr-o muchie de capacitate $b_i$.
+\end{itemize}
+
+Cu această reprezentare, problema are soluție dacă și numai dacă există un flux de capacitate $\sum a_i$ și în plus $\sum a_i = \sum b_i$. Descrierea traseelor unităților de flux nu este unică. Evaluatorul acceptă orice soluție.
+
+
+\subsection{Problema Asfalt (Lot 2011)}
+\label{problem:asfalt}
+
+\href{https://kilonova.ro/problems/2225}{enunț}
+$\bullet$
+\hyperref[code:asfalt]{sursă}
+
+După formalizare, înțelegem că problema ne cere să identificăm un set minim de muchii care să acopere toate drumurile minime de la $S$ la $D$. Problema mi-a amintit de problemele \hyperref[problem:president-and-roads]{President and Roads} și \hyperref[problem:edges-in-mst]{Edges in MST}, care cereau clasificarea muchiilor în drumuri minime, respectiv în arborii parțiali minimi.
+
+Dacă problema încă pare greu de „apucat”, să ne gîndim la cazuri particulare. Dacă există o punte între $S$ și $D$, atunci în mod necesar ea este parte din toate drumurile minime, deci setul constă doar din ea. Dar nu este atît de simplu. Poate exista o muchie $e$ care nu este factual punte (face parte dintr-un ciclu), dar restul muchiilor de pe ciclu sînt atît de scumpe, încît practic toate drumurile minime trec prin $e$. Și atunci soluția constă doar din $e$.
+
+Așa ajungem la ideea de clasificare a muchiilor în trei categorii (în practică, doar două):
+
+\begin{enumerate}
+  \item Muchii care nu fac parte din niciun drum minim. Acestea nu vor face parte niciodată din soluție, căci scumpirea lor nu afectează drumurile minime.
+
+  \item Muchiile care fac parte din orice drum minim. Oricare dintre acestea poate constitui, de una singură, o soluție.
+
+  \item Muchiile care fac parte din unele drumuri minime. Acestea trebuie combinate cu alte muchii pentru a găsi o soluție de cardinalitate cît mai mică.
+\end{enumerate}
+
+De aici ne vine ideea tăieturii. Aruncăm muchiile din categoria 1 și le păstrăm doar pe cele din categoriile 2 și 3. Vă mai amintiți cum le depistăm? Facem două măsurători de distanțe cu algoritmul Dijkstra, odată pornind din $S$ și o dată din $D$. Apoi, o muchie $(u, v)$ este pe cel puțin un drum minim dacă și numai dacă
+
+$$d(S, u) + c(u, v) + d(v, D) = d(S, D)$$
+
+Pe acest graf nu ne mai interesează distanțele. Ne interesează să găsim un număr minim de muchii care să deconecteze $S$ de $D$. Este exact problema tăieturii minime.
+
+Un detaliu de implementare: Am ales să refolosesc muchiile grafului inițial. Cîmpul \ccode{c}, inițial folosit pentru distanțe în algoritmul lui Dijkstra, stochează capacități în algoritmul Edmonds-Karp. Muchiile care fac parte din rețeaua de flux capătă capacitate 1 doar în sensul indicat de egalitatea de mai sus. Muchiile care nu fac parte din rețeaua de flux capătă capacitate 0 în ambele sensuri.
+
+După cum am vorbit anterior, tăietura minimă constă doar din fluxul pe muchiile directe, nu și pe cele reziduale. Spre deosebire de problema Mincut, unde încă de la citirea grafului știam că muchiile pare sînt directe, iar cele impare sînt reziduale (chiar noi le atribuiam astfel), aici ele pot surveni oricum, după cum se nimeresc distanțele. Așadar, în rutina \ccode{convert_to_flow_network()} am decis să setez explicit un cîmp boolean forward pe muchiile directe.
