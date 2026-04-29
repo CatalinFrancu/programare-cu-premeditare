@@ -113,20 +113,9 @@ int ford_fulkerson() {
   int flow = 0;
 
   while (bfs_reachable()) {
-    // Succesorii destinației sînt și predecesorii ei.
-    for (int pos = nd[n].adj; pos != NIL; pos = e[pos].next) {
-      int v = e[pos].v;
-      if ((v == 1) || (nd[v].parent != NIL)) {
-        // Conectează destinația la v în arborele BFS.
-        nd[n].parent = v;
-        nd[n].edge = pos ^ 1;
-        int augment = path_minimum();
-        if (augment) {
-          pump_on_path(augment);
-          flow += augment;
-        }
-      }
-    }
+    int augment = path_minimum();
+    pump_on_path(augment);
+    flow += augment;
   }
 
   return flow;
@@ -139,8 +128,7 @@ void write_min_cut(int flow) {
     if ((u == 1) || (nd[u].parent != NIL)) {
       for (int pos = nd[u].adj; pos != NIL; pos = e[pos].next) {
         int v = e[pos].v;
-        // Procesează doar muchii egale, nu și muchii inverse.
-        if ((nd[v].parent == NIL) && !(pos & 1)) {
+        if ((nd[v].parent == NIL)) {
           printf("%d %d\n", u, v);
         }
       }
