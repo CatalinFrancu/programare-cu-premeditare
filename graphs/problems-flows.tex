@@ -58,6 +58,28 @@ De regulă problemele de flux nu sînt formulate ca atare, ci trebuie să le red
 Cu această reprezentare, problema are soluție dacă și numai dacă există un flux de capacitate $\sum a_i$ și în plus $\sum a_i = \sum b_i$. Descrierea traseelor unităților de flux nu este unică. Evaluatorul acceptă orice soluție.
 
 
+\subsection{Problema Fox and Dinner (Codeforces)}
+\label{problem:fox-and-dinner}
+
+\href{https://codeforces.com/contest/510/problem/E}{enunț}
+$\bullet$
+\hyperref[code:fox-and-dinner]{sursă}
+
+Cum modelăm această problemă ca pe una de flux?
+
+Să observăm că orice ciclu va alterna între numere pare și numere impare. Altfel, dacă alăturăm două numere pare sau două numere impare, suma va fi pară, deci nu va putea fi primă. Așadar, o primă condiție este ca $n$ să fie par, iar numerele să fie jumătate pare și jumătate impare.
+
+Ne vine astfel ideea să trasăm muchii între fiecare pereche de numere de sumă primă. Aceasta împarte natural graful în două mulțimi sau coloane: numerele pare la stînga, numerele impare la dreapta. Acum orice muchie va fi orientată de la stînga la dreapta. Să acordăm tuturor muchiilor capacitate 1.
+
+Acum, dorim să producem cicluri de lungime cel puțin 4, căci enunțul interzice ciclurile de lugime 2. Rezultă că fiecare nod trebuie conectat cu exact două noduri din tabăra opusă (vecinii săi de la masă). De aceea, să adăugăm o sursă pe care o unim prin muchii de capacitate 2 cu toate numerele pare. Similar, să adăugăm o destinație pe care o unim prin muchii de capacitate 2 cu toate numerele impare.
+
+Rețeaua este acum gata și trebuie să vedem dacă putem pompa $n$ unități de flux prin ea.
+
+Algoritmul Edmonds-Karp simplu (fără încercarea de optimizare) pare să fie suficient. Este posibil ca și metoda Ford-Fulkerson să fie suficientă, căci fluxul maxim este 100.
+
+La final, trebuie să colectăm ciclurile rezultate. Remarcăm că de la stînga la dreapta mergem pe muchii saturate (capacitate reziduală 0), iar de la dreapta la stînga revenim pe muchii reziduale (capacitate reziduală 1). Astfel, putem să iterăm prin toate valorile pare și, pentru fiecare valoare încă neexplorată, să urmăm muchiile pînă închidem un ciclu. Deoarece pentru orice unitate de flux la intrare există și una la ieșire, acest algoritm nu se va bloca niciodată, ci va găsi toate ciclurile.
+
+
 \subsection{Problema Asfalt (Lot 2011)}
 \label{problem:asfalt}
 
@@ -88,3 +110,122 @@ Pe acest graf nu ne mai interesează distanțele. Ne interesează să găsim un 
 Un detaliu de implementare: Am ales să refolosesc muchiile grafului inițial. Cîmpul \ccode{c}, inițial folosit pentru distanțe în algoritmul lui Dijkstra, stochează capacități în algoritmul Edmonds-Karp. Muchiile care fac parte din rețeaua de flux capătă capacitate 1 doar în sensul indicat de egalitatea de mai sus. Muchiile care nu fac parte din rețeaua de flux capătă capacitate 0 în ambele sensuri.
 
 După cum am vorbit anterior, tăietura minimă constă doar din fluxul pe muchiile directe, nu și pe cele reziduale. Spre deosebire de problema Mincut, unde încă de la citirea grafului știam că muchiile pare sînt directe, iar cele impare sînt reziduale (chiar noi le atribuiam astfel), aici ele pot surveni oricum, după cum se nimeresc distanțele. Așadar, în rutina \ccode{convert_to_flow_network()} am decis să setez explicit un cîmp boolean forward pe muchiile directe.
+
+
+\subsection{Problema Echipe (Lot 2025)}
+\label{problem:echipe}
+
+\href{https://kilonova.ro/problems/3792}{enunț}
+$\bullet$
+\hyperref[code:echipe]{sursă}
+
+Iată o problemă extrem de dură. În concurs, doar Mihai Voicu a obținut 100 de puncte. Următoarele punctaje au fost 45, 23, 14 și restul sub 9. Deci nu ne punem problema să o înțelegem și să o codăm repede, ci doar să găsim o soluție în ritmul nostru (a mea are 300 de linii efective și mi-a consumat cam două zile).
+
+\subsubsection*{Găsirea numărului de echipe}
+
+Compatibilitatea oamenilor în echipe ține doar de atributele lor, nu de risc. De aceea, numărul maxim de echipe, să-i spunem $E$, este constant și îl putem calcula o singură dată. La schimbarea scorului, reorganizăm echipele dar nu adăugăm și nu ștergem echipe.
+
+Sper că de acum începeți să intuiți reducerea la flux: mapăm oamenii la rolurile pe care le pot îndeplini. Deoarece ar fi mult prea scump să construim un graf cu $\bigoh(n)$ noduri, vom colecta doar frecvențele diferitelor categorii (combinații de atribute), numerotate de la 1 la 7 conform scrierii binare a atributelor. Apoi construim un graf cu:
+
+\begin{itemize}
+  \item O mulțime $A$ cu 7 noduri corespunzătoare celor 7 categorii.
+  \item O mulțime $B$ cu 4 noduri corespunzătoare celor 4 roluri (C, I, M, I/M).
+  \item Un nod sursă $s$ și un nod destinație $t$.
+  \item Muchii de capacitate $\infty$ (sau $n$) de la fiecare categorie din $A$ la rolurile compatibile din $B$.
+  \item Muchii de la $s$ la $A$, capacitatea fiecărei muchii fiind egală cu numărul de oameni din acea categorie.
+  \item Pentru început, muchii de capacitate 0 de la $B$ la $t$.
+\end{itemize}
+
+Pe acest graf dorim să găsim un flux maxim, adică să cuplăm cît mai multe persoane cu cele 4 roluri. Dar atenție! Fluxul pe cele 4 muchii de la $B$ la $t$ trebuie să fie egal, deoarece trebuie să avem la fel de multe persoane în fiecare rol. O implementare normală de flux nu garantează acest lucru. De aceea, procedăm astfel, în mod repetat:
+
+\begin{itemize}
+  \item Crește cu cîte 1 capacitatea pe toate muchiile de la $B$ la $t$.
+  \item Refă fluxul și vezi dacă el a crescut cu 4.
+\end{itemize}
+
+Ne oprim cînd nu mai putem crește fluxul cu 4.
+
+Care este complexitatea acestui prim pas? Deoarece graful are 13 noduri, putem considera parcurgerile acestui graf ca $\bigoh(1)$. Folosim cea mai simplă metodă (Ford-Fulkerson cu DFS), care va face cel mult $n/4$ iterații. Complexitatea este $\bigoh(n)$.
+
+Ca implementare, am dat nume celor 13 noduri și am hardcodat matricea de adiacență. Am încapsulat tot codul referitor la flux într-o clasă \ccode{network_flow}, care ocupă circa 700 de octeți, suficient de mică încît să o putem copia în întregime. Restul programului folosește fluxul ca primitivă (operație de bază).
+
+\subsubsection*{Găsirea riscului minim pentru riscurile inițiale}
+
+Aici orice abordare bazată pe flux este sortită eșecului. Toate riscurile pot diferi, deci nu mai putem grupa nodurile, iar algoritmii practici de flux cedează mult înainte de $n = \np{150000}$.
+
+Să ne reamintim, în schimb, că ne permitem să facem $\bigoh(n)$ fluxuri în graful de 13 noduri. Atunci putem încerca următoarea abordare greedy. Considerăm oamenii în ordine descrescătoare a riscului. Cînd considerăm persoana $X$ din categoria $A_X$, încercăm să renunțăm la ea. Cu alte cuvinte, ne întrebăm: Dacă $X$ n-ar exista, am mai putea găsi un flux cu $E$ echipe? Dacă da, renunțăm la $X$. Altfel îl includem pe $X$ în echipele inițiale.
+
+Iată o schiță de demonstrație de corectitudine, prin reducere la absurd. Fie soluția optimă $S$, care îl include pe $X$. Să presupunem că algoritmul greșește, că renunță la $X$ și obține o soluție neoptimă $S'$ de risc mai mare decît $S$. În $S'$ există o persoană $X'$ care îndeplinește rolul lui $X$. Atunci putem să pornim de la $S$ și să-l schimbăm pe $X$ cu $X'$ pentru a obține o configurație de risc și mai mic. Acest lucru este imposibil întrucît am presupus că $X$ este optim.\footnote{Am spus „schiță” deoarece, de fapt, este posibil ca $X'$ să fie deja în $S$, dacă diferența între $S$ și $S'$ presupune o reorganizare mai mare. În acel caz trebuie să căutăm persoana $X''$ care îl înlocuiește pe $X'$ în $S'$. Astfel poate lua naștere un lanț de persoane, dar invariabil vom ajunge la o persoană care este disponibilă.}
+
+Acum să vedem cum implementăm algoritmul. Nu dorim să recalculăm fluxul de la 0 pentru fiecare dintre cei $n$ oameni, pentru că am obține complexitatea $\bigoh(n^2)$. Trebuie să adaptăm în permanență fluxul existent. Iau naștere două cazuri:
+
+\begin{enumerate}
+  \item Dacă fluxul existent \textbf{nu} saturează muchia $(s, A_X)$, atunci îl putem pur și simplu sări pe $X$ deoarece există suficiente alte persoane din categoria $A_X$ cu care să formăm echipe. De asemenea, reducem capacitatea muchiei cu 1. Astfel reflectăm faptul că nu putem sări oricîte persoane din categoria $A_X$, ci la un moment dat muchia va deveni saturată.
+  \item Dacă fluxul existent saturează muchia $(s, A_X)$, atunci identificăm traseul unei unități de flux $s \to A_x \to B_y \to t$ și o eliminăm din graf. Nu creștem capacitatea pe muchia $(s, A_x)$, deoarece dorim ca fluxul să ne dea o altă persoană, nu tot pe $X$. Apoi încercăm să pompăm o unitate de flux. Dacă putem, înseamnă că noul flux a reușit să reorganizeze persoanele pentru a obține $4E$ echipe, iar pe $X$ îl putem sări.
+\end{enumerate}
+
+\subsubsection*{Actualizările}
+
+Să ne gîndim la cele 4 scenarii care pot apărea cînd riscul lui $X$ se modifică.
+
+\begin{enumerate}
+  \item Dacă $X$ era parte din echipe, iar riscul îi scade, atunci el va rămîne în echipe. Ar fi absurd să îl înlocuim acum -- cu atît mai mult am fi avut motiv să îl înlocuim înainte de scăderea riscului.
+  \item Dacă $X$ nu era parte din echipe, iar riscul îi crește, atunci el va rămîne în afara echipelor.
+  \item Dacă $X$ era parte din echipe, iar riscul îi crește, atunci ar putea fi profitabil să îl înlocuim.
+  \item Dacă $X$ nu era parte din echipe, iar riscul îi scade, atunci ar putea fi profitabil să îl aducem în echipe în locul altcuiva.
+\end{enumerate}
+
+Putem demonstra că în scenariile (3) și (4) este necesară cel mult o înlocuire. Esența raționamentului este următoarea: Dacă prin modificarea riscului lui $X$ devin necesare $k > 1$ înlocuiri pentru a reface soluția optimă, atunci puteam face $k-1$ dintre aceste înlocuiri și înainte ca riscul lui $X$ să se modifice și am fi obținut o soluție mai bună la acel moment.
+
+Dar cum implementăm asta? Sînt doi pași, unul care ia în calcul doar categoria lui $X$, $A_X$, și altul care ia în calcul toate categoriile.
+
+Așadar, la pasul 1 analizăm cîte persoane din categoria $A_X$ are soluția (concret, care este fluxul pe muchia $(s, A_X)$. Fie $k$ acest număr. Desigur că în soluție noi vom folosi persoanele cu cele mai mici $k$ riscuri din $A_x$. Să menținem această informație în două multiseturi: riscurile persoanelor din soluție și riscurile persoanelor din afara soluției. (Clarificare: stocăm cîte două multiseturi pentru fiecare dintre cele 7 categorii).
+
+Acum, cînd riscul lui $X$ se schimbă, îl căutăm în multisetul său și îi actualizăm valoarea. Dacă în urma acestei actualizări multiseturile se încalecă, adică cea mai riscantă persoană din soluție depășește cea mai puțin riscantă persoană din afara soluției, le interschimbăm și recalculăm riscul total.
+
+La pasul 2 ținem cont de reorganizări mai mari care pot deveni necesare, afectînd distribuția pe categorii. De exemplu, cînd riscul lui $X$ crește, ideal am vrea să eliminăm cea mai scumpă persoană din clasa $A_X$ și să-i spunem rețelei de flux „refă fluxul”. Din păcate, rețeaua de flux habar nu are despre riscuri. Este foarte posibil să ne dea înapoi fix persoana din clasa $A_X$ sau o altă persoană de risc mare.
+
+În loc de aceasta, vom încerca rînd pe rînd fiecare altă categorie $A_Y$. Concret,
+
+\begin{itemize}
+  \item Dacă riscul lui $X$ a scăzut, vom încerca pe rînd să ștergem o persoană din fiecare (altă) categorie $A_Y$ și să inserăm o persoană din categoria $A_X$.
+  \item Dacă riscul lui $X$ a crescut, vom încerca pe rînd să inserăm o persoană din fiecare (altă) categorie $A_Y$ și să ștergem o persoană din categoria $A_X$.
+\end{itemize}
+
+Pentru a ghida fluxul să ne dea categoria dorită, vom descrește cu 1 capacitatea categoriei eliminate și vom crește cu 1 capacitatea categoriei adăugate. Iată un mic fragment din cod, cel care încearcă să înlocuiască o persoană din categoria \ccode{del} cu o persoană din categoria \ccode{ins}.
+
+\begin{minted}{c}
+// Încearcă să înlocuiască ultimul element inclus din del cu primul element
+// exclus din ins. Operează pe graful gc, pe care îl inițializează cu o copie
+// a lui g.
+//
+// Returnează noul risc, sau INF dacă înlocuirea este imposibilă sau neoptimă.
+long long try_swap_pair(int del, int ins, network_flow* gc, long long best_so_far) {
+  // Categoriile trebuie să fie diferite și trebuie să existe persoane de
+  // șters și de adăugat.
+  if (del == ins ||
+      tc.risks_in[del].empty() ||
+      tc.risks_out[ins].empty()) {
+    return INF;
+  }
+
+  // Noul risc pe care l-am obține prin schimbare trebuie să fie o optimizare.
+  int del_risk = *tc.risks_in[del].rbegin();
+  int ins_risk = *tc.risks_out[ins].begin();
+  long long new_risk = tc.total_in_risk - del_risk + ins_risk;
+
+  if (new_risk >= best_so_far) {
+    return INF; // Este o schimbare în rău.
+  }
+
+  // Acum are sens să încercăm să refacem fluxul.
+  *gc = g;
+  gc->remove_unit(del);
+  gc->increase_source_capacity(ins);
+  gc->ford_fulkerson();
+
+  return (gc->flow == 4 * num_teams) ? new_risk : INF;
+}
+\end{minted}
+
+Complexitatea actualizărilor este $O(q \log n)$ datorită operațiilor pe multiseturi.
