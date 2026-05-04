@@ -33,6 +33,13 @@ Ideea nu este grea. Privim fiecare teleportor ca pe o muchie de capacitate 1. Î
 
 Întrebare: Am putea folosi algoritmul Ford Fulkerson naiv, cu DFS? Avantajul ar fi că putem colecta rutele imediat ce le găsim. Nu este nicio problemă, căci oricum ieșirea problemei este proporțională cu mărimea fluxului. Nu-i așa?
 
+\begin{turn}{180}
+  \begin{minipage}{\linewidth}
+    Nu, deoarece o iterație de flux (fie cu Ford-Fulkerson, fie cu Edmonds-Karp) poate anula unități de flux pompate în iterațiile anterioare. Atunci am folosi un teleportor în sensul greșit.
+  \end{minipage}
+\end{turn}
+
+
 
 \subsection{Problema Soldier and Traveling (Codeforces)}
 \label{problem:soldier-and-traveling}
