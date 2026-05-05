@@ -44,13 +44,13 @@ Dacă graful conține cicluri negative, le putem depista după a $n-1$ iterație
   \item Găsirea efectivă a nodurilor unui ciclu negativ.
 \end{itemize}
 
-Complexitatea algoritmului este, desigur, $\mathcal{O}(mn)$.
+Complexitatea algoritmului este, desigur, $\bigoh(mn)$.
 
 O variantă mai rapidă în practică este algoritmul SPFA, descris tot pe CP Algorithms. Vom citi problema educațională \hyperref[problem:bellman-ford]{Bellman-Ford} și sursele aferente. Pentru unele teste ale acestei probleme, SPFA este de 10 ori mai rapid decît Bellman-Ford!
 
 \section{Caz particular: graf aciclic (\textit{dag})}
 
-Vom studia un exemplu și vom arăta de ce următorul algoritm în $\mathcal{O}(m + n)$ funcționează:
+Vom studia un exemplu și vom arăta de ce următorul algoritm în $\bigoh(m + n)$ funcționează:
 
 \begin{algorithm}[H]
   \caption{Calculul distanțelor minime într-un dag}
@@ -84,25 +84,25 @@ Vom discuta sumar despre algoritmul lui Dijkstra, pe care îl presupunem cunoscu
   \end{algorithmic}
 \end{algorithm}
 
-În practică, folosim o coadă de priorități pentru alegerea minimului. Vom avea aceeași discuție ca și la algoritmului lui Prim: avînd în vedere că distanța unui nod din coadă se poate îmbunătăți (poate scădea), avem nevoie de o structură care să ne ofere operația \texttt{decrease-key} în $\mathcal{O}(1)$. Heapurile Fibonacci și \href{https://en.wikipedia.org/wiki/Fibonacci_heap#Summary_of_running_times}{alte cîteva heapuri} oferă această complexitate. Cu acestea, putem implementa algoritmul lui Dijkstra în $\mathcal{O}(m + n \log n)$: vom avea cîte $n$ inserări și eliminări din heap și $m$ relaxări de muchii, fiecare în $\mathcal{O}(1)$.
+În practică, folosim o coadă de priorități pentru alegerea minimului. Vom avea aceeași discuție ca și la algoritmului lui Prim: avînd în vedere că distanța unui nod din coadă se poate îmbunătăți (poate scădea), avem nevoie de o structură care să ne ofere operația \texttt{decrease-key} în $\bigoh(1)$. Heapurile Fibonacci și \href{https://en.wikipedia.org/wiki/Fibonacci_heap#Summary_of_running_times}{alte cîteva heapuri} oferă această complexitate. Cu acestea, putem implementa algoritmul lui Dijkstra în $\bigoh(m + n \log n)$: vom avea cîte $n$ inserări și eliminări din heap și $m$ relaxări de muchii, fiecare în $\bigoh(1)$.
 
-Dacă folosim heap-uri normale sau \ccode{priority_queue}, atunci complexitatea va fi $\mathcal{O}((m + n) \log n)$. Iau naștere următoarele variante de implementare:
+Dacă folosim heap-uri normale sau \ccode{priority_queue}, atunci complexitatea va fi $\bigoh((m + n) \log n)$. Iau naștere următoarele variante de implementare:
 
 \begin{itemize}
-  \item Implementarea 1: Cu heap scris de mînă, cu suport pentru \texttt{decrease-key}. Avantajul este că putem ține o listă suplimentară de pointeri, cu care putem găsi fiecare nod în heap în $\mathcal{O}(1)$.
+  \item Implementarea 1: Cu heap scris de mînă, cu suport pentru \texttt{decrease-key}. Avantajul este că putem ține o listă suplimentară de pointeri, cu care putem găsi fiecare nod în heap în $\bigoh(1)$.
 
-  \item Implementarea 2: Cu heap scris de mînă, fără suport pentru \texttt{decrease-key}. Cînd distanța unui nod scade, îl reinserăm în heap. Heapul poate avea mărime $\mathcal{O}(m)$ (de ce?).
+  \item Implementarea 2: Cu heap scris de mînă, fără suport pentru \texttt{decrease-key}. Cînd distanța unui nod scade, îl reinserăm în heap. Heapul poate avea mărime $\bigoh(m)$ (de ce?).
 
   \item Implementarea 3: Cu \ccode{priority_queue}. Considerabil mai scurtă, dar și mai lentă.
 \end{itemize}
 
-Articolul de pe \href{https://cp-algorithms.com/graph/dijkstra_sparse.html}{CP Algorithms} oferă o discuție interesantă despre implementarea cu \ccode{priority_queue} sau cu \ccode{set}. Ideea de bază este că \ccode{set} ne permite să căutăm noduri și să le modificăm distanțele, pe cînd \ccode{priority_queue} nu. Deci implementarea cu \ccode{set} menține coada de mărime $\mathcal{O}(n)$. Totuși, cea cu \ccode{priority_queue} este mai rapidă în practică.
+Articolul de pe \href{https://cp-algorithms.com/graph/dijkstra_sparse.html}{CP Algorithms} oferă o discuție interesantă despre implementarea cu \ccode{priority_queue} sau cu \ccode{set}. Ideea de bază este că \ccode{set} ne permite să căutăm noduri și să le modificăm distanțele, pe cînd \ccode{priority_queue} nu. Deci implementarea cu \ccode{set} menține coada de mărime $\bigoh(n)$. Totuși, cea cu \ccode{priority_queue} este mai rapidă în practică.
 
 Discuție: cum se comportă algoritmul lui Dijkstra pe grafuri cu cicluri negative? Dar pe grafuri în care nu există cicluri negative, dar există muchii negative?
 
 \section{Caz particular: BFS}
 
-Putem vedea BFS (și Lee) ca pe un caz particular de distanțe în grafuri, în care toate muchiile au cost 1. Atunci putem înlocui coada de priorități cu o coadă normală, căci la orice moment distanțele din coadă vor avea ordinea $k, \dots, k, k + 1, \dots, k + 1$. Complexitatea este, așa cum știam, $\mathcal{O}(m + n)$.
+Putem vedea BFS (și Lee) ca pe un caz particular de distanțe în grafuri, în care toate muchiile au cost 1. Atunci putem înlocui coada de priorități cu o coadă normală, căci la orice moment distanțele din coadă vor avea ordinea $k, \dots, k, k + 1, \dots, k + 1$. Complexitatea este, așa cum știam, $\bigoh(m + n)$.
 
 \section{Caz particular: 0-1 BFS}
 
@@ -112,12 +112,12 @@ Articolul de pe \href{https://cp-algorithms.com/graph/01_bfs.html}{CP Algorithms
 
 \section{Caz particular: costuri mici}
 
-Dacă toate costurile sînt întregi între 1 și $k$ (sau între 0 și $k$, refolosind ideea din secțiunea anterioară), atunci algoritmul lui Dial (\href{https://www.researchgate.net/profile/Robert-Dial}{Robert B. Dial}) ne oferă o soluție în $\mathcal{O}(m + kn)$. Distanța maximă în graf va fi $(n-1)k$, deci putem înlocui coada de priorități cu un vector $V$ de $(n-1)k$ liste înlănțuite, unde $V[x]$ conține nodurile $u$ a căror estimare curentă este $d[u] = x$. Inițial, $V[0]$ va conține doar elementul $s$, iar restul listelor vor fi vide. Procesăm listele de la stînga la dreapta și, pentru fiecare nod, îi relaxăm muchiile, mutîndu-i vecinii dintr-o listă într-alta dacă distanța lor se schimbă.
+Dacă toate costurile sînt întregi între 1 și $k$ (sau între 0 și $k$, refolosind ideea din secțiunea anterioară), atunci algoritmul lui Dial (\href{https://www.researchgate.net/profile/Robert-Dial}{Robert B. Dial}) ne oferă o soluție în $\bigoh(m + kn)$. Distanța maximă în graf va fi $(n-1)k$, deci putem înlocui coada de priorități cu un vector $V$ de $(n-1)k$ liste înlănțuite, unde $V[x]$ conține nodurile $u$ a căror estimare curentă este $d[u] = x$. Inițial, $V[0]$ va conține doar elementul $s$, iar restul listelor vor fi vide. Procesăm listele de la stînga la dreapta și, pentru fiecare nod, îi relaxăm muchiile, mutîndu-i vecinii dintr-o listă într-alta dacă distanța lor se schimbă.
 
 Două detalii de implementare:
 
 \begin{itemize}
-  \item Pentru a face relaxarea în $\mathcal{O}(1)$, trebuie să putem găsi rapid un nod și să-l mutăm din lista sa, $V[d[u]]$, în noua listă corespunzătoare noii distanțe. Putem folosi un simplu vector de pointeri.
+  \item Pentru a face relaxarea în $\bigoh(1)$, trebuie să putem găsi rapid un nod și să-l mutăm din lista sa, $V[d[u]]$, în noua listă corespunzătoare noii distanțe. Putem folosi un simplu vector de pointeri.
 
-  \item Putem reduce memoria de la $\mathcal{O}(kn)$ la $\mathcal{O}(k + n)$ astfel. Cînd procesăm nodurile de la distanța $x$, vom face inserări și ștergeri doar din listele de pe pozițiile $x \dots x + k$ (de ce?). Deci putem stoca din vectorul $V$ doar fereastra curentă de lățime $k + 1$, folosind un buffer circular sau o listă înlănțuită.
+  \item Putem reduce memoria de la $\bigoh(kn)$ la $\bigoh(k + n)$ astfel. Cînd procesăm nodurile de la distanța $x$, vom face inserări și ștergeri doar din listele de pe pozițiile $x \dots x + k$ (de ce?). Deci putem stoca din vectorul $V$ doar fereastra curentă de lățime $k + 1$, folosind un buffer circular sau o listă înlănțuită.
 \end{itemize}

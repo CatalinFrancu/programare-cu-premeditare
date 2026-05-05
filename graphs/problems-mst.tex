@@ -9,7 +9,7 @@ $\bullet$
 
 Problema este educațională. Vom citi sursele și vom explica algoritmii.
 
-Algoritmul lui Kruskal rulează în $\mathcal{O}(m \log m)$ datorită sortării. Puteam face sortarea în $\mathcal{O}(m + c)$ dacă distribuiam muchiile în liste după cost, dar am decis să nu încarc programul.
+Algoritmul lui Kruskal rulează în $\bigoh(m \log m)$ datorită sortării. Puteam face sortarea în $\bigoh(m + c)$ dacă distribuiam muchiile în liste după cost, dar am decis să nu încarc programul.
 
 Algoritmul lui Prim rulează în $O(m \log n)$. Într-adevăr, fiecare muchie evaluată poate duce la o îmbunătățire a distanței fiului, ceea ce necesită o inserare în coada de priorități. Remarcăm că, în această implementare, un nod $u$ poate avea multiple copii în coadă, dacă distanța lui este optimizată de mai multe ori înainte ca $u$ să fie selectat ca minim și adăugat la arbore.
 
@@ -83,15 +83,15 @@ Ideea de APM ne trimite, de fapt, pe o pistă falsă. Problema este una de conex
 $\bullet$
 \hyperref[code:0-1-mst]{surse}
 
-Această problemă simpatică și un pic anapoda ne cere să găsim APM-ul într-un graf complet cu $n$ noduri, în care toate muchiile au cost 0 în afară de $m$ dintre ele, care au cost 1. Provocarea, desigur, este să facem asta în $\mathcal{O}(m + n)$ sau pe-acolo, fără a depinde de numărul real de muchii, care este $\mathcal{O}(n^2)$.
+Această problemă simpatică și un pic anapoda ne cere să găsim APM-ul într-un graf complet cu $n$ noduri, în care toate muchiile au cost 0 în afară de $m$ dintre ele, care au cost 1. Provocarea, desigur, este să facem asta în $\bigoh(m + n)$ sau pe-acolo, fără a depinde de numărul real de muchii, care este $\bigoh(n^2)$.
 
 Problema este ușoară și are multiple soluții. Iată două dintre ele.
 
 \subsubsection*{Soluția cu Kruskal}
 
-Putem adapta algoritmul lui Kruskal. Procesăm doar muchiile de 0 (cele care \textbf{nu apar} la intrare). Doar că trebuie să facem asta în $\mathcal{O}(m)$ (numărul de muchii care \textbf{apar} la intrare). Dacă rămînem cu $k$ componente, atunci costul arborelui este $k-1$.
+Putem adapta algoritmul lui Kruskal. Procesăm doar muchiile de 0 (cele care \textbf{nu apar} la intrare). Doar că trebuie să facem asta în $\bigoh(m)$ (numărul de muchii care \textbf{apar} la intrare). Dacă rămînem cu $k$ componente, atunci costul arborelui este $k-1$.
 
-Pornim de la observația cu care ne-am mai întîlnit: nu contează ce muchii selectăm, ci cîte putem selecta fără a închide cicluri. Procesăm nodurile de la 1 la $n$ și construim structura de mulțimi disjuncte ca de obicei. Ne permitem să petrecem în fiecare nod $u$ timp $\mathcal{O}(\text{deg}_1(u))$, unde $\text{deg}_1(u)$ este numărul de muchii de cost 1 care pornesc din $u$ (cele date la intrare).
+Pornim de la observația cu care ne-am mai întîlnit: nu contează ce muchii selectăm, ci cîte putem selecta fără a închide cicluri. Procesăm nodurile de la 1 la $n$ și construim structura de mulțimi disjuncte ca de obicei. Ne permitem să petrecem în fiecare nod $u$ timp $\bigoh(\text{deg}_1(u))$, unde $\text{deg}_1(u)$ este numărul de muchii de cost 1 care pornesc din $u$ (cele date la intrare).
 
 Menținem pădurea de mulțimi disjuncte ca în algoritmul lui Kruskal, dar în plus reținem și mărimea fiecărei mulțimi. Pentru nodul curent $u$ contorizăm cîte muchii de cost 1 se duc către fiecare mulțime disjunctă. Numim o mulțime \textbf{saturată} dacă în ea intră un număr de muchii de cost 1 egal cu mărimea ei. Dacă o mulțime nu este saturată, atunci există și muchii de cost 0 către ea (nu uitați că graful este complet). Deci, conform algoritmului lui Kruskal, unim mulțimea lui $u$ cu toate mulțimile nesaturate.
 
@@ -99,19 +99,19 @@ Surprinzător, ne permitem să testăm fiecare mulțime din structură. Efortul 
 
 \subsubsection*{Soluția cu BFS}
 
-Există și o soluție frumoasă care folosește doar parcurgeri și conexitate, ca la numărarea componentelor conexe: din fiecare nod nevizitat pornim o parcurgere folosind doar muchiile de cost 0. Trebuie să avem grijă ca vizitarea fiecărui nod să coste $\mathcal{O}(\text{deg}_1(u))$. Să denumim lista de muchii de cost 1 care pleacă din noul $u$ \textbf{lista de nonadiacență} a lui $u$. Implementarea mea stochează listele de nonadiacență în cîte un \ccode{unordered_set} pentru fiecare nod $u$.
+Există și o soluție frumoasă care folosește doar parcurgeri și conexitate, ca la numărarea componentelor conexe: din fiecare nod nevizitat pornim o parcurgere folosind doar muchiile de cost 0. Trebuie să avem grijă ca vizitarea fiecărui nod să coste $\bigoh(\text{deg}_1(u))$. Să denumim lista de muchii de cost 1 care pleacă din noul $u$ \textbf{lista de nonadiacență} a lui $u$. Implementarea mea stochează listele de nonadiacență în cîte un \ccode{unordered_set} pentru fiecare nod $u$.
 
 Apoi, menținem o listă $L$ de noduri nevizitate. Cînd scoatem din coada BFS un nod $u$ consultăm lista $L$ și inserăm în coada BFS toate nodurile care nu apar în lista de nonadiacență a lui $u$ (așadar, cele aflate la distanță 0 de $u$).
 
-Poate părea că efortul este $\mathcal{O}(n^2)$, căci pentru fiecare nod vom consulta lista $L$ care are $\mathcal{O}(n)$ noduri. Dar, în realitate, există două scenarii pentru fiecare element $v$ din $L$:
+Poate părea că efortul este $\bigoh(n^2)$, căci pentru fiecare nod vom consulta lista $L$ care are $\bigoh(n)$ noduri. Dar, în realitate, există două scenarii pentru fiecare element $v$ din $L$:
 
 \begin{enumerate}
-  \item $v$ este în lista de adiacență a lui $u$, și deci rămîne în lista $L$. Dar $v$ nu se va afla în această situație decît de $\text{deg}(v)$ ori, deci efortul global este $\mathcal{O}(m)$.
+  \item $v$ este în lista de adiacență a lui $u$, și deci rămîne în lista $L$. Dar $v$ nu se va afla în această situație decît de $\text{deg}(v)$ ori, deci efortul global este $\bigoh(m)$.
 
-  \item $v$ nu este în lista de adiacență a lui $u$. Atunci îl scoatem pe $v$ din $L$ și îl inserăm în coada BFS. Fiecare element poate fi eliminat doar o dată din $L$, deci efortul global este $\mathcal{O}(n)$.
+  \item $v$ nu este în lista de adiacență a lui $u$. Atunci îl scoatem pe $v$ din $L$ și îl inserăm în coada BFS. Fiecare element poate fi eliminat doar o dată din $L$, deci efortul global este $\bigoh(n)$.
 \end{enumerate}
 
-De aceea, această soluție obține complexitatea $\mathcal{O}(m + n)$.
+De aceea, această soluție obține complexitatea $\bigoh(m + n)$.
 
 De amorul artei, am scris și o \href{https://codeforces.com/contest/1242/submission/309974379}{sursă optimizată} care (1) folosește o coadă proprie și (2) folosește un singur vector în loc de \ccode{unordered_set} pentru a testa existența muchiilor.
 
@@ -143,11 +143,11 @@ Observăm că muchia $c_2$ nu poate face parte din $\mathcal{A}$. Într-adevăr,
 
 \subsubsection*{Implementare cu LCA și \textit{binary lifting}}
 
-Așadar, trebuie să răspundem la $m$ interogări de maxime pe căi. Știm deja abordarea clasică, în $\mathcal{O}(\log n)$ per interogare: alegem o rădăcină pentru arbore, să zicem nodul 1, și precalculăm informații de LCA cu \textit{binary lifting}. Fiecare pointer reține și valoarea maximă a unei muchii pe care o traversează.
+Așadar, trebuie să răspundem la $m$ interogări de maxime pe căi. Știm deja abordarea clasică, în $\bigoh(\log n)$ per interogare: alegem o rădăcină pentru arbore, să zicem nodul 1, și precalculăm informații de LCA cu \textit{binary lifting}. Fiecare pointer reține și valoarea maximă a unei muchii pe care o traversează.
 
 \subsubsection*{Implementare cu mulțimi disjuncte modificate}
 
-Soluția mea împrumută o altă idee, pe care o vom detalia. Ea folosește o structură de date $S$ care este „un fel de” \textit{disjoint set forest} de complexitate $\mathcal{O}(\log n)$ per operație.
+Soluția mea împrumută o altă idee, pe care o vom detalia. Ea folosește o structură de date $S$ care este „un fel de” \textit{disjoint set forest} de complexitate $\bigoh(\log n)$ per operație.
 
 Concret, procesăm muchiile în ordine crescătoare a costului. Începem să unificăm componentele conexe conform algoritmului lui Kruskal. Dar nu folosim compresia căii, căci ne interesează ca $S$ să păstreze o informație esențială, care s-ar pierde prin reorganizare. Pentru orice pereche de noduri deja conectate, $u$ și $v$, dorim ca $S$ să faciliteze găsirea muchiei celei mai scumpe de pe calea $u-v$.
 
@@ -202,7 +202,7 @@ Vom defini noțiunea de \textbf{punte}, iar deocamdată vom lua fără demonstra
 Implementarea constă din algoritmul lui Kruskal + un DFS pentru fiecare bloc de muchii egale. Atenție la două detalii de implementare:
 
 \begin{itemize}
-  \item Fiecare DFS pe un pachet de $k$ muchii trebuie să fie $\mathcal{O}(k)$. Orice \ccode{for} neatent, în $\mathcal{O}(n)$, poate duce complexitatea totală la $\mathcal{O}(n^2)$ dacă toate muchiile au costuri distincte.
+  \item Fiecare DFS pe un pachet de $k$ muchii trebuie să fie $\bigoh(k)$. Orice \ccode{for} neatent, în $\bigoh(n)$, poate duce complexitatea totală la $\bigoh(n^2)$ dacă toate muchiile au costuri distincte.
 
   \item Deși graful inițial este simplu, în graful componentelor pot exista muchii paralele (între perechi de noduri din aceleași componente). Este nevoie de puțină atenție în algoritmul lui Tarjan de găsire a punților. Este acceptabil (și necesar) să luăm în calcul toate muchiile care duc înapoi la părinte, doar nu fix pe cea pe care am venit. Sursa mea folosește indicele original al muchiei. \href{https://cp-algorithms.com/graph/bridge-searching.html#implementation}{CP Algorithms} oferă o soluție mai generală.
 \end{itemize}

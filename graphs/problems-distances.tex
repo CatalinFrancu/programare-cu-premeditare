@@ -23,9 +23,9 @@ $\bullet$
 Există multe variante de implementare, dintre care am încercat trei:
 
 \begin{enumerate}
-  \item Cu heap propriu, cu suport pentru \texttt{decrease-key}. Avantajul este că putem ține o listă suplimentară de pointeri, cu care putem găsi fiecare nod în heap în $\mathcal{O}(1)$.
+  \item Cu heap propriu, cu suport pentru \texttt{decrease-key}. Avantajul este că putem ține o listă suplimentară de pointeri, cu care putem găsi fiecare nod în heap în $\bigoh(1)$.
 
-  \item Cu heap propriu, fără suport pentru \texttt{decrease-key}. Cînd distanța unui nod scade, îl reinserăm în heap. Heapul poate avea mărime $\mathcal{O}(m)$ (de ce?).
+  \item Cu heap propriu, fără suport pentru \texttt{decrease-key}. Cînd distanța unui nod scade, îl reinserăm în heap. Heapul poate avea mărime $\bigoh(m)$ (de ce?).
 
   \item Cu \ccode{priority_queue} din STL. Considerabil mai scurtă, dar ceva mai lentă.
 \end{enumerate}
@@ -235,9 +235,9 @@ Stările și tranzițiile definesc, de fapt, un graf extins. Pe acest graf rulă
 
 \subsubsection*{Implementare minimalistă}
 
-Prima sursă este orientată spre brevitate, dar nu este prea eficientă. Menținem un \ccode{unordered_set} global de triplete ca să aflăm în $\mathcal{O}(1)$ dacă o tranziție este permisă. Menținem distanțele calculate în BFS chiar într-o matrice de $n \times n$. Cînd explorăm o stare $\langle u, v \rangle$ și descoperim o nouă stare $\langle v, w \rangle$, în aceasta din urmă notăm informația că nodul anterior a fost $u$. Astfel putem reconstitui soluția.
+Prima sursă este orientată spre brevitate, dar nu este prea eficientă. Menținem un \ccode{unordered_set} global de triplete ca să aflăm în $\bigoh(1)$ dacă o tranziție este permisă. Menținem distanțele calculate în BFS chiar într-o matrice de $n \times n$. Cînd explorăm o stare $\langle u, v \rangle$ și descoperim o nouă stare $\langle v, w \rangle$, în aceasta din urmă notăm informația că nodul anterior a fost $u$. Astfel putem reconstitui soluția.
 
-Sursa folosește $\mathcal{O}(n^2)$ memorie, dar se poate mai bine.
+Sursa folosește $\bigoh(n^2)$ memorie, dar se poate mai bine.
 
 \subsubsection*{Implementare eficientă}
 
@@ -251,4 +251,4 @@ A doua sursă stochează distanțele chiar pe muchii pentru a renunța la matric
 
 La explorarea unei muchii $(u,v)$ accesibilă la distanța $d$, interclasăm lista de succesori $w$ ai lui $v$ cu lista de continuări interzise. Punem distanța $d+1$ doar pe muchiile care nu duc spre un nod interzis.
 
-Astfel obținem memorie $\mathcal{O}(m + n + k)$, adică 5 MB în loc de 39 MB. Timpul scade de la 1 secundă la 0,4 secunde. Am chiar și o sursă mai veche, care folosește \href{https://codeforces.com/contest/59/submission/244230310}{doar 2,2 MB}, dar nu mai știu exact ce am făcut. \emoji{smiling-face-with-tear}
+Astfel obținem memorie $\bigoh(m + n + k)$, adică 5 MB în loc de 39 MB. Timpul scade de la 1 secundă la 0,4 secunde. Am chiar și o sursă mai veche, care folosește \href{https://codeforces.com/contest/59/submission/244230310}{doar 2,2 MB}, dar nu mai știu exact ce am făcut. \emoji{smiling-face-with-tear}

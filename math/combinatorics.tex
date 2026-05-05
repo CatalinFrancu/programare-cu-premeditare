@@ -64,9 +64,9 @@ $$(n - k + 1) / 1 \cdot (n - k + 2) / 2 \cdot (n - k + 3) / 3 ...$$
 
 Ne bazăm pe observația că, atunci cînd vine vremea să împărțim prin $x$, vom fi înmulțit deja $x$ termeni consecutivi, dintre care unul se divide cu $x$.
 
-Pentru valori mari, de regulă problema ne va cere să operăm modulo un număr prim. În această situație, avem nevoie să calculăm factorialele pînă la $n!$ și inversele lor modulare. Apoi, putem calcula în $\mathcal{O}(1)$ orice $C_n^k$.
+Pentru valori mari, de regulă problema ne va cere să operăm modulo un număr prim. În această situație, avem nevoie să calculăm factorialele pînă la $n!$ și inversele lor modulare. Apoi, putem calcula în $\bigoh(1)$ orice $C_n^k$.
 
-Ca optimizare, putem calcula toate inversele factorialelor în $\mathcal{O}(n)$, apelînd o singură dată funcția de calcul al inversei. Secretul este să pornim de la $n$ spre 0:
+Ca optimizare, putem calcula toate inversele factorialelor în $\bigoh(n)$, apelînd o singură dată funcția de calcul al inversei. Secretul este să pornim de la $n$ spre 0:
 
 \begin{minted}{c}
 inv_fact[MAX_N] = inverse(fact[MAX_N]);

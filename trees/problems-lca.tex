@@ -92,7 +92,7 @@ Fie $a,b,c,d$ primul, al doilea, penultimul și respectiv ultimul nod din interv
 
 De aceea, am proiectat o structură de date care să returneze, pentru o interogare $[l,r]$, primele două minime și primele două maxime din intervalul $[l,r]$. Practic structura returnează exact cele patru valori $a,b,c,d$.
 
-Putem folosi RMQ cu sparse table, cu atenție la detalii la calculul celui de-al doilea maxim/minim (intervalele de lungime putere a lui 2 pot fi suprapuse). Dar nu-mi place ideea de a consuma memorie $\mathcal{O}(n \log n)$ fără rost. \emoji{neutral-face} De aceea, am implementat structura ca pe un arbore de intervale. Operația critică este combinarea a două tupluri $(a', b', c', d')$ și $(a'', b'', c'', d'')$. Implementarea este relativ ușoară:
+Putem folosi RMQ cu sparse table, cu atenție la detalii la calculul celui de-al doilea maxim/minim (intervalele de lungime putere a lui 2 pot fi suprapuse). Dar nu-mi place ideea de a consuma memorie $\bigoh(n \log n)$ fără rost. \emoji{neutral-face} De aceea, am implementat structura ca pe un arbore de intervale. Operația critică este combinarea a două tupluri $(a', b', c', d')$ și $(a'', b'', c'', d'')$. Implementarea este relativ ușoară:
 
 \begin{itemize}
   \item Dacă $a' < a''$ atunci primul minim este $a'$, iar al doilea minim este $\min(b', a'')$.

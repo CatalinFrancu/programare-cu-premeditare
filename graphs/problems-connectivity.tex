@@ -66,7 +66,7 @@ Fie $G$ graful cerințelor date la intrare. Observăm că putem rezolva problema
 $\bullet$
 \hyperref[code:ralph-and-mushrooms]{sursă}
 
-Observăm că, în cadrul unei CTC, putem parcurge toate muchiile de o infinitate de ori, deci vom aduna profitul maxim de pe fiecare muchie. O subproblemă interesantă este: ce profit putem obține pe o muchie cu $x$ ciuperci? Această funcție este \href{https://oeis.org/A060432}{OEIS A060432}. Am încercat să găsesc o formulă în $\mathcal{O}(1)$ fără radicali, dar nu am reușit.
+Observăm că, în cadrul unei CTC, putem parcurge toate muchiile de o infinitate de ori, deci vom aduna profitul maxim de pe fiecare muchie. O subproblemă interesantă este: ce profit putem obține pe o muchie cu $x$ ciuperci? Această funcție este \href{https://oeis.org/A060432}{OEIS A060432}. Am încercat să găsesc o formulă în $\bigoh(1)$ fără radicali, dar nu am reușit.
 
 Odată ce părăsim o CTC, putem folosi muchia de plecare o singură dată, căci prin definiție nu mai putem reveni pe ea. Apoi putem consuma integral noua componentă etc. Rezultă că putem construi $G^{SCC}$, care este un dag, în care valoarea fiecărui nod este profitul maxim al muchiilor din toate nodurile din componenta asociată, iar valoarea fiecărei muchii este numărul de ciuperci din graful inițial. În acest nod trebuie să aflăm profitul maxim.
 
@@ -240,7 +240,7 @@ De aici, implementarea se ramifică. Am citit sursele din statistici și am obse
   \item Ordonarea crescătoare a vecinilor fiecărui nod, ceea ce permite răspunsuri cu căutare binară la întrebări de tipul „există muchia $(T_i, T_{i+1})$”?
 \end{itemize}
 
-Soluția este $\mathcal{O}(m + n)$ în ciuda BFS-urilor repetate, căci mergem mereu înainte prin dag-ul componentelor tare conexe. De aceea, BFS-urile au mereu loc pe porțiuni din dag încă neexplorate în BFS-urile anterioare.
+Soluția este $\bigoh(m + n)$ în ciuda BFS-urilor repetate, căci mergem mereu înainte prin dag-ul componentelor tare conexe. De aceea, BFS-urile au mereu loc pe porțiuni din dag încă neexplorate în BFS-urile anterioare.
 
 Ca fapt divers, \href{https://kilonova.ro/submissions/442732}{această sursă} sortează topologic componentele, apoi decide dacă există un drum între două componente comparînd pur și simplu poziția componentelor în sortare. Această abordare este insuficientă. Problema răspunde 3, în loc de 2, pe testul
 
@@ -258,7 +258,7 @@ Implementarea mea extinde algoritmul lui Tarjan pentru aflarea CTC. Știm că ac
 
 Să definim \textbf{intervalul unei componente} $C$ ca fiind intervalul de indici din $T$ pe care îl vom vizita pe durata șederii în componenta $C$ (dacă vom ajunge în ea, ceea ce deocamdată nu știm). Acesta este cel mai din stînga interval contiguu format exclusiv din noduri din $C$. Pot exista mai multe astfel de intervale în $T$, dar îl alegem pe cel mai din stînga deoarece, odată ce părăsim componenta $C$, nu mai putem reveni la ea pentru a vizita și alte intervale.
 
-Pentru a determina intervalul componentei, încă de la citirea datelor calculăm, pentru fiecare nod $u$, indicele primei sale apariții în $T$ (sau $+\infty$ dacă $u$ nu apare deloc în $T$). Odată ce explorăm componenta $C$ și îi cunoaștem nodurile, începutul intervalului lui $C$ este minimul primelor apariții în $T$ ale oricărui nod din $C$. Aflăm sfîrșitul intervalului extinzîndu-l naiv spre dreapta, pas cu pas, cît timp întîlnim noduri din $C$. Efortul total pentru aceste extinderi este $\mathcal{O}(n)$.
+Pentru a determina intervalul componentei, încă de la citirea datelor calculăm, pentru fiecare nod $u$, indicele primei sale apariții în $T$ (sau $+\infty$ dacă $u$ nu apare deloc în $T$). Odată ce explorăm componenta $C$ și îi cunoaștem nodurile, începutul intervalului lui $C$ este minimul primelor apariții în $T$ ale oricărui nod din $C$. Aflăm sfîrșitul intervalului extinzîndu-l naiv spre dreapta, pas cu pas, cît timp întîlnim noduri din $C$. Efortul total pentru aceste extinderi este $\bigoh(n)$.
 
 Acum, algoritmul lui Tarjan, în momentul în care termină de explorat componenta $C$, va fi întîlnit și muchii către alte componente (succesoare în dag-ul componentelor). Deci putem pune întrebarea: dacă ajungem în această componentă, cu ce altă componentă continuăm? \textit{Obligatoriu} cu una care are acces la componenta care extinde spre dreapta intervalul lui $C$. De aceea, dintre toate componentele succesoare, păstrăm intervalul minim. Concret, fie componenta curentă $C$ cu intervalul $I_C$ și fie $I_D$ intervalul minim al unei componente succesoare $D$. Iau naștere trei cazuri:
 

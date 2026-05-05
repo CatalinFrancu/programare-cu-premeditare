@@ -105,8 +105,8 @@ void convert_to_flow_network() {
   for (int u = 1; u <= n; u++) {
     for (int pos = nd[u].adj; pos != NIL; pos = e[pos].next) {
       int v = e[pos].v, c = e[pos].c;
-      // Let one node configure the capacities of both edges.
-      // Write down which of the two edges goes forward.
+      // Lăsăm unul dintre noduri să configureze capacitățile ambelor muchii.
+      // Notăm care este muchia înainte.
       if (u < v) {
         e[pos].c = e[pos ^ 1].c = 0;
         if (is_min_path_edge(u, c, v)) {
@@ -172,7 +172,7 @@ bool is_cross_cut_flow_edge(int u, int v, int pos) {
     nd[u].is_reachable() &&
     !nd[v].is_reachable() &&
     e[pos].forward &&
-    (e[pos ^ 1].c == 1);   // e[pos] is a saturated flow edge
+    (e[pos ^ 1].c == 1);   // e[pos] este o muchie saturată de flux
 }
 
 void write_min_cut(int flow) {

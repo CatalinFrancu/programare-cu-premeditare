@@ -2,7 +2,7 @@
 
 Descompunerea \textit{heavy-light} (engl. \textit{heavy-light decomposition} sau HLD, numită și \textit{heavy path decomposition}) este încă o tehnică de liniarizare a arborilor, utilă pentru interogări pe căi.
 
-HLD costă un factor suplimentar de $\mathcal{O}(\log n)$, așadar genul de întrebări la care răspundem în $\mathcal{O}(\log n)$ pe vector ne vor costa $\mathcal{O}(\log^2 n)$ pe arbore.
+HLD costă un factor suplimentar de $\bigoh(\log n)$, așadar genul de întrebări la care răspundem în $\bigoh(\log n)$ pe vector ne vor costa $\bigoh(\log^2 n)$ pe arbore.
 
 Înainte de a studia HLD, subliniez că este o unealtă puternică, dar greu de codat și lentă. Înainte de a vă repezi la ea, întrebați-vă dacă nu există o soluție mai simplă, adaptată nevoilor problemei. HLD intră doar în materia de lot (nu de baraj).
 
@@ -26,11 +26,11 @@ Să trecem în revistă uneltele pe care le-am studiat pînă acum.
 
   \item Tehnica \textit{small-to large} nu ne ajută aici.
 
-  \item LCA + \textit{binary lifting} rezolvă doar problema fără actualizări. Fiecare pointer notează și maximul nodurilor peste care trece. Dar la actualizare, dacă avem un nod cu $\mathcal{O}(n)$ fii, vom fi nevoiți să actualizăm informația din $\mathcal{O}(n)$ pointeri.
+  \item LCA + \textit{binary lifting} rezolvă doar problema fără actualizări. Fiecare pointer notează și maximul nodurilor peste care trece. Dar la actualizare, dacă avem un nod cu $\bigoh(n)$ fii, vom fi nevoiți să actualizăm informația din $\bigoh(n)$ pointeri.
 
   \item Similar și pentru orice tentativă de descompunere în radical.
 
-  \item Algoritmul lui Mo pe arbore funcționează, dar lent. Structura pentru intervalul curent trebuie să admită inserarea și ștergerea de valori și interogarea de maxim. Complexitatea va fi $\mathcal{O}(q \sqrt{n} \log n)$.
+  \item Algoritmul lui Mo pe arbore funcționează, dar lent. Structura pentru intervalul curent trebuie să admită inserarea și ștergerea de valori și interogarea de maxim. Complexitatea va fi $\bigoh(q \sqrt{n} \log n)$.
 \end{itemize}
 
 \section{Descompunerea}
@@ -55,7 +55,7 @@ Despre acest arbore putem da două garanții foarte puternice.
   \item Calea de la orice nod la rădăcină vizitează, total sau parțial, cel mult $\log n$ lanțuri. Echivalent, calea conține cel mult $\log n$ muchii ușoare. Demonstrația este identică cu cea de la metoda small to large: cînd urcăm dintr-un fiu $v$ în părintele $u$ aflat pe alt lanț, prin definiție traversăm o muchie ușoară. Deci $v$ este fiu ușor al lui $u$, ceea ce înseamnă că $v$ are un frate greu $h$. Subarborele lui $h$ este cel puțin la fel de mare ca al lui $v$, deci subarborele lui $u$ este cel puțin dublu față de subarborele lui $v$.
 \end{enumerate}
 
-Proprietatea (1) ne spune că putem trata lanțurile ca pe niște vectori. În particular, putem construi peste ele structuri de date ca arbori Fenwick sau arbori de intervale, care ne dau informații despre porțiuni de lanțuri în $\mathcal{O}(\log n)$. Proprietatea (2) ne spune că orice cale $u-v$ vizitează $\mathcal{O}(\log n)$ lanțuri. Avem, așadar, o metodă generală de a răspunde la interogări pe căi în $\mathcal{O}(\log^2 n)$.
+Proprietatea (1) ne spune că putem trata lanțurile ca pe niște vectori. În particular, putem construi peste ele structuri de date ca arbori Fenwick sau arbori de intervale, care ne dau informații despre porțiuni de lanțuri în $\bigoh(\log n)$. Proprietatea (2) ne spune că orice cale $u-v$ vizitează $\bigoh(\log n)$ lanțuri. Avem, așadar, o metodă generală de a răspunde la interogări pe căi în $\bigoh(\log^2 n)$.
 
 \section{Detalii de implementare}
 

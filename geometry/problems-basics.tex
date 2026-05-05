@@ -11,7 +11,7 @@ $\bullet$
 
 Problema cere un fel de drum de lungime maximă într-un graf în care figurile sînt noduri, iar muchiile indică incluziunea. Dar putem observa că graful este aproape aciclic. Poate exista un ciclu doar între figuri identice. Rezultă că putem căuta o sortare topologică astfel încît toate muchiile să meargă doar spre dreapta. Putem sorta după arie sau după perimetru (eu am ales aria).
 
-După sortare, definim $l[i]$ = lungimea maximă a unei cuibăreli terminate cu cuibul $i$ și calculăm vectorul $l$ în complexitate totală $\mathcal{O}(n^2)$.
+După sortare, definim $l[i]$ = lungimea maximă a unei cuibăreli terminate cu cuibul $i$ și calculăm vectorul $l$ în complexitate totală $\bigoh(n^2)$.
 
 \subsection{Problema Ace (OJI 2017, clasa a 9-a)}
 \label{problem:ace}
@@ -142,9 +142,9 @@ Cum calculăm acest maxim? Dintre reflectoarele din $m$, unul trebuie să fie ul
 $\bullet$
 \hyperref[code:trapezz]{sursă}
 
-Soluțiile relativ evidente sînt $\mathcal{O}(n^4)$, care iterează prin toate mulțimile de 4 puncte, și $\mathcal{O}(n^3 \log n)$ sau chiar $\mathcal{O}(n^3)$, care fixează 3 puncte și îl caută pe al 4-lea.
+Soluțiile relativ evidente sînt $\bigoh(n^4)$, care iterează prin toate mulțimile de 4 puncte, și $\bigoh(n^3 \log n)$ sau chiar $\bigoh(n^3)$, care fixează 3 puncte și îl caută pe al 4-lea.
 
-Pentru o soluție în $\mathcal{O}(n^2 \log n)$, să vedem ce putem face pentru perechi de puncte. Dacă fixăm o bază și ne întrebăm „unde ar putea fi cealaltă bază?”, nu (cred că) ajungem nicăieri, pentru că bazele trebuie să fie bine aliniate pentru ca trapezul să fie isoscel. Însă așa ne poate veni ideea să folosim mediatoarele pe baze: două segmente reprezintă bazele unui trapez isoscel dacă au aceeași mediatoare.
+Pentru o soluție în $\bigoh(n^2 \log n)$, să vedem ce putem face pentru perechi de puncte. Dacă fixăm o bază și ne întrebăm „unde ar putea fi cealaltă bază?”, nu (cred că) ajungem nicăieri, pentru că bazele trebuie să fie bine aliniate pentru ca trapezul să fie isoscel. Însă așa ne poate veni ideea să folosim mediatoarele pe baze: două segmente reprezintă bazele unui trapez isoscel dacă au aceeași mediatoare.
 
 Restul sînt detalii de implementare. Decît să grupez segmentele într-un \ccode{map} după ecuația mediatoarei, am preferat să le sortez după mediatoare, apoi să le procesez în blocuri cu aceeași mediatoare, ceea ce s-a dovedit a fi mai rapid.
 
