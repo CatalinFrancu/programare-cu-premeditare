@@ -26,7 +26,7 @@ int min(int x, int y) {
   return (x < y) ? x : y;
 }
 
-// Actualizează găurile de la începutul blocului pînă la pos invlusiv.
+// Actualizează găurile de la începutul blocului pînă la pos inclusiv.
 void update_bucket_of(int pos) {
   int start = pos / BUCKET_SIZE * BUCKET_SIZE;
   int end = min(start + BUCKET_SIZE, n);
