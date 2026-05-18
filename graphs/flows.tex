@@ -185,3 +185,104 @@ $$|f| = f(S, T) = \sum_{u \in S} \sum_{v \in T} f(u, v) - \sum_{u \in S} \sum_{v
 Implementarea (care rezolvă problema \href{https://www.nerdarena.ro/problema/mincut}{Mincut} pe NerdArena) cere doar 1\% efort suplimentar după găsirea fluxului maxim. Ultimul BFS, cel care constată că destinația $t$ nu mai este accesibilă, lasă în cîmpul parent valori pozitive pentru nodurile accesibile, dar valoarea specială NONE pentru noduri inaccesibile. Trebuie doar să tipărim muchiile care unesc noduri accesibile cu noduri inaccesibile.
 
 Există totuși un detaliu semnificativ. Să considerăm figura 24.6 din Cormen. Fluxul maxim este 23. În ultima rețea reziduală, tăietura este $S = \{s, v_1, v_2, v_4\}$ și $T = \{v_3, t\}$. Dar suma muchiilor care traversează tăietura este $12 + 9 + 7 + 4 = 32$. De unde apare discrepanța? Este important să ne amintim că pe muchia $v_3, v_2$ nu circulă flux de valoare 9, ci avem o capacitate de 9, nefolosită! Prin contrast, pe muchiile $12 + 7 + 4$ chiar circulă flux. Cu alte cuvinte, este vital să adunăm doar fluxul efectiv (muchii originale saturate), nu capacitățile reziduale pe care le stocăm de regulă în noduri.
+
+
+\section{Algoritmul lui Dinic}
+
+Algoritmul lui Dinic (\href{https://en.wikipedia.org/wiki/Yefim_Dinitz}{Yefim Dinitz}, 1970) este anterior algoritmului Edmonds-Karp (1972), dar a devenit popular mai tîrziu decît acesta din urmă. Acest lucru se întîmpla des în timpul Războiului rece, din cauza izolării dintre URSS și Occident. Vezi algoritmul criptografic \href{https://en.wikipedia.org/wiki/RSA_cryptosystem}{RSA} pentru un caz similar.
+
+Ca resurse suplimentare, vă recomand \href{https://cp-algorithms.com/graph/dinic.html}{CP Algorithms} și \href{https://en.wikipedia.org/wiki/Dinic\%27s_algorithm}{Wikipedia}, de unde vom folosi imaginile.
+
+Algoritmii lui Dinic și Edmonds-Karp au în comun ideea drumurilor celor mai scurte (găsite cu BFS). În plus, algoritmul lui Dinic introduce trei noțiuni pentru a atinge o complexitate mai bună, respectiv $\bigoh(n^2 m)$ față de $\bigoh(n m^2)$ cu Edmonds-Karp.
+
+\begin{definition}[Muchie admisibilă]
+  O muchie admisibilă într-o rețea de flux este o muchie care se îndepărtează de sursă. Cu alte cuvinte, este o muchie pe care distanța nodurilor crește cu 1 sau, echivalent, o muchie care face parte dintr-un drum minim de la $s$.
+\end{definition}
+
+\begin{definition}[Rețea pe niveluri]
+Rețeaua pe niveluri (engl. \textit{level graph}, \textit{layered network}) a unei rețele reziduale $G_f$ este un subgraf al lui $G_f$ în care păstrăm doar muchiile admisibile.
+\end{definition}
+
+\begin{definition}[Blocaj de flux]
+Un blocaj de flux (engl. \textit{blocking flow}) este un flux care deconectează $s$ de $t$ în rețeaua pe niveluri\footnote{Clarificare: Vă reamintesc că un singur drum de creștere nu deconectează obligatoriu $s$ de $t$. După cum arată și optimizarea pentru Edmonds-Karp propusă de Infoarena, pentru un BFS calculat pot exista mai multe drumuri de creștere disjuncte. Un blocaj de flux este o colecție maximală de drumuri de creștere.}.
+\end{definition}
+
+Algoritmul lui Dinic este, pur și simplu:
+
+\begin{algorithm}[H]
+  \caption{Algoritmul lui Dinic}
+  \begin{algorithmic}[1]
+    \While{$d[t] < \infty$}
+      \State calculează rețeaua pe niveluri, $G_L$
+      \State caută un blocaj de flux
+      \State augmentează fluxul total cu acel blocaj
+      \State refă rețeaua reziduală
+    \EndWhile
+  \end{algorithmic}
+\end{algorithm}
+
+
+În practică, noi procedăm mai simplu. Nu construim explicit rețeaua pe niveluri, ci menținem aceeași rețea reziduală ca în toți algoritmii anteriori. Calculăm distanțele BFS exact ca în algoritmul Edmonds-Karp. Doar ne impunem ca, la iterația curentă, să nu pompăm flux decît pe acele muchii pe care distanțele BFS cresc cu 1.
+
+\subsection{Demonstrație de corectitudine}
+
+Dacă nu mai există drumuri de la $s$ la $t$ în rețeaua pe niveluri $G_L$, atunci nu mai există drumuri nici în rețeaua reziduală $G_f$. De ce? Să presupunem prin absurd că ar mai exista un drum $p$ în $G_f$. Atunci există unul sau mai multe noduri în $p$ unde distanța rămîne constantă sau scade față de nodul anterior. Dar, pentru fiecare astfel de nod, putem construi un alt prefix unde distanțele chiar cresc cu 1 la fiecare pas. Acel drum ar fi în $G_L$, ceea ce contrazice presupunerea. Rezultă că nu mai există drumuri în $G_f$, deci fluxul găsit pînă la acel moment este maxim.
+
+\subsection{Găsirea unui blocaj de flux}
+
+Linia 2 a algoritmului de mai sus o implementăm cu un BFS, ca și în cazul lui Edmonds-Karp. BFS-ul doar calculează distanțele, nimic altceva. Liniile 3-5 le implementăm cu un DFS care amintește un pic de implementarea naivă de Ford-Fulkerson (cea în $\bigoh(m\cdot |f|)$. Repetăm acest DFS cît timp mai putem pompa flux de la $s$ la $t$.
+
+Am inclus o implementare completă la problema \hyperref[problem:download-speed]{Download Speed}.
+
+\subsection{Calculul complexității}
+
+Vom calcula complexitatea unei faze (liniile 2-5), apoi vom calcula numărul maxim de faze necesare.
+
+\subsubsection*{Complexitatea unei faze}
+
+BFS-ul durează, în mod evident, $\bigoh(m)$. Ce putem spune despre DFS? La prima vedere, fiecare rulare a DFS-ului durează $\bigoh(m)$ și saturează cel puțin o muchie. Aceasta ar duce la o complexitate a fiecărei faze de $\bigoh(m^2)$. Dar putem calcula o limită mai strînsă folosind analiza amortizată.
+
+
+\begin{itemize}
+  \item Clasificăm parcurgerile de muchii în DFS ca \textbf{avansuri} (reapelare DFS), \textbf{augmentări} (revenire de pe o cale pe care am pompat flux) și \textbf{retrageri} (revenire de pe o cale pe care nu am pompat flux).
+
+  \item Avansurile sînt amortizate de augmentări sau de retrageri, deci nu trebuie contorizate.
+
+  \item La o retragere, distrugem acea muchie, în sensul că nu o mai revizităm, căci știm că nu duce nicăieri. Așadar, există cel mult $m$ retrageri.
+
+  \item Fiecare cale găsită saturează cel puțin o muchie. Căile au lungime cel mult $n$, deci pentru fiecare $n$ augmentări, o muchie devine saturată și dispare din graf. Așadar, pot exista cel mult $mn$ augmentări.
+
+  \item Rezultă că complexitatea găsirii unui blocaj, care dictează complexitatea unei faze, este $\bigoh(mn)$.
+\end{itemize}
+
+La implementare, pentru fiecare nod, reținem un pointer în lista de adiacență care este global (se păstrează între DFS-urile aceleiași faze). La vizitarea unui nod, păstrăm pointerul dacă pompăm flux pe muchie (căci poate  mai folosim acea muchie), dar îl avansăm dacă \textbf{nu} pompăm flux pe muchie.
+
+\subsubsection*{Numărul de faze}
+
+Știm de la algoritmul Edmonds-Karp că distanțele nodurilor față de sursa $s$ nu scad. În fapt, la algoritmul lui Dinic putem demonstra că distanța de la $s$ la $t$ crește cu cel puțin 1 la fiecare fază. Demonstrația aceasta este mai completă decît cea de pe CP Algorithms și procedează astfel:
+
+\begin{enumerate}
+  \item Să considerăm rețeaua reziduală în două faze consecutive, $G_f$ și $G_{f'}$.
+
+  \item Poate apărea o muchie nouă $(u,v)$ doar dacă în $G_f$ am pompat flux de la $v$ spre $u$. Iar, dat fiind că Dinic pompează flux doar pe muchii admisibile (în sensul crescător al distanțelor), rezultă că muchia $(v, u)$ era admisibilă, iar $(u, v)$ nu era admisibilă în $G_f$. Generalizînd, orice muchii nou apărute în $G_{f'}$ nu erau admisibile în $G_f$.
+
+  \item Dacă mai există vreun drum de la $s$ la $t$ în $G_{f'}$, înseamnă că undeva pe acel drum există o muchie nou apărută, deci care era inadmisibilă în $G_f$.
+
+  \item Cu alte cuvinte, acest drum „pierde” un timp față de drumul anterior, cel din $G_f$, mergînd pe o muchie care nu avansează în graful BFS.
+
+  \item Pentru a recupera acest timp și a păstra distanța $s-t$ în $G_{f'}$ egală cu cea din $G_f$, ar trebui ca drumul să crească distanța cu 2 altundeva.
+
+  \item Dar aceasta este imposibil, căci distanța BFS pe orice muchie crește cu cel mult 1.
+\end{enumerate}
+
+Rezultă că pot exista cel mult $n$ faze, deci complexitatea totală este $\bigoh(mn^2)$.
+
+\subsection{Lectură suplimentară}
+
+Direcții de explorat, pentru cei interesați:
+
+\begin{itemize}
+  \item \href{https://cp-algorithms.com/graph/min_cost_flow.html}{Fluxul maxim de cost minim}
+
+  \item Algoritmi de flux de tip \href{https://cp-algorithms.com/graph/push-relabel.html}{push-relabel}, dacă vă este dor de Tarjan. Sînt o clasă de algoritmi cu o abordare diferită de cea studiată (drumuri de creștere).
+\end{itemize}

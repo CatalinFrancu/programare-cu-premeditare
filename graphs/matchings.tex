@@ -1,0 +1,173 @@
+\chapter{Cuplaje în grafuri bipartite}
+
+\section{Definiții}
+
+\begin{definition}[Graf bipartit]
+  Un graf bipartit este un graf a cărui mulțime de noduri constă din două submulțimi, $V = L \cup R$, astfel încît toate muchiile duc din $L$ în $R$.
+\end{definition}
+
+\begin{definition}[Cuplaj într-un graf bipartit]
+  Un cuplaj într-un graf bipartit este o colecție de muchii astfel încît orice vîrf să apară în cel mult una dintre muchii.
+\end{definition}
+
+\begin{definition}[Cuplaj maximal]
+  Un cuplaj maximal este un cuplaj care nu mai poate fi extins cu nicio altă muchie din $E$.
+\end{definition}
+
+\begin{definition}[Cuplaj maxim]
+  Un cuplaj maxim este un cuplaj de cardinalitate maximă.
+\end{definition}
+
+\section{Modelarea ca problemă de flux}
+
+Similar problemelor din capitolul de fluxuri, putem modela cuplajul maxim ca problemă de flux dacă extindem graful cu următoarele elemente:
+
+\begin{enumerate}
+  \item Un nod sursă, $s$.
+  \item Muchii de la $s$ la fiecare nod din $L$, de capacitate 1.
+  \item Un nod destinație, $t$.
+  \item Muchii de la fiecare nod din $R$ la $t$, de capacitate 1.
+  \item Muchiile originale dintre $L$ și $R$ pot avea orice capacitate între 1 și $\infty$ (nu contează, căci oricum primesc doar 1 din $s$).
+\end{enumerate}
+
+Pe acest graf calculăm fluxul maxim de la $s$ la $t$. Fiecare unitate de flux va urma o cale compusă din exact trei muchii. Muchia din centru va traversa din $L$ în $R$ și o vom socoti parte din cuplaj. Cuplajul astfel obținut este maxim.
+
+Explicația intuitivă este că forțăm fiecare nod din $L$ să fie cuplat cu cel mult un nod din $R$ și viceversa. Ele nu pot fi cuplate cu mai multe noduri, întrucît primesc cel mult o unitate de flux din $s$, respectiv transportă cel mult o unitate de flux înspre $t$.
+
+\section{Căi alternante}
+
+Iată și cîțiva termeni specifici cuplajelor. Îi veți regăsi în articole. Sînt doar adaptări ale denumirilor specifice fluxurilor. Fie un cuplaj $C$ (așadar o colecție de muchii disjuncte pe vîrfuri).
+
+\begin{definition}[Nod cuplat]
+  Un nod se numește cuplat dacă are o muchie adiacentă din $C$. Altfel se numește necuplat.
+\end{definition}
+
+\begin{definition}[Cale alternantă]
+  O cale alternantă este o cale care traversează alternativ muchii din $C$ și din $E - C$.
+\end{definition}
+
+\begin{definition}[Drum de creștere]
+  Un drum de creștere este o cale alternantă ale cărei primă și ultimă muchie fac parte din $E - C$.
+\end{definition}
+
+Observăm că drumurile de creștere au un număr impar de muchii. Ele încep și se termină cu noduri necuplate din aceeași mulțime ($L$ sau $R$).
+
+Pentru un drum de creștere $P$, putem obține un nou cuplaj luînd diferența simetrică $C' = C \oplus P$ (diferența simetrică constă din toate elementele care sînt în $C$ sau în $P$, dar nu în ambele). Cu alte cuvinte, pentru a obține $C'$ eliminăm din $C$ toate muchiile de pe cale și le adăugăm pe celelalte. Mulțimea $C'$ este și ea un cuplaj (se verifică ușor) și conține cu o muchie în plus.
+
+Prin fix același raționament observăm că, dacă $P$ nu este o singură cale, ci o colecție de $k$ căi disjuncte pe vîrfuri, atunci $C \oplus P$ este un cuplaj de cardinalitate $|C| + k$.
+
+\section{Algoritmul Hopcroft-Karp}
+
+Algoritmul lui Dinic, adaptat la grafuri bipartite, funcționează în $\bigoh(m \sqrt{n})$ și poartă numele Hopcroft-Karp. Vedeți ce simple sînt fluxurile și cuplajele? \emoji{slightly-smiling-face}
+
+Algoritmul Hopcroft-Karp este formulat în termenii secțiunii anterioare:
+
+\begin{enumerate}
+  \item Pornește cu $C = \emptyset$.
+  \item Cît timp se poate, găsește o colecție maximală $P$ de căi alternante în sensul crescător al distanțelor și adaugă colecția la $C$.
+\end{enumerate}
+
+La pasul 2 recunoaștem, de fapt, noțiunea de \textbf{blocaj de flux} din algoritmul lui Dinic. Singura diferență este că rețeaua pe niveluri are o formă particulară în grafurile bipartite. Ea constă din căi alternante.
+
+\subsection{Analiză de complexitate}
+
+La prima vedere, algoritmul Hopcroft-Karp are complexitatea $\bigoh(mn)$: cuplajul maxim poate avea valoarea $\min(|L|, |R|) = \bigoh(n)$, deci pot exista $\bigoh(n)$ faze. Într-o fază, găsirea unei colecții de căi alternante durează $\bigoh(m + n)$ deoarece DFS-ul nu va vizita de două ori aceeași muchie.
+
+De fapt, putem da o limită mult mai puternică. Dacă facem căutarea căilor alternante cu BFS în rețeaua pe niveluri, atunci numărul de faze poate fi cel mult $2 \sqrt{n}$. \href{https://en.wikipedia.org/wiki/Hopcroft\%E2\%80\%93Karp_algorithm#Analysis}{Demonstrația} este mai simplă decît pare, căci refolosim ce știm de la algoritmul lui Dinic:
+
+\begin{enumerate}
+  \item Distanța de la $s$ la $t$ crește cu cel puțin 1 la fiecare fază, deci după $\sqrt{n}$ faze orice cale viitoare de la $s$ la $t$ va avea distanță mai mare decît $\sqrt{n}$.
+
+  \item După $\sqrt{n}$ faze, ce se mai poate întîmpla pînă la găsirea cuplajului maxim? Mai putem găsi un număr de drumuri de creștere, disjuncte pe vîrfuri, de lungime cel puțin $\sqrt{n}$. De aceea, există cel mult $\sqrt{n}$ astfel de drumuri, deci algoritmul va dura cel mult încă $\sqrt{n}$ faze.
+\end{enumerate}
+
+\subsection{Detalii de implementare}
+
+Implementarea este particularizată pentru grafuri bipartite și diferă mult de cea a algoritmului lui Dinic:
+
+\begin{enumerate}
+  \item Nu mai extinde graful cu $s$ și $t$.
+
+  \item Nu mai dublează muchiile ca la grafurile neorientate.
+
+  \item Nu mai construiește muchii reziduale.
+
+  \item Așadar, ține efectiv $m$ muchii grupate în liste de adiacență doar pentru nodurile din stînga.
+
+  \item Nodurile drepte au ca unică informație un cîmp \texttt{pair}: nodul stîng cu care sînt cuplate printr-o muchie sau 0 pentru nodurile necuplate.
+
+  \item Nodurile stîngi au și ele cîmpul \texttt{pair} (nodul drept cu care sînt cuplate), plus lista de adiacență, plus un cîmp de distanță pentru BFS.
+\end{enumerate}
+
+Aceste informații sînt suficiente pentru a rula algoritmii BFS și DFS specifici lui Dinic / Hopcroft-Karp. Problema \hyperref[problem:school-dance]{School Dance} conține o implementare de referință.
+
+(Menționez cu tristă veselie că unul dintre \href{https://codeforces.com/blog/entry/93824}{primele rezultate} la căutarea \textit{[Hopcroft-Karp implementation]} conține un link la cod necitibil, pe care autorul îl consideră \textit{easy to follow}. Dacă nu vă veți aminti nimic altceva din acest cerc, amintiți-vă doar să vă feriți de acest stil de codare.)
+
+\section{Algoritmul lui Kuhn}
+
+\href{https://cp-algorithms.com/graph/kuhn_maximum_bipartite_matching.html}{Algoritmul lui Kuhn} este mai slab din punct de vedere al complexității: $\bigoh(mn)$. Totuși, el este foarte ușor de implementat, așa că îl menționăm:
+
+\begin{algorithm}[H]
+  \caption{Algoritmul lui Kuhn}
+  \begin{algorithmic}[1]
+    \State inițializează un cuplaj vid
+    \For{fiecare nod $u$ din mulțimea stîngă}
+      \State caută cu DFS un drum de creștere care pornește din $u$
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{Detalii de implementare}
+
+Problema \hyperref[problem:school-dance]{School Dance} conține o implementare completă. Algoritmul lui Kuhn stochează, pe lîngă lista de adiacență, doar două informații:
+
+\begin{enumerate}
+  \item Pentru fiecare nod drept, perechea sa din stînga (sau NIL dacă nodul nu este cuplat).
+  \item Pentru fiecare nod stîng, un bit de vizitare.
+\end{enumerate}
+
+În esență, algoritmul lui Kuhn implementează metoda Ford Fulkerson cu DFS. Observăm că, în bucla \ccode{for}, nu este necesar să omitem explicit nodurile stîngi deja cuplate. Ele nu vor putea fi cuplate a doua oară, deoarece au cîmpul de vizitare deja marcat, deci DFS-ul le va ocoli.
+
+\section{Teorema lui Kőnig}
+
+Trebuie să acoperim, măcar în treacăt, și acest subiect, pentru că se leagă de cele discutate pînă acum. Nu vom include decît o schiță de demonstrație și nu vom face aplicații, dar sper să vă ajute să recunoașteți conceptul dacă vă veți întîlni cu el.
+
+\begin{definition}[Acoperire cu vîrfuri]
+  O acoperire cu vîrfuri a unui graf (engl. \textit{vertex cover}) este un set de vîrfuri $C$ cu proprietatea că orice muchie $e \in E$ are cel puțin un capăt în $C$.
+\end{definition}
+
+\begin{definition}[Acoperire minimă cu vîrfuri]
+  O acoperire minimă cu vîrfuri (engl. \textit{MVC, minimum vertex cover}) este o acoperire cu număr minim de noduri.
+\end{definition}
+
+În grafuri generale, găsirea unei acoperiri minime este o problemă NP-hard. În grafuri bipartite, însă, putem găsi o soluție folosind \href{https://en.wikipedia.org/wiki/K\%C5\%91nig\%27s_theorem_(graph_theory)}{Teorema lui Kőnig}:
+
+\begin{theorem}[Teorema lui Kőnig]
+  În orice graf bipartit, mărimea cuplajului maxim este egală cu mărimea acoperirii minime cu vîrfuri.
+\end{theorem}
+
+Dacă vedeți o similitudine cu teorema flux maxim - tăietură minimă, aveți dreptate! Vom urmări demonstrația de pe \href{https://en.wikipedia.org/wiki/K\%C5\%91nig\%27s_theorem_(graph_theory)#Constructive_proof}{Wikipedia}, care pornește de la reducerea cuplajului maxim la problema fluxului maxim. Vom împrumuta imaginea din această demonstrație și vom detalia pașii demonstrației.
+
+\begin{itemize}
+  \item Se demonstrează ușor că orice acoperire este mai mare sau egală cu orice cuplaj. Orice cuplaj de mărime $k$ constă din $k$ muchii distincte pe noduri. Pentru a „vedea” cele $k$ muchii, orice acoperire trebuie să selecteze cel puțin $k$ noduri.
+
+  \item De aceea, dacă putem da un exemplu de cuplaj \textbf{egal} cu o acoperire, atunci cuplajul este maxim, iar acoperirea este minimă.
+
+  \item Dat fiind un cuplaj maxim, vom deriva o acoperire minimă, trecînd prin intermediul tăieturii minime.
+
+  \item Ca și la flux, alegem tăietura $S-T$ în care $S$ constă din nodurile încă accesibile din $s$.
+
+  \item Definim capacități infinite pe muchiile $A-B$, ceea ce știm că nu dăunează (nodurile din $A$ primesc oricum doar o unitate de flux din $s$).
+
+  \item Astfel este evident că nu există muchii din $A_S$ în $B_T$: dacă ar exista, atunci tăietura $S-T$ ar avea capacitate infinită, or noi știm că ea este egală cu cuplajul maxim, care este desigur finit.
+
+  \item (Un alt argument este că noi știm, din lecția de fluxuri, că orice muchii din $S$ în $T$ sînt saturate, ceea ce este imposibil cînd capacitatea este infinită.)
+
+  \item Graful este orientat, deci nu există nici muchii de la $B_S$ la $A_T$.
+
+  \item Și atunci care este capacitatea tăieturii? Este capacitatea muchiilor care traversează tăietura, adică $(s, u)$ unde $u \in A_T$ sau $(v, t)$  unde $v \in B_S$. Rezultă că și valoarea fluxului maxim este $|A_T| + |B_S|$.
+
+  \item Apoi alegem submulțimea $A_T \cup B_S$ și demonstrăm că ea acoperă toate muchiile grafului bipartit. Într-adevăr, singura combinație de submulțimi neacoperite este $(u, v)$ cu $u \in A_S$ și $v \in B_T$, între care am demonstrat mai sus că nu există muchii.
+
+  \item Fiind egală cu cuplajul maxim, acoperirea $A_T \cup B_S$ este minimă.
+\end{itemize}

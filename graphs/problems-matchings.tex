@@ -1,0 +1,219 @@
+\section{Probleme}
+
+\subsection{Problema School Dance (CSES)}
+\label{problem:school-dance}
+
+\href{https://cses.fi/problemset/task/1696}{enunț}
+$\bullet$
+\hyperref[code:school-dance]{surse}
+
+Problema este educațională și necesită aflarea cuplajului maxim.
+
+
+\subsection{Problema Valuable Paper (Codeforces)}
+\label{problem:valuable-paper}
+
+\href{https://codeforces.com/contest/1423/problem/B}{enunț}
+$\bullet$
+\hyperref[code:valuable-paper]{sursă}
+
+Problema ne dă un graf cu valori pe muchii (nu capacități) și ne întreabă care este cea mai mică valoare $d$ pentru care, selectînd doar muchiile cu valori $\leq d$, putem găsi un cuplaj maxim. Este nevoie să ne vină ideea căutării binare: căutăm binar cea mai mică valoare suficientă. Pentru o greutate fixată, $d$, ne întrebăm: există un cuplaj maxim care folosește doar muchii de greutate $\leq d$?
+
+Vă reamintesc (pe scurt): pentru ca problema să fie rezolvabilă cu căutare binară, trebuie ca o soluție pentru $d$ să garanteze existența soluțiilor pentru orice $d' > d$. Cu alte cuvinte, șirul boolean
+
+$$E_d = 1 \; \textrm{dacă și numai dacă există un cuplaj maxim cu muchii de valoare} \; \leq d$$
+
+trebuie să aibă forma $0, 0, 0, \dots, 0, 1, \dots, 1, 1, 1$. Nu uitați să verificați acest lucru! Dacă problema nu are această proprietate, atunci nu putem căuta binar soluția optimă.
+
+\subsubsection*{Detalii de implementare}
+
+Este nevoie de Hopcroft-Karp, căci $n$ este mare.
+
+Căutarea binară trebuie să trateze situația în care nu există cuplaj nici măcar folosind toate muchiile. Și în aceste condiții, încă putem să scriem codul standard, cu un singur \ccode{while} și un singur \ccode{if}.
+
+Putem căuta binar doar în cele $m$ muchii date. Nu este nevoie să căutăm în tot spațiul de greutăți. Diferența este semnificativă ($10^5$ față de $10^9$, deci raportul logaritmilor este 5:9).
+
+Putem să sortăm muchiile după greutate și să adăugăm o santinelă infinită la sfîrșitul fiecărei liste de adiacență. Atunci fiecare iterație de BFS și DFS va funcționa în $\bigoh(m_d)$ (mulțimea muchiilor de greutate $\leq d$), nu în $\bigoh(m)$.
+
+Puteți ține multe valori pe \ccode{short}, ceea ce ajută cache-ul.
+
+
+\subsection{Problema Teroriști (Baraj ONI 2010)}
+\label{problem:teroristi}
+
+\href{https://kilonova.ro/problems/1777}{enunț}
+$\bullet$
+\hyperref[code:teroristi]{sursă}
+
+Sumarul problemei este: Se dau $m$ cartonașe cu două fețe care au pe fiecare față cîte o literă. Se mai dă un mesaj de $n \leq m$ litere. Să se compună mesajul folosind cartonașele.
+
+Reducerea la cuplaj este relativ directă, dar este insuficientă: creăm $m + n$ noduri pentru cartonașe și pentru litere. Trasăm muchii de la fiecare cartonaș $(a, b)$ la toate instanțele literelor $a$ și $b$ din mesaj. Calculăm cuplajul maxim. Dar algoritmul Hopcroft-Karp va fi, probabil, prea lent.
+
+Putem, în schimb, să grupăm toate cartonașele identice și să le calculăm frecvența. Similar, calculăm frecvența fiecărei litere din mesaj. Astfel obținem cel mult $26 \times 27 / 2 = 351$ noduri în stînga și 26 în dreapta, pe care calculăm fluxul maxim.
+
+Implementarea este interesantă, căci ne cere și să enumerăm muchiile fluxului.
+
+
+\subsection{Problema Brevity Is the Soul of Wit (Codeforces)}
+\label{problem:brevity-is-the-soul-of-wit}
+
+\href{https://codeforces.com/contest/120/problem/H}{enunț}
+$\bullet$
+\hyperref[code:brevity-is-the-soul-of-wit]{sursă}
+
+Problema ne dă la intrare $n \leq 200$ șiruri între 1 și 10 caractere și ne cere să înlocuim fiecare șir cu o prescurtare a sa obținută astfel:
+
+\begin{itemize}
+  \item Prescurtarea trebuie să constituie un subșir (eventual pe sărite) al șirului original.
+
+  \item Prescurtarea trebuie să aibă între una și patru litere.
+
+  \item Cele $n$ prescurtări trebuie să fie distincte.
+\end{itemize}
+
+Fiind la capitolul de fluxuri și cuplaje, sînt sigur că v-a venit tuturor ideea să creăm un graf bipartit: în stînga cele $n$ șiruri inițiale, iar în dreapta cele $26^4 + 26^3 + 26^2 + 26^1 \approx 500\ 000$ de prescurtări posibile. Pe acest graf căutăm un cuplaj de mărime $n$.
+
+Dacă graful are $500\ 000$ de noduri, cum se face că algoritmii lui Kuhn sau Hopcroft-Karp sînt suficienți? Răspunsul este că acești algoritmi depind asimptotic de \textbf{numărul de noduri din stînga}, nu de cel total. Numărul de noduri din dreapta influențează totuși memoria, căci avem nevoie să reținem pentru fiecare nod din dreapta dacă este cuplat și cu cine.
+
+Pentru simplificarea reprezentării, eu am codificat prescurtările în baza 27, unde 0 înseamnă „cifră nefolosită”, iar 1-26 înseamnă \texttt{'a'...'z'}. Pentru descifrarea soluției,
+
+\begin{itemize}
+  \item luăm indicele nodului din dreapta cuplat cu fiecare nod din stînga;
+  \item extragem naiv cifrele acelui nod, de la cea mai puțin semnificativă;
+  \item răsturnăm șirul obținut pentru a-l afișa în ordinea corectă.
+\end{itemize}
+
+
+\subsection{Problema Access Levels (Codeforces)}
+\label{problem:access-levels}
+
+\href{https://codeforces.com/contest/1765/problem/A}{enunț}
+$\bullet$
+\hyperref[code:access-levels]{sursă}
+
+Problema este dură, dar indiciul că se reduce la flux sau cuplaj ne ajută mult.
+
+Să începem cu un exemplu simplu (exemplele din enunț ne pun deja pe direcția bună). Fie documentele $A, B, C, D$ și mulțimile de utilizatori care au acces la ele $U_A, U_B, U_C, U_D$. Dacă $U_D \subset U_C \subset U_B \subset U_A$, atunci putem pune toate documentele într-un singur grup, astfel:
+
+\begin{itemize}
+  \item Inițial toți utilizatorii au nivel 1. Nivelele documentelor din grup vor începe de la 2, astfel că implicit niciun utilizator nu poate vedea niciun document din grup.
+
+  \item Acordăm nivelul 2 documentului $A$ și utilizatorilor din $U_A$.
+
+  \item Acordăm nivelul 3 documentului $B$ și utilizatorilor din $U_B$.
+
+  \item Acordăm nivelul 4 documentului $C$ și utilizatorilor din $U_C$.
+
+  \item Acordăm nivelul 5 documentului $D$ și utilizatorilor din $U_D$.
+\end{itemize}
+
+Documentele ale căror mulțimi de utilizatori nu se includ una într-alta nu pot face parte din același grup. Să presupunem prin absurd că punem două astfel de documente, $A$ și $B$, în același grup $G$ și să presupunem fără a restrînge generalitatea că $l[A] \geq l[B]$. Atunci toți utilizatorii din $U_A$ trebuie să aibă un nivel de acces în $G$ de cel puțin $l[A]$ pentru a putea vedea documentul $A$. Prin ipoteză, $\exists x \in U_A - U_B$, iar acel $x$ va avea un nivel $l[x] \geq l[A] \geq l[B]$, suficient ca să vadă documentul $B$, deși n-ar trebui.
+
+Rezultă că putem modela problema într-un graf de documente în care există o muchie de la $A$ la $B$ dacă și numai dacă $U_A \subseteq U_B$. Dacă $U_A = U_B$, atunci tragem muchia de la documentul cu indice mai mic spre documentul cu indice mai mare. Astfel ne asigurăm că graful este aciclic.
+
+În acest graf, orice cale reprezintă un grup de documente care pot sta în același grup. Căile reprezintă grupuri distincte, așadar orice două căi alegem trebuie să fie disjuncte pe vîrfuri. Căutăm să alegem un set de căi de cardinal minim care să acopere toate vîrfurile. Cum facem asta? Nu pare să fie nici o problemă de fluxuri, nici una de cuplaje.
+
+\href{https://en.wikipedia.org/wiki/Maximum_flow_problem#Minimum_path_cover_in_directed_acyclic_graph}{Reducerea este cunoscută}. Avem șanse să o reinventăm independent dacă ne amintim de principiul cu care ne-am întîlnit la temă: dublarea vîrfurilor. Creăm un graf bipartit cu documentele dublate pe două coloane $L$ și $R$, iar dacă documentul $i$ este inclus în documentul $j$, atunci trasăm muchie de la $L_i$ la $R_j$. În acest graf bipartit, o incluziune de documente $U_D \subset U_C \subset U_B \subset U_A$ se traduce în cuplajul $(L_A, R_B), (L_B, R_C), (L_C, R_D)$. Căile pot avea lungime 0 dacă un document este singurul membru al unui grup (nu include și nu este inclus în alte documente).
+
+Pentru a găsi un număr cît mai mic de căi, să observăm că fiecare cale are un sfîrșit, adică un document care nu mai este inclus în alte documente, adică un nod $L_i$ care nu este cuplat cu niciun nod din $R$. Deci pentru a minimiza numărul de căi trebuie să minimizăm numărul de sfîrșituri de cale, deci să minimizăm numărul de noduri necuplate... adică să găsim un cuplaj maxim.
+
+Restul sînt detalii de gestiune a documentelor și a utilizatorilor în implementare. Sursa mea este inspirată din \href{https://codeforces.com/blog/entry/109642}{tutorial}, dar nădăjduiesc că este ceva mai clară.
+
+
+\subsection{Problema Pswap (Baraj ONI 2021)}
+\label{problem:pswap}
+
+\href{https://kilonova.ro/problems/78}{enunț}
+$\bullet$
+\hyperref[code:pswap]{sursă}
+
+Această problemă are două componente, ambele interesante: (1) construcția grafului și (2) rezolvarea problemei de grafuri. Graful indus este cel în care fiecărei permutări îi corespunde un nod, iar între oricare două permutări similare există o muchie.
+
+\subsubsection*{Construcția grafului}
+
+Ca să trasăm muchiile grafului, dorim ca pentru fiecare pereche de permutări să verificăm dacă ele sînt la o transpoziție distanță. O condiție necesară și suficientă este ca permutările să difere pe exact două poziții. De aceea, toate abordările pe care le cunosc funcționează astfel:
+
+\begin{enumerate}
+  \item Află poziția primei diferențe, $i$.
+  \item Află poziția ultimei diferențe, $j$.
+  \item Verifică dacă permutările coincid pe porțiunea $[i+1, j-1]$.
+\end{enumerate}
+
+Pentru pasul (3) nu cunosc altă soluție decît cu hashing. Am ales metoda Rabin-Karp cu baza $B = \np{5113}$ și modulul $2^{32}$. Așadar, reprezentăm fiecare prefix al fiecărei permutări ca pe un număr în baza $B$, iar prin diferențe și înmulțiri putem calcula codul hash al oricărei subsecvențe.
+
+Pentru pașii (1) și (2) am încercat trei abordări. Le enumăr pe toate, ca fapt divers. Fie perechea curentă de permutări $p[i]$ și $p[j]$.
+
+\begin{enumerate}
+  \item Cea mai lentă: Caută binar prima și ultima diferență. Verifică dacă $p[i]$ și $p[j]$ coincid pe porțiunea dintre aceste poziții.
+  \item Mai rapidă: Caută binar doar prima diferență. Dacă $p[i][k] = x$ și $p[j][k] = y$, atunci fie $k'$ poziția lui $y$ în $p[i]$ (avem nevoie să stocăm și permutările inverse ca să îl aflăm ușor pe $k'$). Verifică dacă $p[i]$ și $p[j]$ coincid pe intervalele $[k + 1, k' - 1]$ și $[k' + 1, m]$.
+  \item Cea mai rapidă: Identifică prima diferență cu sortare ternară, apoi procedează ca mai sus.
+\end{enumerate}
+
+\href{https://en.wikipedia.org/wiki/Multi-key_quicksort}{Sortarea ternară} este un algoritm util pentru sortarea șirurilor de caractere, dar el se aplică și aici. Vom citi codul, dar esența este:
+
+\begin{algorithm}[H]
+  \caption{Sortarea ternară a unei colecții de permutări.}
+  \begin{algorithmic}[1]
+    \Procedure{SortareTernară}{$l$, $r$, $i$} \Comment{permutările $p[l \dots r)$ coincid pînă la poziția $i-1$}
+      \State alege un pivot $z$ dintre $p[k][i]$, $l \leq k < r$
+      \State partiționează permutările $p[l \dots r)$ în trei grupe:
+      \State \hspace{\algorithmicindent} $p[l \dots a)$ în care $p[k][i] < z$
+      \State \hspace{\algorithmicindent} $p[a \dots b)$ în care $p[k][i] = z$
+      \State \hspace{\algorithmicindent} $p[b \dots r)$ în care $p[k][i] > z$
+      \ForAll{$p[x]$ și $p[y]$ din grupe diferite}
+        \State $diff[x][y] \gets i$ \Comment{poziția primei diferențe}
+      \EndFor
+      \State \Call{SortareTernară}{$l$, $a$, $i$}
+      \State \Call{SortareTernară}{$a$, $b$, $i + 1$}
+      \State \Call{SortareTernară}{$b$, $r$, $i$}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+Căutarea binară a primei / ultimei diferențe este operația critică, de complexitate $\bigoh{n^2 \log m}$. De aceea înlocuirea ei cu sortarea ternară este considerabil mai rapidă.
+
+\subsubsection*{Calculul parității permutărilor}
+
+O mică subproblemă este să împărțim nodurile grafului în două mulțimi conform cu paritatea (semnul) permutărilor (vom vedea în secțiunea următoare de ce). Există două abordări.
+
+Varianta simplă este să evaluăm fiecare pereche de permutări ca mai sus. Cînd trasăm o muchie, știm automat că cele două permutări au parități diferite, deoarece \textbf{transpozițiile schimbă semnul permutărilor}.
+
+Varianta un pic mai lungă, dar mai eficientă, este să precalculăm paritățile, după care nu mai este nevoie să testăm similaritatea decît între perechi de permutări cu semne opuse. Semnul unei permutări este definit ca $-1^{inv}$, unde $inv$ este numărul de inversiuni. Știm cum să calculăm acest număr în $\bigoh(n \log n)$ cu mergesort sau cu un AIB. Dar putem folosi și o definiție echivalentă a semnului: $-1^{transp}$, unde $transp$ este numărul de transpoziții. Iar pe acesta îl putem calcula în $\bigoh(n)$. Iterăm prin ciclurile permutării; fiecare ciclu de lungime pară presupune un număr impar de transpoziții și invers.
+
+De exemplu, permutarea (3 6 4 5 7 8 1 9 2) este formată din ciclurile (1 3 4 5 7) și (2 6 8 9). Primul ciclu necesită 4 transpoziții, iar al doilea 3 transpoziții. Așadar, permutarea este impară.
+
+\subsubsection*{Algoritmul pe graful indus}
+
+Odată construit graful, problema cere să găsim \href{https://en.wikipedia.org/wiki/Independent_set_(graph_theory)}{setul independent maxim}. Complementar, dacă am trasa muchii între permutările nesimilare, atunci problema ar cere să găsim clica maximă. Ambele probleme sînt NP-hard pe grafuri generale.
+
+Aici este momentul în care intuiția și o doză de matematică ne sînt de ajutor. Dacă orice muchie există doar între o permutare pară și una impară, înseamnă că graful este bipartit! (Eu am ajuns la această concluzie pe o cale ocolită, observînd pe multe exemple că toate ciclurile au lungime pară).
+
+Pe un graf bipartit, gîndul ne zboară automat spre cuplaje. \textit{Dacă măcăne ca o rață...} Dar care este legătura între setul independent maxim și cuplajul bipartit? Mai avem nevoie să punem o cărămidă (mică) peste Teorema lui Kőnig.
+
+În orice graf, \textbf{orice set independent are drept complement o acoperire cu vîrfuri}. Într-adevăr, prin definiție un set independent $S$ are proprietatea că, la capetele oricărei muchii, se află cel mult un nod din set. Atunci complementul $V \setminus S$ are proprietatea că, la capetele oricărei muchii, se află cel puțin un nod din set. Aceasta este exact definiția acoperirii.
+
+De aceea, răspunsul la problemă este $n$ minus mărimea acoperirii minime a grafului, despre care Teorema lui Kőnig ne spune că este egală cu mărimea cuplajului maxim.
+
+Algoritmul lui Kuhn este suficient pentru punctaj maxim. De fapt, timpul soluției este dominat de citirea datelor (chiar și rapidă!) și de construirea grafului.
+
+\textbf{Demonstrație directă}: Pentru completitudine, includ și o demonstrație care nu apelează la Teorema lui Kőnig.
+
+Pasul 1. Fie $K$ un cuplaj maxim. Setul independent maxim, $S$, poate include cel mult un nod de pe fiecare muchie din cuplaj. Deci el este obligat să omită cel puțin $K$ noduri. Așadar, $S \leq N - K$.
+
+Pasul 2. Să presupunem că $S < N - K$. Atunci $S$ renunță la mai mult decît un nod de pe fiecare muchie din cuplaj. Există două cazuri și ambele duc la concluzia că, de fapt, cuplajul $K$ poate fi crescut.
+
+\begin{itemize}
+  \item Există un nod $u$ dintre cele $N - 2K$ necuplate care nu este în $S$. Ne întrebăm: de ce nu? În mod obligatoriu pentru că are $k \geq 1$ vecini $v_1, v_2, \dots, v_k$ care sînt în $S$. Dacă oricare $v_i$ ar fi și el necuplat, am putea extinde cuplajul cu muchia $(u, v_i)$. Deci fiecare $v_i$ este cuplat cu cîte un nod $w_i \not\in S$. Ce ne împiedică să le eliminăm pe $v_i$ din $S$ și să le adăugăm pe $u$ și pe $w_i$, ceea ce ar crește setul cu 1? Trebuie să fie adevărat că setul $w_i$ are alți vecini, cel puțin unul, $x_1, x_2, \dots, x_l \in S$. Repetăm procesul pînă cînd ajungem înapoi în mulțimea de seturi necuplate. Rezultă o cale de lungime impară, un drum de creștere care augmentează cuplajul cu o muchie.
+
+  \item Există o muchie dintre cele $K$ cuplate care nu are niciun capăt în $S$. Demonstrația este similară.
+\end{itemize}
+
+Din (1) și (2) rezultă că $S = N - K$.
+
+\subsubsection*{Observație}
+
+Consider că Pswap nu avea ce căuta la acest nivel de pregătire și cred că este bine că fluxurile nu mai fac parte din programa curentă decît la nivel de lot. Implementarea este „un simplu” cuplaj pe grafuri bipartite, dar ajungerea la această concluzie necesită noțiuni teoretice grele: fie teorema Min-Cut Max-Flow și teorema lui Kőnig, fie o înțelegere foarte solidă a fluxurilor.
+
+Cred că aceste probleme, în care algoritmii trebuie tociți fără demonstrație, duc la elevi rețetari, care pictează o implementare fără să înțeleagă de ce ea rezolvă problema. Această abordare este greșită. Olimpiadele vin și trec. Ce urmează după aceasta? Pe lume mai sînt și rovere marțiene și acceleratoare de particule și brațe robotice chirurgicale... nu putem să intuim software pentru toate.
+
+Mă bucur că în anii recenți s-au rărit problemele care merg la adîncimi exagerate pe această direcție oarecum arbitrară a fluxurilor și cuplajelor în grafuri. Dacă am permite aceasta, de ce nu și programare liniară? Algoritmi de aproximare? Criptografie? Ecuații diofantice? Geometrie computațională 3-D?
