@@ -222,7 +222,7 @@ Algoritmul lui Dinic este, pur și simplu:
 \end{algorithm}
 
 
-În practică, noi procedăm mai simplu. Nu construim explicit rețeaua pe niveluri, ci menținem aceeași rețea reziduală ca în toți algoritmii anteriori. Calculăm distanțele BFS exact ca în algoritmul Edmonds-Karp. Doar ne impunem ca, la iterația curentă, să nu pompăm flux decît pe acele muchii pe care distanțele BFS cresc cu 1.
+În practică, noi procedăm mai simplu. Nu construim explicit rețeaua pe niveluri, ci menținem aceeași rețea reziduală ca în toți algoritmii anteriori. Calculăm distanțele BFS exact ca în algoritmul Edmonds-Karp. Există două diferențe. Unu, în vreme ce Edmonds-Karp pompează flux doar pe muchiile de arbore BFS, Dinic pompează pe orice muchie pe care distanța BFS crește cu 1. Doi, Dinic caută mai multe drumuri de creștere, nu doar unul.
 
 \subsection{Demonstrație de corectitudine}
 
@@ -277,7 +277,7 @@ La implementare, pentru fiecare nod, reținem un pointer în lista de adiacenț�
 
 Rezultă că pot exista cel mult $n$ faze, deci complexitatea totală este $\bigoh(mn^2)$.
 
-\subsection{Lectură suplimentară}
+\section{Lectură suplimentară}
 
 Direcții de explorat, pentru cei interesați:
 

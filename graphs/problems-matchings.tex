@@ -134,9 +134,9 @@ Această problemă are două componente, ambele interesante: (1) construcția gr
 Ca să trasăm muchiile grafului, dorim ca pentru fiecare pereche de permutări să verificăm dacă ele sînt la o transpoziție distanță. O condiție necesară și suficientă este ca permutările să difere pe exact două poziții. De aceea, toate abordările pe care le cunosc funcționează astfel:
 
 \begin{enumerate}
-  \item Află poziția primei diferențe, $i$.
-  \item Află poziția ultimei diferențe, $j$.
-  \item Verifică dacă permutările coincid pe porțiunea $[i+1, j-1]$.
+  \item Află poziția primei diferențe, $a$.
+  \item Află poziția ultimei diferențe, $b$.
+  \item Verifică dacă permutările coincid pe porțiunea $[a+1, b-1]$.
 \end{enumerate}
 
 Pentru pasul (3) nu cunosc altă soluție decît cu hashing. Am ales metoda Rabin-Karp cu baza $B = \np{5113}$ și modulul $2^{32}$. Așadar, reprezentăm fiecare prefix al fiecărei permutări ca pe un număr în baza $B$, iar prin diferențe și înmulțiri putem calcula codul hash al oricărei subsecvențe.
@@ -170,13 +170,13 @@ Pentru pașii (1) și (2) am încercat trei abordări. Le enumăr pe toate, ca f
   \end{algorithmic}
 \end{algorithm}
 
-Căutarea binară a primei / ultimei diferențe este operația critică, de complexitate $\bigoh{n^2 \log m}$. De aceea înlocuirea ei cu sortarea ternară este considerabil mai rapidă.
+Căutarea binară a primei / ultimei diferențe este operația critică, de complexitate $\bigoh(n^2 \log m)$. De aceea înlocuirea ei cu sortarea ternară este considerabil mai rapidă.
 
 \subsubsection*{Calculul parității permutărilor}
 
 O mică subproblemă este să împărțim nodurile grafului în două mulțimi conform cu paritatea (semnul) permutărilor (vom vedea în secțiunea următoare de ce). Există două abordări.
 
-Varianta simplă este să evaluăm fiecare pereche de permutări ca mai sus. Cînd trasăm o muchie, știm automat că cele două permutări au parități diferite, deoarece \textbf{transpozițiile schimbă semnul permutărilor}.
+Varianta simplă este să evaluăm fiecare pereche de permutări ca mai sus. Cînd trasăm o muchie, știm automat că cele două permutări au parități diferite, deoarece \textbf{transpozițiile schimbă semnul permutărilor}. La final, facem un DFS pe graful indus în care colorăm nodurile cu două culori.
 
 Varianta un pic mai lungă, dar mai eficientă, este să precalculăm paritățile, după care nu mai este nevoie să testăm similaritatea decît între perechi de permutări cu semne opuse. Semnul unei permutări este definit ca $-1^{inv}$, unde $inv$ este numărul de inversiuni. Știm cum să calculăm acest număr în $\bigoh(n \log n)$ cu mergesort sau cu un AIB. Dar putem folosi și o definiție echivalentă a semnului: $-1^{transp}$, unde $transp$ este numărul de transpoziții. Iar pe acesta îl putem calcula în $\bigoh(n)$. Iterăm prin ciclurile permutării; fiecare ciclu de lungime pară presupune un număr impar de transpoziții și invers.
 
@@ -196,7 +196,7 @@ De aceea, răspunsul la problemă este $n$ minus mărimea acoperirii minime a gr
 
 Algoritmul lui Kuhn este suficient pentru punctaj maxim. De fapt, timpul soluției este dominat de citirea datelor (chiar și rapidă!) și de construirea grafului.
 
-\textbf{Demonstrație directă}: Pentru completitudine, includ și o demonstrație care nu apelează la Teorema lui Kőnig.
+\textbf{Demonstrație directă}: Pentru completitudine, iată și o demonstrație care nu apelează la Teorema lui Kőnig.
 
 Pasul 1. Fie $K$ un cuplaj maxim. Setul independent maxim, $S$, poate include cel mult un nod de pe fiecare muchie din cuplaj. Deci el este obligat să omită cel puțin $K$ noduri. Așadar, $S \leq N - K$.
 
