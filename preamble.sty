@@ -36,6 +36,7 @@
 \usepackage{amsthm}
 \theoremstyle{definition}
 \newtheorem{definition}{Definiția}
+\newtheorem*{notation}{Notație}
 \newtheorem{theorem}{Teorema}
 
 % For caption widths (the default seems to be \linewidth, which is ugly.
@@ -120,6 +121,7 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \usetikzlibrary{positioning}
 \usetikzlibrary{shapes.geometric}
 
-\newcommand{\backlink}[1]{\hyperref[problem:#1]{\tiChevronLeft \ înapoi}}
+\newcommand*{\backlink}[1]{\hyperref[problem:#1]{\tiChevronLeft \ înapoi}}
 \def\bigoh{\mathcal{O}}
-\newcommand{\ccode}[1]{\mintinline{c}{#1}}
+\newcommand*{\ccode}[1]{\mintinline{c}{#1}}
+\newcommand*{\defeq}{\stackrel{\text{def}}{=}}

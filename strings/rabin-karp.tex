@@ -1,0 +1,252 @@
+\chapter{Căutări în șiruri de caractere. Algoritmul Rabin-Karp}
+
+% image settings
+\tikzset{
+  col-index/.style={
+    color=black!50,
+    font=\scriptsize,
+    minimum size=20pt,
+  },
+  fading/.style={
+    draw=black,densely dotted,
+  },
+  green-bg/.style={
+    fill=green!10,
+  },
+  red-bg/.style={
+    fill=red!10,
+  },
+  square/.style={
+    anchor=center,
+    draw,
+    minimum size=20pt,
+    text height=1.5ex,
+    text depth=.25ex,
+  },
+}
+
+Căutarea unui subșir într-un șir înseamnă găsirea tuturor pozițiilor la care subșirul apare în șir. Să introducem câteva definiții și notații pentru restul acestei părți.
+
+
+\section{Terminologie}
+\label{sec:rabin-karp-terminology}
+
+\begin{definition}[Șir de caractere]
+  Un șir de caractere este un vector cu elemente de tip caracter.
+\end{definition}
+
+\begin{notation}
+  Vom nota cu $\Sigma$ alfabetul din care fac parte elementele șirului.
+\end{notation}
+
+În multe probleme de informatică, $\Sigma = \{ a, b, \dots, z\}$, dar ocazional alfabetul poate consta din 0 și 1, din litere mari etc.
+
+\begin{notation}
+  Vom nota cu $|S|$ lungimea șirului $S$.
+\end{notation}
+
+Vom opera pe șiruri C (\ccode{char*}), astfel că un șir de $n$ caractere își stochează informația pe pozițiile $0 \dots n-1$ și conține terminatorul \ccode{'\0'} pe poziția $n$. Codul poate fi ușor adaptat
+și pentru clasa C++ \ccode{string}.
+
+\begin{definition}[Apariții, deplasări]
+  Spunem că un subșir $P$ apare la poziția $k$ într-un șir $S$ dacă $|P| + k \leq |S|$ și $P[i] = S[i + k]$ pentru $0 \leq i < |P|$. Valoarea $k$ se numește deplasare validă. Pozițiile la care $P$ nu apare în $S$ se numesc deplasări invalide.
+\end{definition}
+
+\import{./figures}{rabin-karp-example.tex}
+
+Cu aceste definiții și notații, putem reformula căutarea subșirului $P$ în șirul $S$ ca găsirea tuturor deplasărilor valide ale lui $P$ în $S$. Subșirul de căutat se mai numește și \textbf{șablon} (engl. \textit{pattern}). Vom nota $|P| = m$ și $|S| = n$.
+
+
+\section{Algoritmul naiv}
+
+Următorul algoritm evaluează naiv fiecare deplasare și le tipărește pe cele valide. Pentru o deplasare \texttt{dep} fixată, algoritmul caută liniar prima nepotrivire.
+
+\begin{minted}{c}
+int n = strlen(s);
+int m = strlen(p);
+
+for (int dep = 0; dep <= n - m; dep++) {
+  int i = 0;
+  while ((i < m) && (p[i] == s[i + dep])) {
+    i++;
+  }
+  if (i == m) {
+    printf("Deplasare validă: %d\n", dep);
+  }
+}
+\end{minted}
+
+Algoritmul este ineficient, având complexitate $\bigoh(m(n-m))$. Putem expune această ineficiență cu valori ca $S$ = \texttt{aaaaaaaaaa} și $P$ = \texttt{aaaaab}. Pentru completitudine, menționăm totuși că există situații în care algoritmul naiv se comportă optim. Iată trei dintre ele.
+
+
+\subsection{Toate caracterele din șablon sunt diferite}
+
+Să presupunem că pentru o deplasare $k$ găsim o primă nepotrivire între $P[i]$ și $S[i + k]$. În particular, aceasta înseamnă că $P[1 \dots i-1] = S[1 + k \dots i - 1 + k]$. Așadar, în toată acea regiune din $S$ apar caractere din $P$, dar \textbf{nu} $P[0]$. Evaluarea acelor deplasări va eșua încă de la prima comparație. Următoarea deplasare care are o șansă să fie validă va fi $k + i$.
+
+Din acest motiv, complexitatea este $\bigoh(n)$.
+
+\import{./figures}{rabin-karp-distinct-characters.tex}
+
+\subsection{Unul dintre șirurile \texorpdfstring{$S$}{S} și \texorpdfstring{$P$}{P} este generat aleatoriu}
+
+În această situație, fiecare comparație între un caracter din $S$ și unul din $P$ va eșua cu probabilitatea
+
+$$\frac{|\Sigma| - 1}{|\Sigma|}$$
+
+, de unde cu puțină teorie a probabilităților aflăm că numărul așteptat de comparații pentru o deplasare dată va fi
+
+$$\frac{|\Sigma|}{|\Sigma| - 1}$$
+
+Această valoare este 2 pentru alfabete binare și tinde la 1 pe măsură ce mărimea alfabetului crește. Și în acest caz, complexitatea este $\bigoh(n)$.
+
+
+\subsection{\texorpdfstring{$m$}{m} are valoare apropiată de \texorpdfstring{$n$}{n}}
+
+Reamintim că complexitatea nu este $\bigoh(mn)$, ci $\bigoh(m(n-m))$.
+
+
+\section{Funcții hash}
+
+Dacă ați descărcat vreodată un fișier mare (de exemplu, o imagine de stick bootabil), poate ați observat că alături de el găsim o \textbf{sumă de control} (engl. \textit{checksum}), de regulă sub forma unui număr hexazecimal lung calculat cu un algoritm ca SHA256. Care este rostul acestui \textit{checksum}? În esență, este un mod de a ne asigura că am descărcat fișierul fără erori. Rulăm local același algoritm și ne asigurăm că obținem același rezultat ca pe site.
+
+Un algoritm de \textit{checksum} este un tip particular de \textbf{funcție hash} (diferențele depășesc scopul acestei culegeri). O funcție hash transformă niște date de o lungime arbitrară în alte date (numite \textbf{valori hash}) de lungime fixă. Indiferent cât de mare este fișierul descărcat sau lungimea șirului citit, funcția hash returnează valori pe un număr fix de biți, de exemplu 256.
+
+De la o funcție hash bună dorim următoarele proprietăți:
+
+\begin{enumerate}
+  \item Să fie ușor de calculat.
+  \item Să traducă valori de intrare aproape identice în valori hash substanțial diferite.
+  \item Să genereze toate valorile hash posibile cu aceeași probabilitate pentru valori de intrare aleatorii; cu alte cuvinte, să distribuie bine valorile de intrare.
+\end{enumerate}
+
+Este important să observăm că funcțiile hash \textbf{nu sunt injective}. Nici nu ar avea cum, căci spațiul valorilor de intrare este infinit, pe când spațiul valorilor hash este finit. Ce implică aceasta? Dacă două valori de intrare $X$ și $Y$ corespund la valori hash diferite, atunci știm sigur că $X \neq Y$. În schimb, dacă valorile hash sunt egale, nu avem nicio garanție că $X = Y$. De exemplu, pentru funcția hash $H(x) = x \bmod 10$, valorile de intrare 27 și 57 corespund aceleiași valori hash, 7. Această situație se numește \textbf{coliziune}.
+
+
+\section{Căutarea cu funcții hash}
+
+Din secțiunea anterioară decurge o metodă de căutare cu funcții hash:
+
+\begin{minted}{c}
+int n = strlen(s);
+int m = strlen(p);
+int hp = hash(p, m);
+
+for (int dep = 0; dep <= n - m; dep++) {
+  if ((hash(s + dep, m) == hp) &&
+      compar_naiv(p, s + dep, m)) {
+    printf("Deplasare validă: %d\n", dep);
+  }
+}
+\end{minted}
+
+Pentru concizie, am exclus codul funcțiilor \ccode{hash} și \ccode{compar_naiv}. Observăm că acest algoritm are tot complexitate $\bigoh(m(n-m))$, din două motive:
+
+\begin{enumerate}
+  \item Funcția hash, dacă îi permitem să examineze complet subșirul curent, are complexitate $\bigoh(m)$. Vom arăta în secțiunea următoare cum putem reduce complexitatea la $\bigoh(1)$.
+  \item Pentru date de intrare ca $S$ = \texttt{aaaaaaaaaa} și $P$ = \texttt{aaaaaa}, toate valorile hash vor fi egale și algoritmul va degenera în $n-m$ comparări naive.
+\end{enumerate}
+
+
+\section{Funcții \textit{rolling hash}}
+
+Să considerăm alfabetul $\Sigma = \{0, 1, \dots, 9\}$. Să considerăm, pentru simplitate, că $m \leq 9$. Atunci putem defini funcția hash a unui subșir de lungime $m$ ca fiind valoarea numerică a acelui șir. De exemplu, $H(\texttt{"2943"}) = \numprint{2943}$.
+
+Acum, fie $P$ = \texttt{9435} și $S$ = \texttt{1112943511}. Atunci vom calcula $H(P) = \numprint{9435}$ și $H(S[3...6]) = \numprint{2943}$. Când trecem de la deplasarea 3 la deplasarea 4, putem calcula în doar $\bigoh(1)$ noua valoare hash, $H(S[4...7])$. Procedăm astfel:
+
+\begin{itemize}
+  \item Din \numprint{2943} scădem prima cifră (adică 2) înmulțită cu $10^{m - 1}$ (adică \numprint{1000}). Diferența este 943. În termeni de șiruri, am eliminat primul caracter din stânga.
+  \item Pe 943 îl înmulțim cu 10. Obținem \numprint{9430}.
+  \item Adăugăm următoarea cifră din $S$ (5). Obținem \numprint{9435}. În termeni de șiruri, am adăugat la dreapta următorul caracter.
+\end{itemize}
+
+\import{./figures}{rabin-karp-rolling-hash.tex}
+
+Avantajul este că am redus la $\bigoh(n)$ efortul total pentru a calcula valorile hash ale tuturor subșirurilor lui $S$ de lungime $m$. Acest tip de funcție se numește \textit{rolling hash} pentru că \textit{se rostogolește} de la o poziție la următoarea.
+
+În cazul general, valorile hash vor avea mărimi de ordinul $|\Sigma|^{m}$ și vor fi prea mari pentru a fi reprezentate în tipuri de date simple. Soluția este să operăm modulo o valoare $q$. Astfel, formula generală pentru a trece de la o valoare hash la următoarea este:
+
+$$H(S[k+1...k+m]) = \Biggl\{
+\Bigl[H(S[k...k+m-1]) - S[k] \cdot |\Sigma|^{m-1}\Bigr]
+\cdot |\Sigma| + S[k + m]
+\Biggr\} \bmod q$$
+
+În concluzie, funcția traduce $|\Sigma|^{m}$ șiruri posibile în doar $q$ valori hash. Așadar, pot apărea coliziuni. De aceea, ori de câte ori găsim în $S$ valoarea $H(P)$ este necesar să facem și o comparare naivă. Complexitatea teoretică a algoritmului rămâne $\bigoh(m(n-m))$.
+
+
+\section{Algoritmul Rabin-Karp}
+
+Punând cap la cap toate elementele de mai sus, rezultă codul:
+
+\begin{minted}{c}
+#include <stdio.h>
+#include <string.h>
+
+const int MAX_N = 1'000'000;
+const int SIGMA = 26;
+const int MOD = 1'000'000'007;
+
+char s[MAX_N + 1], p[MAX_N + 1];
+long long q; // sigma^{m-1}
+
+void precompute_q(int exp) {
+  q = 1;
+  while (exp--) {
+    q = q * SIGMA % MOD;
+  }
+}
+
+long long init_hash(char* s, int len) {
+  long long result = 0;
+  for (int i = 0; i < len; i++) {
+    result = (result * SIGMA + (s[i] - 'a')) % MOD;
+  }
+  return result;
+}
+
+long long avans_hash(long long old, char* s, int len) {
+  old += MOD - (q * (s[0] - 'a')) % MOD;
+  return (old * SIGMA + (s[len] - 'a')) % MOD;
+}
+
+bool compar_naiv(char* a, char* b, int len) {
+  int i = 0;
+  while ((i < len) && (a[i] == b[i])) {
+    i++;
+  }
+
+  return (i == len);
+}
+
+int main() {
+  scanf("%s %s", s, p);
+  int n = strlen(s);
+  int m = strlen(p);
+  precompute_q(m - 1);
+
+  long long hp = init_hash(p, m);
+  long long hs = init_hash(s, m);
+
+  for (int dep = 0; dep <= n - m; dep++) {
+    if ((hs == hp) &&
+        compar_naiv(p, s + dep, m)) {
+      printf("Deplasare validă: %d\n", dep);
+    }
+    hs = avans_hash(hs, s + dep, m);
+  }
+
+  return 0;
+}
+\end{minted}
+
+Notăm următoarele considerente practice.
+
+\begin{itemize}
+  \item Valoarea $|\Sigma|^{m-1}$ trebuie precalculată.
+  \item Pentru a evita depășirile, este necesar ca $|\Sigma| \cdot q$ să încapă în tipul de date ales (de exemplu \ccode{int} sau \ccode{long long}).
+\end{itemize}
+
+Ca încercare de optimizare, putem folosi un modul putere a lui 2 pentru viteză mai mare. Putem chiar să operăm modulo $2^{32}$ sau modulo $2^{64}$ și să renunțăm complet la operațiile de împărțire (depășirile vor face automat acest lucru pentru noi). Totuși, este posibil ca datele de test să fie alese adversarial și să genereze multe coliziuni pentru aceste module arhicunoscute. În funcție de natura problemei, poate fi preferabil un modul prim ales la întîmplare.
+
+Putem renunța la comparările naive dacă avem speranțe reale că nu vor exista coliziuni. Vom considera orice apariție a lui $H(P)$ ca fiind o deplasare validă. Atunci algoritmul devine $\bigoh(m + n)$, dar este important să alegem un modul suficient de mare încît probabilitatea coliziunilor să fie infimă.
+
+Dacă chiar și cu un modul mare întîlnim coliziuni, putem calcula două funcții hash modulo două valori diferite, $H_1(P)$ și $H_2(P)$. Șansa să întâlnim o coliziune modulo ambele valori simultan scade pătratic.

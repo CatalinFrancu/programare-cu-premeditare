@@ -1,0 +1,54 @@
+\section{Probleme}
+
+\subsection{Problema Radio (Lot 2010)}
+\label{problem:radio}
+
+\href{https://kilonova.ro/problems/2273}{enunț}
+$\bullet$
+\hyperref[code:radio]{sursă}
+
+Cred că problema admite multe soluții. Iat-o pe cea pe care am găsit-o eu.
+
+Observăm că procentul de diferențe nu depășește 10\% (cînd $k = 50$ și $l = 500$). Din păcate, noi nu știm să calculăm \href{https://en.wikipedia.org/wiki/Locality-sensitive_hashing}{hash-uri aproximative}, care să genereze valori hash similare pentru date de intrare similare. Trebuie să ne rezumăm la porțiuni identice.
+
+Pentru această problemă, vom redefini deplasarea validă ca fiind o deplasare în $s$ unde cuvîntul curent se potrivește cu cel mult $k$ diferențe. Dacă există o deplasare validă pentru un cuvînt $p$, ce putem spune despre potrivirile \textbf{continue și exacte}? Să observăm că cele (cel mult) $k$ diferențe segmentează celelalte $l - k$ caractere, care se potrivesc exact, în cel mult $k+1$ fragmente. Conform principiului lui Dirichlet, va exista un fragment potrivit exact de lungime
+
+$$c \defeq \left\lceil \frac{l - k}{k + 1} \right\rceil$$
+
+Pentru $k = 50$ și $l = 500$ obținem $c = 9$, iar pentru alte combinații $c$ va fi chiar mai mare. Deoarece $26^9 \approx 5 \cdot 10^{12}$, iar $s$ este generat aleatoriu, ne așteptăm să existe cel mult o apariție a unui astfel de fragment în $s$. Doar pentru deplasarea acestei apariții ne punem întrebarea dacă există cel mult $k$ diferențe. Dar cum? Tot pentru că $s$ este aleatoriu, răspunsul este: naiv, cu o buclă \ccode{for}. Pentru majoritatea deplasărilor, comparația naivă de șiruri va eșua rapid. La fiecare poziție avem o șansă de $25/26$ să întîlnim un caracter diferit, deci numărul așteptat de comparații pînă cînd găsim $k+1$ diferențe va fi $(k + 1) \cdot 26/25$.
+
+Și atunci algoritmul este:
+
+\begin{algorithm}[H]
+  \caption{Algoritmul în ansamblu pentru problema Radio}
+  \begin{algorithmic}[1]
+    \State calculează valorile hash ale fiecărei ferestre de mărime $c$ din $s$
+    \For{fiecare cuvînt $p$}
+      \For{fiecare fereastră $w$ de mărime $c$ din $p$}
+        \For{fiecare apariție a lui $w$ în $s$}
+          \State calculează deplasarea $d$ a lui $p$ în $s$
+          \State compară naiv $p$ cu subșirul $s[d \dots d + l - 1]$
+        \EndFor
+      \EndFor
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+Merită să discutăm și implementarea și cîteva optimizări notabile. În primul rînd, cum memorăm poziția apariției unei valori hash în $s$? Am operat modulo $2^{64}$ ca să elimin conflictele. Limita de memorie este de 64 MB, ceea ce din păcate exclude o tabelă hash de $n = 10^6$ valori pe 64 de biți. Prima mea idee a fost să pun valorile hash într-un vector, să le sortez, apoi să caut binar valoarea hash dorită. Această implementare are valoarea $\bigoh(n \log n + ml(\log n + k))$, care provine din:
+
+\begin{enumerate}
+  \item Generarea și sortarea celor $n - c + 1$ valori hash din $s$.
+  \item Pentru fiecare șir și fiecare deplasare, căutarea binară a unei valori hash ($\bigoh(\log n)$) și apoi compararea naivă ($\bigoh(k)$).
+\end{enumerate}
+
+Programul obține punctaj maxim, dar în aproape 500 ms. Dar prima sursă din top obține 125 ms. Aceasta m-a ambiționat! \emoji{slightly-smiling-face}
+
+O primă optimizare a fost să elimin sortarea. Timpul necesar pentru a sorta un milion de elemente nu este neglijabil. În loc de aceasta, am redus modulul pînă la un număr prim în jurul lui $10^6$. Ne așteptăm ca șirul aleatoriu $s$ să distribuie bine cele $\approx 10^6$ valori hash într-un spațiu de $\approx 10^6$ posibilități, dar natural pot apărea conflicte. În practică, numărul maxim de duplicate este 9 indiferent de modulul prim pe care l-am ales. De aceea, am înlocuit tabela hash cu o matrice de $9 \cdot 10^6$ elemente, plus un vector pentru numărul de apariții al fiecărei valori hash, așadar circa 40 MB de memorie. Astfel am redus timpul semnificativ, la 333 ms.
+
+O a doua optimizare majoră pornește de la următoarea observație: șirul $s$ este aleatoriu, dar cuvintele $p$ nu! \emoji{smiling-imp} Voi cum ați construi date de test adverse? Iată ideea mea: Alegem drept cuvinte subșiruri de mărime $l$ din $s$, pe care apoi le modificăm în $k+1$ locuri, undeva spre finalul cuvîntului. Grupăm aceste modificări, lăsînd doar ocazional cîte un caracter potrivit exact. Așadar, pentru un cuvînte de mărime $l = 500$ vom avea un fragment inițial de mărime peste 400 care se potrivește exact.
+
+Ce decurge de aici? Programul nostru alege $c=9$, deci va încerca toate cele circa 390 de fragmente în această fereastră de mărime 400. Și pentru fiecare dintre ele va face aproape 500 de comparații pînă să ajungă la cea de-a 51-a diferență. Complexitatea este $\bigoh(l^2)$ per cuvînt, $\bigoh(ml^2)$ în ansamblu. De fapt, presupunerea noastră că comparația naivă va eșua rapid, în $\bigoh(k)$, este corectă doar pentru deplasări aleatorii, nu și pentru date adverse.
+
+Care este soluția? Să observăm că toate aceste fragmente de lungime $c$ duc la comparații naive \textbf{la aceeași deplasare în $s$}. Așadar, putem reduce mult timpul dacă memorăm deplasările din $s$ la care am făcut deja comparația naivă. Putem face asta cu o tabelă hash sau cu un simplu vector. Aceasta reduce timpul de rulare la circa 160 ms.
+
+Ca optimizare minoră (încă circa 10 ms), putem alege modulul $2^{20}$, care accelerează împărțirile. Care este efortul total pentru Rabin-Karp? Avem $n + ml \approx 2,2 M$ de caractere și fiecare caracter intră și iese din fereastra de mărime $c$. Intrarea necesită o operație modulo, iar ieșirea una sau două în funcție de implementare. Deci avem de făcut 4,4 sau 6,6 milioane de împărțiri. Nu este neglijabil!

@@ -1,0 +1,50 @@
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}
+    % the string S
+    \matrix[right] at (0, 0.6) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+    };
+
+    \node[label] at (-2, 0) {$S$};
+
+    \matrix[right] at (0, 0) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+      column 3/.style={nodes={green-bg}},
+      column 4/.style={nodes={green-bg}},
+      column 5/.style={nodes={green-bg}},
+      column 6/.style={nodes={red-bg}},
+    ] {
+      c & c & a & b & c & a & b & a & b & c & d\\
+    };
+
+    % the string P
+    \matrix[right] at (1.4, -0.9) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3\\
+    };
+
+    \node[label] at (-2, -1.5) {$P$};
+
+    \matrix[right] at (1.4, -1.5) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square, green-bg},
+      column 4/.style={nodes={red-bg}},
+    ] {
+      a & b & c & d\\
+    };
+  \end{tikzpicture}
+
+  \caption{Pentru deplasarea $k=2$, prima nepotrivire apare la poziția
+    $i=3$. Caracterul \texttt{a} nu apare pe pozițiile 3 și 4. Următoarea
+    deplasare care merită verificată este $k=5$.}
+  \label{fig:rabin-karp-distinct-characters}
+\end{figure}

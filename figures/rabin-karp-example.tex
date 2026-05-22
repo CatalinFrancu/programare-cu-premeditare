@@ -1,0 +1,75 @@
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    % the string S
+    \matrix[right] at (0, 0.6) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+    };
+
+    \node[label] at (-2, 0) {$S$};
+
+    \matrix[right] at (0, 0) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+      column 3/.style={nodes={green-bg}},
+      column 4/.style={nodes={green-bg}},
+      column 5/.style={nodes={green-bg}},
+      column 8/.style={nodes={red-bg}},
+      column 9/.style={nodes={red-bg}},
+      column 10/.style={nodes={red-bg}},
+    ] {
+      a & b & r & a & c & a & d & a & b & r & a\\
+    };
+
+    % the string P (valid shift)
+    \matrix[right] at (1.4, -0.9) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2\\
+    };
+
+    \node[label] at (-2, -1.5) {$P$};
+
+    \matrix[right] at (1.4, -1.5) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square, green-bg},
+    ] {
+      r & a & c\\
+    };
+
+    \draw [decorate,decoration={brace,amplitude=5pt,mirror,raise=-10pt}]
+    (0,-2.2) -- (1.4,-2.2) node[midway] {$k = 2$};
+
+    % the string P (invalid shift)
+    \matrix[right] at (4.9, -2.4) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2\\
+    };
+
+    \node[label] at (-2, -3) {$P$};
+
+    \matrix[right] at (4.9, -3) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square, red-bg},
+    ] {
+      r & a & c\\
+    };
+
+    \draw [decorate,decoration={brace,amplitude=5pt,mirror,raise=-10pt}]
+    (0,-3.7) -- (4.9,-3.7) node[midway] {$k = 7$};
+  \end{tikzpicture}
+
+  \caption{Pentru șablonul $P$ = \texttt{rac} și șirul $S$ =
+    \texttt{abracadabra},\\ $k=2$ este o deplasare validă, iar $k=7$ este o
+    deplasare invalidă.}
+  \label{fig:rabin-karp-example}
+\end{figure}
