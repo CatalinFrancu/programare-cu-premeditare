@@ -1,0 +1,34 @@
+\section{Probleme}
+
+\subsection{Problema Bart (NerdArena)}
+\label{problem:bart}
+
+\href{https://www.nerdarena.ro/problema/bart}{enunț}
+$\bullet$
+\hyperref[code:bart]{sursă}
+
+Problema ne cere să aflăm cel mai mic prefix al unui șir $S$ pe care, dacă îl repetăm, obținem șirul $S$. Ultima repetiție poate fi incompletă.
+
+Fie răspunsul $k$. Atunci $S[0 \dots k-1] = S[k \dots 2k-1] = \dots$. Dar aceasta înseamnă că $S[0 \dots n - k - 1] = S[k \dots n - 1]$. Cu alte cuvinte, sufixul de lungime $n - k$ este și prefix! Răspunsul este pur și simplu $n - \pi[n - 1]$.
+
+\subsection{Problema Cifru (Baraj ONI 2006)}
+\label{problem:cifru}
+
+\href{https://kilonova.ro/problems/1862}{enunț}
+$\bullet$
+\hyperref[code:cifru]{sursă}
+
+În această problemă recunoaștem testul clasic dacă două șiruri $S$ și $T$ se pot obține unul dintr-altul prin rotații. Dar cum gestionăm permutarea?
+
+Vom modifica algoritmul KMP ca să țină cont și de permutări. Să considerăm șablonul din exemplu, $P = (2\ 1\ 3\ 3\ 2\ 1)$. La poziția $i$ dorim să aflăm lungimea celui mai lung prefix care \textit{este} și sufix. Dar aceasta depinde de sensul cuvîntului „este”\footnote{Exact ca în cazul lui Bill Clinton.}. Nu ne interesează ca prefixul să fie \textbf{egal} cu sufixul, ci să existe o permutare care mapează sufixul în prefix. De exemplu, $\pi[4]=2$ pentru că prefixul $(2\ 1)$ se potrivește cu sufixul $(3\ 2)$.
+
+Cum construim funcția $\pi$ astfel modificată? Să pornim de la $\pi[2] = 2$ (deoarece $(2\ 1)$ se potrivește cu $(1\ 3)$). Am putea extinde cu succes perechea de subșiruri cu o poziție dacă $(2\ 1\ 3)$ s-ar potrivi cu $(1\ 3\ 3)$. Dar nu este cazul. În primul subșir, 3 este o valoare nou întîlnită, pe cînd în al doilea valoarea 3 a apărut și pe poziția 1. De aceea nu există nicio permutare care să mapeze prefixul peste sufix. Așadar, trebuie să înlocuim testul de egalitate de caractere din algoritmul KMP normal cu un test de asemănare între caractere:
+
+\begin{itemize}
+  \item Dacă $P[k]$ este la prima apariție (deci $P[k] \neq P[0], P[1], ..., P[k-1]$), trebuie ca și $P[i] \neq P[i - k], P[i - k + 1], ..., P[i - 1]$.
+  \item Altfel, dacă $P[k] = P[k']$ pentru un $k' < k$, trebuie ca și $P[i] = P[i - (k - k')]$.
+\end{itemize}
+
+Putem verifica aceste (in)egalități dacă stocăm, pentru fiecare poziție $k$, poziția apariției anterioare a lui $P[k]$ în $P$.
+
+Același raționament îl facem și în a doua trecere, în care îl căutăm pe $P$ în $S + S$. Cînd evaluăm $S[i]$ și sîntem în starea $k$, vom confrunta aparițiile anterioare ale lui $S[i]$ în $S$ cu aparițiile lui $P[k]$ în $P$.

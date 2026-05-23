@@ -25,7 +25,7 @@
   },
 }
 
-Căutarea unui subșir într-un șir înseamnă găsirea tuturor pozițiilor la care subșirul apare în șir. Să introducem câteva definiții și notații pentru restul acestei părți.
+Căutarea unui subșir într-un șir înseamnă găsirea tuturor pozițiilor la care subșirul apare în șir. Să introducem cîteva definiții și notații pentru restul acestei părți.
 
 
 \section{Terminologie}
@@ -76,10 +76,10 @@ for (int dep = 0; dep <= n - m; dep++) {
 }
 \end{minted}
 
-Algoritmul este ineficient, având complexitate $\bigoh(m(n-m))$. Putem expune această ineficiență cu valori ca $S$ = \texttt{aaaaaaaaaa} și $P$ = \texttt{aaaaab}. Pentru completitudine, menționăm totuși că există situații în care algoritmul naiv se comportă optim. Iată trei dintre ele.
+Algoritmul este ineficient, avînd complexitate $\bigoh(m(n-m))$. Putem expune această ineficiență cu valori ca $S$ = \texttt{aaaaaaaaaa} și $P$ = \texttt{aaaaab}. Pentru completitudine, menționăm totuși că există situații în care algoritmul naiv se comportă optim. Iată trei dintre ele.
 
 
-\subsection{Toate caracterele din șablon sunt diferite}
+\subsection{Toate caracterele din șablon sînt diferite}
 
 Să presupunem că pentru o deplasare $k$ găsim o primă nepotrivire între $P[i]$ și $S[i + k]$. În particular, aceasta înseamnă că $P[1 \dots i-1] = S[1 + k \dots i - 1 + k]$. Așadar, în toată acea regiune din $S$ apar caractere din $P$, dar \textbf{nu} $P[0]$. Evaluarea acelor deplasări va eșua încă de la prima comparație. Următoarea deplasare care are o șansă să fie validă va fi $k + i$.
 
@@ -109,7 +109,7 @@ Reamintim că complexitatea nu este $\bigoh(mn)$, ci $\bigoh(m(n-m))$.
 
 Dacă ați descărcat vreodată un fișier mare (de exemplu, o imagine de stick bootabil), poate ați observat că alături de el găsim o \textbf{sumă de control} (engl. \textit{checksum}), de regulă sub forma unui număr hexazecimal lung calculat cu un algoritm ca SHA256. Care este rostul acestui \textit{checksum}? În esență, este un mod de a ne asigura că am descărcat fișierul fără erori. Rulăm local același algoritm și ne asigurăm că obținem același rezultat ca pe site.
 
-Un algoritm de \textit{checksum} este un tip particular de \textbf{funcție hash} (diferențele depășesc scopul acestei culegeri). O funcție hash transformă niște date de o lungime arbitrară în alte date (numite \textbf{valori hash}) de lungime fixă. Indiferent cât de mare este fișierul descărcat sau lungimea șirului citit, funcția hash returnează valori pe un număr fix de biți, de exemplu 256.
+Un algoritm de \textit{checksum} este un tip particular de \textbf{funcție hash} (diferențele depășesc scopul acestei culegeri). O funcție hash transformă niște date de o lungime arbitrară în alte date (numite \textbf{valori hash}) de lungime fixă. Indiferent cît de mare este fișierul descărcat sau lungimea șirului citit, funcția hash returnează valori pe un număr fix de biți, de exemplu 256.
 
 De la o funcție hash bună dorim următoarele proprietăți:
 
@@ -119,7 +119,7 @@ De la o funcție hash bună dorim următoarele proprietăți:
   \item Să genereze toate valorile hash posibile cu aceeași probabilitate pentru valori de intrare aleatorii; cu alte cuvinte, să distribuie bine valorile de intrare.
 \end{enumerate}
 
-Este important să observăm că funcțiile hash \textbf{nu sunt injective}. Nici nu ar avea cum, căci spațiul valorilor de intrare este infinit, pe când spațiul valorilor hash este finit. Ce implică aceasta? Dacă două valori de intrare $X$ și $Y$ corespund la valori hash diferite, atunci știm sigur că $X \neq Y$. În schimb, dacă valorile hash sunt egale, nu avem nicio garanție că $X = Y$. De exemplu, pentru funcția hash $H(x) = x \bmod 10$, valorile de intrare 27 și 57 corespund aceleiași valori hash, 7. Această situație se numește \textbf{coliziune}.
+Este important să observăm că funcțiile hash \textbf{nu sînt injective}. Nici nu ar avea cum, căci spațiul valorilor de intrare este infinit, pe cînd spațiul valorilor hash este finit. Ce implică aceasta? Dacă două valori de intrare $X$ și $Y$ corespund la valori hash diferite, atunci știm sigur că $X \neq Y$. În schimb, dacă valorile hash sînt egale, nu avem nicio garanție că $X = Y$. De exemplu, pentru funcția hash $H(x) = x \bmod 10$, valorile de intrare 27 și 57 corespund aceleiași valori hash, 7. Această situație se numește \textbf{coliziune}.
 
 
 \section{Căutarea cu funcții hash}
@@ -151,10 +151,10 @@ Pentru concizie, am exclus codul funcțiilor \ccode{hash} și \ccode{compar_naiv
 
 Să considerăm alfabetul $\Sigma = \{0, 1, \dots, 9\}$. Să considerăm, pentru simplitate, că $m \leq 9$. Atunci putem defini funcția hash a unui subșir de lungime $m$ ca fiind valoarea numerică a acelui șir. De exemplu, $H(\texttt{"2943"}) = \numprint{2943}$.
 
-Acum, fie $P$ = \texttt{9435} și $S$ = \texttt{1112943511}. Atunci vom calcula $H(P) = \numprint{9435}$ și $H(S[3...6]) = \numprint{2943}$. Când trecem de la deplasarea 3 la deplasarea 4, putem calcula în doar $\bigoh(1)$ noua valoare hash, $H(S[4...7])$. Procedăm astfel:
+Acum, fie $P$ = \texttt{9435} și $S$ = \texttt{1112943511}. Atunci vom calcula $H(P) = \numprint{9435}$ și $H(S[3...6]) = \numprint{2943}$. Cînd trecem de la deplasarea 3 la deplasarea 4, putem calcula în doar $\bigoh(1)$ noua valoare hash, $H(S[4...7])$. Procedăm astfel:
 
 \begin{itemize}
-  \item Din \numprint{2943} scădem prima cifră (adică 2) înmulțită cu $10^{m - 1}$ (adică \numprint{1000}). Diferența este 943. În termeni de șiruri, am eliminat primul caracter din stânga.
+  \item Din \numprint{2943} scădem prima cifră (adică 2) înmulțită cu $10^{m - 1}$ (adică \numprint{1000}). Diferența este 943. În termeni de șiruri, am eliminat primul caracter din stînga.
   \item Pe 943 îl înmulțim cu 10. Obținem \numprint{9430}.
   \item Adăugăm următoarea cifră din $S$ (5). Obținem \numprint{9435}. În termeni de șiruri, am adăugat la dreapta următorul caracter.
 \end{itemize}
@@ -170,12 +170,12 @@ $$H(S[k+1...k+m]) = \Biggl\{
 \cdot |\Sigma| + S[k + m]
 \Biggr\} \bmod q$$
 
-În concluzie, funcția traduce $|\Sigma|^{m}$ șiruri posibile în doar $q$ valori hash. Așadar, pot apărea coliziuni. De aceea, ori de câte ori găsim în $S$ valoarea $H(P)$ este necesar să facem și o comparare naivă. Complexitatea teoretică a algoritmului rămâne $\bigoh(m(n-m))$.
+În concluzie, funcția traduce $|\Sigma|^{m}$ șiruri posibile în doar $q$ valori hash. Așadar, pot apărea coliziuni. De aceea, ori de cîte ori găsim în $S$ valoarea $H(P)$ este necesar să facem și o comparare naivă. Complexitatea teoretică a algoritmului rămîne $\bigoh(m(n-m))$.
 
 
 \section{Algoritmul Rabin-Karp}
 
-Punând cap la cap toate elementele de mai sus, rezultă codul:
+Punînd cap la cap toate elementele de mai sus, rezultă codul:
 
 \begin{minted}{c}
 #include <stdio.h>
@@ -249,4 +249,4 @@ Ca încercare de optimizare, putem folosi un modul putere a lui 2 pentru viteză
 
 Putem renunța la comparările naive dacă avem speranțe reale că nu vor exista coliziuni. Vom considera orice apariție a lui $H(P)$ ca fiind o deplasare validă. Atunci algoritmul devine $\bigoh(m + n)$, dar este important să alegem un modul suficient de mare încît probabilitatea coliziunilor să fie infimă.
 
-Dacă chiar și cu un modul mare întîlnim coliziuni, putem calcula două funcții hash modulo două valori diferite, $H_1(P)$ și $H_2(P)$. Șansa să întâlnim o coliziune modulo ambele valori simultan scade pătratic.
+Dacă chiar și cu un modul mare întîlnim coliziuni, putem calcula două funcții hash modulo două valori diferite, $H_1(P)$ și $H_2(P)$. Șansa să întîlnim o coliziune modulo ambele valori simultan scade pătratic.

@@ -1,0 +1,84 @@
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    automata-pic,
+    no-border/.style = {
+      draw=none,
+    },
+    ]
+    % the string S
+    \matrix[right] at (0, 0.6) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10\\
+    };
+
+    \node[label] at (-2, 0) {$S$};
+
+    \matrix[right] at (0, 0) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+    ] {
+      z & z & z & a & b & a & c & a & b & a & b & |[no-border]| ...\\
+    };
+
+    % șirul P (abacaba se potrivește)
+    \matrix[right] at (2.1, -0.9) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3 & 4 & 5 & 6\\
+    };
+
+    \node[label] at (-2, -1.5) {$P_7$};
+
+    \matrix[right] at (2.1, -1.5) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square, green-bg},
+    ] {
+      a & b & a & c & a & b & a\\
+    };
+
+    % șirul P (abac nu se potrivește)
+    \matrix[right] at (4.9, -2.4) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3\\
+    };
+
+    \node[label] at (-2, -3) {$P_3$};
+
+    \matrix[right] at (4.9, -3) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+    ] {
+      |[green-bg]| a & |[green-bg]| b & |[green-bg]| a & |[red-bg]| c & |[no-border]| ...\\
+    };
+
+    % șirul P (ab se potrivește)
+    \matrix[right] at (6.3, -3.9) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1\\
+    };
+
+    \node[label] at (-2, -4.5) {$P_1$};
+
+    \matrix[right] at (6.3, -4.5) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+    ] {
+      |[green-bg]| a & |[green-bg]| b & |[no-border]| ...\\
+    };
+  \end{tikzpicture}
+
+  \caption{La poziția 10, nu putem extinde prefixul $P_3$ cu caracterul \texttt{b}, ci numai prefixul $P_1$.}
+  \label{fig:automate-funcția-pi}
+\end{figure}

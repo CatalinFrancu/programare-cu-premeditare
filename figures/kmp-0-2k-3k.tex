@@ -1,0 +1,24 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[automata-pic]
+    \node[state, initial, accepting] (q0) {$0$};
+    \node[state, right of=q0] (q1) {$1$};
+    \node[state, below right of=q1, accepting] (q2) {$2$};
+    \node[state, below left of=q2, accepting] (q3) {$3$};
+    \node[state, left of=q3, accepting] (q4) {$4$};
+    \node[state, above left of=q4] (q5) {$5$};
+
+    \draw
+    (q0) edge[above] node{0} (q1)
+    (q1) edge[above] node{0} (q2)
+    (q2) edge[above] node{0} (q3)
+    (q3) edge[above] node{0} (q4)
+    (q4) edge[above] node{0} (q5)
+    (q5) edge[above] node{0} (q0)
+    ;
+  \end{tikzpicture}
+
+  \caption{}
+  \label{fig:automate-0-2k-3k}
+\end{figure}

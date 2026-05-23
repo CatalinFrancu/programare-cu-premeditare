@@ -1,0 +1,27 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[automata-pic]
+    \node[state, initial] (q0) {$0$};
+    \node[state, right of=q0] (q1) {$1$};
+    \node[state, right of=q1] (q2) {$2$};
+    \node[state, right of=q2, accepting] (q3) {$3$};
+
+    \draw
+    (q0) edge node[below]{a} (q1)
+    (q0) edge[loop below] node{b} (q0)
+
+    (q1) edge node[below]{a} (q2)
+    (q1) edge[bend right] node[above right]{b} (q0)
+
+    (q2) edge node[below]{b} (q3)
+    (q2) edge[loop below] node{a} (q2)
+
+    (q3) edge[bend right=30] node[above]{a} (q1)
+    (q3) edge[bend right=40] node[above]{b} (q0)
+    ;
+  \end{tikzpicture}
+
+  \caption{Un automat care recunoaște aparițiile subșirului \texttt{aab}.}
+  \label{fig:automate-subșir-aab}
+\end{figure}

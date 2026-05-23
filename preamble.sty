@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[romanian]{babel}
+\usepackage{diagbox}
 \usepackage{emoji}
 % We don't really need it, but it suppresses some warnings from hyperref.
 \usepackage{float}
@@ -31,7 +32,7 @@
 \algrenewcommand\algorithmicif{\textbf{dacă}}
 \algrenewcommand\algorithmicreturn{\textbf{returnează}}
 \algrenewcommand\algorithmicthen{\textbf{atunci}}
-\algrenewcommand\algorithmicwhile{\textbf{cât timp}}
+\algrenewcommand\algorithmicwhile{\textbf{cît timp}}
 
 \usepackage{amsthm}
 \theoremstyle{definition}
@@ -90,6 +91,12 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 ]{InconsolataLGCNerdFont-Regular.ttf}
 
 \usepackage{minted}
+% Disable cleanup of Minted's cache files. This is useful when we comment out
+% all the chapters except the one that we are working on, then later recompile
+% the entire file again.
+\makeatletter
+\renewcommand*{\minted@clean}{}
+\makeatother
 \usemintedstyle{manni}
 \setminted{
   bgcolor=black!02,
@@ -112,6 +119,7 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \usetikzlibrary{angles}
 \usetikzlibrary{arrows}
 \usetikzlibrary{arrows.meta}
+\usetikzlibrary{automata}
 \usetikzlibrary{backgrounds}
 \usetikzlibrary{calc}
 \usetikzlibrary{decorations.pathreplacing}
@@ -125,3 +133,4 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \def\bigoh{\mathcal{O}}
 \newcommand*{\ccode}[1]{\mintinline{c}{#1}}
 \newcommand*{\defeq}{\stackrel{\text{def}}{=}}
+\newcommand*{\noteq}{\stackrel{\text{not}}{=}}

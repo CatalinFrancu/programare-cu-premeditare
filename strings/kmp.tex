@@ -1,0 +1,467 @@
+\chapter{Căutări cu automate finite. Algoritmul Knuth-Morris-Pratt}
+
+% settings for automata images
+\tikzset{
+  automata-pic/.style={
+    ->,
+    >=latex,
+    every state/.style={
+      fill=gray!10,
+      minimum size=0pt,
+      thick,
+    },
+    initial text=$ $,
+    node distance=3cm,
+  },
+}
+
+Algoritmul KMP este denumit astfel după inițialele inventatorilor săi, Donald
+Knuth, James Morris și Vaughan Pratt. Este un algoritm remarcabil de scurt și
+de elegant, dar fără înțelegerea bazelor pe care este construit el poate
+părea mistic, revelația unui profet pe un munte. Pentru a destrăma acest
+mister, vom face un periplu prin lumea automatelor finite.
+
+
+\section{Terminologie}
+
+Introducem încă cîteva notații suplimentare față de Secțiunea
+\ref{sec:rabin-karp-terminology}.
+
+\begin{notation}
+  Vom nota cu $S_k$ prefixul de lungime $k$ al șirului $S$.
+\end{notation}
+
+\begin{notation}
+  Vom nota cu $A \sqsubseteq B$ faptul că $A$ este prefix al lui $B$, așadar
+  că $|A| \leq |B|$ și că $A[i] = B[i]$ pentru $0 \leq i < |A|$. Dacă în plus
+  $|A| < |B|$, vom folosi notația strictă $A \sqsubset B$.
+\end{notation}
+
+\begin{notation}
+  Vom nota cu $A \sqsupseteq B$ faptul că $A$ este sufix al lui $B$, așadar că
+  $|A| \leq |B|$ și că $A[i] = B[|B| - |A| + i]$ pentru $0 \leq i < |A|$. Dacă
+  în plus $|A| < |B|$, vom folosi notația strictă $A \sqsupset B$.
+\end{notation}
+
+
+\section{Automate finite}
+
+Colocvial, un \textbf{automat finit determinist} (AFD) este un sistem teoretic
+care procesează caracter cu caracter un șir dat la intrare, de lungime
+arbitrară, dar finită. Automatul acceptă unele șiruri și le respinge pe
+restul. Mulțimea șirurilor pe care automatul la acceptă se numește
+\textbf{limbajul recunoscut} de automat.
+
+Să studiem următorul exemplu.
+
+\import{./figures}{kmp-even-0.tex}
+
+Distingem următoarele elemente:
+
+\begin{itemize}
+\item Automatul are două \textbf{stări} numite $p$ și $i$. După fiecare
+  caracter citit, automatul se va afla într-una din aceste stări.
+\item Starea $p$ are o săgeată venind din exterior. Ea se numește
+  \textbf{stare inițială}. În această stare se află automatul înainte de
+  citirea primului caracter.
+\item Tot starea $p$ are contur dublu. Aceasta o desemnează drept
+  \textbf{stare de acceptare}. Pot exista oricîte stări de acceptare, inclusiv
+  zero.
+\item Din fiecare stare pornește exact o săgeată pentru fiecare simbol din
+  alfabet, în acest caz $\{0, 1\}$. Săgețile arată în ce stare trece automatul
+  la citirea respectivului simbol. Aceste stări pot fi rezumate în
+  \textbf{funcția} (sau \textbf{matricea}) \textbf{de tranziție}:
+\end{itemize}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{|c | c | c|}
+    \hline
+    \diagbox{starea}{simbolul} & \texttt{0} & \texttt{1}\\
+    \hline
+    $p$ & $i$ & $p$\\
+    \hline
+    $i$ & $p$ & $i$\\
+    \hline
+  \end{tabular}
+
+  \caption{Matricea de tranziție pentru automatul din Figura
+    \ref{fig:automate-unu-pare}.}
+\end{table}
+
+Pentru șirul de intrare \texttt{11010111}, automatul va porni din starea $p$
+și va trece succesiv prin stările $p, p, i, i, p, p, p,
+p$. Întrucît starea finală este una de acceptare, automatul va accepta
+șirul \texttt{11010111}.
+
+Întrebarea este: Ce face acest automat în cazul general? Observația esențială
+este că el rămîne în aceeași stare pe caractere \texttt{1} și alternează între
+cele două stări pe caractere \texttt{0}. Rezultă că automatul se va afla în
+starea de acceptare ($p$) ori de cîte ori va fi văzut un număr par de
+caractere \texttt{0}. Formal, spunem că automatul recunoaște limbajul
+
+$$L = \{ s\ |\ s \in \{0, 1\}^{*}\ \textrm{și $s$ conține un număr par de
+  zerouri} \}$$
+
+De regulă avem de rezolvat problema inversă: dîndu-se un limbaj, dorim să
+construim un AFD care să-l recunoască. În acest caz, strategia este să
+înțelegem ce anume este reprezentativ pentru porțiunea din șir văzută pînă la
+caracterul curent și să definim stările automatului ca să captureze acea
+informație. Pentru automatul din Figura \ref{fig:automate-unu-pare},
+informația reprezentativă este paritatea numărului de zerouri. De aceea am și
+denumit stările $p$ (automatul a citit un număr par de zerouri, inițial 0) și
+$i$ (automatul a citit un număr impar de zerouri).
+
+
+\subsection{Alte exemple de automate}
+
+Ca să ne familiarizăm cu procesul de gîndire prin care concepem un AFD pentru
+un limbaj dat, vom da cîteva exemple. Încercați să descoperiți voi înșivă ce
+limbaje recunosc aceste automate, înainte de a citi descrierile!
+
+\import{./figures}{kmp-3-1.tex}
+
+Automatul din Figura \ref{fig:automate-3-de-1} ține evidența
+numărului de caractere \texttt{1} întîlnite: 0, 1, 2 sau 3 și
+peste. Într-adevăr, stările $0$, $1$, $2$ și $3$ au tocmai acest
+scop. Automatul acceptă șirurile care conțin cel puțin 3 caractere \texttt{1}.
+
+\import{./figures}{kmp-1-even-pos.tex}
+
+Automatul din Figura \ref{fig:automate-0-poziții-pare} acceptă șirurile
+care conțin \texttt{1} pe toate pozițiile pare. Pentru acest limbaj trebuie să
+ținem evidența a două informații: paritatea numărului de caractere citite
+(indicată de stările $p$ și $i$) și dacă am văzut, pe orice poziție pară
+anterioară, un caracter \texttt{0}. În situația din urmă, automatul trece
+într-o stare „de eroare”, $e$, în care el rămîne tot restul șirului și din
+care nu mai revine niciodată într-o stare de acceptare. Astfel, automatul va
+respinge toate șirurile în care vede un \texttt{0} pe o poziție pară și le va
+accepta pe restul.
+
+\import{./figures}{kmp-0-2k-3k.tex}
+
+Automatul din Figura \ref{fig:automate-0-2k-3k} operează pe un alfabet unar:
+șirurile conțin doar caracterul \texttt{0}. Observăm că el acceptă doar șiruri
+care constau din $n$ simboluri, unde $n=6k$ sau $n=6k+2$ sau $n=6k+3$ sau
+$n=6k+4$. Cu alte cuvinte, șiruri a căror lungime este multiplu de 2 sau
+multiplu de 3.
+
+\import{./figures}{kmp-multiples-of-3.tex}
+
+Automatul din Figura \ref{fig:automate-multipli-de-3} operează pe alfabetul
+cifrelor zecimale. Dacă studiem cum sînt grupate cifrele, vom observa că
+automatul își schimbă starea în funcție de restul modulo trei al ultimei cifre
+citite. De exemplu, o cifră 1, 4 sau 7 va cauza trecerea în următoarea stare
+(ciclic). Astfel observăm că starea $k$ arată că suma cifrelor citite pînă în
+prezent este congruentă cu $k$ modulo 3. În fapt, automatul acceptă numere
+naturale divizibile cu 3.
+
+
+\section{Automate pentru recunoașterea de subșiruri}
+
+Să revenim la problema căutării unui subșir într-un șir. De exemplu, pe
+alfabetul binar \texttt{\{a, b\}}, să scriem un automat care ne ajută să
+găsim, în șirul dat la intrare, toate aparițiile șablonului \texttt{aab}.
+Metoda este să scriem un automat care recunoaște toate șirurile
+\textbf{terminate} în \texttt{aab}. Atunci automatul se va afla într-o stare
+de acceptare imediat după fiecare apariție a șablonului \texttt{aab}.
+
+\import{./figures}{kmp-pattern-aab.tex}
+
+Observăm că spre dreapta avem exact trei săgeți corespunzătoare caracterelor
+șablonului: \texttt{a}, \texttt{a}, \texttt{b}. Restul săgeților rămîn în
+aceeași stare sau merg spre stînga. Intuitiv, cele patru stări semnifică:
+
+\begin{itemize}
+\item $0$: Ultimele caractere văzute nu sînt interesante.
+\item $1$: Ultimul caracter văzut este \texttt{a}.
+\item $2$: Ultimele două caractere văzute sînt \texttt{aa}.
+\item $3$: Ultimele trei caractere văzute sînt \texttt{aab}.
+\end{itemize}
+
+În cazul general, starea $k$ înseamnă că ultimele $k$ simboluri citite de la
+intrare coincid cu prefixul de lungime $k$ al șablonului. De aceea, este
+relativ clar că avem nevoie de trei săgeți care consumă caracterele
+\texttt{a}, \texttt{a}, \texttt{b} și merg exact cu o stare spre dreapta
+fiecare. Mai puțin evident este unde trebuie să ducă săgețile care merg spre
+stînga.
+
+Un exemplu relevat este săgeata care ciclează în starea $2$ pentru simbolul
+\texttt{a}. Într-adevăr, dacă ultimele două caractere văzute sînt \texttt{aa}
+și mai vedem încă unul, rezultă că ultimele trei caractere văzute sînt
+\texttt{aaa}. Dintre acestea, ultimele două încă se potrivesc cu definiția
+stării $2$, deci automatul rămîne în acea stare. De exemplu, pentru șirul de
+intrare \texttt{aaaab}, automatul va trece succesiv prin stările $0, 1, 2, 2,
+2, 3$ și va accepta șirul. Pentru același motiv, automatul trece din starea
+$3$ în starea $1$ pe simbolul \texttt{a}: putem folosi acel simbol ca eventual
+început al unei noi apariții a lui \texttt{aab}.
+
+Să încheiem această secțiune cu un exemplu mai complex: un automat care
+recunoaște subșirul \texttt{abacaba} în alfabetul literelor mici.
+
+\import{./figures}{kmp-pattern-abacaba.tex}
+
+Și în Figura \ref{fig:automate-subșir-abacaba} recunoaștem săgețile spre
+dreapta care consumă cîte un caracter din șablon. Detaliem și traiectoriile a
+două săgeți spre stînga:
+
+\begin{itemize}
+\item În starea $3$, ultimele caractere văzute sînt \texttt{aba}. Săgeata din
+  starea $3$ în starea $2$ pe simbolul \texttt{b} înseamnă că ultimele patru
+  caractere văzute sînt \texttt{abab}, dintre care putem refolosi sufixul
+  \texttt{ab}, cum ar fi de exemplu pentru șirul de intrare
+  \texttt{ab\textbf{abacaba}}.
+\item În starea $7$, ultimele caractere văzute sînt \texttt{abacaba}.  Săgeata
+  din starea $7$ în starea $4$ pe simbolul \texttt{c} înseamnă că ultimele opt
+  caractere văzute sînt \texttt{abacabac}, dintre care putem refolosi sufixul
+  \texttt{abac}, cum ar fi de exemplu pentru șirul de intrare
+  \texttt{abac\textbf{abacaba}}.
+\end{itemize}
+
+Dacă doriți să învățați mai multe despre automate finite și, în general, despre teoria limbajelor formale, vă recomand formidabila carte \href{https://github.com/surbhi498/book/blob/master/Introduction\%20to\%20the\%20Theory\%20of\%20Computation\%20by\%20Michael\%20Sipser.pdf}{Introduction to the Theory of Computation} de Michael Sipser.
+
+
+\section{Algoritmul de căutare cu automate finite}
+
+Acum, să generalizăm exemplele din secțiunea anterioară. Dorim să construim un
+automat care să recunoască un șablon arbitrar $P$ primit la intrare. Putem
+deja spune destul de multe lucruri despre acest automat:
+
+\begin{itemize}
+\item El va avea $m + 1$ stări numerotate de la $0$ la $m$ (reamintim că $m \noteq |P|$).
+\item Starea inițială este $0$.
+\item Unica stare de acceptare este $m$.
+\item Rămîne să definim matricea de tranziție, notată cu $\delta(q, c)$,
+  pentru fiecare stare $q$ și fiecare caracter $c$.
+\end{itemize}
+
+Dacă reușim să construim matricea de tranziție, algoritmul va rula în mod
+banal în $\mathcal{O}(n)$: tot ce are de făcut este să consume un caracter și
+să treacă în noua stare! Ori de cîte ori ajunge în starea $m$, algoritmul
+raportează o apariție a lui $P$.
+
+Așadar, cum definim $\delta(q, c)$? Din Figurile \ref{fig:automate-subșir-aab}
+și \ref{fig:automate-subșir-abacaba} deducem un principiu general, a cărui
+demonstrație formală o omitem. Dacă automatul se află în starea $q$, înseamnă
+că ultimele $q$ caractere citite coincid cu prefixul $P_q$. Dacă presupunem că
+următorul caracter întîlnit este $c$, atunci ultimele $q + 1$ caractere citite
+sînt $P_{q}c$. Dintre acestea, încercăm să refolosim cît mai multe dintre
+ultimele, ca să rămînem într-o stare $k$ cît mai mare.
+
+Formal, cînd căutăm un șablon $P$ într-un șir $S$, matricea de tranziție este:
+
+$$\delta(q, c) = \max \{ k\ |\ P_k \sqsupseteq P_{q}c \}$$
+
+De aici decurge programul de mai jos, care construiește matricea în mod naiv,
+în $\mathcal{O}(|\Sigma| \cdot m^3)$. Complexitatea totală este
+$\mathcal{O}(|\Sigma| \cdot m^3 + n)$.
+
+\begin{minted}{c}
+#include <stdio.h>
+#include <string.h>
+
+const int MAX_N = 1'000'000;
+const int SIGMA = 26;
+
+char s[MAX_N + 1], p[MAX_N + 1];
+int d[MAX_N + 1][SIGMA];
+int n, m;
+
+int min(int x, int y) {
+  return (x < y) ? x : y;
+}
+
+bool naive_compare(char* a, char* b, int len) {
+  int i = 0;
+  while ((i < len) && (a[i] == b[i])) {
+    i++;
+  }
+
+  return (i == len);
+}
+
+// Returnează true dacă și numai dacă P_k este sufix al lui P_{q}c.
+bool is_suffix(int k, int q, char c) {
+  return
+    (k == 0) ||
+    ((p[k - 1] == c) && naive_compare(p, p + (q - k + 1), k - 1));
+}
+
+void build_delta() {
+  for (int q = 0; q <= m; q++) {
+    for (int c = 0; c < SIGMA; c++) {
+      int k = min(q + 1, m); // Nu putem depăși starea m.
+      while (!is_suffix(k, q, c + 'a')) {
+        k--;
+      }
+      d[q][c] = k;
+    }
+  }
+}
+
+int main() {
+  scanf("%s %s", s, p);
+  n = strlen(s);
+  m = strlen(p);
+
+  build_delta();
+
+  int q = 0;
+  for (int i = 0; i < n; i++) {
+    q = d[q][s[i] - 'a'];
+    if (q == m) {
+      printf("Deplasare validă: %d\n", i - m + 1);
+    }
+  }
+
+  return 0;
+}
+\end{minted}
+
+
+\section{Algoritmul Knuth-Morris-Pratt}
+
+Înarmați cu aceste cunoștințe, putem analiza algoritmul KMP. El îmbunătățește
+major două aspecte ale algoritmului de căutare cu automate:
+
+\begin{enumerate}
+\item Reduce memoria necesară de la $\mathcal{O}(|\Sigma| \cdot m)$ la
+  $\mathcal{O}(m)$.
+\item Reduce timpul de calcul al informațiilor necesare de la
+  $\mathcal{O}(|\Sigma| \cdot m^3)$ la $\mathcal{O}(m)$.
+\end{enumerate}
+
+Algoritmul calculează o \textbf{funcție de prefix} $\pi$, un vector cu $m$
+elemente, dependent doar de $P$, dar nu de $S$ nici de mărimea alfabetului.
+Funcția de tranziție $\delta$ răspundea la întrebarea (în limbaj natural):
+„Sînt în starea $q$ și văd la intrare caracterul $c$. În ce stare să trec?”
+Funcția $\pi$ răspunde la o întrebare similară: „Sînt în starea
+$q$. Presupunînd că următorul caracter de la intrare nu se potrivește, în ce
+stare să trec?”
+
+Pentru a înțelege de ce această informație este semnificativă, să studiem
+comportamentul algoritmului cu automate finite pentru datele din figura
+\ref{fig:automate-funcția-pi}.
+
+\import{./figures}{kmp-pi-function.tex}
+
+Automatul va găsi o deplasare validă și va trece în starea $|P| = 7$ după ce
+consumă caracterele $S[0 \dots 9]$. Apoi va consuma următorul caracter
+(\texttt{b}) și va trece din starea $7$ în starea $\delta(7, \texttt{b}) = 2$,
+deoarece poate reutiliza ultimele două caractere, \texttt{ab}. În fapt,
+automatul precalculează cel mai lung sufix al lui $P_7$ care este și sufix al
+lui $P_7$ și care poate fi extins cu caracterul \texttt{b}.
+
+Algoritmul KMP are o abordare ușor diferită: el evaluează \textbf{toate}
+prefixele lui $P_7$ care sînt și sufixe ale lui $P_7$, respectiv $P_3 =
+\texttt{aba}$ și $P_1 = \texttt{a}$. Algoritmul încearcă să treacă în starea
+3, dar constată că $P_3$ nu poate fi extins cu caracterul \texttt{b} (căci
+$\texttt{b} \neq P[3] = \texttt{c}$). Apoi, algoritmul încearcă să treacă în
+starea 1 și constată că $P_1$ poate fi extins. Așadar, algoritmul trece în
+starea 1, apoi consumă caracterul de la intrare (\texttt{b}) și urcă în starea
+2.
+
+Rezultă că funcția de prefix $\pi$ aferentă unui șablon $P$ trebuie să
+calculeze, pentru fiecare stare $q$, toate prefixele lui $P_q$ care sînt și
+sufixe al lui $P_q$. În fapt, lucrurile sînt mai simple. Este suficient ca
+$\pi[q]$ să stocheze doar cel mai lung dintre aceste prefixe, din care apoi le
+putem deduce pe următoarele. De exemplu, prefixele lui $P_7 =
+\texttt{abacaba}$ care sînt și sufixe sînt $P_3 = \texttt{aba}$ și $P_1 =
+\texttt{a}$, dar observăm că, la rîndul său, $P_1$ este prefix și sufix al lui
+$P_3$. De aceea, lista completă a prefixelor lui $P_q$ care sînt și sufixe va
+fi $\pi[q], \pi[\pi[q]], \pi[\pi[\pi[q]]], \dots$
+
+Formal, definiția lui $\pi$ este:
+
+$$\pi(q) = \max \{ k\ |\ k < q \textrm{ și } P_k \sqsupset P_q \}$$
+
+Cum construim vectorul $\pi$? În mod foarte elegant, $P$ trebuie să răspundă
+la aceeași întrebare despre el însuși ca și despre vectorul $S$: dacă mă aflu
+în starea $q$, care este cel mai lung prefix al lui $P$ care este și sufix al
+lui $P_q$?
+
+Redăm implementarea algoritmului. Precizăm că indicii în \mintinline{c}{pi[]}
+sînt decalați cu 1, deoarece vectorul este indexat de la zero. De exemplu,
+informația „pentru șirul \texttt{abacaba}, cel mai lung prefix care este și
+sufix este \texttt{aba}” se notează la poziția 6, așadar
+\mintinline{c}{pi[6] = 3}.
+
+\begin{minted}{c}
+#include <stdio.h>
+#include <string.h>
+
+const int MAX_N = 1'000'000;
+
+char s[MAX_N + 1], p[MAX_N + 1];
+int pi[MAX_N + 1];
+int n, m;
+
+void build_pi() {
+  pi[0] = 0;
+  int k = 0;
+  for (int q = 1; q < m; q++) {
+    while ((k > 0) && (p[k] != p[q])) {
+      k = pi[k - 1];
+    }
+    if (p[k] == p[q]) {
+      k++;
+    }
+    pi[q] = k;
+  }
+}
+
+void kmp() {
+  int q = 0; // starea curentă
+  for (int i = 0; i < n; i++) {
+    while ((q > 0) && (p[q] != s[i])) {
+      q = pi[q - 1];
+    }
+    if (p[q] == s[i]) {
+      q++;
+    }
+    if (q == m) {
+      printf("Deplasare validă: %d\n", i - m + 1);
+    }
+  }
+}
+
+int main() {
+  scanf("%s %s", s, p);
+  n = strlen(s);
+  m = strlen(p);
+
+  build_pi();
+  kmp();
+
+  return 0;
+}
+\end{minted}
+
+
+\subsection{Analiza complexității}
+
+Aparent, construcția lui $\pi$ poate dura $\mathcal{O}(m^2)$, întrucît fiecare
+buclă \mintinline{c}{while} poate face $m$ iterații. Totuși, algoritmul KMP,
+ca și automatul finit, avansează spre dreapta cel mult cu o stare la fiecare
+caracter citit. De aceea, numărul de incrementări ale lui $k$ în funcția
+\mintinline{c}{build_pi()} este de cel mult $m-1$, iar numărul de
+scăderi nu poate fi mai mare. Funcția are complexitatea amortizată
+$\mathcal{O}(m)$. Prin același raționament, funcția \mintinline{c}{kmp()} are
+complexitatea amortizată $\mathcal{O}(n)$, iar complexitatea totală a
+algoritmului KMP este $\mathcal{O}(m + n)$.
+
+\section{Aplicații}
+
+Iată două aplicații foarte directe. Secțiunea de probleme conține aplicații mai complexe.
+
+\subsection*{Test de rotație}
+
+Date fiind două șiruri $S$ și $T$, determinați dacă $T$ este rotația lui $S$.
+
+Soluție: Concatenăm $S$ cu el însuși. În șirul $S + S$ îl căutăm pe $T$.
+
+\subsection*{Completarea unui palindrom}
+
+Dat fiind un șir $S$, adăugați cît mai puține caractere la finalul lui pentru a îl face palindrom.
+
+Soluție: Ne interesează cel mai lung sufix al lui $S$ care este palindrom. Prefixul dinaintea acestui palindrom trebuie răsturnat și adăugat după $S$. De aceea, Construim șirul $S^R + \# + S$. Pe acest șir calculăm funcția $\pi$. Prin definiție, $\pi[n - 1]$ ne arată cel mai lung sufix al lui $S$ care este prefix al lui $S^R$, adică exact cel mai lung sufix palindromic al lui $S$.

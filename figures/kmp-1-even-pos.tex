@@ -1,0 +1,19 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[automata-pic]
+    \node[state, initial, accepting] (qp) {$p$};
+    \node[state, right of=qp, accepting] (qi) {$i$};
+    \node[state, right of=qi] (qe) {$e$};
+
+    \draw
+    (qp) edge[bend left, above] node{0, 1} (qi)
+    (qi) edge[bend left, above] node{1} (qp)
+    (qi) edge node[above]{0} (qe)
+    (qe) edge[loop above] node{0, 1} (qe)
+    ;
+  \end{tikzpicture}
+
+  \caption{}
+  \label{fig:automate-0-poziții-pare}
+\end{figure}
