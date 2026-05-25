@@ -1,0 +1,90 @@
+\chapter{Quicksort ternar}
+
+În acest scurt capitol vom studia un algoritm simplu și util, dar cvasinecunoscut. Ca întotdeauna, pot exista alți algoritmi mai scurți sau mai rapizi, însă fiecare armă pe care ne-o adăugăm la arsenal este binevenită.
+
+\section{Algoritmul}
+
+Dacă dorim să sortăm naiv $n$ șiruri de cîte $m$ caractere, atunci sortarea naivă (de exemplu \ccode{std::sort}) va avea o complexitate de $\bigoh(mn \log n)$, întrucît compararea a două stringuri durează $\bigoh(m)$. Această sortare este agnostică. Ori de cîte ori compară două șiruri, ea repornește de la primul caracter. Dar, pe măsură ce intervalele de sortat se fragmentează, șirurile vor începe să aibă prefixe comune, posibil lungi. Ar fi frumos să evităm recompararea lor.
+
+Algoritmul de quicksort ternar (engl. \href{https://en.wikipedia.org/wiki/Multi-key_quicksort}{Multi-key quicksort}) face exact acest lucru. Algoritmul alege un caracter pivot, $p$ și face o partiționare similară cu quicksort, dar în trei categorii:
+
+\begin{enumerate}
+  \item Stringuri care au pe prima poziție un caracter mai mic decît $p$.
+  \item Stringuri care au pe prima poziție caracterul $p$.
+  \item Stringuri care au pe prima poziție un caracter mai mare decît $p$.
+\end{enumerate}
+
+Algoritmul se reapelează pentru aceste trei categorii, cu o observație esențială: știm că șirurile din categoria (2) au primul caracter identic, deci le vom reexamina începînd cu al doilea caracter. La fel procedăm și pentru caracterele următoare.
+
+\section{Implementare}
+
+\begin{minted}{c}
+char c[N][MAX_LEN + 1]; // conținutul șirurilor
+char* s[N];             // ordinea șirurilor
+
+// Sortează șirurile s[left...right), care sînt egale pînă la poziția pos-1.
+// Modifică s[], dar nu copiază șirurile în sine, căci ar fi costisitor.
+void tsort(int left, int right, int pos) {
+  if (right - left <= 1) {
+    return;
+  }
+
+  int i = left, lt = left, gt = right;
+  char pivot = s[left][pos];
+
+  // Invariant de buclă:
+  // * s[left ... lt)     al pos-lea caracter este < pivot
+  // * s[lt ... i)        al pos-lea caracter este == pivot
+  // * s[i]               șirul în curs de evaluare
+  // * s(i ... gt)        șiruri încă neevaluate
+  // * s[gt ... right)    al pos-lea caracter este > pivot
+  while (i < gt) {
+    if (s[i][pos] < pivot) {
+      swap(s[i++], s[lt++]);
+    } else if (s[i][pos] > pivot)  {
+      swap(s[i], s[--gt]);
+    } else {
+      i++;
+    }
+  }
+
+  tsort(left, lt, pos);
+  if (s[lt][pos] != '\0') {
+    tsort(lt, gt, pos + 1);
+  }
+  tsort(gt, right, pos);
+}
+
+int main() {
+  ...
+  for (int i = 0; i < N; i++) {
+    s[i] = (char*)c[i];
+  }
+  tsort(0, N, 0);
+  ...
+}
+\end{minted}
+
+Remarcăm că algoritmul nu mută niciodată \textit{conținutul} șirurilor, ci doar interschimbă \textit{pointerii} la șiruri. Eu am ales să fac asta ținînd în \ccode{s} pointeri la șirurile efective. Dacă preferați, puteți gestiona ordinea folosind indici de linie într-o matrice de caractere sau alte tehnici.
+
+\href{https://algs4.cs.princeton.edu/lectures/keynote/51StringSorts.pdf#page=49}{Complexitatea  teoretică} este egală cu a algoritmului quicksort obișnuit, dar operația de bază este compararea de caractere individuale, nu de șiruri.
+
+\section{Benchmarks}
+
+Am făcut \href{https://github.com/CatalinFrancu/nerdvana/blob/main/strings/ternary-qsort/benchmark.cpp}{benchmark-uri} cu alte două metode: stringuri STL sortate cu STL și stringuri C sortate cu STL. Setul de date conține 1.000.000 de șiruri aleatoare de lungime între 20 și 50. Rezultatele au fost:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lc}
+    \textbf{metodă} & \textbf{timp} \\
+    \hline
+    \ccode{std::sort} pe \ccode{string} C++ & 445 ms \\
+    \ccode{std::sort} pe \ccode{char*}      & 321 ms \\
+    sortare ternară pe \ccode{char*}        & 125 ms \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Rezultatele variază, dar nu drastic, în funcție de distribuția literelor din șiruri. Sortarea ternară tratează bine cazurile degenerate (în special situațiile cu prefixe egale lungi).
+
+Mai important, acest algoritm ne permite să intervenim \textbf{în timpul sortării} pentru a folosi valorile parțiale, după cum vom vedea în problemele următoare.

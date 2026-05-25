@@ -1,0 +1,138 @@
+\section{Probleme}
+
+\subsection{Problema  Cuvinte (ONI 2021, clasele 11-12)}
+\label{problem:cuvinte}
+
+\href{https://kilonova.ro/problems/65}{enunț}
+$\bullet$
+\hyperref[code:cuvinte]{sursă}
+
+\begin{remark}
+  Dacă setul inițial conține două cuvinte $P$ și $S$ unde $P \sqsubseteq S$ îl putem ignora pe $S$.
+\end{remark}
+
+\begin{proof}
+  Dacă un cuvînt generat, $C$, era compatibil cu setul inițial, el va fi compatibil și cu setul fără $S$ (doar am eliminat o restricție). Dacă era incompatibil din cauza lui $P$ sau a lui $S$, va fi incompatibil și cu setul fără $S$. Există trei cazuri posibile și în toate trei continuă să existe o incompatibilitate între $C$ și $P$:
+
+  \begin{enumerate}
+    \item $C \sqsubseteq P \sqsubseteq S$
+    \item $P \sqsubseteq C \sqsubseteq S$
+    \item $P \sqsubseteq S \sqsubseteq C$
+  \end{enumerate}
+\end{proof}
+
+Vom elimina toate cuvintele din set care au prefixe tot în set și vom denumi ceea ce rămîne \textbf{setul redus}.
+
+Mai departe, mie mi-a sărit în ochi exemplul 2 din enunț. El este suficient de mic încît să-l putem analiza de mînă, iar răspunsul este suficient de mare încît să ne confirme orice intuiție avem despre soluție. O primă intuiție este că răspunsul este un produs de factori, dintre care unii vor fi mici. Așadar, să folosim din plin uneltele pe care ni le oferă GNU/Linux! \emoji{slightly-smiling-face}
+
+\begin{verbatim}
+[cata@neil cuvinte]$ factor 925829353
+925829353: 31 89 335567
+[cata@neil cuvinte]$ echo '925829353 + 1000000007' | bc | factor
+1925829360: 2 2 2 2 3 3 5 7 7 13 13 17 19
+\end{verbatim}
+
+Setul redus este ($aaaab$, $aab$, $bb$). Are sens să adăugăm cuvinte în ordinea crescătoare a lungimii, deoarece un cuvînt odată ales va interzice adăugarea altor cuvinte cărora el le este prefix.
+
+\textbf{Lungime 2}. Ce cuvinte putem adăuga? Din cele $3 \times 3 = 9$ posibile, scădem prefixele de lungime 2 existente în setul de intrare, deci $aa$ și $bb$. Rămîn 7 posibilități. Să alegem una și să o denumim simbolic $pp$. Nu contează dacă $pp$ este $ac$ sau $ca$ sau altceva. Ce contează este că orice continuare a lui $pp$ cu alte litere devine ilegală.
+
+\textbf{Lungime 3}. Din $3^3 = 27$ de posibilități, 8 sînt ilegale:
+
+\begin{itemize}
+  \item $bb$ și $pp$ urmate de orice caracter. Vom nota continuările cu caracterul $?$, așadar $bb?$ și $pp?$.
+  \item Prefixele de lungime 3 din setul de intrare, deci $aaa$ și $aab$. Rămîn 19. Să generăm un nou cuvînt simbolic, $qqq$. Facem remarca încurajatoare că 7 și 19 se află printre factorii răspunsului așteptat.
+\end{itemize}
+
+\textbf{Lungime 4}. Din $3^4 = 81$ de posibilități, 25 sînt ilegale. Să detaliem puțin ca să obținem regula generală:
+
+\begin{itemize}
+  \item Existau deja 6 cuvinte de lungime 3: $bb?$ și $pp?$.
+  \item La acestea adăugăm cuvintele de la intrare de lungime fix 3: $aab$.
+  \item La acestea adăugăm cuvintele de lungime 3 generate: $qqq$.
+  \item Oricare dintre acestea \textbf{nu} pot fi extinse cu niciun caracter, deci $8 \times 3 = 24$ de cuvinte ilegale.
+  \item În plus, mai există un singur prefix de lungime 4 în șirul de intrare: $aaaa$.
+\end{itemize}
+
+Posibilitățile legale sînt $81-25=56$, dar nu contează, căci nu avem de generat cuvinte de lungime 4. Acum ne putem aventura să formulăm regula generală.
+
+\begin{itemize}
+  \item Operăm doar pe setul redus (eliminăm toate cuvintele care au prefixe în set).
+  \item Fie $\Sigma$ mărimea alfabetului.
+  \item Fie $l$ lungimea curentă a cuvintelor pe care le studiem.
+  \item Fie $f_l$ numărul de cuvinte de lungime $l$ din setul redus și fie $g_l$ numărul de cuvinte de lungime $l$ pe care trebuie să le generăm noi.
+  \item Fie $C_l$ numărul de cuvinte de lungime $l$ pe care nu avem voie să le mai extindem.
+  \item Atunci $C_l = (C_{l-1} + f_{l- 1} + g_{l - 1}) \cdot \Sigma$. Aceasta deoarece nici cuvintele deja interzise anterior, nici cele din setul redus, nici cele generate de noi de lungime exact $l - 1$ nu mai pot fi continuate în mod legal cu niciun caracter.
+  \item În plus, doar la pasul curent (fără repercusiuni la lungimile viitoare), nu avem să generăm cuvinte de lungime $l$ care apar ca prefixe în setul redus. De exemplu, la $l=4$ nu avem voie să generăm cuvîntul $aaaa$, dar la $l=5$ vom avea voie să generăm cuvintele $aaaaa$ sau $aaaac$.
+  \item Din toate posibilitățile rămase, alegem atîtea cuvinte cîte ne cer datele de intrare. Ordinea contează.
+\end{itemize}
+
+Să ne continuăm analiza exemplului.
+
+\textbf{Lungime 5}. Din $3^5 = 243$ de posibilități, 73 sînt ilegale: cele 24 anterioare $\times$ 3, plus singurul prefix de lungime 5 ($aaaab$). Din cele $243-73=170$ legale trebuie să alegem două, iar ordinea contează, deci $170 \times 169$ de posibilități. Să le denumim $rrrrr$ și $sssss$.
+
+\textbf{Lungime 6}. Din $3^6 = 729$ de posibilități, 225 sînt ilegale:
+
+\begin{itemize}
+  \item Cele 72 anterioare de lungime 5 (pentru completitudine, ele sînt $bb???$, $pp???$, $aab??$, $qqq??$).
+  \item Cele de la intrare de lungime fix 5 ($aaaab$).
+  \item Cele de lungime 5 generate ($rrrrr$, $sssss$).
+  \item Toate urmate de orice caracter, deci $75 \times 3 = 225$.
+  \item Nu există prefixe de lungime 6 între datele de intrare.
+\end{itemize}
+
+Rămîn $729 - 225 = 504$ moduri de a alege cuvîntul de lungime 6. Rezultatul este $7 \times 19 \times 170 \times 169 \times 504 \mod \np{1000000007} = \np{925829353}$.
+
+\subsubsection*{Detalii de implementare}
+
+Rămîne să răspundem eficient la trei clase de întrebări:
+
+\begin{enumerate}
+  \item Ce șiruri de la intrare sînt prefixe ale altora? Restul formează setul redus.
+  \item Cîte șiruri de lungime exact $l$ există în setul redus?
+  \item Cîte prefixe distincte de lungime $l$ există în setul redus?
+\end{enumerate}
+
+Editorialul recomandă un trie. Nu e rău, dar putem adapta quicksortul ternar pentru această problemă. Să considerăm iterația curentă, unde sortăm intervalul $[l, r)$ la poziția $pos$.
+
+Prima adaptare: dacă oricare dintre șiruri, fie el $s[i]$ cu $i \in [l, r)$, se termină la poziția $pos$, atunci notăm faptul că există un șir de lungime $pos$ (întrebarea 2 de mai sus). Mai mult, \textbf{nu mai reapelăm deloc} sortarea pentru subintervale ale lui $[l, r)$. Șirul $s[i]$ este prefix pentru toate celelalte, care deci nu fac parte din setul redus (întrebarea 1 de mai sus).
+
+A doua adaptare: dacă niciun șir din $[l, r)$ nu se termină la poziția pos, atunci știm că după partiționare zona din mijloc (șirurile care pe poziția $pos$ sînt egale cu pivotul) definește un prefix distinct de lungime $pos + 1$, la care nu vom ajunge la niciun alt moment pe parcursul sortării (întrebarea 3 de mai sus). Despre celelalte două zone încă nu știm nimic. Este posibil ca ele să fie vide.
+
+Programul include și o optimizare de viteză. Cînd recursivitatea rămîne cu un singur șir (deci $r = l + 1$), ea se va apela pînă la finalul șirului ca să constate că, la fiecare pas $pos$, există un prefix distinct de lungime $pos$. Această recursivitate poate avea adîncime \np{300000} pe teste patologice, ceea ce o face lentă și consumatoare de memorie. Am înlocuit acea recursivitate cu o buclă \ccode{for}.
+
+
+\subsection{Problema  Sabin (Baraj ONI 2015)}
+\label{problem:sabin}
+
+\href{https://kilonova.ro/problems/289}{enunț}
+$\bullet$
+\hyperref[code:sabin]{sursă}
+
+Soluția oficială recomandă folosirea unui trie sau calcularea unor hash-uri pe prefixele fiecărui string. Iată și o soluție care folosește doar sortarea.
+
+Mai întîi, să simplificăm determinarea similitudinii între două seturi de $k$ șiruri a cîte $p$ caractere. Varianta naivă compară efectiv perechi de șiruri. Iată o altă variantă care are tot complexitate $\bigoh(kp)$, dar reduce problema la una cunoscută: vom interclasa cele $k$ șiruri. De exemplu, din (\texttt{abc}, \texttt{def}, \texttt{ghi}) obținem \texttt{adgbehcfi}. Cu această organizare, două colecții de cărți au similitudinea $x$ dacă șirurile interclasate au lungimea prefixului comun de lungime $kx \leq l < k(x + 1)$.
+
+Atunci putem reformula problema astfel: pentru fiecare interogare dorim să aflăm numerele de șiruri cu care ea are prefixe comune de lungimi cel puțin $kx$, respectiv cel puțin $k(x + 1)$. Răspunsul la interogare este diferența acestor două numere.
+
+De aceea, vom genera explicit toate cele $q$ interogări, concatenînd $k$ șiruri din cele $m$. Apoi le vom sorta \textbf{împreună cu cele $n$ șiruri originale}. Mărimea totală a datelor de sortat va fi $(q + n)kp$, adică 18 MB. Pentru sortarea ternară, acesta este un fleac. \emoji{flexed-biceps} Iată șirurile sortate pentru exemplul din enunț.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{llll}
+    \textbf{șir} & \textbf{tip} & \textbf{lungimi de prefix dorite} & \textbf{răspuns} \\
+    \hline
+    \texttt{atbrczds} & șir & & \\
+    \texttt{atbrxxxx} & interogare & [2, 4) & 0 \\
+    \texttt{atfrffxs} & interogare & [2, 4) & 1 \\
+    \texttt{ftarsffs} & interogare & [2, 4) & 1 \\
+    \texttt{ftxxxxxx} & șir & & \\
+    \texttt{gfeafsaf} & interogare & [6, 8) & 2 \\
+    \texttt{gfeafsax} & șir & & \\
+    \texttt{gfeafsdf} & șir & & \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Să observăm că interogarea \texttt{gfeafsaf} are prefixe comune de lungime 7, respectiv 6 cu cele două șiruri care o urmează. În general, să considerăm momentul sortării cînd procesăm șirurile $[st \dots dr)$, care sînt cunoscute ca fiind egale pe primele $l$ poziții. Dintre aceste șiruri, unele sînt interogări, iar altele sînt șiruri originale. Pentru fiecare interogare ne întrebăm: nu cumva lungimea $l$ este exact lungimea $kx$? Dacă da, atunci notăm pe interogare numărul de șiruri din $[st, dr)$. Similar și pentru $k(x+1)$.
+
+Mai este o singură subtilitate care cere atenție. Este posibil ca o interogare să fie evaluată la aceeași lungime $kx$ de mai multe ori, pînă cînd la un moment dat ea va ajunge, în urma partiționării, în zona de mijloc și va avansa la lungimea $kx + 1$. Este important să nu-i atribuim un răspuns decît prima oară.
