@@ -1,0 +1,86 @@
+\section{Probleme}
+
+\subsection{Problema Carry Bit (IIOT 2023-2024 runda 3)}
+\label{problem:carry-bit}
+
+\href{https://kilonova.ro/problems/2165}{enunț}
+$\bullet$
+\hyperref[code:carry-bit]{sursă}
+
+\subsubsection*{Observații preliminare}
+
+Să considerăm două numere binare de lungime $l$, $p[0 \dots l-1]$ și $q[0 \dots l-1]$ (unde $p[0]$ și $q[0]$ sînt biții cei mai semnificativi). Cînd există depășire la adunare?
+
+\begin{itemize}
+  \item Dacă $p[0] = q[0] = 1$, atunci în mod evident există depășire.
+
+  \item Dacă $p[0] = q[0] = 0$, atunci nu există depășire. Ambele numere sînt mai mici decît $2^{l-1}$, deci suma lor este mai mică decît $2^l$.
+
+  \item Dacă $p[0] \neq q[0]$, atunci există depășire dacă și numai dacă există depășire la adunarea $p[1 \dots n-1] + q[1 \dots n-1]$.
+\end{itemize}
+
+Atunci, pentru problema dată, pentru interogarea $\langle x, y, l \rangle$ trebuie să aflăm prima poziție la care șirurile $a[x \dots]$ și $b[y \dots]$ coincid. Există depășire dacă și numai dacă (1) poziția este la distanță cel mult $l$ de pozițiile $x$, respectiv $y$, și (2) valorile care coincid sînt egale cu 1.
+
+În practică, este mai simplu să negăm unul dintre șiruri, să spunem $b$, deoarece problema găsirii primei \textbf{diferențe} între două subșiruri este mai abordabilă. Notăm acest șir cu $\bar{b}$.
+
+\subsubsection*{Soluția cu hashing}
+
+Menționez că există și o soluție mai simplă, bazată pe hashing (\href{https://kilonova.ro/submissions/176125}{exemplu}). Interpretăm șirurile ca pe numere într-o bază arbitrară, dar fixă. Nu baza 2, deoarece este foarte probabil că există teste contra ei. Pentru fiecare poziție $i$ calculăm valoarea hash a prefixului $a[0 \dots i]$. Atunci prin diferență de prefixe putem afla valoarea hash a oricărui subșir al lui $a$, și similar pentru $\bar{b}$.
+
+Dată fiind o interogare, căutăm binar prima lungime $w$ la care valorile hash pentru $a[x \dots x + w - 1]$ și $\bar{b}[y \dots y + w - 1]$ diferă. Apoi considerăm simplu cazurile descrise mai sus.
+
+\subsubsection*{Soluția cu șiruri de sufixe}
+
+Dacă concatenăm cele două șiruri (separate de un delimitator ca \texttt{\textbackslash0}), atunci putem reformula interogările astfel: date fiind două poziții $x$ și $y$, care este lungimea maximă a două subșiruri egale care încep de la acele poziții? Această problemă este aparent clasică și se numește \textit{longest common extension} (\textit{LCE}).
+
+Dacă nu ne vine ideea cu hashing, nu strică să avem și arma universală a șirurilor de sufixe. Construim cele trei informații necesare:
+
+\begin{enumerate}
+  \item Șirul de sufixe.
+  \item Vectorul $LCP$.
+  \item O structură pentru RMQ. Eu am folosit un AINT.
+\end{enumerate}
+
+Acum, date fiind pozițiile de start $x$ și $y$, aflăm cu RMQ lungimea $w$ a celui mai lung prefix comun al sufixelor care încep la pozițiile $x$ și $y$. Iau naștere aceleași trei cazuri ca mai sus:
+
+\begin{enumerate}
+  \item Dacă $w \geq l$, atunci $a$ și $\bar{b}$ coincid pe toată lungimea $l$. Echivalent, $a$ și $b$ diferă pe toată lungimea $l$, deci suma lor este exact $2^{l-1}$ și nu există depășire.
+
+  \item Altfel, dacă $a[x + w] = b[y + w] = 0$, atunci nu există depășire.
+
+  \item Altfel $a[x + w] = b[y + w] = 1$ și există depășire.
+\end{enumerate}
+
+
+\subsection{Problema Phone Book (Finala IIOT 2022-2023)}
+\label{problem:phone-book}
+
+\href{https://kilonova.ro/problems/457}{enunț}
+$\bullet$
+\hyperref[code:phone-book]{sursă}
+
+Această problemă este relativ „servită” pentru șiruri de sufixe.
+
+Cînd luăm în calcul un subșir al cuvîntului $i$ și ne întrebăm dacă este specific acelui cuvînt, trebuie să-l putem căuta rapid în toate celelalte cuvinte. De aceea, să construim șirul de sufixe al concatenării tuturor cuvintelor: $S = s_1 \backslash 0 \; s_2 \backslash 0 \; \dots \backslash 0 \; s_n \; \backslash 0$.
+
+Acum, să considerăm o poziție de start în interiorul cuvîntului $i$. Ne întrebăm: ca să obținem un subșir specific cuvîntului $i$, cîte caractere ar trebui să selectăm? Să spunem că el are poziția $k$ în vectorul de sufixe. \textbf{În principiu}, vrem să diferențiem subșirul de precedentul și de următorul din vectorul de sufixe. Deci trebuie să selectăm $1 + \max(LCP[k], LCP[k + 1])$ caractere.
+
+Situația se complică un pic deoarece nu ne deranjează dacă acel sufix mai apare altundeva \textbf{în cuvîntul $i$}. Deci trebuie să căutăm înainte și înapoi prin vectorul $LCP$ și să găsim cele mai apropiate sufixe care nu provin din cuvîntul $i$. Nu putem face naiv (liniar) această căutare, deoarece ea duce la timp pătratic dacă există puține cuvinte lungi. Dar putem procesa grupe de sufixe consecutive care provin din același cuvînt.
+
+Concret, pentru fiecare poziție din șirul de sufixe mai reținem două informații: (1) din ce cuvînt provine acel sufix și (2) care este lungimea sufixului (pînă la următorul delimitator \texttt{\textbackslash0}). Construim vectorul $LCP$ și informații de RMQ peste $LCP$.
+
+Acum căutăm grupe maximale de sufixe consecutive (lexicografic) care provin din același cuvînt. Dacă sufixele de la poziția $a$ la poziția $b$ toate provin din același cuvînt $i$, atunci pentru toate acestea sufixele relevante, precedent și următor, se află la pozițiile $a - 1$ și $b + 1$. De aceea, pentru fiecare poziție $a \leq k \leq b$, procedăm astfel:
+
+\begin{enumerate}
+  \item Calculăm $r_1 = RMQ(a - 1, k)$.
+
+  \item Calculăm $r_2 = RMQ(k, b + 1)$.
+
+  \item Calculăm $r = 1 + \max(r_1, r_2)$. Acesta este numărul de caractere necesare pentru a diferenția sufixul al $k$-lea, care provine din cuvîntul $i$, de orice alte subșiruri din orice alte cuvinte în afară de $i$.
+
+  \item Dacă sufixul curent are cel puțin $r$ caractere (pînă la sfîrșitul cuvîntului), atunci minimizăm răspunsul pentru cuvîntul $i$ cu valoarea $r$.
+
+  \item Altfel, sufixul curent nu are destule caractere pentru a-l putea diferenția de celelalte cuvinte.
+\end{enumerate}
+
+Ca optimizare, putem renunța la informațiile de RMQ. Putem calcula minimul pe intervalele $[a - 1, k]$ și $[k, b + 1]$, pentru toate valorile $k$, cu două treceri înainte și înapoi prin invervalul $[a, b]$.

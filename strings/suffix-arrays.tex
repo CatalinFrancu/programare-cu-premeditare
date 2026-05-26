@@ -1,0 +1,456 @@
+\chapter{Șiruri de sufixe}
+
+\section{Definiție}
+
+\begin{definition}[Șir de sufixe]
+  Șirul de sufixe al șirului $S$ de lungime $n$ este lista celor $n$ sufixe ale lui $S$ ordonată alfabetic.
+\end{definition}
+
+În practică nu stocăm efectiv sufixele, deoarece am avea nevoie de $\bigoh(n^2)$ memorie. În loc de asta, stocăm doar indicii de început ai sufixelor.
+
+\textbf{Exemplu}. Pentru $S$ = \texttt{abracadabra}, șirul de sufixe $A$ este:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ccl}
+    \textbf{poziție} & \textbf{valoare} & \textbf{sufix} \\
+    \hline
+    0  & 10 & \texttt{a} \\
+    1  &  7 & \texttt{abra} \\
+    2  &  0 & \texttt{abracadabra} \\
+    3  &  3 & \texttt{acadabra} \\
+    4  &  5 & \texttt{adabra} \\
+    5  &  8 & \texttt{bra} \\
+    6  &  1 & \texttt{bracadabra} \\
+    7  &  4 & \texttt{cadabra} \\
+    8  &  6 & \texttt{dabra} \\
+    9  &  9 & \texttt{ra} \\
+    10 &  2 & \texttt{racadabra} \\
+    \hline
+  \end{tabular}
+  \caption{Șirul de sufixe al șirului \texttt{abracadabra}.}
+\end{table}
+
+\section{Aplicații}
+
+Ca să apreciem utilitatea șirurilor de sufixe, înainte de a discuta construcția, iată cîteva aplicații care decurg imediat din șirul de sufixe:
+
+\subsection{Aparițiile unui subșir \texorpdfstring{$P$}{P} în \texorpdfstring{$S$}{S} (\textit{string matching})}
+
+Facem două căutări binare în $A$ pentru a găsi prima și ultima apariție a unui sufix care începe cu $P$. Putem face asta în mod naiv în $\bigoh(|P| \log n)$ sau în $\bigoh(|P| + \log n)$ cu vectorul LCP, discutat mai jos.
+
+Putem generaliza căutarea la o familie de șiruri, $S_1, S_2, \dots, S_k$. Construim șirul de sufixe $A$ al concatenării $S_1\#S_2\#\dots\#S_k$, unde $\#$ este orice caracter din afara alfabetului. Aparițiile lui $P$ în orice șir vor fi consecutive în $A$.
+
+\subsection{Rotația minimă dpdv lexicografic}
+
+\textbf{Exemplu}. Pentru șirul \texttt{banana}, rotația minimă este \texttt{abanan}. Vezi problema \href{https://onlinejudge.org/index.php?option=onlinejudge\&page=show_problem\&problem=660}{Glass Beads}.
+
+Construim șirul de sufixe al șirului $SS$ și luăm primul sufix din $A$ care începe pe o poziție mai mică decît $n$. După ce vom studia algoritmul de construcție vom învăța o metodă chiar mai simplă.
+
+\section{Cele mai lungi prefixe comune}
+
+\begin{definition}[Vectorul LCP]
+  Vectorul $LCP$ (engl. \textit{longest common prefix}) reține lungimea prefixului comun între fiecare două sufixe consecutive.
+\end{definition}
+
+Pentru șirul $S$ = \texttt{abracadabra}, vectorul este
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ccl}
+    \textbf{A} & \textbf{LCP} & \textbf{sufix} \\
+    \hline
+    10 &   & \texttt{a} \\
+     7 & 1 & \texttt{abra} \\
+     0 & 4 & \texttt{abracadabra} \\
+     3 & 1 & \texttt{acadabra} \\
+     5 & 1 & \texttt{adabra} \\
+     8 & 0 & \texttt{bra} \\
+     1 & 3 & \texttt{bracadabra} \\
+     4 & 0 & \texttt{cadabra} \\
+     6 & 0 & \texttt{dabra} \\
+     9 & 0 & \texttt{ra} \\
+     2 & 2 & \texttt{racadabra} \\
+    \hline
+  \end{tabular}
+  \caption{Șirul LCP al șirului \texttt{abracadabra}.}
+\end{table}
+
+Peste vectorul $LCP$ putem construi orice structură de tip RMQ (tabelă rară, arbore de intervale etc.) pentru a putea afla lungimea prefixului comun între orice două sufixe.
+
+\section{Aplicații}
+
+Toate aceste aplicații adaugă relativ puțin cod peste construcția propriu-zisă a vectorilor $A$ și $LCP$. Pentru că nu am dorit să poluez secțiunea de probleme cu prea mult cod redundant, le discutăm doar teoretic.
+
+\subsection{Cel mai lung subșir care apare de cel puțin două ori}
+
+\textbf{Exemplu}. Pentru șirul \texttt{hocuspocus}, cel mai lung subșir repetat este \texttt{ocus}. Vezi problema \href{https://onlinejudge.org/index.php?option=com_onlinejudge\&Itemid=8\&page=show_problem\&problem=2507}{GATTACA}.
+
+Lungimea acestui subșir este pur și simplu maximul din vectorul $LCP$. Pozițiile de start ale subșirului sînt cele două poziții din $A$ care generează acel maxim.
+
+\subsection{Cel mai lung subșir care apare de cel puțin \texorpdfstring{$k$}{k} ori}
+
+\textbf{Exemplu}. Pentru șirul \texttt{scoobydoobydoo} și $k = 3$, răspunsul este \texttt{oo}. Vezi problema \href{https://infoarena.ro/problema/substr}{Substr}.
+
+Extindem raționamentul anterior. Ce înseamnă că un șir de lungime $l$ apare de $k$ ori în șir? Înseamnă că există $k - 1$ valori consecutive în vectorul $LCP$, toate mai mari sau egale cu $l$. Așadar, putem folosi tehnica minimului în fereastră glisantă pentru a căuta minimul în fiecare subsecvență de lungime $k-1$ a vectorului $LCP$. Răspunsul este maximul acestor minime.
+
+\subsection{Cel mai scurt subșir care apare o singură dată}
+
+\textbf{Exemplu}. Pentru șirul \texttt{abababba}, cel mai scurt subșir unic este \texttt{bb}. Vezi problema \href{https://www.nerdarena.ro/problema/subunic}{Subunic}.
+
+Considerăm, pe rînd, fiecare poziție $i$ din șirul de sufixe. Pentru a diferenția sufixul care începe la $A[i]$ de alte subșiruri, trebuie să depășim prefixele comune pe care el le are cu subșirurile de la pozițiile $A[i - 1]$ și $A[i + 1]$. Așadar, trebuie să luăm $1 + \max(LCP[i], LCP[i + 1])$ caractere. Este necesar să ne asigurăm că acel număr de caractere este disponibil (că nu depășim sfîrșitul șirului $S$). Răspunsul este poziția $i$ care minimizează cantitatea de mai sus.
+
+\subsection{Cel mai lung subșir comun între două șiruri \texorpdfstring{$S$}{S} și \texorpdfstring{$T$}{T}}
+
+\textbf{Exemplu}. Pentru $S$ = \texttt{abacaba} și $T$ = \texttt{bbacba}, cel mai lung subșir comun este bac. Vezi problema \href{https://onlinejudge.org/index.php?option=onlinejudge\&page=show_problem\&problem=701}{DNA Sequencing}.
+
+Construim șirul de sufixe și vectorul $LCP$ ale șirului $S\#T$. Acum căutăm valoarea maximă în $LCP$ între două sufixe (consecutive) dintre care unul provine din $S$ și unul din $T$, adică valorile corespunzătoare din $A$ sînt una mai mică decît $|S|$ și una mai mare decît $|S|$.
+
+Putem generaliza acest algoritm și la aflarea celui mai lung subșir comun într-o familie de șiruri, $S_1, S_2, \dots, S_k$. Vezi problema \href{https://onlinejudge.org/index.php?option=com_onlinejudge\&Itemid=8\&page=show_problem\&category=0\&problem=2048}{Life Forms}.
+
+\subsection{Numărul de subșiruri distincte}
+
+\textbf{Exemplu}. Pentru $S$ = \texttt{ababa} există 9 subșiruri distincte: \texttt{a}, \texttt{ab}, \texttt{aba}, \texttt{abab}, \texttt{ababa}, \texttt{b}, \texttt{ba}, \texttt{bab}, \texttt{baba}. Vezi problemele \href{https://www.spoj.com/problems/DISUBSTR/}{Distinct Substrings} și \href{https://www.infoarena.ro/problema/ghicit}{Ghicit}.
+
+Ne punem întrebarea cîte subșiruri distincte încep la o poziție dată. Dar iterăm prin poziții în ordinea dată de șirul de sufixe. Să presupunem că la poziția $A[i]$ avem $LCP[i] = l$. Atunci primele $l$ subșiruri le-am contabilizat deja cînd am procesat poziția $A[i - 1]$. Toate celelalte, pînă la sfîrșitul șirului, sînt subșiruri nou întîlnite. Așadar, răspunsul este
+
+$$\frac{n(n + 1)}{2} \; - \; \sum_i LCP[i]$$
+
+\subsection{Cel mai lung subșir palindrom}
+
+\textbf{Exemplu}. Pentru șirul \texttt{anaaremere}, cel mai lung subșir palindrom este \texttt{remer}.
+
+Construim șirul de sufixe și vectorul $LCP$ al șirului $S\#S^R$, unde am notat cu $S^R$ șirul $S$ răsturnat. Pentru exemplul dat obținem șirul \texttt{anaaremere\#eremeraana}. Căutăm și returnăm valoarea maximă din $LCP$ care ia naștere între două sufixe din $S$ și respectiv din $S^R$.
+
+Pentru exemplul dat, sufixele \texttt{remeraana} și \texttt{remere\#eremeraana} vor fi consecutive în $A$ și vor avea o valoare $LCP$ de 5.
+
+\section{Construcția șirului de sufixe}
+
+Algoritmii sînt relativ clari în teorie, dar codul este surprinzător de complex.
+
+Există și algoritmi de construcție în $\bigoh(n)$ (vezi \href{https://en.wikipedia.org/wiki/Suffix_array}{Wikipedia}), dar nu sînt implementabili în timp de concurs.
+\subsection{Algoritmul în \texorpdfstring{$\bigoh(n^2 \log n)$}{O(n² log n)}}
+
+Cel mai simplu este să sortăm pur și simplu sufixele ca pe orice alte șiruri. Acest algoritm naiv funcționează în $\bigoh(n^2 \log n)$, deoarece sortarea presupune $\bigoh(n \log n)$ comparații, iar compararea șirurilor durează $\bigoh(n)$. Sortarea cu quicksort ternar, discutată anterior, se comportă bine pe șiruri aleatorii, dar este foarte lentă pe cazuri degenerate (multe caractere egale), deoarece suma lungimilor sufixelor este $\bigoh(n^2)$.
+
+\subsection{Algoritmul în \texorpdfstring{$\bigoh(n \log^2 n)$}{O(n log² n)}}
+
+Pentru acest algoritm și următorul, conceptul de bază este \textbf{dublarea prefixului}:
+
+\begin{enumerate}
+  \item Sortăm caracterele individuale (cu sortare prin numărare).
+  \item Sortăm toate subșirurile de două caractere.
+  \item Sortăm toate subșirurile de patru caractere.
+  \item \dots
+\end{enumerate}
+
+\href{https://www.infoarena.ro/siruri-de-sufixe}{Infoarena} menționează acest algoritm care face un efort de $\bigoh(n \log n)$ pentru fiecare dublare a prefixului, așadar $\bigoh(n \log^2)$ în total.
+
+Ne propunem să calculăm \textbf{permutarea inversă} șirului de sufixe, așadar să aflăm pentru fiecare poziție $i$ al câtelea sufix este $S[i \dots n - 1]$ în lista ordonată. Pentru lungimea $l = 2^0 = 1$, să inițializăm un vector cu ordinea fiecărei litere în alfabet. Aceasta este, într-adevăr, o sortare corectă a subșirurilor de lungime 1.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|c|cccccccccccc}
+    \textbf{$k$} & \textbf{$l = 2^k$} & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{c} & \texttt{a} & \texttt{d} & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{\$} \\
+    \hline
+    0 & 1 & 0 & 1 & 17 & 0 & 2 & 0 & 3 & 0 & 1 & 17 & 0 & $-\infty$ \\
+  \end{tabular}
+\end{table}
+
+Cum facem trecerea la $l = 2$? Observația-cheie este că un subșir de lungime $2^{k + 1}$ este o pereche de subșiruri de lungime $2^k$, iar toate subșirurile de lungime $2^k$ au fost deja ordonate la pasul anterior. Așadar, algoritmul va sorta vectorul de perechi $(0, 1)$, $(1, 17)$, $(17, 0)$ etc. Similar procedează și la pașii următori. Iată tabelul complet (sînt necesare trei iterații după cea inițială):
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|c|cccccccccccc}
+    \textbf{$k$} & \textbf{$l = 2^k$} & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{c} & \texttt{a} & \texttt{d} & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{\$} \\
+    \hline
+    0 & 1 & 0 & 1 & 17 & 0 & 2 & 0 & 3 & 0 & 1 & 17 & 0 & $-\infty$ \\
+    1 & 2 & 2 & 5 & 8 & 3 & 6 & 4 & 7 & 2 & 5 & 8 & 1 & 0 \\
+    2 & 4 & 2 & 6 & 10 & 3 & 7 & 4 & 8 & 2 & 5 & 9 & 1 & 0 \\
+    3 & 8 & 3 & 7 & 11 & 4 & 8 & 5 & 9 & 2 & 6 & 10 & 1 & 0 \\
+  \end{tabular}
+  \caption{Permutările obținute de algoritmul polilogaritmic. La final, ordinea lui \texttt{acadabra\$} este 4, indicînd că sufixul este mai mare decît \texttt{\$}, \texttt{a\$}, \texttt{abra\$} și \texttt{abracadabra\$}.}
+\end{table}
+
+Putem opri prematur algoritmul dacă el depistează $n$ clase distincte (adică a terminat de diferențiat toate sufixele). La final, rămîne doar să inversăm permutarea obținută.
+
+Algoritmul este mai simplu decît următorul și se comportă acceptabil în practică (pe calculatorul meu, 66 ms pentru $n = \np{200000}$, 460 ms pentru $n = \np{1000000}$).
+
+\subsubsection*{Implementare}
+
+Acesta este un fragment din \href{https://github.com/CatalinFrancu/nerdvana/blob/main/strings/suffix-arrays/prefix-doubling.cpp}{implementarea completă} cu generare de șiruri și \textit{benchmarking}. Codul primește un șir \ccode{s} de \ccode{n} caractere și construiește vectorul \ccode{sa[]}.
+
+\begin{minted}{c}
+struct sort_suffix_array {
+  const char* s;
+  int n, len;
+
+  int sa[N + 1];   // Șirul de sufixe. sa[i] = al i-lea sufix în ordine lexicografică
+  int ord[N + 1];  // ord[i] = sa^{-1}. ord[i] = ordinea lui s[i...n-1], cu duplicate
+  int cl[N + 1];   // cl[i] = clasa lui sa[i], cu duplicates
+
+  void init(char* s, int n) {
+    this->s = s;
+    this->n = n;
+  }
+
+  bool cmp(int i, int j) {
+    if (ord[i] != ord[j]) {
+      return (ord[i] < ord[j]);
+    }
+
+    i += len;
+    j += len;
+
+    return (i < n && j < n)
+      ? (ord[i] < ord[j])
+      : (i > j);
+  }
+
+  void build() {
+    for (int i = 0; i < n; i++) {
+      sa[i] = i;
+      ord[i] = s[i];
+      cl[i] = 0;
+    }
+
+    len = 1;
+    while (cl[n - 1] != n - 1) { // ne oprim cînd ajungem la n clase
+      std::sort(sa, sa + n, [this](int i, int j) {
+        return cmp(i, j);
+      });
+      for (int i = 1; i < n; i++) {
+        cl[i] = cl[i - 1] + cmp(sa[i - 1], sa[i]);
+      }
+      for (int i = 1; i < n; i++) {
+        ord[sa[i]] = cl[i];
+      }
+      len *= 2;
+    }
+  }
+
+  void verify() {
+    for (int i = 0; i < n - 1; i++) {
+      assert(strcmp(s + sa[i], s + sa[i + 1]) <= 0);
+    }
+  }
+};
+\end{minted}
+
+\subsection{Algoritmul în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)}}
+
+Avînd în vedere că sortăm $n$ perechi de valori cel mult $n$, putem sorta subșirurile folosind radix sort. Rezultatul este un algoritm mult mai rapid decît precedentul: 6 ms pentru $n = \np{200000}$, 33 ms pentru $n = \np{1000000}$. Dar implementarea este alunecoasă. Iar acest algoritm, dacă îl implementăm, trebuie să îl implementăm eficient. Altfel el se comportă comparabil sau chiar mai rău decît precedentul! De exemplu, \href{https://usaco.guide/adv/suffix-array?lang=cpp}{implementarea de pe USACO} rulează cam în 800 ms, dublu față de algoritmul în $\bigoh(n \log^2 n)$.
+
+Facem următoarele observații despre implementare:
+
+\begin{enumerate}
+  \item Adăugăm la finalul șirului un caracter fictiv, notat cu \texttt{\$}. În practică el este chiar terminatorul de șir, \texttt{\textbackslash0}.
+
+  \item Algoritmul operează circular pentru a evita întrebarea „există sau nu poziția cu $l$ mai la dreapta?”.
+
+  \item Algoritmul folosește 3 vectori. Vectorul $p$ este întotdeauna o permutare și indică o ordine parțială a sufixelor, corectă pînă la lungimea pasului curent. La final, $p$ va fi șirul de sufixe.
+
+  \item Vectorul $c$ reține, pe fiecare poziție, clasa subșirului care începe la acea poziție. Un subșir mai mic va fi într-o clasă mai mică. Clasele sînt contigue și încep de la 0.
+
+  \item Vectorul $cnt$ reține sume parțiale de frecvențe, întîi peste valorile ASCII, apoi peste clasele calculate în $c$ la pasul anterior. În radix sort, $cnt$ semnifică indicele ultimei poziții unde vom distribui elementele dintr-o clasă.
+\end{enumerate}
+
+\subsubsection*{Pasul inițial}
+
+La primul pas (caractere invididuale), vom avea:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|cccccc}
+    & \texttt{\$} & \texttt{a} & \texttt{b} & \texttt{c} & \texttt{d} & \texttt{r} \\
+    \hline
+    frecvențe & 1 & 5 & 2 & 1 & 1 & 2 \\
+    $cnt$ & 1 & 6 & 8 & 9 & 10 & 12 \\
+  \end{tabular}
+  \caption{Vectorul $cnt$ pentru caractere individuale. Sumele parțiale arată că în prima versiune a lui $p$ indicii caracterelor \texttt{a} vor fi [1, 6), indicii caracterelor \texttt{b} vor fi [6, 8) etc.}
+
+\end{table}
+
+Din $cnt$ calculăm vectorul $p$ (un fel de „versiunea 1 a șirului de sufixe”), care enumeră subșirurile de lungime 1 în ordine crescătoare.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|cccccccccccc}
+    & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 \\
+    \hline
+    $p$ & 11 & 10 & 7 & 5 & 3 & 0 & 8 & 1 & 4 & 6 & 9 & 2 \\
+  \end{tabular}
+  \caption{Vectorul $p$ pentru caractere individuale. El semnifică că primul prefix este $S[11] = $ \texttt{\$}, al doilea este $S[10] =$ \texttt{a} etc.}
+\end{table}
+
+În sfîrșit, din $p$ calculăm vectorul $c$, clasele de echivalență ale subșirurilor de lungime 1:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|cccccccccccc}
+    & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{c} & \texttt{a} & \texttt{d} & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{\$} \\
+    \hline
+    $c$ & 1 & 2 & 5 & 1 & 3 & 1 & 4 & 1 & 2 & 5 & 1 & 0 \\
+  \end{tabular}
+\end{table}
+
+Codul care realizează aceste lucruri este mai scurt decît descrierea sa în cuvinte:
+
+\begin{minted}{c}
+void build_single_letters() {
+  memset(cnt, 0, sizeof(int) * 256);
+  for (int i = 0; i < n; i++) {
+    cnt[(int)s[i]]++;
+  }
+  for (int i = 1; i <= 'z'; i++) {
+    cnt[i] += cnt[i - 1];
+  }
+
+  for (int i = 0; i < n; i++) {
+    p[--cnt[(int)s[i]]] = i;
+  }
+
+  c[p[0]] = 0;
+  for (int i = 1; i < n; i++) {
+    c[p[i]] = c[p[i - 1]] + (s[p[i]] != s[p[i - 1]]);
+  }
+  num_classes = 1 + c[p[n - 1]];
+}
+\end{minted}
+
+\subsubsection*{Dublarea prefixului}
+
+Să considerăm că avem vectorii $p$ și $c$ pentru o lungime $l$ și dorim să-i actualizăm pentru lungimea $2l$. Îl vom modifica pe $p$ doar pe subsecvențele unde valorile $c$ corespunzătoare sînt egale. Vom rearanja, la nevoie, acele zone din $p$.
+
+Reamintim imaginea de ansamblu. Vectorul $p$ ne garantează că, pentru $i < j$, avem $s[p[i] \dots p[i] + l) \leq s[p[j] \dots p[j] + l)$. Acum dorim să facem un radix sort: La egalitate, dorim să resortăm doi indici $i$ și $j$ conform cu subșirurile $s[p[i] + l \dots p[i] + 2l)$ și $s[p[j] + l \dots p[j] + 2l)$.
+
+Să considerăm cele cinci litere \texttt{a} din \texttt{abracadabra\$}. Dorim să sortăm perechile \texttt{ab}, \texttt{ac}, \texttt{ad}, \texttt{ab}, \texttt{a\$}. Cu alte cuvinte, dorim să re-emitem acei indici (10, 7, 5, 3, 0), în aceeași zonă din $p$ (pozițiile [1, 6)), dar ținînd cont de caracterul care urmează după fiecare \texttt{a}. Aceasta este partea crucială și destul de dificilă a codului. Să urmărim întîi exemplul pas cu pas, după care codul va deveni abordabil.
+
+Ce ar face radix sort? Ar sorta întîi perechile după membrul drept, apoi, stabil, după membrul stîng. Dar noi avem deja perechile sortate după membrul drept, de la pasul anterior! Trebuie doar să ne amintim să nu iterăm prin subșiruri în ordinea dată de $p$, ci într-o ordine decalată cu $l$ poziții. Acesta este un cîștig major de eficiență, căci practic noi facem doar o singură trecere din cele două pe care le face teoretic radix sort.
+
+De aceea, construim un vector auxiliar $p2$ unde $p2[i]$ stochează al $i$-lea cel mai mic sufix dacă ne uităm cu o poziție mai la dreapta (sau, la pasul $l$, cu $l$ poziții circular la dreapta). Astfel, vectorul $p2$ ne permite să iterăm în ordine lexicografică prin jumătățile drepte ale perechilor de ordonat.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|cccccccccccc}
+    & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 \\
+    \hline
+    $p$ pentru $l = 1$ & 11 & 10 & 7 & 5 & 3 & 0 & 8 & 1 & 4 & 6 & 9 & 2 \\
+    $p2$ pentru $l = 1$ & 10 & 9 & 6 & 4 & 2 & 11 & 7 & 0 & 3 & 5 & 8 & 1 \\
+    $p$ pentru $l = 2$ & 11 & 10 & 7 & 0 & 3 & 5 & 8 & 1 & 4 & 6 & 9 & 2 \\
+  \end{tabular}
+\end{table}
+
+Observăm că definim întîi $p2[i] = p[i] - 1$ (circular modulo $n$). Acum parcurgem vectorul $p2$ \textbf{de la dreapta la stînga}. Procesăm întîi $p2[11] = 1$, care indică că, dintre toate literele \texttt{b}, cea de la poziția 1 prefațează cel mai mare subșir de două litere (întrucît este urmată de un \texttt{r}, care știm că este cea mai mare literă). Știm din $cnt$ că \texttt{b}-urile ocupă intervalul [6, 8), deci notăm $p[7] = 1$.
+
+Urmează $p2[10] = 8$, care indică că \texttt{b}-ul de la poziția 8 este urmat de cea mai mare literă rămasă ($S[9] =$ \texttt{r}). Continuăm să ocupăm intervalul \texttt{b}-urilor: $p[6] = 8$.
+
+Urmează $p2[9] = 5$, care indică că \texttt{a}-ul de la poziția 5 este urmat de cea mai mare literă rămasă ($S[6] =$ \texttt{d}). Începem să emitem pozițiile \texttt{a}-urilor, care ocupă intervalul [1, 6): $p[5] = 5$. Astfel parcurgem tot vectorul $p2$ și îl completăm pe $p$.
+
+Acum rămîne doar să recalculăm vectorul de clase, $c$. Acest pas este similar cu pasul inițial: parcurgem (noul) $p$ în ordine și incrementăm numărul clasei ori de cîte ori întîlnim două perechi distincte. De exemplu, perechile (\texttt{a}, \texttt{b}) și (\texttt{a}, \texttt{c}) au clasele (în vechiul $c$) (1, 2) și respectiv (1, 3), deci le vom atribui clase noi diferite.
+
+Deoarece nu-l putem modifica pe $c$ în timp ce îl consultăm, vom crea un nou vector, $c2$, pe care apoi îl copiem peste $c$. Obținem vectorul:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|cccccccccccc}
+    & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{c} & \texttt{a} & \texttt{d} & \texttt{a} & \texttt{b} & \texttt{r} & \texttt{a} & \texttt{\$} \\
+    \hline
+    $c$ & 2 & 5 & 8 & 3 & 6 & 4 & 7 & 2 & 5 & 8 & 1 & 0 \\
+  \end{tabular}
+\end{table}
+
+Implementarea este:
+
+\begin{minted}{c}
+void build_prefix_len(int len) {
+  memset(cnt, 0, sizeof(int) * num_classes);
+  for (int i = 0; i < n; i++) {
+    cnt[c[i]]++;
+  }
+  for (int i = 1; i < num_classes; i++) {
+    cnt[i] += cnt[i - 1];
+  }
+
+  for (int i = 0; i < n; i++) {
+    p2[i] = circ(p[i] - len + n, n);
+  }
+  for (int i = n - 1; i >= 0; i--) {
+    p[--cnt[c[p2[i]]]] = p2[i];
+  }
+
+  c2[p[0]] = 0;
+  for (int i = 1; i < n; i++) {
+    bool diff =  (c[p[i]] != c[p[i - 1]]) ||
+      (c[circ(p[i] + len, n)] != c[circ(p[i - 1] + len, n)]);
+    c2[p[i]] = c2[p[i - 1]] + diff;
+  }
+  num_classes = 1 + c2[p[n - 1]];
+  memcpy(c, c2, sizeof(int) * n);
+}
+\end{minted}
+
+În sfîrșit, \textit{driver}-ul care invocă cele două metode de mai sus este elementar:
+
+\begin{minted}{c}
+void build() {
+  build_single_letters();
+
+  int len = 1;
+  while (num_classes < n) {
+    build_prefix_len(len);
+    len *= 2;
+  }
+}
+\end{minted}
+
+\section{Construcția vectorului \texorpdfstring{$LCP$}{LCP}}
+
+O metodă brutală ar putea fi: cînd calculăm vectorul de sufixe, reținem și valorile parțiale pentru vectorul $c$ într-o matrice cu $\log n$ linii. Atunci, pentru a afla cel mai lung prefix între \texttt{bra} și \texttt{bracadabra}, putem folosi căutarea binară. Observăm că la lungimea $l=8$ cele două șiruri au clase diferite. La fel și la lungime 4. La lungime 2 au aceeași clasă, la fel și la lungime 3. Deci $LCP(\texttt{bra}, \texttt{bracadabra}) = 3$. Rezultă o complexitate totală de $\bigoh(n \log n)$.
+
+Dar iată o metodă mai scurtă și mai elegantă, în timp $\bigoh(n)$ și fără memorie suplimentară. Ea parcurge sufixele într-o ordine foarte particulară pentru a putea refolosi informații.
+
+Reamintim că întrebarea „care este cel mai lung prefix comun?” are sens și pentru două sufixe care nu sînt consecutive în șirul de sufixe, iar răspunsul este dat de un minim pe interval în vectorul $LCP$.
+
+Acum, să presupunem că am calculat deja $LCP(\texttt{ra}, \texttt{racadabra}) = 2$. Atunci, dacă eliminăm caracterul inițial \texttt{r} din ambele sufixe obținem, în mod trivial, că \texttt{a} și \texttt{acadabra} au un prefix comun de lungime 1. Informația nu ne ajută direct, întrucît \texttt{a} și \texttt{acadabra} nu sînt consecutive în șirul de sufixe. Între ele mai există \texttt{abra} și \texttt{abracadabra}. Dar aflăm de aici ceva important: $LCP(\texttt{a}, \texttt{abra}) \geq 1$.
+
+Formal, fie $A$ șirul de sufixe (care este o permutare) și fie $A^{-1}$ permutarea inversă ($A^{-1}[i]$ arată al cîtelea sufix este $S[i...n-1]$ în ordine lexicografică). Atunci, pentru orice $i > 0$,
+
+$$LCP[A^{-1}[i + 1]] \geq LCP[A^{-1}[i]] - 1$$
+
+\subsection{Implementare}
+
+Programul consideră subșirurile în ordinea descrescătoare a lungimii, începînd cu întregul $S$.
+
+\begin{minted}{c}
+void build_lcp() {
+  // Inversează-l pe a în a1.
+  for (int i = 0; i <= n; i++) {
+    a1[a[i]] = i;
+  }
+  // Acum a1[i] ne spune al cîtelea sufix, în ordine lexicografică, este s[i...n].
+
+  lcp[0] = 0; // Tehnic, nedefinit
+  int l = 0;
+  for (int i = 0; i <= n; i++) {
+    int k = a1[i];
+    if (k) {
+      // Știm că LCP(a[k - 1], a[k]) >= l. Creștem naiv cît putem.
+      int j = a[k - 1];
+      while (s[i + l] == s[j + l]) {
+        l++;
+      }
+      lcp[k] = l;
+
+      // Pregătim l-ul pentru următorul k.
+      if (l) {
+        l--;
+      }
+    }
+  }
+}
+\end{minted}
+
+\subsection{Analiza complexității}
+
+Deoarece avem o buclă \ccode{while} într-o buclă \ccode{for}, la prima vedere algoritmul are complexitatea $\bigoh(n^2)$. Cu toate acestea, să observăm că $l$ este o lungime care nu poate depăși $n$ (ea servește la compararea de indici din $S$). Mai mult, $l$ scade cu cel mult o unitate la fiecare iterație a buclei \ccode{for}. Rezultă că suma creșterilor lui $l$ din bucla \ccode{while} nu poate depăși $n$. Așadar, construcția șirului $LCP$ durează $\bigoh(n)$.
