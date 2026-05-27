@@ -2,7 +2,6 @@
 #include <string.h>
 
 const int MAX_SUM_LEN = 200'000;
-const int MAX_SEGTREE_NODES = 1 << 20;
 
 char concat[2 * MAX_SUM_LEN];
 char* s[MAX_SUM_LEN];
@@ -27,46 +26,6 @@ int max(int x, int y) {
   return (x > y) ? x : y;
 }
 
-int next_power_of_2(int x) {
-  return 1 << (32 - __builtin_clz(x - 1));
-}
-
-struct min_segment_tree {
-  int m[MAX_SEGTREE_NODES];
-  int n;
-
-  void init(int* v, int _n) {
-    n = next_power_of_2(_n);
-    for (int i = 0; i < _n; i++) {
-      m[n + i] = v[i];
-    }
-
-    for (int i = n - 1; i; i--) {
-      m[i] = min(m[2 * i], m[2 * i + 1]);
-    }
-  }
-
-  int range_min(int l, int r) {
-    l += n;
-    r += n;
-    int result = n;
-
-    while (l <= r)  {
-      if (l & 1) {
-        result = min(result, m[l++]);
-      }
-      l >>= 1;
-
-      if (!(r & 1)) {
-        result = min(result, m[r--]);
-      }
-      r >>= 1;
-    }
-
-    return result;
-  }
-};
-
 struct suffix_array {
   const char* s;
   int n, num_classes;
@@ -79,7 +38,6 @@ struct suffix_array {
   int cnt[256];
 
   int lcp[2 * MAX_SUM_LEN];
-  min_segment_tree st;
 
   void init(char* s, int n) {
     this->s = s;
@@ -162,12 +120,6 @@ struct suffix_array {
         }
       }
     }
-
-    st.init(lcp, n + 1);
-  }
-
-  int get_lcp(int i, int j) {
-    return st.range_min(i + 1, j);
   }
 
   // p2[] și c2[] nu ne mai trebuie. Înlocuiește-l pe p2 cu ID-ul șirului din
@@ -186,15 +138,24 @@ struct suffix_array {
 };
 
 suffix_array suf;
+int min_right[2 * MAX_SUM_LEN];
 
 // Toate sufixele din [start, end) provin din același șir. Dorim să selectăm
 // un prefix diferit de sufixul de la start-1 (dacă există) și de cel la end
 // (dacă există).
 void process_batch(int start, int end) {
   int id = suf.p2[start];
+
+  min_right[end] = suf.lcp[end];
+  for (int i = end - 1; i > start; i--) {
+    min_right[i] = min(suf.lcp[i], min_right[i + 1]);
+  }
+
+  int min_left = suf.lcp[start];
   for (int i = start; i < end; i++) {
-    int lcp_start = (start > num_s) ? suf.get_lcp(start - 1, i) : 0;
-    int lcp_end = (end < c_len) ? suf.get_lcp(i, end) : 0;
+    min_left = min(min_left, suf.lcp[i]);
+    int lcp_start = (start > num_s) ? min_left : 0;
+    int lcp_end = (end < c_len) ? min_right[i + 1] : 0;
     int to_take = 1 + max(lcp_start, lcp_end);
     if (to_take <= suf.c2[i]) {
       answer[id] = min(answer[id], to_take);

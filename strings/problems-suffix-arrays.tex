@@ -83,4 +83,6 @@ Acum căutăm grupe maximale de sufixe consecutive (lexicografic) care provin di
   \item Altfel, sufixul curent nu are destule caractere pentru a-l putea diferenția de celelalte cuvinte.
 \end{enumerate}
 
-Ca optimizare, putem renunța la informațiile de RMQ. Putem calcula minimul pe intervalele $[a - 1, k]$ și $[k, b + 1]$, pentru toate valorile $k$, cu două treceri înainte și înapoi prin invervalul $[a, b]$.
+\subsubsection*{Optimizare}
+
+Putem omite cu totul structura de date pentru RMQ. Să observăm, de fapt, că toate interogările de minim sînt grupate. Pentru fiecare poziție $a \leq k \leq b$ ne interesează minimul pe intervalele $[a - 1, k]$ și $[k, b + 1]$. Putem calcula aceste minime prin două treceri, una înapoi și una înainte, prin intervalul $[a, b]$.
