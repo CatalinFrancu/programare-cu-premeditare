@@ -1,0 +1,207 @@
+\chapter{Funcția Z}
+
+În acest minicapitol vom introduce încă o funcție utilă în algoritmii pe șiruri de caractere. Vă recomand cu căldură \href{https://cp-algorithms.com/string/z-function.html}{articolul de pe CP Algorithms}, care este bine scris și din care acest capitol se inspiră.
+
+
+\section{Definiție}
+
+Dat fiind un șir $S$ de $n$ caractere, funcția $Z$ asociată este
+
+$$Z(i) = \max \{ k\ |\ S[i \dots i+k) = S_k \} \quad \textrm{pentru} \quad 1 \leq i < n$$
+
+În cuvinte, $Z(i)$ este numărul maxim $k$ de caractere începînd cu poziția $i$ care se potrivesc cu începutul lui $S$. Prin convenție, $Z(0) = 0$. Figura \ref{fig:funcția-z-1} arată un exemplu.
+
+\import{./figures}{z-function-1.tex}
+
+
+\section{Calcularea funcției \texorpdfstring{$Z$}{Z}}
+
+Desigur, putem calcula funcția $Z$ naiv, în $\bigoh(n^2)$:
+
+\begin{minted}{c}
+for (int i = 1; i < n; i++) {
+  while ((i + z[i] < n) && (s[z[i]] == s[i + z[i]])) {
+    z[i]++;
+  }
+}
+\end{minted}
+
+Dar există și un algoritm mai bun, în $\bigoh(n)$. El procedează astfel. În primul rînd, să observăm că la orice poziție $j$ intervalul $[j, j + Z(j))$ indică exact suprapunerea maximă cu un prefix al lui $S$. Acum, să considerăm că sîntem la pasul $i$ și dorim să calculăm $Z(i)$. Dintre toate intervalele $[j, j + Z(j))$ calculate anterior (cu $j < i$), îl vom reține mereu pe cel cu capătul drept maxim, pe care îl vom denumi $[l, r)$. Cu alte cuvinte, intervalul $[l, r)$ este cel mai din dreapta interval de pînă acum despre care știm că este prefix al lui $S$.
+
+Poziția $r$ din șir are o semnificație aparte. De la $r$ spre dreapta, algoritmul încă nu a examinat niciun caracter și nu știe nimic despre $S$. Deci $r$ este ca o frontieră pe care treptat o împingem spre dreapta.
+
+Acum să ne gîndim în ce situație se poate afla $i$ raportat la $[l, r)$. Este clar că $i > l$, deoarece $[l, r)$ corespunde unei poziții $j$ deja evaluate. Deci rămîn două cazuri.
+
+Dacă $i \geq r$, sîntem dincolo de frontieră, în teritoriu necunoscut. Îl vom calcula pe $Z(i)$ naiv, poziție cu poziție. Dacă $Z(i) > 0$ sau dacă $i > r$, aceasta va conduce și la actualizarea intervalului $[l, r)$, deoarece capătul drept va fi $i + Z(i) > r$.
+
+Iar dacă $i < r$, vom refolosi informații din valorile $Z$ anterioare, astfel. Știm că $S[l \dots r) = S[0 \dots r - l)$. Asta înseamnă că $S[i \dots r) = S[i - l \dots r - l)$. Așadar, orice se poate spune despre subșirul lui $S$ care începe la poziția $i$ știm deja de la poziția $i - l$. De aceea, \textbf{în principiu}, $Z(i) = Z(i - l)$. Dar sînt necesare două modificări:
+
+\begin{enumerate}
+  \item Din cauza frontierei $r$, noi nu cunoaștem mai mult de $r - i$ caractere la dreapta. Deci vom lua $Z(i) = \min(Z(i - l), r - i)$.
+  \item Se prea poate ca $S[i \dots r)$ să continue să se potrivească cu prefixul lui $S$ și dincolo de frontiera $r$. Deci vom face o extindere naivă a lui $Z(i)$.
+\end{enumerate}
+
+Figura \ref{fig:funcția-z-2} ilustrează situația a doua.
+
+\import{./figures}{z-function-2.tex}
+
+
+\section{Implementare}
+
+\begin{minted}{c}
+int l = 0, r = 0;
+for (int i = 1; i < n; i++) {
+  if (i < r) {
+    z[i] = std::min(r - i, z[i - l]);
+  }
+  while (s[z[i]] == s[i + z[i]]) {
+    z[i]++;
+  }
+  if (i + z[i] > r) {
+    l = i;
+    r = i + z[i];
+  }
+}
+\end{minted}
+
+Două observații:
+
+\begin{itemize}
+  \item Dacă \ccode{i >= r}, atunci valoarea inițială a lui \ccode{z[i]} rămîne cea preinițializată, adică 0.
+  \item Comparația naivă din \ccode{while} va eșua cel mai tîrziu la sfîrșitul șirului, cînd vom compara \ccode{s[z[i]]} cu terminatorul de șir, \ccode{'\0'}. Dacă implementați algoritmul pe \ccode{std::string}, trebuie să adăugați condiția suplimentară \ccode{i < n}.
+\end{itemize}
+
+
+\section{Analiza complexității}
+
+Ca și în cazul algoritmului KMP, și calculul funcției Z pare $\bigoh(n^2)$ datorită buclelor imbricate \ccode{for} și \ccode{while}. Dar putem da o limită mai bună. La pasul $i$:
+
+\begin{itemize}
+  \item Dacă $i \geq r$, atunci comparațiile naive din bucla \ccode{while} au ca efect creșterea lui $r$, cu excepția cazului în care chiar prima comparație eșuează. Aceasta deoarece sîntem dincolo de frontieră, deci intervalul $[i, i + Z(i))$ va fi noul interval ales.
+
+  \item Dacă $i < r$ și am inițializat $Z(i)$ chiar cu $r - i$ (ca în cazul $i = 9$ din figura \ref{fig:funcția-z-2}), atunci din nou fiecare iterație a buclei \ccode{while} cu excepția primeia va duce la creșterea lui $r$, pentru că $i + Z(i) = r$, deci capătul drept este deja la frontieră.
+
+  \item Dacă $i < r$ și am inițializat $Z(i)$ cu o valoare mai mică decît $r - i$ (ca în cazul $i = 8$ din aceeași figură), atunci prima comparație din bucla \ccode{while} va eșua. Dacă n-ar fi fost așa, atunci aceeași comparație ar fi avut succes și la poziția $i - l$ și deci $Z(i - l)$ ar fi fost mai mare. De exemplu, presupunînd prin absurd că am determina că $Z(8) = 1$, aceasta ar însemna pe de o parte că $S[8] = S[0] = $ \texttt{a}. Pe de altă parte, noi știm că $S[8] = S[1]$ deoarece fereastra $[7, 12)$ este o copie a ferestrei $[0, 5)$. Atunci $S[1] = S[0]$ și ar fi trebuit ca și $Z[1]$ să fie egal cu $1$.
+\end{itemize}
+
+Cum valoarea lui $r$ nu poate depăși $n$, rezultă că comparația din bucla \ccode{while} are cel mult $n$ eșecuri și cel mult $n$ potriviri. Algoritmul rulează în $\bigoh(n)$.
+
+
+\section{Aplicații}
+
+Să reluăm aplicațiile și problemele din \hyperref[chapter:kmp]{capitolul anterior}. Nu vom mai include programe complete, întrucît ele sînt foarte similare cu versiunile cu KMP.
+
+\subsection*{Căutarea unui subșir într-un șir}
+
+Vom rezolva aceeași problemă ca și în capitolele despre Rabin-Karp și KMP: Date fiind un șir $S$ de lungime $n$ și un șablon $P$ de lungime $m$, vom găsi toate aparițiile lui $P$ în $S$. Pentru testare, puteți rezolva problema \href{https://cses.fi/problemset/task/1753}{String Matching} (CSES).
+
+O primă variantă tratează separat șirurile $S$ și $P$, similar algoritmului KMP. Construim întîi funcția $Z$ peste șablonul $P$. Apoi parcurgem șirul $S$ și aflăm la fiecare poziție numărul de caractere care se potrivesc cu un prefix al lui $P$. Calculele făcute în $S$ nu mai afectează vectorul $Z$ deja calculat.
+
+Ca și în algoritmul KMP, cele două porțiuni de cod seamănă. Esența este:
+
+\begin{minted}{c}
+void compute_z() {
+  int l = 0, r = 0;
+  for (int i = 1; i < m; i++) {
+    if (i < r) {
+      z[i] = std::min(r - i, z[i - l]);
+    }
+    while (p[z[i]] == p[i + z[i]]) {
+      z[i]++;
+    }
+    if (i + z[i] > r) {
+      l = i;
+      r = i + z[i];
+    }
+  }
+}
+
+int count_occurrences() {
+  int result = 0;
+  int l = 0, r = 0, d;
+
+  for (int i = 0; i < n; i++) {
+    if (i < r) {
+      d = std::min(r - i, z[i - l]);
+    } else {
+      d = 0;
+    }
+    while ((i + d < n) && (p[d] == s[i + d])) {
+      d++;
+    }
+    if (i + d > r) {
+      l = i;
+      r = i + d;
+    }
+
+    if (d == m) {
+      result++;
+    }
+  }
+
+  return result;
+}
+\end{minted}
+
+O implementare mai concisă calculează funcția $Z$ peste șirurile concatenate $P + S$. Odată ce atingem poziția $m$ (deci intrăm în șirul $S$), orice poziție $i$ unde $Z(i) \geq m$ indică o deplasare validă. Pentru claritate, putem să inserăm un simbol din afara alfabetului în concatenare: $P\#S$. Dar acest lucru nu este strict necesar.
+
+\begin{minted}{c}
+int l = 0, r = 0;
+int occurrences = 0;
+
+for (int i = 1; i < m + n; i++) {
+  if (i < r) {
+    z[i] = std::min(r - i, z[i - l]);
+  }
+  while (p[z[i]] == p[i + z[i]]) {
+    z[i]++;
+  }
+  if (i + z[i] > r) {
+    l = i;
+    r = i + z[i];
+  }
+
+  if ((i >= m) && (z[i] >= m)) {
+    occurrences++;
+  }
+}
+\end{minted}
+
+
+\subsection*{Test de rotație}
+
+Pentru a determina dacă două șiruri $S$ și $T$ se pot obține unul dintr-altul printr-o rotație, este suficient să îl căutăm pe $T$ în $S + S$, folosind codul de mai sus.
+
+
+\subsection*{Completarea unui palindrom}
+
+Dat fiind un șir $S$, adăugați cît mai puține caractere la finalul lui pentru a îl face palindrom.
+
+Ca și în varianta cu KMP, ne interesează cel mai lung sufix al lui $S$ care este palindrom. Pentru aceasta, construim șirul $S^R + \# + S$. Pe acest șir de lungime $2n + 1$ căutăm cea mai mică poziție $k$ pentru care $k + Z(k) = 2n + 1$, deoarece sufixul care începe la această poziție este cel mai lung sufix palindromic al lui $S$.
+
+
+\subsection*{Problema Bart (NerdArena)}
+
+Reluăm cerința: trebuie să aflăm cel mai mic prefix al unui șir $S$ pe care, dacă îl repetăm, obținem șirul $S$. Ultima repetiție poate fi incompletă.
+
+Logica este similară cu cea bazată pe KMP. Fie răspunsul $k$. Atunci $S[0 \dots k-1] = S[k \dots 2k-1] = \dots$. Dar aceasta înseamnă că $S[0 \dots n - k - 1] = S[k \dots n - 1]$. Prin definiție, aceasta înseamnă că $Z(k) = n - k$. Așadar, căutăm prima poziție $k$ unde $k + Z(k) = n$.
+
+
+\subsection*{Problema Cifru (Baraj ONI 2006)}
+
+Soluția este similară cu cea bazată pe KMP. În loc să testăm ciclicitatea cu KMP, o vom testa cu funcția Z. De asemenea, trebuie să redefinim calculul funcției Z ca să nu testeze egalitatea perfectă, ci egalitatea prin prisma unei permutări.
+
+Nu mai detaliem codul, dar ilustrăm valoarea funcției Z astfel modificate pentru exemplul de la intrare, respectiv $P = $ \texttt{213321} și $S = $ \texttt{131322}. Am inserat un caracter \texttt{\#} doar pentru claritate.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{c|ccccccccccccccccccc}
+    \hline
+    $P + \# + S + S$ & 2 & 1 & 3 & 3 & 2 & 1 & \# & 1 & 3 & 1 & 3 & 2 & 2 & 1 & 3 & 1 & 3 & 2 & 2 \\
+    \hline
+    $Z$ & 0 & 2 & 1 & 3 & 3 & 2 & 3 & 2 & 2 & \textbf{6} & 2 & 1 & 3 & 2 & 2 & 4 & 2 & 1 & 1 \\
+    \hline
+  \end{tabular}
+
+  \caption{Funcția $Z$ pentru exemplul din problema Cifru. Valoarea maximă este 6 deoarece subșirul (1 3 2 2 1 3) corespunde cu prefixul (2 1 3 3 2 1) dacă aplicăm permutarea (2 3 1).}
+\end{table}

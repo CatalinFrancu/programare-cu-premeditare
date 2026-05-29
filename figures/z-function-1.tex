@@ -1,0 +1,39 @@
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    no-border/.style = {
+      draw=white,
+    },
+    ]
+    % the string S
+    \matrix[right] at (0, 0.6) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\
+    };
+
+    \node[label] at (-1, 0) {$S$};
+
+    \matrix[right] at (0, 0) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+    ] {
+      a & b &|[green-bg]| a &|[green-bg]| b &|[green-bg]| a & c & d &|[blue-bg]| a &|[blue-bg]| b &|[blue-bg]| a &|[blue-bg]| b &|[blue-bg]| a & b & a & c & d \\
+    };
+
+    \matrix[right] at (0, -1) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square, no-border},
+    ] {
+      0 & 0 &|[green-bg]| 3 & 0 & 1 & 0 & 0 &|[blue-bg]| 5 & 0 & 7 & 0 & 3 & 0 & 1 & 0 & 0 \\
+    };
+
+    \node[label] at (-1, -1) {$Z$};
+  \end{tikzpicture}
+
+  \caption{Funcția $Z$. La poziția 2, $Z(2) = 3$, ceea ce arată că $S[2 \dots 5) = S[0 \dots 3)$. Similar, $Z(7) = 5$ arată că  $S[7 \dots 12) = S[0 \dots 5)$.}
+  \label{fig:funcția-z-1}
+\end{figure}

@@ -1,0 +1,44 @@
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    no-border/.style = {
+      draw=white,
+    },
+    ]
+    % the string S
+    \matrix[right] at (0, 0.6) [
+      matrix of nodes,
+      nodes={col-index},
+    ] {
+      0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\
+    };
+
+    \node[label] at (-1, 0) {$S$};
+
+    \matrix[right] (m) at (0, 0) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square},
+    ] {
+      |[blue-bg]| a &|[blue-bg]| b &|[blue-bg]| a &|[blue-bg]| b &|[blue-bg]| a & c & d &|[blue-bg]| a &|[blue-bg]| b &|[blue-bg]| a &|[blue-bg]| b &|[blue-bg]| a & b & a & c & d \\
+    };
+
+    \matrix[right] at (0, -1) [
+      column sep=-\pgflinewidth,
+      matrix of nodes,
+      nodes={square, no-border},
+    ] {
+      0 & 0 & 3 & 0 & 1 & 0 & 0 & 5 & 0 &|[text=ForestGreen]| 3 \\
+    };
+
+    \node[label] at (-1, -1) {$Z$};
+    \node at (m-1-8.west) {\large $\Biggl[$};
+    \node at (m-1-12.east) {\large $\Biggr)$};
+    \node at ($(m-1-8.center) + (0,1.2)$) {$l$};
+    \node at ($(m-1-10.center) + (0,1.2)$) {$i$};
+    \node at ($(m-1-13.center) + (0,1.2)$) {$r$};
+  \end{tikzpicture}
+
+  \caption{La poziția $i=9$, intervalul curent este $[l, r) = [7, 12)$, ceea ce arată că $S[7 \dots 12) = S[0 \dots 5)$. De aceea, inițializăm $Z(9)$ cu $Z(9-7) = Z(2) = 3$. Ulterior, prin comparații naive, îl creștem pe $Z(9)$ pînă la valoarea $7$. Noul interval va fi $[l, r) = [9, 16)$.}
+  \label{fig:funcția-z-2}
+\end{figure}
