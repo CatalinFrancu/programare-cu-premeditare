@@ -1,0 +1,139 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    scale=0.8,
+    every node/.style={scale=0.8},
+    a/.style={
+      font=\bfseries,
+      text=DarkGreen,
+    },
+    b/.style={
+      % font=\bfseries,
+      % text=DarkRed,
+    },
+    bit/.style={
+      draw=none,
+      font=\scriptsize,
+      text=gray,
+    },
+    ]
+
+    \path[
+    % Style for tree only.
+    level distance=20mm,
+    level 1/.style={sibling distance=70mm},
+    level 2/.style={sibling distance=50mm},
+    level 3/.style={sibling distance=30mm},
+    every node/.append style={
+      circle,
+      draw,
+      inner sep=2pt,
+      minimum size=10pt,
+    }]
+    node (root) {}
+    child {node (n0) {}
+      child {node (n00) {}
+        child {node (n000) {}
+          child {node {}
+            child {node (n00011) {}
+              edge from parent node[bit, left] {1}
+            }
+            edge from parent node[bit, left] {1}
+          }
+          edge from parent node[bit, above left] {0}
+        }
+        child {node {}
+          child {node {}
+            child {node (n00101) {}
+              edge from parent node[bit, left] {1}
+            }
+            edge from parent node[bit, above left] {0}
+          }
+          child {node {}
+            child {node (n00110) {}
+              edge from parent node[bit, left] {0}
+            }
+            edge from parent node[bit, below left] {1}
+          }
+          edge from parent node[bit, below left] {1}
+        }
+        edge from parent node[bit, above left] {0}
+      }
+      child {node (n01) {}
+        child {node (n010) {}
+          child {node {}
+            child {node (n01001) {}
+              edge from parent node[bit, left] {1}
+            }
+            edge from parent node[bit, left] {0}
+          }
+          edge from parent node[bit, left] {0}
+        }
+        edge from parent node[bit, below left] {1}
+      }
+      edge from parent node[bit, above left] {0}
+    }
+    child {node (n1) {}
+      child {node (n10) {}
+        child {node {}
+          child {node {}
+            child {node (n10100) {}
+              edge from parent node[bit, left] {0}
+            }
+            edge from parent node[bit, left] {0}
+          }
+          edge from parent node[bit, left] {1}
+        }
+        edge from parent node[bit, left] {0}
+      }
+      edge from parent node[bit, below left] {1}
+    };
+
+    \node[a, below=5pt of n00011] {3};
+    \node[a, below=16pt of n00011] {$00011_{(2)}$};
+    \node[a, below=5pt of n00101] {5};
+    \node[a, below=16pt of n00101] {$00101_{(2)}$};
+    \node[a, below=5pt of n00110] {6};
+    \node[a, below=16pt of n00110] {$00110_{(2)}$};
+    \node[a, below=5pt of n01001] {9};
+    \node[a, below=16pt of n01001] {$01001_{(2)}$};
+    \node[a, below=5pt of n10100] {20};
+    \node[a, below=16pt of n10100] {$10100_{(2)}$};
+
+    \node[b, left=10pt of root] {
+      $3=00011_{(2)}$,
+      $7=00111_{(2)}$,
+      $12=01100_{(2)}$,
+      $13=01101_{(2)}$,
+      $19=10011_{(2)}$
+    };
+    \node[b, left=10pt of n0] {
+      $00011_{(2)}$,
+      $00111_{(2)}$,
+      $01100_{(2)}$,
+      $01101_{(2)}$
+    };
+    \node[b, left=10pt of n1] {
+      $10011_{(2)}$
+    };
+    \node[b, left=2pt of n00] {
+      $01100_{(2)}$,
+      $01101_{(2)}$
+    };
+    \node[b, left=2pt of n01] {
+      $00011_{(2)}$,
+      $00111_{(2)}$
+    };
+    \node[b, left=2pt of n000] {
+      $01100_{(2)}$,
+      $01101_{(2)}$
+    };
+    \node[b, left=2pt of n010] {
+      $00011_{(2)}$
+    };
+  \end{tikzpicture}
+
+  \caption{Trie-ul construit pentru exemplul 2 din enunț, în care dorim să obținem al $k=10$-lea cel mai mic xor. În rădăcină obținem $4 \cdot 4 + 1 \cdot 1 = 17$ perechi cu xor-ul 0, deci primul bit al răspunsului este 0. Pe nivelul 1 (corespunzător celui de-al doilea bit din stînga) obținem $2 \cdot 3 + 2 \cdot 1 + 1 \cdot 1 = 9$ perechi cu xor-ul 0, deci al doilea bit al rezultatului este 1.}
+  \label{fig:trie-esoteric-bovines}
+\end{figure}

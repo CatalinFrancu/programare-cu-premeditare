@@ -37,7 +37,7 @@ Ca să apreciem utilitatea șirurilor de sufixe, înainte de a discuta construc�
 
 \subsection{Aparițiile unui subșir \texorpdfstring{$P$}{P} în \texorpdfstring{$S$}{S} (\textit{string matching})}
 
-Facem două căutări binare în $A$ pentru a găsi prima și ultima apariție a unui sufix care începe cu $P$. Putem face asta în mod naiv în $\bigoh(|P| \log n)$ sau în $\bigoh(|P| + \log n)$ cu vectorul LCP, discutat mai jos.
+Facem două căutări binare în $A$ pentru a găsi prima și ultima apariție a unui sufix care începe cu $P$. Putem face asta în mod naiv în $\bigoh(|P| \log n)$, cu o căutare binară în care la fiecare înjumătățire în comparăm pe $P$ cu candidatul curent. O soluție mai bună obține $\bigoh(|P| + \log n)$ folosind vectorul LCP, discutat mai jos.
 
 Putem generaliza căutarea la o familie de șiruri, $S_1, S_2, \dots, S_k$. Construim șirul de sufixe $A$ al concatenării $S_1\#S_2\#\dots\#S_k$, unde $\#$ este orice caracter din afara alfabetului. Aparițiile lui $P$ în orice șir vor fi consecutive în $A$.
 
@@ -45,12 +45,12 @@ Putem generaliza căutarea la o familie de șiruri, $S_1, S_2, \dots, S_k$. Cons
 
 \textbf{Exemplu}. Pentru șirul \texttt{banana}, rotația minimă este \texttt{abanan}. Vezi problema \href{https://onlinejudge.org/index.php?option=onlinejudge\&page=show_problem\&problem=660}{Glass Beads}.
 
-Construim șirul de sufixe al șirului $SS$ și luăm primul sufix din $A$ care începe pe o poziție mai mică decît $n$. După ce vom studia algoritmul de construcție vom învăța o metodă chiar mai simplă.
+Construim șirul de sufixe al șirului $SS$ și luăm primul sufix din $A$ care începe pe o poziție mai mică decît $n$. O variantă mai simplă este să construim șirul de sufixe \textbf{circulare} ale lui $S$, după cum vom învăța în algoritmii de construcție (toate cele $n$ sufixe au lungime exact $n$).
 
 \section{Cele mai lungi prefixe comune}
 
 \begin{definition}[Vectorul LCP]
-  Vectorul $LCP$ (engl. \textit{longest common prefix}) reține lungimea prefixului comun între fiecare două sufixe consecutive.
+  Vectorul $LCP$ (engl. \textit{longest common prefix}) reține lungimea prefixului comun între fiecare două sufixe consecutive din șirul de sufixe.
 \end{definition}
 
 Pentru șirul $S$ = \texttt{abracadabra}, vectorul este
@@ -187,7 +187,7 @@ struct sort_suffix_array {
 
   int sa[N + 1];   // Șirul de sufixe. sa[i] = al i-lea sufix în ordine lexicografică
   int ord[N + 1];  // ord[i] = sa^{-1}. ord[i] = ordinea lui s[i...n-1], cu duplicate
-  int cl[N + 1];   // cl[i] = clasa lui sa[i], cu duplicates
+  int cl[N + 1];   // cl[i] = clasa lui sa[i], cu duplicate
 
   void init(char* s, int n) {
     this->s = s;
@@ -328,7 +328,7 @@ Să considerăm cele cinci litere \texttt{a} din \texttt{abracadabra\$}. Dorim s
 
 Ce ar face radix sort? Ar sorta întîi perechile după membrul drept, apoi, stabil, după membrul stîng. Dar noi avem deja perechile sortate după membrul drept, de la pasul anterior! Trebuie doar să ne amintim să nu iterăm prin subșiruri în ordinea dată de $p$, ci într-o ordine decalată cu $l$ poziții. Acesta este un cîștig major de eficiență, căci practic noi facem doar o singură trecere din cele două pe care le face teoretic radix sort.
 
-De aceea, construim un vector auxiliar $p2$ unde $p2[i]$ stochează al $i$-lea cel mai mic sufix dacă ne uităm cu o poziție mai la dreapta (sau, la pasul $l$, cu $l$ poziții circular la dreapta). Astfel, vectorul $p2$ ne permite să iterăm în ordine lexicografică prin jumătățile drepte ale perechilor de ordonat.
+De aceea, construim un vector auxiliar $p_2$ unde $p_2[i]$ stochează al $i$-lea cel mai mic sufix dacă ne uităm cu o poziție mai la dreapta (sau, la pasul $l$, cu $l$ poziții circular la dreapta). Astfel, vectorul $p_2$ ne permite să iterăm în ordine lexicografică prin jumătățile drepte ale perechilor de ordonat.
 
 \begin{table}[H]
   \centering
@@ -336,20 +336,20 @@ De aceea, construim un vector auxiliar $p2$ unde $p2[i]$ stochează al $i$-lea c
     & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 \\
     \hline
     $p$ pentru $l = 1$ & 11 & 10 & 7 & 5 & 3 & 0 & 8 & 1 & 4 & 6 & 9 & 2 \\
-    $p2$ pentru $l = 1$ & 10 & 9 & 6 & 4 & 2 & 11 & 7 & 0 & 3 & 5 & 8 & 1 \\
+    $p_2$ pentru $l = 1$ & 10 & 9 & 6 & 4 & 2 & 11 & 7 & 0 & 3 & 5 & 8 & 1 \\
     $p$ pentru $l = 2$ & 11 & 10 & 7 & 0 & 3 & 5 & 8 & 1 & 4 & 6 & 9 & 2 \\
   \end{tabular}
 \end{table}
 
-Observăm că definim întîi $p2[i] = p[i] - 1$ (circular modulo $n$). Acum parcurgem vectorul $p2$ \textbf{de la dreapta la stînga}. Procesăm întîi $p2[11] = 1$, care indică că, dintre toate literele \texttt{b}, cea de la poziția 1 prefațează cel mai mare subșir de două litere (întrucît este urmată de un \texttt{r}, care știm că este cea mai mare literă). Știm din $cnt$ că \texttt{b}-urile ocupă intervalul [6, 8), deci notăm $p[7] = 1$.
+Observăm că definim întîi $p_2[i] = p[i] - 1$ (circular modulo $n$). Acum parcurgem vectorul $p_2$ \textbf{de la dreapta la stînga}. Procesăm întîi $p_2[11] = 1$, care indică că, dintre toate literele \texttt{b}, cea de la poziția 1 prefațează cel mai mare subșir de două litere (întrucît este urmată de un \texttt{r}, care știm că este cea mai mare literă). Știm din $cnt$ că \texttt{b}-urile ocupă intervalul [6, 8), deci notăm $p[7] = 1$.
 
-Urmează $p2[10] = 8$, care indică că \texttt{b}-ul de la poziția 8 este urmat de cea mai mare literă rămasă ($S[9] =$ \texttt{r}). Continuăm să ocupăm intervalul \texttt{b}-urilor: $p[6] = 8$.
+Urmează $p_2[10] = 8$, care indică că \texttt{b}-ul de la poziția 8 este urmat de cea mai mare literă rămasă ($S[9] =$ \texttt{r}). Continuăm să ocupăm intervalul \texttt{b}-urilor: $p[6] = 8$.
 
-Urmează $p2[9] = 5$, care indică că \texttt{a}-ul de la poziția 5 este urmat de cea mai mare literă rămasă ($S[6] =$ \texttt{d}). Începem să emitem pozițiile \texttt{a}-urilor, care ocupă intervalul [1, 6): $p[5] = 5$. Astfel parcurgem tot vectorul $p2$ și îl completăm pe $p$.
+Urmează $p_2[9] = 5$, care indică că \texttt{a}-ul de la poziția 5 este urmat de cea mai mare literă rămasă ($S[6] =$ \texttt{d}). Începem să emitem pozițiile \texttt{a}-urilor, care ocupă intervalul [1, 6): $p[5] = 5$. Astfel parcurgem tot vectorul $p_2$ și îl completăm pe $p$.
 
 Acum rămîne doar să recalculăm vectorul de clase, $c$. Acest pas este similar cu pasul inițial: parcurgem (noul) $p$ în ordine și incrementăm numărul clasei ori de cîte ori întîlnim două perechi distincte. De exemplu, perechile (\texttt{a}, \texttt{b}) și (\texttt{a}, \texttt{c}) au clasele (în vechiul $c$) (1, 2) și respectiv (1, 3), deci le vom atribui clase noi diferite.
 
-Deoarece nu-l putem modifica pe $c$ în timp ce îl consultăm, vom crea un nou vector, $c2$, pe care apoi îl copiem peste $c$. Obținem vectorul:
+Deoarece nu-l putem modifica pe $c$ în timp ce îl consultăm, vom crea un nou vector, $c_2$, pe care apoi îl copiem peste $c$. Obținem vectorul:
 
 \begin{table}[H]
   \centering
@@ -412,7 +412,7 @@ Dar iată o metodă mai scurtă și mai elegantă, în timp $\bigoh(n)$ și făr
 
 Reamintim că întrebarea „care este cel mai lung prefix comun?” are sens și pentru două sufixe care nu sînt consecutive în șirul de sufixe, iar răspunsul este dat de un minim pe interval în vectorul $LCP$.
 
-Acum, să presupunem că am calculat deja $LCP(\texttt{ra}, \texttt{racadabra}) = 2$. Atunci, dacă eliminăm caracterul inițial \texttt{r} din ambele sufixe obținem, în mod trivial, că \texttt{a} și \texttt{acadabra} au un prefix comun de lungime 1. Informația nu ne ajută direct, întrucît \texttt{a} și \texttt{acadabra} nu sînt consecutive în șirul de sufixe. Între ele mai există \texttt{abra} și \texttt{abracadabra}. Dar aflăm de aici ceva important: $LCP(\texttt{a}, \texttt{abra}) \geq 1$.
+Acum, să presupunem că am calculat deja $LCP(\texttt{ra}, \texttt{racadabra}) = 2$. Atunci, dacă eliminăm caracterul inițial \texttt{r} din ambele sufixe obținem, în mod trivial, că \texttt{a} și \texttt{acadabra} au un prefix comun de lungime 1. Informația nu ne ajută direct, întrucît \texttt{a} și \texttt{acadabra} nu sînt consecutive în șirul de sufixe. Între ele mai există \texttt{abra} și \texttt{abracadabra}. Dar aflăm de aici ceva important: $LCP(\texttt{abracadabra}, \texttt{acadabra}) \geq 1$.
 
 Formal, fie $A$ șirul de sufixe (care este o permutare) și fie $A^{-1}$ permutarea inversă ($A^{-1}[i]$ arată al cîtelea sufix este $S[i...n-1]$ în ordine lexicografică). Atunci, pentru orice $i > 0$,
 

@@ -1,0 +1,154 @@
+\section{Probleme}
+
+\subsection{Problema Enigma (Lot 2011)}
+\label{problem:enigma}
+
+\href{https://kilonova.ro/problems/2228}{enunț}
+$\bullet$
+\hyperref[code:enigma]{sursă}
+
+Problema amintește de probleme clasice de descompunere în cuvinte: dat fiind un șir $S$ și un dicționar $D$, să se numere descompunerile lui $S$ în cuvinte din $D$ (sau să se găsească o astfel de descompunere). Acest tip de probleme se pot rezolva cu programare dinamică înainte.
+
+La poziția $i$, fie $w[i]$ numărul de moduri de a descompune prefixul $S[0...i]$. Acum, pentru fiecare cuvînt $C \in D$, dacă $C$ apare în $S$ începînd de la poziția $i + 1$, atunci obținem $w[i]$ moduri de a descompune primele $i + |C|$ caractere, deci adăugăm $w[i]$ la $w[i + |C|]$.
+
+Problema Enigma aduce variația că putem folosi orice prefix al cuvintelor din dicționar. Să remarcăm și că produsul $MS \leq \np{450000}$, acceptabil. Deci putem refolosi aceeași metodă ca mai sus, doar că nu adăugăm $w[i]$ la o singură poziție viitoare, ci la \textbf{toate} pozițiile $i + 1, i + 2, \dots, j$ cît timp subșirul $S[i \dots j]$ se potrivește cu prefixul cel puțin unui cuvînt dintre cele $M$.
+
+Trie-urile se potrivesc ca o mănușă cu această nevoie. Inserăm cele $M$ cuvinte într-un trie. Apoi, pentru fiecare poziție $i$ din $S$, pornind din rădăcina trie-ului, coborîm cît timp putem continua șirul $S$. Dacă la poziția $j > i$ există $cnt$ continuări are lui $S[i + 1 \dots j]$, atunci la $w[j]$ adăugăm $w[i] \cdot cnt$ deoarece fiecare descompunere pînă la poziția $i$ și fiecare șir dintre cele $cnt$ formează o combinație unică.
+
+\begin{algorithm}[H]
+  \caption{Algoritmul în ansamblu pentru problema Enigma}
+  \begin{algorithmic}[1]
+    \State inserează cele $M$ cuvinte într-un trie
+    \For{$i = 0, 1, \dots, |S| - 1$}
+      \State $j \gets i + 1$
+      \State $u \gets$ rădăcina trie-ului
+      \While{nodul $u$ are $cnt > 0$ șiruri în fiul de pe litera $S[j]$}
+        \State $w[j] \gets w[j] + w[i] \cdot cnt$
+        \State $u \gets $ fiul de pe litera $S[j]$
+        \State $j \gets j + 1$
+      \EndWhile
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+\subsection{Problema Maximum Xor Subarray (CSES)}
+\label{problem:maximum-xor-subarray}
+
+\href{https://cses.fi/problemset/task/1655}{enunț}
+$\bullet$
+\hyperref[code:maximum-xor-subarray]{sursă}
+
+Iată și o problemă care folosește un trie pentru stocarea unei colecții de numere pe $k$ biți. Fiecare număr $x = \overline{b_{k-1}b_{k-2} \dots b_1 b_0}_{(2)}$ corespunde unei căi de $k$ noduri. Fiecare nod din trie are exact doi fii, ceea ce elimină risipa întîlnită în cazul literelor. Din păcate, majoritatea acestor probleme sînt probleme cu xor-uri (sau exclusiv), care mie mi se par artificiale. Să rezolvăm totuși două astfel de probleme, pentru cultura generală.
+
+Problema Maximum Xor Subarray folosește un artificiu arhicunoscut: xor-ul unei secvențe $[l, r]$ este egal cu xor-ul prefixelor $[0, l - 1]$ și $[0, r]$. De aceea, în loc să examinăm elementele șirului, vom examina xor-urile parțiale. Pentru fiecare valoare $x$, ne întrebăm: cu care altă valoare văzută anterior face $x$ xor-ul maxim?
+
+Vom construi răspunsul bit cu bit. Dacă există valori anterioare care încep cu $\neg\overline{b_{k-1}}$, atunci restrîngem căutarea la mulțimea acestor valori, iar răspunsul va începe cu bitul 1. Altfel răspunsul începe cu bitul 0. Similar calculăm și ceilalți biți ai răspunsului.
+
+Din nou, trie-urile sînt structura potrivită deoarece, urmînd căi de la rădăină la frunze, putem să aflăm incremental informații despre prefixele binare ale valorilor văzute anterior.
+
+\subsection{Problema Esoteric Bovines (IIOT 2023-2024 runda internațională)}
+\label{problem:esoteric-bovines}
+
+\href{https://kilonova.ro/problems/2783}{enunț}
+$\bullet$
+\hyperref[code:esoteric-bovines]{sursă}
+
+Problema este o generalizare a precedentei. Dați fiind doi vectori $A$ și $B$ cu cîte $n$ elemente fiecare, trebuie să găsim a $k$-a cea mai mică valoare xor între un element din $A$ și unul din $B$.
+
+\subsubsection*{Soluție cu căutare binară}
+
+Să inserăm toate numerele din $A$ într-un trie augmentat, în fiecare nod, cu numărul de numere care se continuă în subarborele nodului. Atunci pentru fiecare număr $b \in B$ putem să aflăm eficient diverse informații despre xor-urile pe care $b$ le formează cu numere din trie. În particular, putem să răspundem la întrebarea: cîte dintre cele $n$ xor-uri sînt mai mici decît o valoare aleasă, $v$?
+
+De aici deducem următorul algoritm bazat pe căutarea binară a răspunsului. Pentru un candidat $x$, ne întrebăm: cîte perechi $(A[i], B[j])$ au proprietatea $A[i] \oplus B[j] < x$? Restrîngem căutarea binară în stînga sau în dreapta lui $x$ după cum numărul de perechi este mai mare sau mai mic decît $k$.
+
+Complexitatea acestui algoritm este $\bigoh(n l^2)$ unde $l \leq 60$ este mărimea valorilor. Această complexitate provine din
+
+\begin{enumerate}
+  \item Căutarea binară a răspunsului în spațiul de valori $[0, 2^{60})$.
+  \item Iterarea prin vectorul $B$.
+  \item Pentru fiecare element $b \in B$, coborîrea prin trie.
+\end{enumerate}
+
+Implementarea obține doar 40 de puncte. Este nevoie să reducem complexitatea.
+
+\subsubsection*{Soluție cu parcurgere în lățime}
+
+Cel mai bun candidat pe care să-l eliminăm din complexitate este căutarea binară. Putem să aflăm răspunsul într-o singură trecere prin trie?
+
+Haideți să începem cu pași mici: să aflăm primul bit al răspunsului. Cîte perechi $(A[i], B[j])$ încep cu 0? Să introducem notația $C(A, l-1, 0)$ pentru numărul de valori din $A$ care au bitul $l-1$ egal cu 0. Atunci numărul de perechi este:
+
+$$p = C(A, l-1, 0) \cdot C(B, l-1, 0) + C(A, l-1, 1) \cdot C(B, l-1, 1)$$
+
+Desigur, primul bit al răspunsului va fi $0$ sau $1$ după cum $p \geq k$ sau $p < k$. Dar întrebarea este cum continuăm de aici. Să spunem că primul bit este 0. Practic, trebuie să partiționăm mulțimea $A$ în numere care încep cu 0 sau cu 1. Fie aceste mulțimi $A_0$ și $A_1$. Similar o partiționăm pe $B$ în $B_0$ și $B_1$. Ca să aflăm al doilea bit al răspunsului, trebuie să confruntăm, în paralel $A_0$ cu $B_0$ și $A_1$ cu $B_1$, ca să vedem dacă avem mai multe sau mai puține de $k$ perechi care au al doilea bit 0.
+
+Pare că menținerea aceste evidențe se fărîmițează într-o colecție netractabilă de submulțimi. Dar de fapt situația este sub control! Ca și în soluția anterioară, să inserăm toate valorile din $A$ într-un trie. Acum, să adăugăm toate valorile din $B$ în rădăcina acestui trie. Pe măsură ce ținem evidența perechilor cu xor-ul dorit, vom împinge valorile din $B$ în jos, către frunzele trie-ului. Vom face aceasta în $l$ iterații, cîte una pentru fiecare nivel al arborelui.
+
+\import{./figures}{trie-esoteric-bovines.tex}
+
+Pe primul nivel (rădăcina), vom număra perechile al căror xor începe cu 0, ca mai sus. Dacă aflăm că primul bit al răspunsului este 0, vom împinge valorile din $B_0$ în subarborele stîng, iar pe cele din $B_1$ în subarborele drept, iar dacă primul bit al răspunsului este 1 vom proceda invers.
+
+Acum să considerăm un nivel oarecare, pe care dorim să aflăm bitul $i$ al răspunsului. Cele $n$ valori din $B$ sînt distribuite între nodurile de pe nivelul $i$ din trie. Pentru fiecare valoare $b \in B$, aflată într-un nod $u$, vom interoga fiii lui $u$ pentru afla cu cîte valori din $A$ obține $b$ xor-ul 0, respectiv 1, pe poziția $i$. După ce însumăm răspunsurile pentru toate valorile din $B$, vom ști dacă dorim ca bitul $i$ al răspunsului să fie 0 sau 1. În funcție de aceasta, facem o a doua trecere prin valorile din $B$ ca să le mutăm mai jos cu un nivel.
+
+Această soluție are complexitatea $\bigoh(nl)$ și obține punctaj maxim, dar consumă peste 100 MB de memorie. Există $\np{200000} \cdot 60 = \np{12000000}$ de noduri și fiecare nod reține trei întregi: numărul de șiruri din acel nod și pointeri la fii.
+
+\subsubsection*{Soluție optimizată}
+
+Din \href{https://kilonova.ro/submissions/372990}{această soluție} am învățat un algoritm care reduce enorm memoria, ceea ce înjumătățește și timpul de rulare. Să observăm că noi am construit oarecum „pe pilot automat”, din reflex, acest trie, dar el nu este necesar. Putem să pornim cu un trie format doar din rădăcină, în care se află toate cele $2n$ valori din $A$ și $B$. Apoi împingem valorile în jos, spre noduri pe care le creăm spontan, la nevoie.
+
+În esență, soluția anterioară împingea în mod repetat fiecare valoare $b \in B$ într-un nod $u$, cu semnificația: pentru a obține prefixul dorit din răspuns, valoarea $b$ mai poate forma perechi doar cu numerele din subarborele lui $u$. Să remarcăm că toate numerele din acel subarbore au un prefix comun pînă la nivelul curent.
+
+Aceasta înseamnă că, dacă sortăm imediat după citire valorile din $A$, atunci fiecare valoare din $B$ reține în permanență un interval continuu din $A$. Mai mult, toate valorile din $B$ care au un prefix comun vor reține același interval din $A$. Cu alte cuvinte, la nivelul curent trebuie doar să reținem \textbf{o listă de perechi de intervale} de forma $\bigl([l_A, r_A), [l_B, r_B) \bigr)$. Xor-ul oricărei perechi $(A[i], B[j])$ este egal pe prefix cu răspunsul.
+
+Inițial în rădăcină urmărim toate cele $n^2$ perechi, deci lista de perechi de intervale conține doar perechea $\bigl([0, n), [0, n)\bigr)$. Acum fie $x$ poziția primului număr din $A$ care are primul bit 1 și fie $y$ poziția primului număr din $B$ care are primul bit 1. Ca să aflăm cîte perechi dau un xor cu primul bit 0, folosim formula:
+
+$$p = x \cdot y + (n - x) \cdot (n - y)$$
+
+De aici iau naștere două cazuri:
+
+\begin{enumerate}
+  \item Dacă $p \geq k$, atunci perechile pentru nivelul următor sînt $\bigl([0, x), [0, y)\bigr)$ și $\bigl([x, n), [y, n)\bigr)$.
+  \item Dacă $p < k$, atunci perechile pentru nivelul următor sînt $\bigl([0, x), [y, n)\bigr)$ și $\bigl([x, n), [0, y)\bigr)$.
+\end{enumerate}
+
+Pe orice nivel vom avea cel mult $n$ astfel de perechi, deoarece fiecare element din $A$ (și din $B$) face parte din cel mult o pereche (dacă la orice moment un element din $A$ rămîne fără perechi în $B$, sau invers, atunci invervalul corespunzător devine vid și putem să aruncăm perechea de intervale din listă).
+
+De aceea, complexitatea este tot $\bigoh(nl)$, dar memoria este $\bigoh(n)$ în loc de $\bigoh(nl)$ cît ocupă un trie. În practică, programul folosește doar 7 MB.
+
+\subsection{Problema Cipher (IIOT 2022-2023 runda internațională)}
+\label{problem:cipher}
+
+\href{https://kilonova.ro/problems/624}{enunț}
+$\bullet$
+\hyperref[code:cipher]{sursă}
+
+Să ignorăm pentru moment cerința ca $|s|$ să se dividă cu $|t|$. Atunci putem afla criptarea minimă foarte direct, folosind un trie, astfel. Să luăm ca exemplu $s[0] = \texttt{f}$. Cea mai bună pereche pentru \texttt{f} este \texttt{v}, deoarece numerele de ordine ale acestor litere sînt 5 și 21, de sumă 26, deci suma lor Vigenère este \texttt{a}. Așadar, dacă există chei care încep cu litera \texttt{v}, restrîngem căutarea la acelea și continuăm cu cea de-a doua literă a lui $s$. Dacă nu, atunci examinăm literele \texttt{w}, \texttt{x}, \texttt{y}, \texttt{z}, \texttt{a}, \texttt{b}, \dots, pînă cînd găsim chei care încep cu una dintre aceste litere.
+
+De aceea, algoritmul pentru acest caz particular inserează toate cheile într-un trie. Apoi, pentru fiecare șir $s$, pornește din rădăcina trie-ului și coboară nivel cu nivel, urmînd la nivelul $i$ litera care minimizează perechea cu $s[i]$.
+
+\subsubsection*{Încercare cu un singur trie}
+
+Cum tratăm restricția de divizibilitate? Prima mea încercare, care nu duce nicăieri, a fost să țin în fiecare nod din trie un vector cu lungimile posibile ale cheilor care se continuă în acel subarbore. Suma lungimilor acestor vectori este egală cu suma lungimilor cheilor, deci acceptabilă. Pentru a procesa un șir $s$, este necesar să adăugăm următoarea regulă la coborîrea prin trie. La fiecare nivel $i$, vom urma litera care formează perechea minimă cu $s[i]$ și care duce spre un nod al cărui vector include un divizor al lui $|s|$.
+
+Această soluție este ineficientă și greoi de codat. Pe fiecare nivel al trie-ului putem avea $\bigoh(\sqrt{k})$ chei de lungimi diferite, ceea ce ne duce la complexitatea $\bigoh(S \sqrt{k})$, unde $S \leq \np{400000}$ este suma lungimilor șirurilor.
+
+\subsubsection*{Soluția cu trie-uri multiple}
+
+În loc de aceasta, putem să generăm cîte un trie pentru fiecare lungime distinctă a cheilor. Pentru exemplul din enunț, vom crea 4 trie-uri pentru lungimile de șiruri 3, 4, 6 și 8. Atunci, pentru o interogare $s$, vom face cîte o coborîre în trie pentru fiecare divizor $d$ al lui $|s|$ (desigur, numai dacă chiar există chei de lungimea $d$).
+
+În teorie, aceasta poate duce la multe coborîri atunci cînd lungimile șirurilor sînt \href{https://en.wikipedia.org/wiki/Highly_composite_number}{numere extrem compuse}, dar să nu uităm că suma acestor lungimi nu depășește \np{400000}. De exemplu, putem avea un șir de lungime $|s| = \np{166320} = 2^4 \cdot 3^3 \cdot 5 \cdot 7 \cdot 11$, care are 160 de divizori. Dar nu putem avea mai mult de două astfel de șiruri.
+
+Există multe detalii de implementare care merită discutate.
+
+Pot exista circa $\sqrt{2 \cdot \np{400000}} < \np{1000}$ lungimi de chei distincte, deci poate fi nevoie să ținem \np{1000} de trie-uri cu cel mult \np{400000} de noduri în total. Cum procedăm? Putem recurge la alocarea dinamică a nodurilor, dar eu am preferat, din nou, să aloc un vector global de noduri din care fiecare trie ia un nod cînd are nevoie.
+
+Pentru maparea efectivă a lungimilor cheilor la trie-uri, am folosit pur și simplu un \ccode{unordered_map}.
+
+Ca să fac un experiment, la această implementare nu am mai prealocat vectori de 26 de pointeri la fii, ci i-am creat doar la nevoie. Fiecare pointer este o pereche constînd din nodul-destinație și din litera de pe muchie.
+
+Pentru un șir $s$ dat, este nevoie să construim efectiv criptările pentru fiecare divizor al lui $|s|$, ca să le putem compara și să alegem cheia optimă. Eu am ales să fac acest lucru chiar pe parcursul coborîrii în trie. De exemplu, dacă $|s| = 15$ și examinăm trie-ul cheilor de lungime 3, atunci:
+
+\begin{itemize}
+  \item Litera aleasă la nivelul 0 trebuie adunată la $s[0]$, $s[3]$, $s[6]$, $s[9]$ și $s[12]$.
+  \item Litera aleasă la nivelul 1 trebuie adunată la $s[1]$, $s[4]$, $s[7]$, $s[10]$ și $s[13]$.
+  \item Litera aleasă la nivelul 2 trebuie adunată la $s[2]$, $s[5]$, $s[8]$, $s[11]$ și $s[14]$.
+\end{itemize}

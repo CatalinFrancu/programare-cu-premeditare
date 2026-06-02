@@ -61,7 +61,7 @@ $\bullet$
 
 Această problemă este relativ „servită” pentru șiruri de sufixe.
 
-Cînd luăm în calcul un subșir al cuvîntului $i$ și ne întrebăm dacă este specific acelui cuvînt, trebuie să-l putem căuta rapid în toate celelalte cuvinte. De aceea, să construim șirul de sufixe al concatenării tuturor cuvintelor: $S = s_1 \backslash 0 \; s_2 \backslash 0 \; \dots \backslash 0 \; s_n \; \backslash 0$.
+Cînd luăm în calcul un subșir al cuvîntului $i$ și ne întrebăm dacă este specific acelui cuvînt, trebuie să-l putem căuta rapid în toate celelalte cuvinte. De aceea, să construim șirul de sufixe al concatenării tuturor cuvintelor: $S = s_1 \texttt{\textbackslash0} \; s_2 \texttt{\textbackslash0} \; \dots \texttt{\textbackslash0} \; s_n \; \texttt{\textbackslash0}$.
 
 Acum, să considerăm o poziție de start în interiorul cuvîntului $i$. Ne întrebăm: ca să obținem un subșir specific cuvîntului $i$, cîte caractere ar trebui să selectăm? Să spunem că el are poziția $k$ în vectorul de sufixe. \textbf{În principiu}, vrem să diferențiem subșirul de precedentul și de următorul din vectorul de sufixe. Deci trebuie să selectăm $1 + \max(LCP[k], LCP[k + 1])$ caractere.
 

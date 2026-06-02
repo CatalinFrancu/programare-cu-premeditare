@@ -1,0 +1,42 @@
+\chapter{Arbori trie}
+
+Arborii trie\footnote{Pronunția acestui cuvînt este neclară, conform \href{https://en.wikipedia.org/wiki/Trie\#History,_etymology,_and_pronunciation}{Wikipedia}. Eu sînt adeptul pronunțării ca \textit{try}, pentru a-l deosebi de \textit{tree}.} sînt structuri arborescente care stochează colecții de șiruri de caractere. După cum vom vedea în probleme, trie-urile sînt folosite adesea și pentru stocarea numerelor reprezentate (conceptual) ca șiruri de biți.
+
+Secțiunea de teorie a acestui capitol este momentan incompletă. Vom urmări imaginile din \href{https://en.wikipedia.org/wiki/Trie}{articolul de pe Wikipedia}.
+
+\section{Implementare}
+
+O implementare elementară este:
+
+\begin{minted}{c}
+struct trie {
+  struct node {
+    int child[SIGMA];
+    int cnt;
+  };
+
+  node nd[MAX_CHARS + 1];
+  int size = 1;
+
+  void insert(char* s) {
+    int u = 1;
+    for (int i = 0; s[i]; i++) {
+      int c = s[i] - 'a';
+      if (!nd[u].child[c]) {
+        nd[u].child[c] = ++size;
+      }
+      u = nd[u].child[c];
+      nd[u].cnt++;
+    }
+  }
+};
+\end{minted}
+
+Deciziile mele de design sînt:
+
+\begin{enumerate}
+  \item Fiecare nod are un vector static cu 26 de pointeri la fii, cîte unul pentru fiecare literă a alfabetului. Această alocare este comodă, dar risipitoare. În problema \hyperref[problem:cipher]{Cipher} am implementat și versiunea cu liste de fii de lungime variabilă.
+  \item Am prealocat static nodurile. În cazul cel mai defavorabil, numărul de noduri poate fi egal cu suma lungimilor șirurilor. Cînd inserăm un șir și avem nevoie să creăm un fiu nou, folosim următorul nod din vectorul prealocat.
+  \item Fiecare nod reține și numărul de șiruri care se continuă în subarbore. Această informație variază de la problemă la problemă.
+  \item Rădăcina arborelui este nodul 1, iar nodul 0 este nefolosit. Astfel, oricînd o poziție din vectorul \ccode{child} este 0, ea indică un pointer nul.
+\end{enumerate}
