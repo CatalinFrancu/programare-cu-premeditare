@@ -1,0 +1,33 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    ]
+    \graph [
+    grow right sep=1cm,
+    nodes={draw, circle, minimum size=20pt},
+    range/.style={font=\footnotesize, minimum size=40pt},
+    ] {
+      s/"$s$"
+      ->[draw=none] n0/"[5,20]"[range]
+      ->[draw=none] n1/"[8,100]"[range]
+      ->[draw=none] n2/"[2,80]"[range]
+      ->[draw=none] t/"$t$",
+
+      s ->[bend left=45, gray] n0,
+      s ->[bend left=45, gray] n1,
+      s ->[bend left=45, gray] n2,
+
+      n0 ->[bend right=45, gray] t,
+      n1 ->[bend right=45, gray] t,
+      n2 ->[bend right=45, gray] t,
+
+      n0 ->[bend left, "12"] n1,
+      n1 ->[bend left, "98"] n2,
+      n0 ->[bend right, "18"'] n2, % the apostrophe moves the label below
+    };
+  \end{tikzpicture}
+
+  \caption{O încercare de graf pentru problema Lifts. Toate capacitățile sînt 1 și toate costurile sînt 0, cu excepția celor figurate pe muchii.}
+  \label{fig:min-cost-flows-lifts-1}
+\end{figure}

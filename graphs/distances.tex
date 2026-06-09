@@ -13,6 +13,7 @@ Considerăm aceste distanțe ca fiind $\infty$ pentru noduri inaccesibile din su
 Toți algoritmii se bazează pe \textbf{estimarea pesimistă} a distanței: inițializăm distanțele tuturor nodurilor cu $\infty$, apoi le îmbunătățim succesiv pînă ajung la optimul teoretic. Vom nota cu $d[u]$ estimarea curentă pentru distanța de la $s$ la $u$. Tehnica de bază în toți algoritmii este \textbf{relaxarea} unei muchii. Fie o muchie $(u,v)$ și fie $d[u]$ și $d[v]$ estimările curente ale distanțelor. Relaxarea înseamnă că, dacă $d[u] + c(u,v) < d[v]$, atunci atribuim $d[v] \gets d[u] + c(u,v)$.
 
 \section{Algoritmul Bellman-Ford}
+\label{sec:bellman-ford}
 
 Vom începe cu acest algoritm general, deși în practica olimpiadelor sîntem mult mai familiari cu cazurile lui particulare (BFS, Lee, Dijkstra). Dar algoritmul Bellman-Ford funcționează și pe costuri negative.
 

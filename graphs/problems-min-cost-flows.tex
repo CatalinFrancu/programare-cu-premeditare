@@ -1,0 +1,271 @@
+\section{Probleme}
+
+\subsection{Problema Parcel Delivery (CSES)}
+\label{problem:parcel-delivery}
+
+\href{https://cses.fi/problemset/task/2121}{enunț}
+$\bullet$
+\hyperref[code:parcel-delivery]{sursă}
+
+Problema este educațională și necesită aflarea fluxului maxim de cost minim. Implementarea este clasică, cu algoritmul \hyperref[sec:bellman-ford]{SPFA} cunoscut.
+
+\subsection{Problema Task Assignment (CSES)}
+\label{problem:task-assignment}
+
+\href{https://cses.fi/problemset/task/2129}{enunț}
+$\bullet$
+\hyperref[code:task-assignment]{sursă}
+
+Și această problemă este educațională și necesită aflarea fluxului maxim de cost minim, dar într-un graf bipartit. Am construit explicit rețeaua de flux, dar problema poate fi rezolvată și cu un algoritm de cuplaj (\href{https://cp-algorithms.com/graph/hungarian-algorithm.html}{algoritmul ungar}).
+
+Detalii de implementare:
+
+\begin{itemize}
+  \item Nu am construit listele de adiacență. În loc de aceasta, funcția \ccode{relax_neighbors(int u)} relaxează vecinii potriviți în funcție de tipul nodului $u$ (sursă, persoană, treabă, destinație).
+  \item Am stocat matricea de adiacență. Risipa nu este mare, dat fiind că există $\bigoh(n^2)$ muchii.
+\end{itemize}
+
+
+\subsection{Problema Match (IIOT 2019-2020 runda 3)}
+\label{problem:match}
+
+\href{https://kilonova.ro/problems/1991}{enunț}
+$\bullet$
+\hyperref[code:match]{sursă}
+
+\subsubsection*{Modelarea ca problemă de flux}
+
+De-acum sîntem familiari cu acest gen de probleme, deci sper că v-a venit următoarea idee de rețea de flux:
+
+\begin{itemize}
+  \item Un nod sursă, $s$.
+  \item O coloană cu $m$ noduri pentru cele $m$ meciuri.
+  \item O coloană cu $n$ noduri pentru cei $n$ jucători.
+  \item Un nod destinație, $t$.
+  \item Muchii de la $s$ la fiecare meci, de capacitate 1. Acestea garantează că fiecare meci va avea exact un cîștigător: cel înspre care se duce fluxul.
+  \item Muchii de la fiecare meci la cei doi jucători participanți, de capacitate 1.
+  \item Muchii de la jucători la $t$. Vom detalia mai jos parametrii, dar important este că valorile fluxului pe aceste muchii indică scorurile jucătorilor.
+\end{itemize}
+
+Să notăm scorul maxim minim cu $S_M$ și scorul minim maxim cu $S_m$.
+
+\subsubsection*{Faza I: Aflarea lui \texorpdfstring{$S_M$}{S_M}}
+
+Să îl aflăm întîi pe $S_M$. Pentru un candidat $x$ considerat, vom pune capacitatea $x$ pe muchiile jucător-destinație, pentru a nu-i permite niciunui jucător să acumuleze mai mult de $x$ puncte. Dacă problema admite soluție, fluxul maxim va avea valoarea $m$, deci $S_M \leq x$. Altfel înseamnă că am fost prea optimiști și nu putem repartiza toate meciurile, deci $S_M > x$.
+
+Pentru a-l găsi pe $S_M$ avem diverse abordări, cum ar fi căutarea binară. $S_M$ poate avea valoarea $m/2$, de exemplu dacă toate cele $m$ meciuri sînt între jucătorii 1 și 2. Chiar și cu un algoritm eficient de flux, să spunem Dinic ($\bigoh(mn^2)$), căutarea binară necesită $\bigoh(mn^2 \log n)$.
+
+Iată și o abordare incrementală, care îl crește cu $S_M$ cu cîte o unitate, dar procedează eficient, similar problemei \hyperref[problem:echipe]{Echipe}. Atribuim întîi capacitatea 0 muchiilor jucător-destinație. Apoi creștem treptat aceste capacități, cu cîte o unitate (simultan pe toate muchiile) și actualizăm fluxul, pornind de la cel deja existent. Folosim algoritmul (relativ) naiv Ford-Fulkerson. Acest algoritm face $\bigoh(m)$ repetiții care constau din:
+
+\begin{itemize}
+  \item Creșterea capacităților pe $n$ muchii: $\bigoh(n)$.
+  \item Cel mult un DFS eșuat, care constată că nu mai poate pompa flux și încheie repetiția: $\bigoh(m + n)$.
+  \item $m$ DFS-uri cu succes \textbf{în total în toate repetițiile}, care cresc fluxul cu cîte o unitate.
+\end{itemize}
+
+Complexitatea totală a fazei I este $\bigoh(m(m + n))$.
+
+\subsubsection*{Faza II: Aflarea lui \texorpdfstring{$S_m$}{S_m}}
+
+Precizez că există și o soluție fără costuri pe muchii, bazată pe \href{https://en.wikipedia.org/wiki/Circulation_problem}{circulații}. Odată ce îl aflăm pe $S_M$, ne întrebăm succesiv: există vreo soluție în care \textbf{fluxul minim} pe oricare dintre muchiile jucător-destinație să fie $S_M$? Dacă nu, atunci poate $S_M - 1$, $S_M - 2$ etc.? Problemele de flux cu limite inferioare ale capacităților se reduc la probleme de flux „normale”, doar cu capacități superioare. Dar reducerea nu este ușoară și depășește scopul prezentului capitol.
+
+Să revenim la subiect. Cum modelăm aflarea lui $S_m$ ca pe o problemă de flux? Pentru un candidat $x$, dacă $S_m \geq x$, ar trebui ca algoritmul să poată pompa cel puțin $x$ unități de flux pe fiecare muchie jucător-destinație. De aceea, să îl stimulăm să facă acest lucru cu costuri! Știm deja că toate muchiile jucător-destinație trebuie să aibă capacitatea $S_M$. Vom sparge aceste muchii în cîte două:
+
+\begin{itemize}
+  \item Una de capacitate $x$ și cost 0.
+  \item Una de capacitate $S_M - x$ și cost 1.
+\end{itemize}
+
+Care este rostul acestei dublări? Algoritmul va fi motivat să trimită cît mai mult flux pe muchiile de cost 0. Cel mai ieftin, dacă se poate, este să le satureze pe toate, ceea ce simbolizează că fiecare jucător a cîștigat cel puțin $x$ meciuri. Costul acestui flux este $m - nx$, deoarece restul unităților dincolo de primele $nx$ se vor duce pe muchii de cost 1.\footnote{La fel de bine putem și să folosim costurile -1 și respectiv 0. Este alegerea voastră dacă judecați în termeni de „pedeapsă (cost pozitiv) pentru prea mult flux pentru această muchie” sau „premiu (cost negativ) pentru primele $x$ unități de flux pe această muchie”.}
+
+Din nou, putem să îl căutăm binar pe $S_m$, dar iată un algoritm incremental mai eficient, mai simplu de programat (doar DFS-uri, fără Dijkstra sau Bellman-Ford) și, îndrăznesc să susțin, mai elegant. Dacă răspunsul pentru $x$ a fost afirmativ, atunci dorim:
+
+\begin{enumerate}
+  \item Să pregătim rețeaua pentru $x + 1$.
+  \item Să recalculăm costul minim al fluxului (valoarea fluxului este întotdeauna egală cu $m$).
+  \item Să comparăm noul cost cu $m - n(x + 1)$.
+\end{enumerate}
+
+\textbf{Actualizarea rețelei.} Vom actualiza rețeaua pentru $x + 1$, dar \textbf{nu de la zero}. Ce se schimbă cînd trecem de la $x$ la $x + 1$? Capacitățile muchiilor jucător-destinație de cost 0 cresc cu 1, iar ale celor de cost 1 scad cu 1. Putem face acest lucru în $\bigoh(n)$ cu un simplu \ccode{for}. Mai mult, dacă muchia de cost 1 are flux pe ea, putem muta o unitate din acest flux pe muchia de cost 0, ceea ce reduce costul fluxului cu 1. Dacă muchia de cost 1 nu are flux pe ea, atunci trebuie să căutăm alt mod de a profita de creșterea capacității muchiei de cost 0.
+
+\textbf{Recalcularea costului.} Prin actualizarea rețelei am păstrat valoarea fluxului, adică $m$; nu mai putem căuta drumuri de creștere așa cum ne-am obișnuit la algoritmii de flux. Întrebarea este dacă, prin scăderea costului unor muchii de la 1 la 0, putem obține un flux de cost mai mic. Mai ales, dorim să obținem fluxul de cost minim incremental, din cel existent. Să ne gîndim de unde ar putea proveni reducerea costului. Toate muchiile au costul 0, cu excepția celor de cost 1 dintre jucători și destinație. Deci trebuie să redirecționăm o unitate de flux de cost 1 și să căutăm un alt drum spre $t$ printr-o muchie de cost 0.
+
+Din perspectiva rețelei reziduale, noi căutăm \textbf{un ciclu}! El trebuie să pornească din $t$ pe o muchie de cost -1 (așadar perechea reziduală a unei unități de flux de cost 1) și să revină în $t$ folosind doar muchii de cost 0. Adăugat la fluxul curent, acest ciclu menține fluxul total, dar reduce costul cu 1.
+
+Ultima întrebare este cum găsim aceste cicluri de cost -1. Răspunsul este simplu: un DFS din $t$ este suficient, care pornește pe fiecare muchie de cost -1 și are voie să continue doar pe muchii de cost 0 (și, desigur, cu capacitate reziduală pozitivă). Nu este nevoie de algoritmii lui Dijkstra sau Bellman-Ford.
+
+Să calculăm și complexitatea fazei II. Spre deosebire de faza I, unde $S_M$ putea fi $m/2$, să observăm că $S_m \leq \left\lfloor m/n \right\rfloor$, conform principiului lui Dirichlet. Așadar, pot exista cel mult $m/n$ repetiții care constau din:
+
+\begin{itemize}
+  \item Modificarea capacităților pe $2n$ muchii: $\bigoh(n)$.
+  \item Cel mult $n$ DFS-uri cu succes care redirecționează cîte o unitate de flux (nu pot fi mai multe, deoarece la pasul anterior am crescut capacitatea muchiilor de cost 0 cu $n$ în total): $\bigoh(n(m + n))$.
+  \item Cel mult cîte un DFS eșuat pornind din $t$ spre fiecare jucător (mai exact, DFS-ul care constată că nu mai poate redirecționa o unitate de flux): $\bigoh(n(m + n))$.
+\end{itemize}
+
+Complexitatea fazei II este $\bigoh(m/n \cdot n(m + n)) = \bigoh(m(m + n))$.
+
+Așadar, complexitatea totală a algoritmului este remarcabil de joasă. Cu limite mai mari (să sicem $m = \np{5000}$ și $n = \np{1000}$), cred că problema are potențial de lot.
+
+\subsubsection*{Detaliu de implementare}
+
+Este preferabil să creăm de la bun început un singur graf. În faza I nu folosim costurile. Pentru aflarea lui $S_M$ creștem capacitățile muchiilor jucător-destinație de cost 1. Apoi începem să le descreștem, crescînd capacitățile muchiilor de cost 0. Astfel, graful nu trebuie resetat niciodată, ci informația curge natural din faza I în faza II.
+
+
+\subsection{Problema Hoață (Baraj ONI 2022)}
+\label{problem:hoata}
+
+\href{https://kilonova.ro/problems/146}{enunț}
+$\bullet$
+\hyperref[code:hoata]{surse}
+
+\subsubsection*{Modelarea ca problemă de flux}
+
+Flerul de a putea modela o problemă în termeni de rețele de flux vine cu experiența. De regulă, enunțul trebuie să menționeze niște restricții despre cîte evenimente simultane de un anumit tip pot coexista. Acelea devin capacități pe muchiile rețelei de flux. Așa cum în problema Match un jucător nu putea cîștiga simultan mai mult de $x$ partide, în problema de față din camera $i$ în camera $i + 1$ nu pot trece mai mult de $x_i$ hoți cu aceeași greutate.
+
+Dacă problema ar fi una de flux, atunci camerele ar fi noduri, iar alarmele ar fi muchii între camere. Și atunci ce reprezintă cei $x_i$ hoți care trec prin această alarmă? Fiecare dintre acești hoți este o unitate de flux! Iar traseul fiecărui hoț ar trebui să reprezinte ce obiecte fură hoțul din fiecare cameră.
+
+Următorul pas este să modelăm faptul că, desigur, toți hoții ajung pînă la urmă în camera $i+1$, dar $x_i$ este limita impusă numărului de hoți cu aceeași greutate. De fapt, vor exista $G + 1$ noduri pentru fiecare cameră. Conceptual, ia naștere o matrice $A$ de $n \times (G + 1)$ noduri unde $A_{i,j}$ (cu $1 \leq i \leq n$ și $0 \leq j \leq G$) semnifică starea unui hoț aflat în camera $i$ cu greutatea $j$ în rucsac. Din celula $(i, j)$ nu pot trece în celula $(i + 1, j)$ mai mult de $x_i$ hoți.
+
+De aceea, comportamentul unui hoț prin muzeu va corespunde unei căi care pornește din celula $s = (1, 0)$ (prima cameră cu rucsacul gol) și face în mod repetat una din două acțiuni posibile pînă cînd iese din muzeu:
+
+\begin{enumerate}
+  \item Avansează în camera următoare, deci trece din $(i, j)$ în $(i + 1, j)$.
+  \item Fură un obiect, deci trece din $(i, j)$ în $(i, j + g_i)$.
+\end{enumerate}
+
+În acest model, ce reprezintă valorile obiectelor? Ele sînt profituri, așadar costuri negative. Acțiunea 2 de mai sus vine cu costul $-v_i$.
+
+Să observăm că din ultima cameră ($n$), hoții trebuie să părăsească muzeul indiferent ce greutate au în rucsac. Așadar, mai adăugăm un nod $t$ și legăm de el toate nodurile de pe ultima linie a matricei, prin muchii de capacitate $x_n$.
+
+Punînd toate elementele cap la cap, obținem graful:
+
+\begin{itemize}
+  \item Există $n \cdot (G + 1) + 1$ noduri, dintre care primele $n \cdot (G + 1)$ noduri corespund conceptual unei matrice cu $n$ linii și $G + 1$ coloane.
+  \item Sursa $s$ primul nod, iar destinația $t$ este ultimul nod.
+  \item Din fiecare nod $(i, j)$ cu $1 \leq i \leq n$ și $0 \leq j \leq G - g_i$ există o muchie la dreapta, către nodul $(i, j + g_i)$ de capacitate $k$ (sau infinit) și cost $-v_i$.
+  \item Din fiecare nod $(i, j)$ cu $1 \leq i < n$ și $0 \leq j \leq G$ există o muchie în jos, către nodul $(i + 1, j)$, de capacitate $x_i$ și cost 0.
+  \item Din fiecare nod $(n, j)$ cu $0 \leq j \leq G$ există o muchie către nodul $t$ de capacitate $x_n$ și cost 0.
+\end{itemize}
+
+Pe acest graf căutăm un flux de valoare $k$ și cost minim. Fiecare unitate de flux reprezintă traseul unui hoț. De exemplu, primul hoț va căuta în mod natural să aleagă obiecte care maximizează raportul $v_i/g_i$ (practic, va rezolva problema rucsacului). Următoarele unități de flux pot alege variante mai puțin profitabile și pot reface traseele hoților anteriori prin muchii reziduale.
+
+
+\subsubsection*{Soluția cu SPFA}
+
+Să observăm că graful poate avea $n_G \approx \np{90000}$ de noduri. Din fiecare nod pornesc cel mult două muchii, plus perechile lor reziduale, așadar graful poate avea $m_G \approx \np{360000}$ de muchii. Dorim să pompăm $ k \leq 50$ de unități de flux prin acest graf. Limitele par prea mari pentru algoritmul SPFA, care rulează în $\bigoh(k n_G m_G)$. Dar am implementat oricum acest algoritm pentru că este considerabil mai simplu decît Johnson + Dijkstra.
+
+Spre surprinderea mea, programul rula în circa 2,2 secunde, aproape de limita de 2 secunde (nu știu dacă pe evaluatorul din concurs aș fi fost la fel de aproape). Am înlocuit coada STL cu o coadă proprie, iar timpul a scăzut cu 20-21\% (de reținut!). Scăderea a fost similară pe toate testele. Astfel am reușit să obțin 100p.
+
+Conform editorialului, totuși, intenția autorilor a fost o implementare cu algoritmul lui Johnson.
+
+
+\subsubsection*{Soluția cu algoritmii lui Johnson și Dijkstra}
+
+Implementarea este relativ de manual, dar am cîteva observații interesante.
+
+Pentru calculul inițial al potențialelor nu este nevoie să folosim algoritmul Bellman-Ford. Este drept că există muchii de cost negativ, dar graful este aciclic. Este suficient să relaxăm muchiile în ordinea sortării topologice, care coincide foarte convenabil cu ordinea crescătoare a nodurilor. Aceasta face funcția \ccode{init_potentials}.
+
+După fiecare recalculare a potențialelor, am ales să echilibrez graful (în funcția \ccode{reweight_edges}) modificînd chiar costurile muchiilor. Puteam și să lăsăm costurile neatinse și să calculăm altundeva contribuțiile de la reechilibrare, dar nu este necesar.
+
+Coada de priorități pentru Dijkstra reține perechi (distanță, nod). Din obișnuință, am dorit să evit tipul \ccode{std::pair}, așa că mi-am declarat propriul \ccode{struct pq_element} care dădea nume clare cîmpurilor. Apoi am declarat o coadă de priorități de acest tip:
+
+\begin{minted}{c}
+struct pq_elt {
+  int u, d;
+
+  friend bool operator<(pq_elt a, pq_elt b) {
+    return (a.d > b.d);
+  }
+};
+
+std::priority_queue<pq_elt> pq;
+\end{minted}
+
+Un șoc pentru mine, și o lecție foarte interesantă, a fost că acest cod mergea cam cu 33\% mai lent decît versiunea în care foloseam o coadă de priorități de tipul \ccode{std::pair}! Am depanat fenomenul și am constatat că, pe testul cel mai mare, implementarea mea trecea circa 20 de milioane de elemente prin coadă, pe cînd implementarea cu \ccode{std::pair} trecea doar 14 milioane.
+
+Vă dați seama de unde provine problema? Explicația este în codul comparatorului. Dacă există noduri cu distanță egală (și probabil există multe), comparatorul meu nu are nicio preferință și lasă nodurile într-o ordine arbitrară. Comparatorul din STL oferă o ordine totală și, la egalitate, preferă nodul cu indice minim.
+
+Printr-o coincidență, în problema de față această departajare este vitală. Dacă două noduri $u < v$ au aceeași distanță, iar noi îl procesăm întîi pe $v$, este foarte posibil ca ulterior, cînd îl procesăm pe $u$, distanța lui $v$ să se modifice și să fie nevoie să refacem calculele.
+
+Cînd am inclus și această departajare în comparatorul meu, timpii de rulare au devenit identici. În cele din urmă am renunțat complet la \ccode{struct}-ul propriu, căci am găsit o formulare lizibilă cu \ccode{std::pair}, care nu folosește numele criptice \ccode{first} și \ccode{second}.
+
+
+\subsection{Problema Lifts (IATI Shumen 2022)}
+\label{problem:lifts}
+
+\href{https://kilonova.ro/problems/317}{enunț}
+$\bullet$
+\hyperref[code:lifts]{sursă}
+
+\subsubsection*{Modelarea ca problemă de flux}
+
+Observăm că fiecare comandă trebuie procesată de un singur lift. Dacă am crea o rețea de flux, ar avea sens să reprezentăm comenzile prin cîte un nod și să legăm aceste noduri de o sursă $s$ și de o destinație $t$ prin muchii de capacitate 1. În acest graf, o unitate de flux ar corespunde traseului unui lift. Acum, să punem la punct detaliile.
+
+Dorim ca un lift să poată procesa mai multe comenzi. Cum facem asta? Este nevoie să putem face tranziții între orice pereche de comenzi $(i, j)$ cu $i < j$. Costul acestei tranziții este $|q_i - p_j|$. Iată graful corespunzător exemplului din enunț.
+
+\import{./figures}{min-cost-flows-lifts-1.tex}
+
+Cele două lifturi ar putea folosi traseele $s \to [5,20] \to [8,100] \to t$ și respectiv $s \to [2,80] \to t$, de cost total 12. Dar există o problemă. Un flux și mai ieftin ar fi $s \to [5,20] \to t$ și $s \to [2,80] \to t$, de cost 0. Fiecare lift procesează o singură comandă, iar unele comenzi rămîn neprocesate! Cum convingem lifturile să proceseze colectiv toate comenzile? Similar problemei \hyperref[problem:match]{Match}, vom înlocui fiecare nod cu o pereche de noduri unite printr-o muchie de cost $-\infty$. Aceasta va face comenzile atractive, căci va acoperi orice cost de deplasare între două comenzi. La final, trebuie să nu uităm să adăugăm la costul găsit cantitatea $n \cdot \infty$ (desigur în cod vom înlocui $\infty$ cu o valoare finită).
+
+În această reprezentare, deplasările între două comenzi sînt muchii de la un nod drept $i$ la un nod stîng $j$ cu $i < j$. Rezultă structura:
+
+\import{./figures}{min-cost-flows-lifts-2.tex}
+
+\subsubsection*{Reducerea numărului de muchii la \texorpdfstring{$\bigoh(n \sqrt{n})$}{n sqrt n}}
+
+Mai există un obstacol. Numărul de muchii din graf, inclusiv cele reziduale, este $2 \cdot (3n + C_n^2 ) \approx \np{100000000}$, mult prea mare pentru a se încadra în timp și în memoria de numai 64 MB. Trebuie să reducem masiv numărul de muchii, dar cum?
+
+O primă idee este cu descompunerea în radical. Să împărțim nodurile în $B \approx \sqrt{n}$ blocuri de cîte $B$ noduri fiecare. Dorim ca un nod din dreapta, $i$, să conțină $\bigoh(\sqrt{n})$ muchii, astfel:
+
+\begin{itemize}
+  \item $\bigoh(1)$ muchii către fiecare nod stîng $j$ din același bloc cu $i$ (ca și pînă acum).
+  \item $\bigoh(1)$ muchii către fiecare bloc de noduri stîngi aflate mai jos decît blocul lui $i$.
+\end{itemize}
+
+Pentru aceasta, avem nevoie să inserăm $2n$ noduri în plus. Pentru fiecare bloc de noduri stîngi procedăm astfel. Creăm două grupe de cîte $B$ noduri, pe care le înlănțuim în două liste. Aceste liste le legăm cu muchii de cost 0 într-o corespondență 1:1 cu nodurile stîngi din bloc, dar nu în ordinea naturală, ci în ordinea primului etaj al comenzilor respective. Cu alte cuvinte, dacă comenzile din bloc încep la etajele 30, 10, 50, 20, 60 și 40, vom lega nodurile din prima listă respectiv la etajele 10, 20, 30, 40, 50 și 60, iar nodurile din a doua listă respectiv la etajele 60, 50, 40, 30, 20, 10. Muchia între oricare două noduri consecutive are un cost egal cu diferența de etaje (10 în acest exemplu).
+
+De ce procedăm astfel? Să considerăm o comandă dintr-un nod drept $r$, aflat undeva mai sus decît blocul curent. Să spunem că ultimul etaj al comenzii este 27. Atunci este suficient să trasăm două muchii de la comandă la cele două liste înlănțuite:
+
+\begin{itemize}
+  \item O muchie leagă comanda de nodul corespunzător etajului 30 din lista crescătoare. Muchia are cost 3.
+  \item Cealaltă muchie leagă comanda de nodul corespunzător etajului 20 din lista decrescătoare. Muchia are cost 7.
+\end{itemize}
+
+Acum vedem că putem suplini lipsa muchiilor dintre $r$ și orice nod stîng din blocul curent. Dacă o unitate de flux ajunge în $r$ și dorește să continue de la nodul de nivel 50, atunci ea:
+
+\begin{itemize}
+  \item va intra în lista crescătoare la nivelul 30 cu costul 3;
+  \item va parcurge două muchii din listă, fiecare de cost 10;
+  \item va părăsi lista pe muchia care duce la nivelul 50.
+\end{itemize}
+
+Astfel vedem că unitatea de flux a combinat o comandă terminată la nivelul 27 cu o comandă ulterioară care începe la nivelul 50 și a plătit costul 23, așa cum ne dorim.
+
+Am introdus această reprezentare ca pe un pas intermediar, dar ea tot este insuficientă. Care este numărul de muchii din această reprezentare? Fiecare nod drept are:
+
+\begin{itemize}
+  \item În medie, $\sqrt{n} / 2$ muchii către nodurile stîngi din același bloc.
+  \item În medie, $2 \cdot \sqrt{n} / 2$ muchii către cele două liste înlănțuite din blocurile următoare.
+\end{itemize}
+
+Așadar, fiecare nod are în medie 150 de muchii, sau 300 incluzînd și perechile reziduale. Totalul este de circa \np{3000000} de muchii, tot prea mare.
+
+
+\subsubsection*{Reducerea numărului de muchii la \texorpdfstring{$\bigoh(n \log n)$}{n log n}}
+
+Odată ce am înțeles principiul, putem face același salt pe care îl facem de la descompunerea în radical la arbori de intervale: nu mai folosim blocuri de mărime $\sqrt{n}$, ci blocuri de mărime 1, 2, 4, 8 etc. \href{https://codeforces.com/blog/entry/109545#comment-976617}{Acest comentariu} rezumă ideea descompunerii.
+
+Să considerăm, pentru ușurință, că $n$ este o putere a lui 2, de exemplu $n = 32$. Să numerotăm comenzile (și nodurile) de la 0 la 31. Atunci, de exemplu, nodul drept 5 trebuie legat la nodurile stîngi $[6, 31]$. Descompunem acest interval în $[6,7]$, $[8,15]$ și $[16,31]$, toate de lungimi puteri ale lui 2 și toate cu capetele stîngi aliniate cu un multiplu al lungimii.
+
+Acum vom crea, pentru anumite intervale de lungime putere a lui 2, liste înlănțuite ca mai sus, care iterează prin nodurile din interval în ordine crescătoare și descrescătoare. Putem obține o implementare relativ concisă cu divide et impera (\href{https://kilonova.ro/submissions/6180}{exemplu}). Eu am încercat o implementare iterativă.
+
+Cu această descompunere, numărul total de muchii este circa \np{780000}, care se încadrează în timp și în memorie. Problema \href{https://codeforces.com/contest/786/problem/B}{Legacy} (Codeforces) necesită o descompunere similară pentru algoritmul lui Dijkstra.
+
+
+\subsubsection*{Calculul potențialelor}
+
+Algoritmul Bellman-Ford este prea lent pentru calculul inițial al distanțelor și al potențialelor. Mai este necesară o observație ingenioasă. Graful pe care l-am creat este aciclic, deci este suficient să îl sortăm topologic, de exemplu cu BFS, și să relaxăm muchiile în această ordine.
+
+Spre tristețea mea, din această cauză am pierdut circa 30 de minute depanînd următoarea optimizare, care nu merge. Din punct de vedere al corectitudinii, este suficient să creăm cîte o singură listă pentru fiecare bloc. Pentru exemplul de mai sus, cu etajele  30, 10, 50, 20, 60 și 40, putem crea o singură listă dublu înlănțuită care se leagă, în ordine de etajele 10, 20, 30, 40, 50 și 60. Pentru fiecare nod drept superior, ambii pointeri intră în această listă pe poziții vecine. Un nod drept terminat la etajul 27 va avea pointeri către nodurile 20 și 30.
+
+Am neglijat însă faptul că fiecare pereche de elemente din aceste liste formează un ciclu. \emoji{smiling-face-with-tear}. De aceea, sortarea topologică eșua.

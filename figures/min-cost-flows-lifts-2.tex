@@ -1,0 +1,26 @@
+\begin{figure}[H]
+  \centering
+
+  \begin{tikzpicture}[
+    ]
+    \graph [
+    branch down=2cm,
+    grow right sep=1.5cm,
+    nodes={draw, circle, minimum size=20pt},
+    range/.style={font=\footnotesize, minimum size=40pt},
+    ] {
+      s/"$s$"[y=-2cm] -> {
+        l0/"[5,20]"[range] ->["$-\infty$"] r0/"[5,20]"[range],
+        l1/"[8,100]"[range] -> r1/"[8,100]"[range],
+        l2/"[2,80]"[range] -> r2/"[2,80]"[range],
+      } -> t/"$t$"[y=-2cm],
+
+      r0 ->["12"'] l1,
+      r0 ->["18"'] l2,
+      r1 ->["98"] l2,
+    };
+  \end{tikzpicture}
+
+  \caption{O nouă încercare de graf pentru problema Lifts.}
+  \label{fig:min-cost-flows-lifts-2}
+\end{figure}

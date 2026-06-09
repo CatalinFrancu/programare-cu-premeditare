@@ -1,0 +1,145 @@
+\chapter{Fluxuri de cost minim}
+
+\section{Descrierea problemei}
+
+În acest capitol, vom extinde noțiunea de rețea de flux învățată anterior.
+
+\begin{definition}[Rețea de flux cu costuri]
+  O rețea de flux cu costuri este un graf orientat $G = (V,E)$ în care fiecare muchie $(u,v)$ are o capacitate $c(u, v) \geq 0$ și un cost unitar $p(u,v)$. Există două noduri speciale în această rețea: o sursă $s$ și o destinație $t$.
+\end{definition}
+
+\begin{definition}[Costul unui flux]
+  Dată fiind o rețea de flux cu costuri și un flux $f: E \to \mathbb{R}$ în această rețea, costul fluxului este $\sum_{(u, v) \in E} f(u, v) \cdot p(u, v)$.
+\end{definition}
+
+Subliniem că costul pe fiecare muchie este per unitate de flux transportată pe muchia respectivă. Vom presupune că graful nu conține cicluri pe care suma costurilor este negativă. Existența acestor cicluri nu exclude neapărat o soluție, dar ne complică mult raționamentele.
+
+Problema fluxului maxim este: dată fiind o rețea de flux cu costuri, dintre toate fluxurile maxime în această rețea să se găsească fluxul de cost minim.
+
+În practică, algoritmii pe care îi vom studia rezolvă o generalizare a problemei: dată fiind o valoare dorită $k$ a fluxului, vom găsi cel mai ieftin flux de valoare $k$. Cu alte cuvinte, vom găsi cel mai ieftin mod de a pompa $k$ unități de flux de la $s$ la $t$.
+
+
+\section{Rețeaua reziduală}
+
+Pentru fluxuri fără costuri, știm că pentru fiecare muchie $(u, v) \in E$ de capacitate $c$ rețeaua reziduală $G_f$ conține și o a doua muchie, $(v, u)$, inițial de capacitate 0. Dacă ulterior pompăm $x$ unități de flux pe muchia $(u,v)$, capacitatea muchiei scade cu $x$, iar capacitatea muchiei $(v,u)$ crește cu $x$.
+
+La rețelele cu costuri procedăm similar. Pentru muchia $(u, v) \in E$ de capacitate $c$ și cost $p$ creăm și muchia reziduală $(v, u)$ de capacitate (inițial) 0 și cost $-p$. Semnificația acestei reprezentări este că, dacă vreodată pompăm flux în sensul $(u, v)$ și ulterior ne răzgîndim și pompăm flux pe muchia reziduală $(v, u)$, ne vom recupera costul plătit pentru acel flux.
+
+
+\section{Mecanismul general}
+
+Vom descrie doi algoritmi care funcționează pe același principiu general. Vom pompa mai întîi o unitate de flux pe drumul de la $s$ la $t$ care minimizează costul total plătit pentru acea unitate (pe toate muchiile prin care ea trece). Apoi vom pompa încă o unitate, apoi încă una etc. Pe măsură ce începem să saturăm muchii, vom fi nevoiți să căutăm căi $s-t$ de costuri mai mari. Cînd nu mai poate pompa flux (sau după ce a pompat cele $k$ unități pe care ni le-am propus), algoritmul se termină.
+
+Mai întîi să vedem cum găsim cel mai ieftin mod de a pompa o unitate de flux. Care este costul total al propagării acestei unități? Este suma minimă a costurilor pe oricare dintre căile de la $s$ la $t$. Cu alte cuvinte, este \textbf{drumul minim} dacă privim rețeaua reziduală $G_f$ ca pe un graf cu greutăți pe muchii egale cu costurile $p(u, v)$ și dacă luăm în calcul doar muchiile de capacitate pozitivă. De aceea algoritmii de flux maxim de cost minim se reduc, în esență, la căutarea repetată a unor drumuri de creștere, dar nu cu DFS sau cu BFS ca în grafurile fără costuri, ci cu algoritmi specifici drumurilor de cost minim (Dijkstra, Bellman-Ford etc.).
+
+În restul acestui capitol, oricînd vom discuta despre drumuri minime ne referim la suma costurilor muchiilor de pe acele drumuri. Similar, cînd vom discuta despre cicluri negative ne referim la cicluri pe care suma costurilor este negativă.
+
+Desigur, în practică, odată ce găsim o cale minimă $P$, nu este obligatoriu să pompăm o singură unitate pe ea. Ca și la algoritmii de flux fără costuri, putem pompa atîtea unități încît să saturăm cel puțin o muchie (fără a depăși numărul de unități rămase de pompat).
+
+
+\subsubsection*{Demonstrație de corectitudine}
+
+Este intuitiv că această abordare \textit{greedy} este corectă din punct de vedere teoretic. Iată o schiță a demonstrației.
+
+\begin{remark}
+  Dacă graful inițial $G$ nu conține cicluri negative, atunci la niciun moment pe parcursul algoritmului rețeaua reziduală $G_f$ nu conține cicluri negative.
+\end{remark}
+
+\begin{proof}
+  Să presupunem prin absurd că există o primă iterație în urma căreia apare un ciclu de cost negativ. În această iterație, cu un algoritm oarecare am găsit o cale minimă $P$ pe care am pompat flux, ceea ce a creat niște muchii reziduale. Cum ar putea apărea un ciclu negativ? Algoritmul trebuie să fi pompat flux pe o muchie $(u, v)$ de cost pozitiv $p > 0$, ceea ce a creat muchia $(v, u)$ de cost negativ $-p$, care a închis un ciclu negativ $C$. Acum să considerăm două căi de la $s$ la $t$.
+
+  \begin{itemize}
+    \item Calea $P$, găsită de algoritm, cu traseul $s \rightsquigarrow u \to v \rightsquigarrow t$.
+    \item Calea $P'$ cu traseul $s \rightsquigarrow u \stackrel{C}{\rightsquigarrow} v \rightsquigarrow t$.
+  \end{itemize}
+
+  Cu alte cuvinte, în loc să meargă de la $u$ direct la $v$, ca în $P$, $P'$ ocolește folosind restul ciclului $C$. Pe acest segment, în loc să plătească costul $p > 0$, $P'$ plătește costul $|C| - p < 0$. Așadar $|P'| < |P|$, ceea ce contrazice presupunerea că $P$ este o cale minimă.
+\end{proof}
+
+\begin{theorem}[Corectitudinea algoritmului \textit{greedy}]
+  Dacă rețeaua de flux $G$ nu conține cicluri negative, atunci algoritmul \textit{greedy} găsește un flux maxim de cost minim.
+\end{theorem}
+
+\begin{proof}
+  Demonstrația este inductivă. La început, fluxul vid are costul minim, 0. Acum, să presupunem că algoritmul \textit{greedy} obține costul minim pentru primele $1, 2, \dots k - 1$ unități de flux, dar obține un cost neoptim pentru cea de-a $k$-a unitate pompată. Atunci există undeva două căi: calea $P$ de cost minim pe care a ales-o algoritmul și o cale $P'$ (cu $|P'| > |P|$) care ar obține un flux de cost mai mic. Dacă combinăm $P$ cu muchiile reziduale create de $P'$ obținem un ciclu care trece prin $s$ și prin $t$ și care are cost negativ. Acest lucru este imposibil conform observației anterioare.
+\end{proof}
+
+
+\section{Algoritmii Bellman-Ford sau SPFA}
+
+O primă soluție este așadar: în mod repetat, caută o cale minimă (pe costuri) de la $s$ la $t$ folosind algoritmii Bellman-Ford sau SPFA.
+
+Complexitatea acestui algoritm este $\bigoh(Fmn)$, unde $F$ este valoarea fluxului găsit, deoarece algoritmii Bellman-Ford și SPFA au complexitatea $\bigoh(mn)$ și îi apelăm de $\bigoh(F)$ ori. Problema \hyperref[problem:parcel-delivery]{Parcel Delivery} include o implementare de referință.
+
+
+\section{Algoritmul lui Johnson}
+
+Prin definiție, rețelele de flux cu costuri conțin și muchii de cost negativ. Totuși, ne-am dori ca în locul algoritmilor în $\bigoh(mn)$ să putem folosi algoritmul lui Dijkstra, pe care noi îl împlementăm în $\bigoh(m \log n)$. Putem face asta dacă folosim o adaptare a algoritmului lui Johnson, care modifică graful încît el să nu mai conțină muchii de cost negativ.
+
+Vom citi mai întîi \href{https://en.wikipedia.org/wiki/Johnson\%27s_algorithm}{algoritmul lui Johnson} și vom introduce noțiunea de \textbf{potențiale pe noduri}. Vom urmări figurile de pe Wikipedia și vom face următoarele observații teoretice (care apar și pe Wikipedia, dar într-o manieră care mie mi se pare încîlcită).
+
+\begin{remark}
+  În graful echilibrat toate muchiile sînt \textbf{ne}negative.
+\end{remark}
+
+\begin{proof}
+  Fie o muchie $(u, v)$ de greutate $w(u, v)$ (cu notațiile de pe Wikipedia) unde nodurile $u$ și $v$ au primit potențialele $h(u)$ și $h(v)$. De aici rezultă imediat că $h(u) + w(u, v) \geq h(v)$, căci altfel am putea optimiza $h(v)$, deci algoritmul de aflare a căilor minime ar fi greșit. Aceasta înseamnă că valoarea echilibrată este $w'(u,v) = w(u, v) + h(u) - h(v) \geq 0$.
+\end{proof}
+
+\begin{remark}
+  Greutatea echilibrată a oricărei căi $P$ de la $s$ la $t$ este $\sum_{e \in P} w(e) + h(s) - h(t)$.
+\end{remark}
+
+\begin{proof}
+  Suma greutăților după echilibrare este telescopică. Dacă $P = (s, u_1, u_2, \dots, u_k, t)$ atunci suma este:
+
+  \begin{align*}
+    w'(P) &= w(s, u_1) + h(s) - h(u_1)\\
+          &+ w(u_1, u_2) + h(u_1) - h(u_2)\\
+          &+ \dots\\
+          &+ w(u_k, t) + h(u_k) - h(t)\\
+          &= \sum_{e \in P} w(e) + h(s) - h(t)
+  \end{align*}
+\end{proof}
+
+\begin{remark}
+  Greutatea echilibrată a muchiilor de pe arborele căilor minime din graful original este 0.
+\end{remark}
+
+\begin{proof}
+  Dacă o muchie $(u, v)$ este pe o cale minimă de la $s$ la un nod oarecare $x$ în graful original, atunci ea respectă $h(u) + w(u, v) = h(v)$, adică $w(u,v) + h(u) - h(v) = 0$.
+\end{proof}
+
+\begin{remark}
+  Căile minime de la $s$ la $t$ în graful original sînt căi minime și în graful echilibrat.
+\end{remark}
+
+\begin{proof}
+  Echilibrarea adaugă aceeași cantitate, $h(s) - h(t) = -h(t)$, la toate căile $s-t$. O cale care ocolea și era neoptimă în graful original va fi neoptimă și în graful echilibrat, iar o cale minimă în graful original va fi minimă și în graful echilibrat (și va avea costul echilibrat 0).
+\end{proof}
+
+\begin{remark}
+  Prin definiție, $h(t)$ este distanța minimă de la $s$ la $t$ în graful original. În practică, vom folosi această observație ca să accesăm mai rapid costul unității de flux pompate, fără să o mai calculăm prin însumarea pe muchii.
+\end{remark}
+
+
+\section{Adaptarea algoritmului lui Johnson pentru FMCM}
+
+Algoritmul lui Johnson este gîndit pentru aflarea drumului minim între oricare două noduri. Pe grafuri rare, el este asimptotic mai bun decît algoritmul Floyd-Warshall ($\bigoh(n^3)$). Algoritmul lui Johnson necesită $\bigoh(mn)$ pentru calculul potențialelor cu Bellman-Ford, apoi $n$ apeluri de Dijkstra, așadar:
+
+$$\bigoh(mn) + n \bigoh(m + n \log n) = \bigoh(mn + n^2 \log n)$$
+
+Chiar și în implementarea noastră ineficientă de Dijkstra, algoritmul încă este mai eficient decît Floyd-Warshall pe grafuri foarte rare, unde $m = \bigoh(n)$:
+
+$$\bigoh(mn) + n \bigoh(m \log n) = \bigoh(mn \log n)$$
+
+Să observăm totuși că intenția originală a algoritmului lui Johnson era să îl urmăm cu $n$ apeluri la algoritmul lui Dijkstra, \textbf{pe un graf static}. Noi dorim altceva: să facem apeluri repetate la Dijkstra din nodul $s$, pe un graf care se modifică.
+
+La primul apel, Dijkstra primește într-adevăr un graf în care potențialele $h$ sînt corecte, iar costurile echilibrate sînt nenegative. Dar cînd pompăm flux pe calea găsită, vom elimina din graf muchiile saturate și, posibil, vom introduce muchii reziduale. Aceasta face ca potențialele calculate anterior să devină incorecte! Ce-i de făcut? Nu putem rula din nou algoritmul lui Bellman-Ford, căci tocmai asta încercăm să evităm.
+
+Acest \href{https://codeforces.com/blog/entry/95823}{articol pe Codeforces} explică (spre final) soluția. Putem să folosim distanțele calculate de Dijkstra ca potențiale pentru cea de-a doua iterație. Folosim aceste potențiale ca să echilibrăm (din nou) costurile pe muchii, în plus față de echilibrarea deja făcută. La prima vedere, apare următoarea problemă. Noi calculăm distanțele cu Dijkstra, dar ulterior pompăm flux pe calea minimă, ceea ce modifică graful. Mai putem folosi aceste distanțe? Articolul explică foarte frumos că da. Trebuie să analizăm cele două tipuri de modificări structurale pe care pomparea le aduce în graf.
+
+\begin{enumerate}
+  \item Muchiile saturate dispar din graf. Acestea nu au cum să contrazică funcția de potențial, căci ce este de fapt această funcție? Este o restricție, o condiție impusă fiecărei muchii. O muchie dispărută înseamnă o restricție mai puțin.
+  \item Pot apărea muchii reziduale în graf. Dar aceste muchii sînt pe o cale minimă $s-t$ și deci respectă $p(u, v) + h(u) - h(v) = 0 \Leftrightarrow -p(u, v) + h(v) - h(u) = 0$, deci și muchia $(v, u)$ nou creată va respecta potențialele.
+\end{enumerate}
