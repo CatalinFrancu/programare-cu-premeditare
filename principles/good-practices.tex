@@ -1,0 +1,268 @@
+\chapter{Bune practici în programare}
+
+Un program scris, dar care nu merge, nu este „99\% gata, am doar un bug”. Depanarea poate ocupa între 0\% și 99\% din timpul de implementare, în funcție de calitatea codului. Iar la final, tot ce rămîne este punctajul.
+
+Bugurile nu sînt o pedeapsă divină. Sînt o parte normală din viața de programator. Ce contează este că avem mecanisme prin care (1) să le reducem pe cît se poate frecvența și (2) să le depistăm sistematic și rapid cînd apar.
+
+Din experiența mea de predare, la fiecare temă cam 2-3 elevi nu reușesc să ducă problema la capăt. Aceasta este OK, și este parte din datoria mea ca instructor să-i înarmez pe elevi cu uneltele necesare. Dar și elevii trebuie să își facă partea lor de treabă! În capitolul anterior am văzut cum putem scrie surse lizibile. În capitolul prezent vom învăța să scriem surse fără buguri și să le depanăm pe cele care, în ciuda celor mai bune intenții, se strecoară în program.
+
+
+\section{Invarianți de buclă}
+
+\begin{quote}
+  Un program nu face ce vrei tu să facă, un program face ce îi spui tu să facă.
+
+  \begin{flushright}
+    -- folclor
+  \end{flushright}
+\end{quote}
+
+Iată o unealtă utilă în general, dar mai ales în situațiile cînd nu sîntem 100\% siguri că programul nostru este corect și face ce ne dorim.
+
+\begin{definition}[Invariant de buclă]
+  Un invariant de buclă este o proprietate a unei bucle \ccode{while} sau \ccode{do-while} care este adevărată la începutul și la sfîrșitul fiecărei iterații.
+\end{definition}
+
+Condiția specificată în \ccode{while} este ea însăși un invariant de buclă, în mod tautologic: dacă nu ar fi adevărată, programul nu ar intra în buclă! Dar ne interesează proprietăți care nu sînt imediat aparente din cod. Dacă facem o promisiune pentru fiecare iterație a buclei, atunci trebuie să onorăm promisiunea doar la iterația curentă, iar prin inducție bucla va funcționa corect.
+
+Iată cîteva exemple.
+
+
+\subsection{Căutarea maximului într-un vector}
+
+(Sursa: \href{https://en.wikipedia.org/wiki/Loop_invariant}{Wikipedia})
+
+Am scris codul cu \ccode{while}, nu cu \ccode{for}, ca să evidențiez incrementarea variabilei de ciclu.
+
+\begin{minted}{c}
+int m = v[0], i = 1;
+
+while (i < n) {
+  // m este maximul dintre v[0], ..., v[i - 1]
+  if (v[i] > m) {
+    m = v[i];
+  }
+  // Aici m este maximul dintre v[0], ..., v[i].
+  i++;
+  // Iar aici m este din nou maximul dintre v[0], ..., v[i - 1].
+}
+\end{minted}
+
+
+\subsection{Interclasarea a doi vectori ordonați}
+
+\begin{minted}{c}
+a[m] = b[n] = INFINIT; // santinele
+int i = 0, j = 0, k = 0;
+
+while ((i < m) || (j < n)) {
+  // 1. i + j < m + n. Nu neapărat interesant...
+  // 2. k = i + j. Idem...
+  // 3. Elementele a[0...i-1] și b[0...j-1] au fost interclasate în c[0...k-1].
+  // 4. c[k-1] ≤ a[i] și c[k-1] ≤ b[j]
+  if (a[i] < b[j]) {
+    c[k++] = a[i];
+    i++;
+  } else {
+    c[k++] = b[j];
+    j++;
+  }
+  // Aceleași 4 proprietăți sînt adevărate și aici.
+}
+\end{minted}
+
+Invarianții 1 și 2, deși neinteresanți, ne dau totuși o idee de optimizare. Putem reformula condiția buclei ca \ccode{while (k < m + n)}, ceea ce, dacă vectorul $a$ se termină primul, va scuti cîteva comparații. Mai mult, bucla are număr cunoscut de pași ($m + n$), deci o putem scrie ca:
+
+\begin{minted}{c}
+for (int k = 0; k < m + n; k++) {
+  if (a[i] < b[j]) {
+    c[k] = a[i++];
+  } else {
+    c[k] = b[j++];
+  }
+}
+\end{minted}
+
+
+\subsection{Alte exemple}
+
+Mulți dintre invarianții de mai jos i-am învățat cu toții în primii ani de programare, fără să ne gîndim explicit la ei. Dar în situațiile mai complexe ajută să ne gîndim exact ce dorim de la buclă.
+
+\begin{itemize}
+  \item Sortarea prin selecție sau prin inserție: la pasul $i$, elementele \ccode{v[0]...v[i - 1]} sînt sortate.
+
+  \item Bubble sort: la pasul $i$, cele mai din dreapta (cel puțin) $i$ elemente sînt sortate.
+
+  \item Căutare liniară: la pasul $i$, elementul căutat nu există în \ccode{v[0]...v[i-1]}.
+
+  \item Algoritmul lui Euclid: la pasul $(x,y)$, $\gcd(x,y)$ este egal cu $\gcd(a,b)$, unde $(a,b)$ este perechea originală.
+
+  \item Stivă ordonată (problema vizibilității clădirilor): la orice moment, stiva conține valori crescătoare.
+
+  \item Maximul într-o fereastră glisantă de lățime $k$: la orice moment, elementele interesante stocate în deque au valori descrescătoare.
+\end{itemize}
+
+\subsection{Căutarea binară}
+
+Iată și un exemplu mai puțin banal. Căutarea binară este un algoritm pe care \href{https://en.wikipedia.org/wiki/Binary_search_algorithm#Implementation_issues}{multă lume îl implementează greșit}. Să pornim de la codul pentru căutarea binară într-un vector sortat crescător. O mare parte dintre elevi înfloresc codul cu condiții suplimentare, stegulețe, \ccode{return} prematur. Un exemplu tipic de cod arată astfel:
+
+\begin{minted}{c}
+st = 0;
+dr = n - 1;
+gasit = false;
+while (st <= dr && !gasit) {
+    mij = (st + dr) / 2;
+    if (v[mij] == x) {
+        gasit = true;
+    } else if (x < v[mij]) {
+        dr = mij - 1;
+    } else {
+        st = mij + 1;
+    }
+}
+\end{minted}
+
+Dar iată și o versiune de cod fără umplutură:
+
+\begin{minted}{c}
+int bin_search(int x) {
+  int l = 0, r = n;
+  while (r - l > 1) {
+    int mid = (l + r) / 2;
+    if (v[mid] > x) {
+      r = mid;
+    } else {
+      l = mid;
+    }
+  }
+  return l;
+}
+\end{minted}
+
+Ca să înțelegem cum procedează funcția, să considerăm datele:
+
+\begin{minted}{c}
+n = 20
+v = { 12, 15, 15, 17, 19, 19, 19, 19, 19, 19, 22, 30, 35, 35, 35, 38, 40, 43, 45, 49 }
+\end{minted}
+
+În cazul fericit, $x$ apare o singură dată în vector, iar \ccode{bin_search} îi returnează poziția. Dar ce returnează funcția în următoarele situații?
+
+\begin{enumerate}
+  \item $x = 5$
+  \item $x = 100$
+  \item $x = 27$
+  \item $x = 19$
+\end{enumerate}
+
+Cum se comportă programul la următoarele modificări?
+
+\begin{enumerate}
+  \setcounter{enumi}{4}
+  \item Înlocuim \ccode{v[mid] > x} cu \ccode{v[mid] >= x}.
+\end{enumerate}
+
+Cum adaptăm programul la următoarele cerințe?
+
+\begin{enumerate}
+  \setcounter{enumi}{5}
+  \item Primim vectorul sortat descrescător.
+  \item Dorim să returnăm prima apariție în loc de ultima.
+\end{enumerate}
+
+Putem urmări manual, pe hîrtie, valorile lui $l$ și $r$ pentru toate cazurile de mai sus. Dar ajută dacă formulăm un invariant de buclă, care este chiar esența algoritmului:
+
+\textbf{Valoarea $x$ există în intervalul $[l, r)$ sau nu există în vector.}
+
+Acest invariant ne ajută să înțelegem cum variază $l$ și $r$:
+
+\begin{itemize}
+  \item $r$ poate doar să scadă. Cînd $r$ scade, aruncăm o bucată care nu îl conține pe $x$.
+
+  \item $l$ poate doar să crească. Cînd $l$ crește, aruncăm o bucată care fie nu îl conține pe $x$, fie îl conține, dar mai există o copie a lui $x$ pe poziția $l$.
+
+  \item La orice moment, $l < r$. Rezultă că funcția returnează o valoare cuprinsă între 0 și $n-1$, niciodată $n$.
+
+  \item Așadar, funcția nu distinge cazurile $x = v[0]$ și $x < v[0]$, respectiv $x = v[n-1]$ și $x > v[n-1]$. Este nevoie de verificarea \ccode{x == v[l]}, fie la revenirea din funcție, fie (și mai bine) la finalul funcției.
+
+  \item În afara acestor extreme, funcția returnează \textbf{cea mai mare poziție care conține un element mai mic sau egal cu val}.
+\end{itemize}
+
+Acum putem răspunde la întrebări:
+
+\begin{enumerate}
+  \item $x = 5 \implies$ funcția returnează 0
+  \item $x = 100 \implies$ funcția returnează 19
+  \item $x = 27 \implies$ funcția returnează 11 (poziția lui 22, ultimul element mai mic sau egal cu 27)
+  \item $x = 19 \implies$ funcția returnează 9 (ultima poziție pe care apare 19)
+
+  \item Dacă înlocuim \ccode{>} cu \ccode{>=}, funcția va funcționa greșit: poate arunca porțiunea din vector care conține unica apariție a lui $x$.
+
+  \item Pentru a opera pe un vector sortat descrescător, este suficient să înlocuim \ccode{>} cu \ccode{<}.
+
+  \item Pentru a găsi prima apariție a lui $x$, trebuie să inițializăm intervalul cu $(-1, n-1]$ și să adaptăm prin oglindire codul care aruncă jumătate din interval:
+\end{enumerate}
+
+\begin{minted}{c}
+int bin_search_first_ge(int x) {
+  int l = -1, r = n - 1; // (l...r]
+  while (r - l > 1) {
+    int mid = (l + r) / 2;
+    if (v[mid] < x) {
+      l = mid;
+    } else {
+      r = mid;
+    }
+  }
+  return r;
+}
+\end{minted}
+
+Putem opera cu ușurință și încredere aceste modificări, deoarece înțelegem ce ne dorim la fiecare iterație a buclei.
+
+
+\section{Programare prin contract}
+
+\href{https://en.wikipedia.org/wiki/Design_by_contract}{Programarea prin contract} este tot o bună practică în programare. Autorul scrie specificații clare pentru funcțiile, interfețele, clasele etc. pe care le scrie. Aceste specificații se numesc \textit{contracte}. Cei care folosesc codul vor înțelege mai clar cum să-l apeleze, ce parametri sînt acceptabili etc.
+
+Bun, dar ce are asta a face cu cercul nostru? Ca și invarianții de buclă, contractele sînt utile cînd începeți să vă încurcați în propriul cod. Atunci merită să vă opriți și să puneți, la începutul fiecărei funcții sau bucle critice, fraze ca:
+
+\begin{itemize}
+  \item Această funcție se așteaptă ca X.
+  \item Această funcție promite că Y.
+\end{itemize}
+
+Iată două exemple simple.
+
+
+\subsection{Stivă}
+
+\begin{minted}{c}
+// Această funcție se așteaptă ca stiva să nu fie plină.
+// Această funcție promite că stiva nu va fi goală.
+// Această funcție promite că un apel pop() imediat următor îl va primi pe x.
+// Nu e de interes pentru un apelant extern, dar această funcție promite
+// că top va rămîne poziția primului element disponibil.
+void push(int x) {
+  s[top++] = x;
+}
+
+// Această funcție se așteaptă ca stiva să nu fie goală.
+int pop() {
+  return v[--top];
+}
+\end{minted}
+
+
+\subsection{Adăugarea într-o tabelă hash}
+
+\begin{minted}{c}
+// Această funcție se așteaptă ca dicționarul să nu fie plin.
+// Această funcție se așteaptă ca key != "".
+// Această funcție promite că get(key) va returna value.
+void add(string key, string value) {
+  // ... implementare de hash map ...
+}
+\end{minted}
+
+Contractul nu descrie exact ce fac funcțiile, dar oferă niște garanții și explică că, pentru niște apeluri în afara specificațiilor, programul va da eroare sau comportamentul este nedefinit. Este la latitudinea voastră să fortificați codul cu \ccode{assert}-uri și cu mesaje de eroare informative sau să lăsați situația să degenereze spre rezultate greșite, buclă infinită sau \textit{core dump}.
