@@ -1,0 +1,505 @@
+\chapter{Cod curat și cod spaghetti}
+
+Pentru învățarea programării competitive, Internetul este o binecuvîntare și un blestem, mai exact 10\% binecuvîntare și 90\% blestem. Acest lucru nu ar trebui să ne surprindă. Regăsim această proporție pe Internet în orice alt domeniu: știri, știință, informații medicale etc.
+
+De aceea, pe de o parte este fantastic că Internetul abundă în informații despre programarea competitivă. Pe de altă parte, mulți elevi preiau din această supă culturală un stil de codare neîngrijit, care duce la programe încîlcite, care pot conține buguri nedetectabile. Este un mod gratuit și absolut evitabil de a rata un concurs.
+
+Filozofia mea este că, la nivelul de ONI și Baraj ONI la care se plasează acest curs, ideile problemelor nu sînt principala dificultate. Desigur, la loturi și la concursuri internaționale nivelul este altul. Fiecare dintre noi s-a gîndit uneori 2-3 zile o problemă de lot și tot n-a știut să o rezolve. Dar la ONI și la Baraj ONI contează mai mult \textbf{capacitatea de a exprima clar, în cod, niște idei teoretice de dificultate medie}. Am constatat că majoritatea elevilor nu pierd puncte pentru că n-au știut un anume algoritm sau o anume structură de date, ci pentru că n-au reușit să le exprime corect în cod și s-au lovit de buguri sau de ineficiență (TLE).
+
+Astfel ajungem la observația că două programe care rezolvă aceeași problemă pot diferi radical ca lizibilitate, robustețe, ușurință a implementării. Să vedem niște exemple concrete și să încercăm să deducem niște principii generale pentru a scrie cod curat.
+
+\section{Exemplul 1}
+
+Ce face următorul program?
+
+\begin{minted}{c}
+#include <stdio.h>
+
+int v[2][100001];
+int n;
+
+int main() {
+  scanf("%d",&n);
+  for (int i=0;i<n;i++)
+    scanf("%d",&v[0][i]);
+  for (int i=0;i<n;i++)
+    scanf("%d",&v[1][i]);
+  int x=-1;
+  for(int i=0;i<n;i++){
+    if(x==-1 && v[0][i]!=v[1][i]){
+      if(v[0][i]<v[1][i]){
+        x=0;
+      }else{
+        x=1;
+      }
+    }
+    if(x==-1){
+      printf("%d ",v[0][i]);
+    }else{
+      printf("%d ",v[x][i]);
+    }
+  }
+  printf("\n");
+  return 0;
+}
+\end{minted}
+
+Programul este relativ criptic. Observațiile-cheie sînt:
+
+\begin{itemize}
+  \item Programul citește doi vectori în \ccode{v[0]} și \ccode{v[1]}.
+  \item Variabila \ccode{x} are valoarea -1 cît timp vectorii sînt egali pe prefix.
+  \item Cînd (și dacă) programul găsește prima diferență, \ccode{x} ia valoarea 0 sau 1 pentru a indica vectorul mai mic.
+  \item Programul tipărește elementul curent din vectorul identificat ca fiind mai mic (sau din vectorul 0 cît timp prefixele sînt egale).
+\end{itemize}
+
+Cu alte cuvinte, programul compară doi vectori de aceeași lungime \ccode{n} și îl tipărește pe cel mai mic lexicografic. Deși funcționează, el este greoi de citit și de înțeles. Este ceea ce, colocvial, numim \textbf{cod spaghetti} (engl. \textit{spaghetti code}). Iată un alt program care face același lucru:
+
+\begin{minted}{c}
+#include <stdio.h>
+
+const int MAX_SIZE = 100'000;
+
+int v[MAX_SIZE + 1], w[MAX_SIZE + 1];
+int n;
+
+void readArrays() {
+  scanf("%d", &n);
+  for (int i = 0; i < n; i++) {
+    scanf("%d", &v[i]);
+  }
+  for (int i = 0; i < n; i++) {
+    scanf("%d", &w[i]);
+  }
+}
+
+int* getSmaller() {
+  v[n] = 0;
+  w[n] = 1; // santinele pentru egalitate perfectă
+
+  int i = 0;
+  while (v[i] == w[i]) {
+    i++;
+  }
+
+  return (v[i] < w[i]) ? v : w;
+}
+
+void writeArray(int* v) {
+  for (int i = 0; i < n; i++) {
+    printf("%d ", v[i]);
+  }
+  printf("\n");
+}
+
+int main() {
+  readArrays();
+  int* smaller = getSmaller();
+  writeArray(smaller);
+
+  return 0;
+}
+\end{minted}
+
+De ce consider a doua variantă mai „curată”? De la nivel macro spre micro, iată cîteva motive:
+
+\begin{itemize}
+  \item Funcția \ccode{main} listează, ca într-un cuprins, capitolele programului (funcțiile).
+  \item Fiecare capitol are un nume clar, care ține loc de orice comentariu.
+  \item Fiecare capitol face un singur lucru, cel promis în titlu.
+  \item În particular, tipărirea nu mai poluează codul comparării, ci este separată de aceasta.
+  \item Fiecare capitol este ușor de cuprins cu privirea.
+  \item Dacă mă interesează un capitol anume, nu am nevoie să înțeleg ce se întîmplă în celelalte.
+  \item Programul nu mai depinde de stocarea indexată a vectorilor în \ccode{v[0]} și \ccode{v[1]}.
+  \item Programul elimină cazul particular (egalitatea perfectă) folosind o santinelă.
+  \item Programul subliniază prezența santinelei izolînd dimensiunea maximă a intrării (\np{100000}) de elementul suplimentar (+1).
+  \item Astfel, compararea propriu-zisă devine banală: avansăm prin vector pînă la prima diferență.
+  \item Spațierea în jurul punctuației și liniile goale între blocuri fac codul mai lizibil.
+\end{itemize}
+
+Singurul aspect la care a doua versiune pare că „pierde” este lungimea. Programul are 44 de linii față de 29. Dar diferența între liniile de cod „real”, fără comentarii și linii goale, este de 34 de linii la 27. Ca fapt divers, puteți obține acest număr cu comanda Linux:
+
+\begin{minted}{bash}
+cpp -fpreprocessed -P program.cpp | wc -l
+\end{minted}
+
+Oricum am măsura, diferența de 15 linii sau 7 este un preț justificat. Scurtimea programului nu trebuie să fie un scop, după cum în tipografie scopul nu este să înghesuim o carte pe un număr cît mai mic de pagini, ci să facem textul lizibil. De aici decurg alegerea unor fonturi lizibile și suficient de mari, spațierea între rînduri, marginile ample pe conturul paginii etc.
+
+
+\section{Exemplul 2}
+
+Iată încă un exemplu. Ce face această funcție?
+
+\begin{minted}{c}
+int mysteryFunction(int* v, int n) {
+  int ans = 0, i = 0, h;
+
+  while ( i < n ) {
+    ans++;
+    h = v[i];
+    i++;
+    while ( i < n && h == v[i] ) {
+      i++;
+    }
+  }
+
+  return ans;
+}
+\end{minted}
+
+De data aceasta, codul este bine formatat, dar neclaritățile apar la nivel logic. Iată o altă versiune:
+
+\begin{minted}{c}
+int countDistinct(int* v, int n) {
+  int count = 1; // v[0] este distinct
+
+  for (int i = 1; i < n; i++) {
+    if (v[i] != v[i - 1]) {
+      count++;
+    }
+  }
+
+  return count;
+}
+\end{minted}
+
+Consider această versiune mai clară, întrucît există un singur nivel de imbricare (\ccode{for}), față de prima versiune (\ccode{while} în \ccode{while}). Cred că și conceptual această versiune este mai clară: un element contează la numărătoare dacă este diferit de anteriorul.
+
+Cum facem un program mai clar? Nu există o rețetă perfectă. Bunăoară, am stat în dubiu dacă să înlocuiesc liniile 5-7 cu forma de mai jos. Aș putea fi convins de ambele abordări, dar am preferat-o pe prima pentru că o poate înțelege și o persoană care nu vorbește limba \textit{leet}.
+
+\begin{minted}{c}
+    count += (v[i] != v[i - 1]);
+\end{minted}
+
+Un cuvînt despre afișare. Eu aș implementa-o astfel:
+
+\begin{minted}{c}
+void writeAnswer(int answer) {
+  printf("%d\n", answer);
+}
+\end{minted}
+
+Cînd scriu astfel de cod, și cînd vă cer și vouă să scrieți astfel, sînt conștient că lupt împotriva unor ani de pregătire într-un spirit minimalist. Dar, logic vorbind, tipărirea este un capitol separat, un bloc logic separat. Apelul la \ccode{printf()} nu are ce căuta în \ccode{main()}, care se preocupă de un nivel de abstracție mai înalt. De exemplu, secțiunea \textit{Acknowledgements} (mulțumirile) dintr-o carte au poate una-două fraze. Dar nu le punem direct în cuprins, ci creăm o secțiune aparte pentru ele.
+
+
+\section{Exemplul 3}
+
+Codul următor face parte dintr-un program mai lung, care rezolvă problema \href{https://codeforces.com/contest/1622/problem/D}{Shuffle}. Vă invit să urmărim doar variabila \ccode{onceAdd}. Ce putem spune despre scopul său?
+
+\begin{minted}{c}
+onceAdd = i = j = count1 = ans = 0;
+while (i < n) {
+    while (j < n && (count1 < k || s[j] == '0')) {
+        count1 += (s[j] == '1');
+        ++j;
+    }
+
+    if (count1 == k && j == n && s[i] == '1') { // last subseq
+        // cout << i << " " << j << "-LAST---" << numberWays1(count1 - 1, j - i - 1) << "\n";
+        ans = (ans + numberWays(count1 - 1, j - i - 1)) % MOD;
+        onceAdd = (numberWays(count1 - 1, j - i - 1) > onceAdd ? 1 : onceAdd);
+    }
+
+    if (count1 == k) {
+        // cout << i << " " << j << "----";
+        if (s[i] == '0') {
+            // cout << numberWays1(count1 - 1, j - i - 1) << "\n";
+            ans = (ans + numberWays(count1 - 1, j - i - 1)) % MOD;
+            onceAdd = (numberWays(count1 - 1, j - i - 1) > onceAdd ? 1 : onceAdd);
+        }
+        else {
+            // cout << numberWays1(count1, j - i - 1) << "\n";
+            ans = (ans + numberWays(count1, j - i - 1)) % MOD;
+            onceAdd = (numberWays(count1 - 1, j - i - 1) > onceAdd ? 1 : onceAdd);
+            count1--;
+        }
+    }
+
+
+    ++i;
+}
+if (onceAdd == 0)
+    ans = 1;
+\end{minted}
+
+Codul are diverse defecte, dar l-am reprodus integral tocmai ca să evidențiez că aceste defecte îngreunează înțelegerea:
+
+\begin{itemize}
+  \item DRY (\textit{Don't Repeat Yourself});
+
+  \item cod duplicat, dar cu mici diferențe (cititorul trebuie să citească toate instanțele cu maximum de atenție);
+
+  \item cod vestigial care trebuia șters mai degrabă decît comentat;
+
+  \item \ccode{while} în loc de \ccode{for} pentru variabila \ccode{i}.
+\end{itemize}
+
+Cu puțin efort înțelegem: \ccode{onceAdd} începe de la 0 și poate deveni 1 cînd o anumită condiție este îndeplinită. Dar era mai bine ca autorul să faciliteze această înțelegere. Dacă variabila este booleană, ea trebuie declarată ca atare și modificată cu operatori booleeni, nu cu un operator ternar alambicat.
+
+Mai ales, observăm că, odată ce \ccode{onceAdd} devine 1, ea nu se mai modifică (ambele ramuri ale operatorului ternar \ccode{?:} îi atribuie valoarea 1), dar condiția operatorului continuă să fie evaluată de fiecare dată. Aceasta este o risipă.
+
+În procesul de rescriere, autorul ar fi putut să scoată factor comun expresiile comune, care ar elimina repetiția (și recalculările care costă timp!). Am fi ajuns, cel puțin, la forma de mai jos, în care ciclul de viață al lui \ccode{onceAdd} este mult mai clar.
+
+\begin{minted}{c}
+j = count1 = ans = 0;
+bool onceAdd = false;
+for (int i = 0; i < n; i++) {
+    while (j < n && (count1 < k || s[j] == '0')) {
+        count1 += (s[j] == '1');
+        ++j;
+    }
+
+    if (count1 == k && j == n && s[i] == '1') { // last subseq
+        int comb = numberWays(count1 - 1, j - i - 1);
+        ans = (ans + comb) % MOD;
+        onceAdd |= (comb > 0);
+    }
+
+    if (count1 == k) {
+        if (s[i] == '0') {
+            int comb = numberWays(count1 - 1, j - i - 1);
+            ans = (ans + comb) % MOD;
+            onceAdd |= (comb > 0);
+        }
+        else {
+            int comb = numberWays(count1, j - i - 1);
+            ans = (ans + comb) % MOD;
+            comb = numberWays(count1 - 1, j - i - 1);
+            onceAdd |= (comb > 0);
+            count1--;
+        }
+    }
+}
+if (!onceAdd) {
+    ans = 1;
+}
+\end{minted}
+
+
+\section{Exemplul 4}
+
+Următoarea funcție testează intersecția a două segmente pe axa $Ox$.
+
+\begin{minted}{c}
+struct Interval {
+    int left, right;
+};
+
+bool intersect(pair<int, int> a, pair<int, int> b) {
+    return ( ( a.left >= b.left && a.left < b.right ) ||
+             ( a.right > b.left && a.right <= b.right ) ) ||
+           ( ( b.left >= a.left && b.left < a.right ) ||
+             ( b.right > a.left && b.right <= a.right ) );
+    return 0;
+}
+\end{minted}
+
+Ce consider spaghetti la acest cod este:
+
+\begin{enumerate}
+  \item Diavolul se ascunde în detalii. Funcția va returna \ccode{false} pentru $[1,2] \cap [2,3]$. Așadar, ea testează intersecția strictă (cel puțin două puncte). Funcția nu clarifică acest lucru.
+
+  \item Numărul de condiții „pare” nenecesar de mare. La o analiză atentă, el poate fi redus.
+
+  \item Funcția mapează tacit un \ccode{std::pair} peste un \ccode{struct Interval}. Nici nu mi-a fost clar de ce \ccode{left} și \ccode{right} se compilează! Iar dacă ulterior modificăm \ccode{struct}-ul, programul nu se va mai compila.
+\end{enumerate}
+
+Aș clarifica (1) denumind funcția \ccode{strictIntersect()} sau altcumva. Pentru (2), putem reformula logica astfel: dorim ca ambele intervale să se deschidă (întîi \ccode{a} și apoi \ccode{b} sau invers, nu contează), apoi ambele să coexiste pe o distanță nedegenerată, apoi ambele intervale să se închidă. Iar pentru (3), merită să folosim tipul \ccode{Interval}, dacă tot l-am declarat.
+
+Rezultă codul scurt și clar:
+
+\begin{minted}{c}
+bool strictIntersect(Interval a, Interval b) {
+    return (max(a.left, b.left) < min(a.right, b.right));
+}
+\end{minted}
+
+Sau, fără funcții externe:
+
+\begin{minted}{c}
+bool strictIntersect(Interval a, Interval b) {
+    return (a.left < b.right) && (b.left < a.right);
+}
+\end{minted}
+
+
+\section{Cîteva principii pentru cod curat}
+
+Să încercăm să formulăm mai clar observațiile anterioare și cîteva în plus. Puteți citi cărți despre așa ceva. De exemplu, vă recomand cu căldură \href{https://www.oreilly.com/library/view/clean-code-a/9780135398586/}{Clean Code} de Robert C. Martin. Este o carte pe care o puteți citi în două-trei zile, plină de exemple și de anecdote haioase.
+
+Iată un citat din această carte.
+
+\begin{quote}
+  It is not enough for code to work. Code that works is often badly broken. Programmers who satisfy themselves with merely working code are behaving unprofessionally. They may fear that they don’t have time to improve the structure and design of their code, but I disagree. Nothing has a more profound and long-term degrading effect upon a development project than bad code. Bad schedules can be redone, bad requirements can be redeﬁned. Bad team dynamics can be repaired. But bad code rots and ferments, becoming an inexorable weight that drags the team down. Time and time again I have seen teams grind to a crawl because, in their haste, they created a malignant morass of code that forever thereafter dominated their destiny.
+
+  \begin{flushright}
+    Robert C. Martin, \textit{Clean Code}
+  \end{flushright}
+\end{quote}
+
+Știu, acesta pare un avertisment pentru un viitor îndepărtat, după facultate, cînd vă veți angaja. \textbf{Dar există cod suficient de murdar încît chiar și autorul codului se încurcă în el după 30 de minute.} Haideți să facem următorul exercițiu. Din experiența voastră, de ce vi se întîmplă să pierdeți puncte?
+
+\begin{enumerate}
+  \item Nu am știut algoritmul sau structura de date necesară.
+  \item Am scris cod prea lent (TLE).
+  \item Am consumat prea multă memorie (MLE).
+  \item Am avut un bug / răspuns greșit / \textit{core dump}.
+  \item Nu am reușit să o fac să meargă nici măcar local, pe teste mici.
+  \item M-am încurcat în programare și nu am reușit să o duc la capăt.
+  \item M-am ambiționat pe soluția de 100 de puncte și am luat mai puțin decît dacă făceam un subtask.
+  \item M-am ambiționat pe problema asta, în loc să trec la altă problemă.
+\end{enumerate}
+
+Capitolul de față este prima piatră înspre cucerirea motivelor 4-7 de mai sus. Suspectez că vă întîlniți cu ele relativ des.
+
+\subsection{Formatare}
+
+Cred că nu este cazul să discutăm despre indentare, spațiere etc. Vom citi (foarte) pe sărite \href{https://google.github.io/styleguide/cppguide.html}{ghidul de stil} C++ al lui Google.
+
+\subsection{Limbajul de programare}
+
+\subsubsection*{Alegeți nume grăitoare}
+
+A denumi lucruri și ființe este un privilegiu și o plăcere a vieții.
+
+Folosiți nume clare pentru variabile. Dacă aveți un vector \ccode{v} și un vector \ccode{w} unde \ccode{w[i]} reține poziția primului element mai mare decît \ccode{v[i]} aflat la stînga lui \ccode{i}, poate că ar fi mai bine ca \ccode{w} să se numească \ccode{leftGreater} sau \ccode{prevBigger} sau chiar și \ccode{left}. Orice este mai bine decît \ccode{w}.
+
+Dacă aveți o funcție care copiază un obiect în alt obiect (șiruri, vectori etc.), nu le denumiți \ccode{a} și \ccode{b}. Numiți-le \ccode{src} și \ccode{dest}.
+
+Desigur, nu sărim calul. Dacă ne denumim variabila \ccode{maximulDinVectorulCititLaIntrare}, probabil vom dăuna clarității. Dar, dacă ne fixăm claritatea ca scop, deciziile devin relativ logice.
+
+\subsubsection*{Corolar: Evitați „maparea în memorie”}
+
+Dacă aveți 10 variabile \ccode{a}, \ccode{b}, \dots, \ccode{j} într-un cod de 50 de linii, îi cereți cititorului (care, repet, puteți fi chiar voi peste 30 de minute!) să țină minte rostul fiecărei variabile. Practic, cititorul trebuie să mențină o tabelă hash în memorie.
+
+\subsubsection*{Corolar: Glumiți cu măsură}
+
+A fi programator înseamnă a avea \href{https://en.wikipedia.org/wiki/Hacker_culture}{the hacker spirit}. Joaca inteligentă impregnează tot ce facem.
+
+La polul opus se află frustrarea, pe care o înțeleg și uneori o împărtășesc. O funcție care nu vrea să meargă te poate aduce la disperare. Ajungi să o peticești cu \ccode{if}-uri și stegulețe, mereu mai e nevoie de o variabilă în plus, iar soluția pare aproape, dar îți scapă printre degete. Exasperat, denumești a 27-a variabilă \ccode{kkt}.
+
+Ambele situații sînt OK, cîtă vreme numele nu dăunează clarității programului. Este preferabil ca valoarea maximă să se numească \ccode{max}, \ccode{maxVal} sau \ccode{vmax}, nu \ccode{ceva} sau \ccode{boss}.
+
+\subsubsection*{Corolar: Nu păcăliți cititorul}
+
+La o temă anterioară, un elev și-a denumit o clasă \ccode{aibe}, dar ea implementa un arbore de intervale.
+
+\subsubsection*{Creați un limbaj specific problemei}
+
+Limbajul de programare este o convenție. El ne îndrumă sintaxa, dar numai pînă la un punct. Numele de variabile și deciziile de design ne aparțin. Ele sînt modurile în care \textbf{noi extindem limbajul de programare}, în funcție de nevoile programului. Numim aceasta \textbf{limbaj specific domeniului} (engl. \textit{domain-specific language}). Folosiți-l din plin!
+
+Dacă vectorul este de puncte, denumiți-l \ccode{p} sau \ccode{pt} sau \ccode{points}.
+
+Dacă monstrul are o culoare și un număr de vieți, creați un \ccode{struct} cu cîmpurile \ccode{color} și \ccode{lives}. În niciun caz nu vă mulțumiți cu un \ccode{std::pair}! Vezi și \href{https://stackoverflow.com/questions/31792910/assigning-members-of-a-pair-to-variables}{structured binding}.
+
+Dacă într-o buclă alegeți maximul pe baza unui criteriu complex, atunci izolați compararea într-un operator sau într-o funcție de comparare. Exemplu: sortarea polară a unor puncte, cu departajare după distanța față de origine.
+
+Dacă nu construiți un limbaj specific domeniului, dacă vă denumiți vectorii \ccode{v}, \ccode{v1}, \ccode{v2} și \ccode{v3}, este ca și cînd limbajul C ar cere cuvintele-cheie \ccode{sparrow} și \ccode{breathe} în loc de \ccode{for} și \ccode{while}. Ar fi un limbaj ilogic.
+
+Aceasta se aplică și la nume, dar \textbf{și la nivel mai înalt}. Adaptați structurile de date și tipurile de date la nevoile problemei! Exemplu clasic: nu folosiți varianta recursivă de arbori de segmente pentru o problemă care face doar actualizări punctuale. Varianta iterativă este mai scurtă, mai rapidă, mai clară și nu induce așteptarea falsă că vor exista actualizări pe interval. (Vom detalia în lecția respectivă).
+
+\subsubsection*{„Toate îmi sînt îngăduite, dar nu toate îmi sînt de folos”}
+
+Nu vă simțiți obligați să folosiți cele mai obscure posibilități ale unui limbaj doar fiindcă ele există. Dacă puteți programa curat și eficient fără \textit{template}-uri odioase, moștenire multiplă etc., feriți-vă de ele.
+
+\subsection{Funcții}
+
+\subsubsection*{Funcțiile trebuie să fie scurte}
+
+Obișnuiam să zic că „funcțiile trebuie să încapă într-un ecran”. Dar, de cînd cu Ctrl-minus, toate funcțiile încap într-un ecran. Azi mă panichez cînd funcția mea depășește 10 linii și simt o nevoie imperioasă să o fragmentez.
+
+Există contraargumente, dar o regulă bună este: dacă o funcție face două lucruri \textbf{sau} dacă operează la mai multe niveluri de abstracție, este momentul să o spargeți.
+
+\subsubsection*{Funcțiile trebuie să facă un singur lucru}
+
+Cu cît înghesuiți mai mult în aceeași funcție, cu atît mai misterioasă va deveni ea pentru cititor. Cititorului îi va fi mai greu să găsească bucata de cod care îl interesează.
+
+Desigur, un program cap-coadă are multe lucruri de făcut. Dacă algoritmul nostru constă din preprocesare + o parcurgere, atunci undeva trebuie să existe două apeluri de funcții, să zicem \ccode{preprocess()} și \ccode{dfs()}.
+
+\subsubsection*{Funcțiile trebuie să opereze la un singur nivel de abstracție}
+
+Să considerăm o funcție care calculează cel mai lung subșir comun al două șiruri. Nu este treaba acelei funcții să adauge \ccode{'\n'} la rezultat în vederea tipăririi. Nu este nici treaba funcției \ccode{main()}. Adăugarea lui \ccode{'\n'} îi revine funcției de tipărire.
+
+Similar, dacă funcția \ccode{main()} apelează 3-4 funcții de nivel înalt (citire, sortare, procesare, tipărire), nu este bine să inserăm, în \ccode{main()}, o buclă \ccode{for}, să spunem pentru preprocesarea vectorului după citire. Acel nivel de abstracție este mai jos și trebuie extras într-o funcție, să-i spunem \ccode{preprocess()}.
+
+\subsubsection*{Nu exagerați cu numărul de argumente}
+
+Pot accepta că o funcție necesită 4-5-6 argumente. Dacă lucrurile se opresc aici, este OK. Dar dacă funcția apelează altă funcție care apelează altă funcție, și toate funcțiile declară aceleași argumente, acesta este o formă de repetiție.
+
+Mai mult, redundanța indică o greșeală de organizare. Dacă acele variabile circulă mereu împreună, este un indiciu că ele sînt conectate logic. Ar trebui grupate într-un \ccode{struct}, pe care apoi îl putem trimite ca (unic) parametru.
+
+\subsubsection*{Funcțiile nu trebuie să aibă efecte secundare}
+
+Dacă denumiți o funcție \ccode{sortArray()}, ea trebuie să facă doar atît. Nu are voie să modifice alte variabile în afară de vectorul dat, cum ar fi să numere elementele distincte. Nu are voie nici măcar să modifice vectorul altfel decît prin sortare (de exemplu, să elimine minimul și maximul).
+
+La acest cerc ne preocupă și eficiența, deci nu propun să facem parcurgeri suplimentare ale datelor doar ca să putem separa logic pașii. De exemplu, la o problemă de tip preprocesare + interogări, nu propun să stocăm răspunsurile în memorie doar ca să le putem afișa la final. Este OK să le afișăm pe parcurs.
+
+Dar putem, cel puțin, să alegem un nume corect care să descrie tot ce face funcția.
+
+\subsection{Programe}
+
+\subsubsection*{DRY (\textit{Don't Repeat Yourself})}
+
+\textbf{Leneșul mai mult aleargă.} În situații cum ar fi parcurgerea unei matrice în cele patru direcții, copierea și adaptarea codului pare mai rapidă, dar poate duce la erori. Cititorul (toată lumea în cor: \textit{care puteți fi chiar voi după 30 de minute}) trebuie să se asigure că bucățile similare nu diferă în moduri subtile.
+
+Scoateți factor comun bucățile reutilizabile și parametrizați-le!
+
+\subsubsection*{Doar programare structurată}
+
+\href{https://en.wikipedia.org/wiki/Structured_program_theorem}{Teorema programelor structurate} a arătat, încă din 1966, că tot ce dorim să calculăm putem calcula cu programe structurate. Iar programarea structurată pune mai puțină presiune pe creierul cititorului, căci fluxul programului poate deveni neinteligibil cu cîteva instrucțiuni \ccode{break} și \ccode{continue}.
+
+Desigur, nu trebuie să fim dogmatici. De exemplu, este OK să testăm 3 precondiții la intrarea într-o funcție și să avem 3 instrucțiuni \ccode{return} premature, decît să scriem tot corpul funcției indentat cu 3 niveluri.
+
+Iar dacă funcția are cel mult 10 linii, probabil și o formă nestructurată va fi inteligibilă (exemplu: căutarea liniară într-un vector întreruptă cu \ccode{return}). Dar aș prefera să respectați întîi la sînge regulile, înainte să învățați cînd este OK să le încălcați.
+
+\subsubsection*{Un program este ca un articol de ziar}
+
+Suma principiilor anterioare este aceasta:  un program începe cu un rezumat (funcția \ccode{main()}) care listează operațiile principale ale programului. Din rezumat se disting capitole și secțiuni cu amănunte (celelalte funcții). Este regretabil că limbajul C cere să scriem funcțiile înaintea folosirii lor. Programele C trebuie citite de jos în sus.
+
+Similar, un articol de ziar (bine scris) începe cu una sau două fraze care expun rezumatul știrii, apoi paragrafele următoare expandează acel rezumat.
+
+Acest principiu îmi amintește de principiul din UX numit \href{https://en.wikipedia.org/wiki/Progressive_disclosure}{progressive disclosure}. Nu-i cereți cititorului să înțeleagă totul deodată, ci dați-i șansa să ajungă rapid și fără mult efort mintal la bucata de cod care îl interesează.
+
+\subsubsection*{Exemplu funcțional minim}
+
+În cazul temelor, odată ce aveți un program funcțional, aș vrea să  eliminați din program tot codul comentat, codul de debug, variabilele nefolosite etc. Aceasta mă ajută pe mine, cititorul, să mă concentrez pe codul funcțional.
+
+Ați trimis vreodată un \textit{bug report} pe GitHub sau o întrebare pe StackOverflow? Toată lumea acolo vă va cere un \textit{minimum working example}, degrevat de contextul mai larg în care ați întîlnit bugul. Așa și aici.
+
+\subsection{Comentarii}
+
+\subsubsection*{Comentariile nu se pot substitui codului curat}
+
+În această privință mi-am schimbat opinia în timp. Pe vremuri aș fi spus că un \ccode{main()} de 50 de linii, cu comentarii pentru fiecare bloc major, este la fel de bun ca un \ccode{main()} la nivel înalt care apelează 5 funcții de cîte 10 linii. Astăzi nu mai sînt la fel de sigur. Decît un comentariu ca \ccode{// calculează minimul din fereastra glisantă} prefer o funcție ca \ccode{minimumOverSlidingWindow()}, care elimină nevoia de orice comentarii. Cartea \textit{Clean Code} explică de ce a doua variantă este preferabilă: în esență, pentru că codul se modifică în timp, iar comentariile ajung să nu mai reflecte codul pe care îl adnotează.
+
+Să considerăm codul spaghetti din Exemplul 1. Îl putem adnota cu comentarii; dar acele comentarii, deși îi explică cititorului ce se întîmplă, continuă să-i ceară un \textit{leap of faith}. Prin comparație, codul curat se autoexplică.
+
+Apoi, cum putem modifica un cod care, deși este bine comentat la nivel de bloc, este neinteligibil din interior? El este ca o cutie neagră.
+
+\subsubsection*{Fără comentarii inutile}
+
+De exemplu:
+
+\begin{minted}{c}
+// Sortează vectorul
+std::sort(x, x + n);
+\end{minted}
+
+\subsubsection*{Scrieți comentarii pentru decizii de design}
+
+Deciziile de design nu decurg din cod, cum ar fi \textbf{de ce} ați preferat o structură de date și nu pe alta, \textbf{de ce} ați decis să răsturnați un vector, ce reprezintă informația stocată în matricea unei programări dinamice etc. Aceste decizii merită documentate. Să zicem:
+
+\begin{minted}{c}
+// Stocăm matricea și cele trei rotații cu 90˚, 180° și 270°.
+int mat[4][MAX_N][MAX_N];
+\end{minted}
+
+\subsubsection*{Scrieți comentarii la nivelul cititorului}
+
+Comentariile trebuie să-i clarifice unui potențial cititor ce face codul. La acest cerc, avem cu toții un nivel suficient ca să recunoaștem dintr-o privire șabloane ca afișarea sau citirea unui vector, backtracking, căutare liniară, căutare binară, bordarea unei matrice, parcurgerea unui arbore etc. Acestea nu necesită comentarii.
+
+\section{Concluzii}
+
+Vă recomand să adoptați aceste sfaturi în programele voastre \textbf{de acasă}. Desigur, la olimpiadă să nu cumva să continuați să rafinați programul odată ce ați luat 100 de puncte. \emoji{rolling-on-the-floor-laughing} Dar, dacă aplicăm zilnic aceste sfaturi, ele ne vor intra în reflex și ne vor ajuta să scriem programe care să meargă din prima. Mi se întîmplă frecvent să scriu un program care trece toate testele de la prima rulare. Ajung să introduc intenționat un \ccode{+1} la afișarea răspunsului, ca să fac programul să pice teste, ca să mă conving că nu am greșit ceva la invocare.
+
+Citirea unui program nu trebuie să semene cu rezolvarea unui mister sau cu spargerea unui cifru. La profesorii de matematică întîlnesc uneori această gîndire ezoterică: soluțiile cu adevărat frumoase sînt criptice, tocmai pentru ca doar cei inițiați, cei cu chemare spre matematică, să le poate înțelege. Nu sînt de acord cu această atitudine nici la matematică și cu atît mai puțin la noi, la informatică. Un progamator bun își scrie programele astfel încît sensul fiecărei linii să decurgă imediat din organizarea programului și din numele alese.
