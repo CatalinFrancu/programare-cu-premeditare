@@ -1,0 +1,127 @@
+\section{Probleme}
+
+\subsection{Problema Addition on Segments (Codeforces)}
+\label{problem:addition-on-segments}
+
+\href{https://codeforces.com/contest/981/problem/E}{enunț}
+$\bullet$
+\hyperref[code:addition-on-segments]{sursă}
+
+\subsubsection*{Simplificarea cerinței}
+
+Problema conține un mic \textit{red herring} (pistă falsă). Superficial, ea întreabă: Dacă alegem orice mulțime de intervale, ce valori între 1 și $n$ putem face să fie maxime? Dar o întrebare echivalentă este: Dacă alegem orice mulțime de intervale, ce valori între 1 și $n$ putem obține?
+
+Pentru a demonstra echivalența, să presupunem că obținem o valoare $a$ pe o poziție oarecare, dar ea nu este maximă. Altundeva există o valoare $b>a$. Dar asta înseamnă că am selectat cel puțin un interval care îl acoperă pe $b$, dar nu și pe $a$. Eliminăm acel interval. Repetăm raționamentul pînă cînd $a$ devine maxim.
+
+\subsubsection*{Problema rucsacului}
+
+Cu această cerință, problema amintește de problema rucsacului 0/1. Să fixăm o poziție $i$. Considerăm toate valorile $x$ pentru interogările $[l,r]$ care satisfac $l \leq i \leq r$. Rezolvăm problema rucsacului pentru acele valori și aflăm mulțimea de sume pe care le putem obține (limitate la valoarea $n$ conform enunțului).
+
+Rezolvarea pentru o poziție (rucsacul clasic) are complexitate de $\bigoh(q^2)$, așadar efortul total este $\bigoh(nq^2)$, prea mare. Dar dacă am încerca să baleiem pozițiile de la 1 la $n$? Atunci avem nevoie de o structură de date cu următoarele operații:
+
+\begin{enumerate}
+  \item Adaugă un obiect la rucsac (la poziția $l$, adăugăm obiectul $x$ la rucsac).
+
+  \item Scoate un obiect din rucsac (la poziția $r$, scoatem obiectul $x$ din rucsac).
+\end{enumerate}
+
+Adăugarea este relativ cunoscută. O reiau aici pentru cei care nu au mai văzut-o. Dacă folosim al $k$-lea obiect de greutate $x$, putem obține (1) orice sume puteam obține cu primele $k-1$ obiecte și (2) aceleași sume mărite cu $x$.
+
+\begin{minted}{c}
+for (int i = n; i >= x; i--) {
+  posibil[i] |= posibil[i - x];
+}
+\end{minted}
+
+Dar ștergerea? Dată fiind o mulțime de sume posibile, care dintre ele rămîn posibile după ștergerea unui element? Putem încerca următoarea abordare. Să stocăm pe fiecare poziție nu doar 0/1 (putem sau nu obține o sumă), ci numărul de moduri în care putem obține această sumă. Atunci codul pentru adăugare este:
+
+\begin{minted}{c}
+for (int i = n; i >= x; i--) {
+  d[i] += d[i - x];
+}
+\end{minted}
+
+Am putea adapta acest cod și la ștergere, nu?
+
+\begin{minted}{c}
+for (int i = n; i >= x; i--) {
+  d[i] -= d[i - x];
+}
+\end{minted}
+
+... da și nu. Valorile din \ccode{d} pot fi enorme. Dacă rucsacul conține $k$ obiecte, toate de valoare 1, atunci numărul moduri de a obține suma $k/2$ este $C_{k}^{k/2}$. Putem opera modulo o valoare $M$ aleasă la întîmplare și să sperăm că nu avem \textit{false negatives}, adică nu raportăm 0 moduri de a obține o sumă cînd de fapt avem $kM$ moduri cu $k \neq 0$. Dar haideți să nu trăim periculos!
+
+\subsubsection*{Arborele de intervale}
+
+Să luăm fiecare interogare $(l, r, x)$. Să descompunem intervalul $[l,r]$ în noduri după metoda cunoscută și să adăugăm valoarea $x$ la o colecție (un simplu \ccode{vector}) în fiecare dintre aceste noduri. Atunci semnificația colecției este: orice valoare din această colecție este folosibilă pe orice poziție acoperită de nod. Cu alte cuvinte: mulțimea de interogări care acoperă o poziție (o frunză din arbore) este \textbf{reuniunea colecțiilor din strămoși}. Doar că nu stocăm interogările efective, căci ne interesează doar valorile $x$.
+
+Să mai remarcăm și că suma mărimilor colecțiilor este $\bigoh(q \log n)$, deoarece fiecare valoare $x$ aparține la $\bigoh(\log n)$ colecții.
+
+Și acum cheia tehnicii: facem \textbf{o parcurgere DFS} a tuturor nodurilor. Dacă încă nu sînteți familiari cu parcurgerile arborilor, o definiție echivalentă este: vizităm recursiv toate nodurile arborelui. Menținem rucsacul calculat pentru toate valorile $x$ de pe calea de la rădăcină la nodul curent. La intrarea într-un nod adăugăm la rucsac toate valorile din colecția $C$ din nod, în $\bigoh(n |C|)$, iar la revenire ștergem elementele colecției și „recalculăm rucsacul”.
+
+... Dar am ajuns din nou la nevoia ștergerilor, nu? Nu chiar. La reapelarea DFS-ului, \textbf{creăm o copie} a rucsacului curent, pe care o pasăm ca parametru nodurilor-fii. La revenirea din fii, aruncăm pur și simplu copia. (Sursa mea obține acest efect trimițînd rucsacul prin valoare, nu prin referință.) Cum spuneam, operațiile \textit{undo} făcute în ordinea inversă adăugării tind să fie considerabil mai simple.
+
+Valorile rucsacului într-o frunză $f$ ne arată ce sume putem obține pe poziția $f$. Facem reuniunea valorilor rucsacului în toate frunzele și \textit{voilà!}, problema este gata. Complexitatea este $\bigoh(qn \log n)$. Cum spuneam, există $\bigoh(q \log n)$ obiecte în toți vectorii din aint, iar adăugarea la rucsac a unui obiect necesită $\bigoh(n)$.
+
+\subsubsection*{Detaliu de implementare}
+
+Pentru a calcula rucsacul, ne este suficient un vector de booleeni. Adică un bitset. Iar, dacă citim codul, el aplică operația OR între rucsacul curent și cel shiftat la stînga cu $x$ biți. Astfel obținem o constantă fantastică: calculul rucsacului nu iterează prin $n$ booleeni, ci prin $n/64$ valori pe 64 de biți.
+
+
+\subsection{Problema Extending a Set of Points (Codeforces)}
+\label{problem:extending-a-set-of-points}
+
+\href{https://codeforces.com/contest/1140/problem/F}{enunț}
+$\bullet$
+\hyperref[code:extending-a-set-of-points]{sursă}
+
+Această problemă este doar cu puțin mai complicată. Chiar vom avea nevoie de rollbacks („reveniri”?).
+
+Cunoașterea soluției unei probleme poate ajuta la rezolvarea ei (una din \href{https://www.cs.cmu.edu/~fgandon/miscellaneous/murphy/}{legile lui Murphy}). Dat fiind că sîntem la capitolul despre evitarea ștergerilor, să rezolvăm întîi problema doar pentru adunări.
+
+\subsubsection*{Structura lui $E(S)$}
+
+Cum arată $E(S)$? Să ne imaginăm că $S$ constă din două linii orizontale de ordonate $y_1$ și $y_2$, fiecare conținînd niște puncte. Dacă există două puncte cu același  $x$, așadar $(x, y_1)$ și $(x, y_2)$, atunci toate punctele de pe oricare dintre linii pot fi dublate pe cealaltă linie. Așadar $E(S)$ va consta dintr-o mulțime de perechi de puncte, sau o rețea de $2 k$ puncte, unde $k$ este numărul de coordonate $x$ distincte din $S$.
+
+Extinzînd raționamentul la un set oarecare $S$, $E(S)$ va consta dintr-o colecție de rețele. Fiecare rețea va avea un set de $k \times l$ puncte, mai exact toate punctele dintr-un produs cartezian $\{x_1, x_2, \dots, x_k\} \times \{y_1, y_2, \dots, y_l\}$. Oricare două rețele din $E(S)$ nu vor avea niciun $x$ comun și niciun $y$ comun; altfel, cele două rețele s-ar uni prin extensii succesive. Mărimea lui $E(S)$ este suma mărimilor rețelelor (suma produselor $k \cdot l$).
+
+\subsubsection*{Efectul adăugărilor}
+
+Cînd inserăm un punct iau naștere cîteva cazuri, după cum există sau nu rețele care să includă coordonatele $x$, respectiv $y$ ale punctului. De exemplu, dacă există o rețea de dimensiuni $k \times l$ care include coordonata $x$ și o altă rețea de dimensiuni $k' \times l'$ care include coordonata $y$, atunci punctul $(x,y)$ cauzează unirea prin extensii succesive într-o rețea de dimensiuni $(k + k') \times (l + l')$.
+
+Problema este, așadar, una relativ clasică de conectivitate, doar ceva mai complexă. O vom rezolva exact cu păduri de mulțimi disjuncte, dar modificate ca să admită și reveniri.
+
+\subsubsection*{Procesarea ștergerilor}
+
+Știm că vom construi un arbore de intervale peste operații și că vom face un DFS pe acest arbore. Fiecare frunză corespunde unui moment în timp (un număr de operații) și în fiecare frunză vrem să calculăm $E(S)$ pe punctele active la acel moment.
+
+Rezultă că trebuie să reprezentăm în AINT intervalele de timp pentru care fiecare punct este activ. De exemplu, dacă punctul $(x,y)$ este adăugat la operația 10, șters la operația 20 și adăugat la operația 30, iar în total există 100 de operații (numerotate de la 0 la 99), atunci:
+
+\begin{itemize}
+  \item Punctul este activ pe intervalul [10, 19].
+  \item Punctul este activ pe intervalul [30, 99].
+\end{itemize}
+
+Cînd citim datele, putem folosi o tabelă hash ca să reținem ultima activare a unui punct. Cînd reîntîlnim același punct, îl marcăm ca activ pe intervalul determinat și îl ștergem din tabelă. Alternativ, putem folosi o simplă sortare în locul tabelei hash. Sortăm punctele după $x$, apoi după $y$, apoi după timp. Atunci toate activările și dezactivările unui punct apar în vectorul sortat pe poziții consecutive.
+
+\subsubsection*{Detalii de implementare}
+
+Nu putem folosi compresia căii în DSF, deoarece ea poate face multe modificări, iar operațiile de revenire devin imposibile. În schimb, vom folosi \textit{union by size} ca să obținem timp logaritmic pentru operațiile în DSF.
+
+Este nevoie și să studiem cu atenție ce se modifică la o unificare, ca să nu salvăm mai mult decît este necesar. Eu am reușit să folosesc doar 6 variabile.
+
+Nu în ultimul rînd, este important să gestionăm cît mai comod cazurile particulare la inserarea punctului $(x, y)$:
+
+\begin{itemize}
+  \item Nu există rețele cu coordonata $x$ nici cu $y$.
+
+  \item Există o rețea cu coordonata $x$.
+
+  \item Există o rețea cu coordonata $y$.
+
+  \item Există două rețele diferite cu coordonatele $x$ și $y$.
+
+  \item Există aceeași rețea care include și $x$, și $y$.
+\end{itemize}
+
+Inițial m-am chinuit să folosesc două DSF, una pentru $x$-i și una pentru $y$-i. Dar codul s-a complicat mult. În loc de asta, folosesc un singur DSF, pentru rețele. Inițializez rețele cu etichetele $0 \dots MAX\_COORD-1$ pe axa $Ox$ și $MAX\_COORD \dots 2 \cdot MAX\_COORD - 1$ pe axa $Oy$. Pentru fiecare rețea rețin mărimile (numărul de $x$ distincți și numărul de $y$ distincți). Dacă inițializăm corect aceste mărimi, ca să respecte regula de compunere de mai sus, atunci cazurile particulare dispar.
