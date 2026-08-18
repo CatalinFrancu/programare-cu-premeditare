@@ -266,3 +266,508 @@ void add(string key, string value) {
 \end{minted}
 
 Contractul nu descrie exact ce fac funcțiile, dar oferă niște garanții și explică că, pentru niște apeluri în afara specificațiilor, programul va da eroare sau comportamentul este nedefinit. Este la latitudinea voastră să fortificați codul cu \ccode{assert}-uri și cu mesaje de eroare informative sau să lăsați situația să degenereze spre rezultate greșite, buclă infinită sau \textit{core dump}.
+
+
+\section{Depanare}
+
+Așa cum învățăm algoritmi și structuri de date, pentru ca mai tîrziu să-i putem reproduce rapid la cerere, tot așa putem învăța și tehnici de depanare, cu elemente universale care se aplică tuturor tipurilor de buguri.
+
+De aceea, vă încurajez să nu lăsați neterminate sursele în care aveți buguri. Dimpotrivă, fiecare bug este o ocazie de a vă exersa aptitudinile de depanatori, ceea ce vă va face programatori mai rapizi și mai compleți.
+
+Abordarea completă pe care o recomand pentru depanare este:
+
+\begin{enumerate}
+  \item Nu codați încîlcit! Astfel veți evita majoritatea bugurilor. Însușiți-vă recomandările din capitolul anterior. Separați codul în funcții scurte, care fac un singur lucru fără efecte laterale. Nu complicați logica buclelor (stegulețe, \ccode{break}, \ccode{continue}). Dați nume rezonabile variabilelor. Nu scrieți cod pe șapte niveluri de imbricare. Practic, vă recomand o doză sănătoasă de neîncredere în sine. Nu aveți capacitatea infinită de a înțelege un program scris oricît de prost. Nimeni n-o are.
+
+  \item Nu vă panicați! Bugurile nu sînt o pedeapsă divină. Sînt o parte naturală a programării. Amintiți-vă că aveți toate uneltele necesare ca să le reparați.
+
+  \item Recitiți codul și explicați-vi-l în gînd. Asta poate scoate la iveală greșeli de tipar, dar și de algoritm.
+
+  \item Tipăriți informații, începînd cu blocurile de cod pe care le suspectați.
+
+  \item Asigurați-vă că înțelegeți fiecare variabilă și contractul ei. Exemplu: cînd o variabilă $x$ calculată într-o buclă are la final valoarea greșită, înțelegeți care ar trebui să fie valorile ei parțiale? Și cea inițială ar trebui să fie 0 sau 1 sau cît?
+
+  \item Dacă bugul apare doar pe teste mari, verificați absolut toate dimensiunile vectorilor și toate operațiile care pot depăși \ccode{int}-ul. Eu chiar caut în sursă toate semnele \ccode{+}, \ccode{-} și \ccode{*} și mă asigur că trec pe \ccode{long long} acolo unde poate fi necesar.
+
+  \item Găsiți un test mic pe care programul greșește. Trebuie mic, nu aveți ce face cu un test mare. Uneori răspunsul este greu de calculat mintal, caz în care scrieți un brut. Pe care, apropo, trimiteți-l ca să aveți 20-30 de puncte în buzunar.
+
+  \item Odată izolat testul, bugul este ca și rezolvat. Tipăriți variabile cu mesaje informative de genul \mintinline{c}|printf("comb(%d, %d) = %d\n", n, k, result)|. Faceți un fel de înjumătățire. Probabil nu este util să verificați vectorul imediat după citire. Dar dacă verificați datele construite pînă undeva la jumătatea programului, veți înjumătăți intervalul suspect de cod.
+\end{enumerate}
+
+
+\subsection{Găsirea unui contraexemplu mic}
+
+Nu toate bugurile se lasă găsite doar prin recitirea programului. Uneori tot ce avem este informația \textit{Wrong answer} pe un test mare și necunoscut. Cum progresăm? Avem nevoie de un test mic și cunoscut. Puteți să-l căutați și de mînă, dar asta poate dura. Dacă după 1-2 minute nu reușiți, este mai rapid să urmați calea de mai jos. În mod cert v-o recomand la teme, dar ea merită luată în calcul chiar și la concursuri.
+
+Iată un studiu de caz pentru problema \href{https://kilonova.ro/problems/2021}{Kiloforces}.
+
+Mai întîi, vă trebuie \textbf{o sursă naivă}. Ea poate fi $\bigoh(n^2)$, $\bigoh(n^3)$, nu contează. Contează doar să aveți 100\% încredere în corectitudinea ei. De regulă o putem obține în 5 minute luînd citirea și scrierea cu copy-paste din sursa eficientă și scriind restul brut. Pentru problema Kiloforces, odată ce știm că trebuie să sortăm valorile $t$ pe interval, putem face exact asta, într-un vector separat.
+
+\label{problem:principles-generator}
+
+Doi, vă trebuie \textbf{un generator de teste aleatorii}. Am anexat \hyperref[code:principles-generator]{un generator} pe care probabil voi îl puteți scrie în 10 minute. El este didactic și poate fi mult scurtat și adaptat pentru alte nevoi.
+
+În sfîrșit, trei, \textbf{rulăm programele în buclă}. Rulăm sursa naivă și pe cea cu bug pe teste progresiv mai mari, cu un script Bash, pînă cînd răspunsurile diferă. Probabil și Windows are ceva echivalent; orice sistem de operare folosiți, vă recomand să vă familiarizați cu limbajul său pentru scripturi și să nu vă bazați niciodată doar pe IDE!
+
+\begin{minted}{bash}
+count=0
+while true; do
+  count=$((count+1))
+  echo ==== Test $count
+  ./gen > data.in
+  ./naive < data.in > 1.out
+  ./buggy < data.in > 2.out
+  diff 1.out 2.out || break
+done
+\end{minted}
+
+Putem rula scriptul ca și ca one-liner (vedeți mai jos). Ce fac aceste comenzi? Pe scurt,
+
+\begin{itemize}
+  \item \ccode{count} este o variabilă incrementată și afișată la fiecare repetiție, ca să știm cîte teste am făcut.
+
+  \item Operatorii \ccode{<} și \ccode{>} redirecționează intrarea și respectiv ieșirea. Așadar, \ccode{gen.cpp} este făcut să tipărească la ieșirea standard, dar din Bash îi spunem să pună datele în \ccode{data.in}. Apoi, \ccode{naive} și \ccode{buggy} citesc din \ccode{data.in} și scriu în \ccode{1.out} și respectiv \ccode{2.out}.
+
+  \item \ccode{diff} este o unealtă standard care compară două fișiere. Ea returnează codul 0 dacă fișierele sînt identice și nonzero dacă fișierele diferă.
+
+  \item \ccode{|| break} spune „dacă comanda anterioară s-a terminat cu cod nonzero, ieși din buclă”.
+
+  \item Altfel o putem opri cu combinația de taste Ctrl-C.
+\end{itemize}
+
+\begin{minted}{bash}
+[cata@neil kiloforces]$ count=0; while true; do count=$((count+1)); echo ==== Test $count;
+./gen > data.in; ./cata-mo-fenwick-v1 < data.in > 1.out; ./buggy < data.in > 2.out;
+diff 1.out 2.out || break; done
+==== Test 1
+==== Test 2
+==== Test 3
+1c1
+< 7
+---
+> 16
+[cata@neil kiloforces]$
+\end{minted}
+
+De aici, încercăm teste de diverse mărimi, progresiv mai mari, pînă găsim o diferență. Eu am început cu $n=5$ și $q=1$, care a mers perfect pentru \np{1000} de teste. La $q=2$ scriptul a găsit imediat diferența de mai sus. Acesta a fost un indiciu clar că problema este la tranziția între două interogări.
+
+Altă discrepanță pe care am găsit-o cu teste mai mari a fost:
+
+\begin{minted}{bash}
+==== Test 77
+419c419
+< -2163867162
+---
+> 2131100134
+\end{minted}
+
+Suma celor două numere este exact $2^{32}$, deci bugul este la trecerea pe 64 de biți. Într-adevăr, programul în cauză nu folosea deloc \ccode{long long}!
+
+
+\subsection{Tipăriți, tipăriți, tipăriți}
+
+Dacă exemplul în sine nu evidențiază sursa bugului, atunci apelați la \ccode{printf}, la hîrtie și la creion! Eu nu știu altă cale mai bună. Trebuie să vă asigurați că toate datele intermediare ale programului corespund cu intenția voastră. Totul este \textit{fair game}: am stabilit deja că undeva programul greșește, deci suspectați totul, chiar și citirea, chiar și sumele parțiale! Tipăriți informațiile modificate de fiecare funcție la finalul funcției.
+
+Încercați să găsiți un format de tipărire prietenos, care să evidențieze intrările și ieșirile din funcții etc. De exemplu, la tipărirea unui arbore de intervale eu inserez \ccode{'\n'} după nodurile de pe fiecare nivel, ca să văd arborele stratificat.
+
+Pentru probleme care cer afișarea la ieșirea standard, tipăriți mesajele de debug cu \ccode{cerr} sau \ccode{stderr}. Astfel evitați să uitați vreun mesaj de debug care să polueze datele de ieșire.
+
+
+\subsection{Sfaturi practice}
+
+\subsubsection*{Definiți contracte pe structurile de date}
+
+Recitirea atentă a codului poate ajuta la găsirea bugului. Putem prinde folosirea lui \ccode{i} în loc de \ccode{j}. Dar există o categorie de buguri care țin de nerespectarea contractului unei structuri de date. De aceea este important să definim un astfel de contract. Nu trebuie neapărat să îl notați într-un comentariu, dar trebuie să vi-l clarificați vouă înșivă. Altfel recitim degeaba codul, căci verificăm fără să știm ce și încercăm modificări la întîmplare.
+
+Am întîlnit această situație în repetate rînduri la arbori de intervale cu propagare \textit{lazy}, unde este esențial să înțelegem ce stochează fiecare nod și cum păstrăm coerența structurii după operații de tip \textit{push} sau \textit{pull}. Similar și pentru structura menținută în probleme cu algoritmul lui Mo și pentru orice alte structuri de date.
+
+\subsubsection*{Programați modular}
+
+Este mult mai simplu să vă convingeți că o bucată de cod își respectă contractul dacă o puteți izola într-o funcție de 2-5-10-15 linii. Bugul cel mai ușor de reparat este bugul pe care îl evităm.
+
+\subsubsection*{Nu includeți \ccode{<bits/stdc++.h>}}
+
+Depanarea poate presupune să compilăm de zeci de ori programul. Dacă includem headerul \ccode{<bits/stdc++.h>}, consecința este că importăm tot STL-ul și îl compilăm, deși utilizăm poate 1\% din el. Am văzut ocazional timpi de compilare de 3-4 secunde, care se înjumătățesc dacă includem doar headerele dorite (\ccode{<vector>}, \ccode{<iostream>} etc.). În timp de concurs, aceste diferențe, însumate la 1-2-3 minute, contează.
+
+În plus, \ccode{<bits/stdc++.h>} este nestandard. Codul va merge doar pe GCC. Puteți citi o analiză mai amplă pe \href{https://stackoverflow.com/a/31816096/6022817}{Stack Overflow}.
+
+
+\subsection{Studiu de caz 1}
+
+Iată sursa unui elev pentru problema \href{https://kilonova.ro/problems/2021}{Kiloforces}. Sursa trece subtaskurile mici, apoi începe să dea erori de tip \textit{Wrong answer} și \textit{Time limit exceeded}. Citiți-o cu atenție și încercați să găsiți bugul (sau bugurile)! Pentru a înțelege rezolvarea, ajută să fiți familiari cu \hyperref[chapter:mo]{Algoritmul lui Mo}.
+
+\begin{minted}{c}
+#include <algorithm>
+#include <iostream>
+#include <set>
+
+using namespace std;
+
+const int BLOCK_SIZE = 300;
+const int MAX_N = 1e5;
+const int MAX_Q = 1e5;
+
+struct query {
+    int l, r;
+    int pos;
+};
+
+int N, Q;
+
+int p[MAX_N], t[MAX_N];
+int prefix_sum[MAX_N];
+
+query queries[MAX_Q];
+
+int ans[MAX_Q];
+
+void read() {
+    cin >> N >> Q;
+    for (int i = 0; i < N; ++i) {
+        cin >> p[i];
+    }
+    for (int i = 0; i < N; ++i) {
+        cin >> t[i];
+    }
+    for (int i = 0; i < Q; ++i) {
+        cin >> queries[i].l >> queries[i].r;
+        --queries[i].l;
+        --queries[i].r;
+        queries[i].pos = i;
+    }
+}
+
+void build_prefix_sum() {
+    prefix_sum[0] = p[0];
+    for (int i = 1; i < N; ++i) {
+        prefix_sum[i] = prefix_sum[i - 1] + p[i];
+    }
+}
+
+void sort_queries() {
+    sort(queries, queries + Q, [](query a, query b) {
+        int block_a = a.l / BLOCK_SIZE;
+        int block_b = b.l / BLOCK_SIZE;
+        if (block_a != block_b) {
+            return block_a < block_b;
+        }
+        else if (block_a & 1) {
+            return a.r > b.r;
+        }
+        else {
+            return a.r < b.r;
+        }
+    });
+}
+
+struct block_data {
+    set<int> penalties;
+    int points(int l, int r) {
+        if (l) {
+            return prefix_sum[r] - prefix_sum[l - 1];
+        }
+        return prefix_sum[r];
+    }
+    int penalty(int l, int r) {
+        int val = 0;
+        int count = r - l;
+        for (auto x : penalties) {
+            val += x * count;
+            --count;
+        }
+        return val;
+    }
+    int score(int l, int r) {
+        return points(l, r) - penalty(l, r);
+    }
+};
+
+void mo() {
+    block_data data;
+    int left = queries[0].l;
+    int right = queries[0].r;
+    for (int i = left; i <= right; ++i) {
+        data.penalties.insert(t[i]);
+    }
+    for (int i = 0; i < Q; ++i) {
+        while (left < queries[i].l) {
+            data.penalties.erase(t[left++]);
+        }
+        while (left > queries[i].l) {
+            data.penalties.insert(t[--left]);
+        }
+        while (right < queries[i].r) {
+            data.penalties.insert(t[++right]);
+        }
+        while (right > queries[i].r) {
+            data.penalties.erase(t[--right]);
+        }
+        ans[queries[i].pos] = data.score(left, right);
+    }
+}
+
+void write() {
+    for (int i = 0; i < Q; ++i) {
+        cout << ans[i] << '\n';
+    }
+}
+
+int main() {
+    read();
+    build_prefix_sum();
+    sort_queries();
+    mo();
+    write();
+    return 0;
+}
+\end{minted}
+
+Voi ce ați observat? Iată mai întîi cîteva observații generale despre cod:
+
+\begin{itemize}
+  \item Codul este bine scris și structurat. Asta întotdeauna ajută la depanare!
+
+  \item Pare că folosește un \ccode{set} în locul unor structuri mai eficiente (problema se poate rezolva cu un AIB).
+
+  \item Mai rău, funcția \ccode{penalty()} iterează prin set. Aceasta explică TLE-ul.
+
+  \item Sursa trece primele două subtaskuri, deci probabil nu trebuie să verificăm codul elementar (sume parțiale etc.).
+\end{itemize}
+
+Sper că ați găsit și cele două buguri. Există două lucruri în neregulă în funcția \ccode{mo()}:
+
+\begin{enumerate}
+  \item Există o asimetrie la mutarea indicilor, o vedeți? \ccode{left++}, \ccode{--left}, \ccode{++right}, \ccode{--right}. Judecînd după inițializare, la iterația curentă menținem în structură intervalul închis $[left, right]$. Atunci ultima cantitate ar trebui să fie \ccode{right--}: întîi excludem elementul $right$, apoi restrîngem indexul.
+
+  \item Le dau elevilor mei de nenumărate ori următorul sfat, dar mulți nu mă ascultă. Spuneți-mi Casandra. \emoji{smiling-face-with-tear} În algoritmul lui Mo, este prudent să extindeți intervalul în stînga și în dreapta și abia apoi să-l contractați. Altfel, se întîmplă ciudățenii cînd intervalul devine negativ, fie și numai tranzitoriu. Exemplu: dacă trecem de la [10, 20] la [30, 40] și deplasăm întîi capătul stîng, vom ajunge tranzitoriu la intervalul negativ [30,20]. Apoi deplasăm capătul drept și ajungem la [30, 40], dar setul \ccode{penalties} va include toate penalizările de la 20 la 40! Problema survine deoarece adăugarea și ștergerea din \ccode{set} sînt asimetrice. Adăugarea garantează inserarea elementului, dar eliminarea nu garantează ștergerea lui (pentru că nu are noțiunea de frecvență negativă). Dacă facem trecerea [10, 20] → [10, 40] → [30, 40], intervalul este mereu bine definit.
+\end{enumerate}
+
+
+\subsection{Studiu de caz 2}
+
+Iată și o altă sursă, de data aceasta pentru problema \href{https://cses.fi/problemset/task/1736}{Polynomial Queries}. Sursa primește \textit{Wrong answer} chiar și pe teste mici. Rezolvarea folosește arbori de intervale. Citiți-o cu atenție și vedeți dacă vreun bug vă sare în ochi!
+
+\begin{minted}{c}
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int nmax = 2e5;
+
+vector<int> v(nmax + 3);
+
+struct AInt {
+  struct node {
+    int64_t sum = 0, start = 0, ratie = 0;
+  };
+  vector<node>aint;
+  AInt() {
+    aint.resize(4 * nmax + 3);
+  }
+  void build(int nod, int st, int dr) {
+    if(dr < st)
+      return;
+    if(st == dr) {
+      aint[nod].sum = v[st];
+    } else {
+      int mid = (st + dr) / 2;
+      build(nod * 2, st, mid);
+      build(nod * 2 + 1, mid + 1, dr);
+      aint[nod].sum = aint[nod * 2].sum + aint[nod * 2 + 1].sum;
+    }
+  }
+  void push(int nod, int st, int dr) {
+    if(st > dr)
+      return;
+    if(st == dr) {
+      if(aint[nod].start > 0)
+        aint[nod].sum += aint[nod].start;
+      aint[nod].start = aint[nod].ratie = 0;
+      return;
+    }
+    int mid = (st + dr) / 2;
+    aint[nod].sum += aint[nod].start * (dr - st + 1);
+    aint[nod].sum += aint[nod].ratie * (dr - st + 1) * (dr - st) / 2;
+    if(aint[nod].start > 0) {
+      aint[nod * 2].start += aint[nod].start;
+      aint[nod * 2 + 1].start += aint[nod].start + (mid + 1 - st);
+    }
+    aint[nod * 2].ratie += aint[nod].ratie;
+    aint[nod * 2 + 1].ratie += aint[nod].ratie;
+    aint[nod].start = aint[nod].ratie = 0;
+  }
+  void update(int nod, int st, int dr, int l, int r) {
+    if(dr < st || l > dr || r < st)
+      return;
+    if(l <= st && dr <= r) {
+      aint[nod].start += (st - l + 1);
+      aint[nod].ratie++;
+      push(nod, st, dr);
+    } else {
+      push(nod, st, dr);
+      int mid = (st + dr) / 2;
+      update(nod * 2, st, mid, l, r);
+      update(nod * 2 + 1, mid + 1, dr, l, r);
+      push(nod * 2, st, mid);
+      push(nod * 2 + 1, mid + 1, dr);
+      aint[nod].sum = aint[nod * 2].sum + aint[nod * 2 + 1].sum;
+    }
+  }
+  int64_t query(int nod, int st, int dr, int l, int r) {
+    if(dr < st || l > r || l > dr || r < st)
+      return 0;
+    push(nod, st, dr);
+    if(st == l && dr == r) {
+      return aint[nod].sum;
+    } else {
+      int mid = (st + dr) / 2;
+      return query(nod * 2, st, mid, l, min(r, mid)) + query(nod * 2 + 1,
+                   mid + 1, dr, max(mid + 1, l), r);
+    }
+  }
+};
+
+AInt myAint;
+int cer, st, dr, x, n, q;
+
+void read() {
+  cin >> n >> q;
+  for(int i = 1; i <= n; i++)
+    cin >> v[i];
+}
+
+void solve() {
+  myAint.build(1, 1, n);
+  for(int i = 1; i <= q; i++) {
+    cin >> cer >> st >> dr;
+    if(cer == 1) {
+      myAint.update(1, 1, n, st, dr);
+    } else {
+      cout << myAint.query(1, 1, n, st, dr) << "\n";
+    }
+  }
+}
+
+int main() {
+  read();
+  solve();
+  return 0;
+}
+\end{minted}
+
+Calitatea codului nu este perfectă, dar asta este explicabil, căci conține multe încercări de depanare.
+
+Codul face foarte multe operații \ccode{push}, ceea ce pe mine m-a trimis pe o pistă falsă. În realitate, dacă operația \ccode{push} este bine scrisă, ea este idempotentă: o putem apela de oricîte ori fără efecte secundare.
+
+Următoarea bănuială pe care am avut-o a fost nerespectarea contractului în arborele de intervale? Care este acest contract? El rezultă cel mai bine din funcția update:
+
+\begin{minted}{c}
+if(l <= st && dr <= r) {
+  aint[nod].start += (st - l + 1);
+  aint[nod].ratie++;
+  push(nod, st, dr);
+}
+\end{minted}
+
+Codul adaugă progresia în cîmpurile \ccode{start} și \ccode{ratie}, dar nu și în cîmpul \ccode{sum}. Așadar, contractul pare să fie: suma reală din intervalul subîntins de un nod este cîmpul \ccode{sum} plus suma progresiei date de \ccode{start} și \ccode{ratie}.
+
+Cu această presupunere, am verificat absolut toate operațiile și am găsit un prim bug în circa 15 minute. Probabil că autorul l-ar putea găsi mai repede, fiind familiar cu codul. La revenirea din update, propagarea în sus a rezultatului este:
+
+\begin{minted}{c}
+aint[nod].sum = aint[nod * 2].sum + aint[nod * 2 + 1].sum;
+\end{minted}
+
+Dar pe \ccode{nod} nu mai avem progresie, căci am făcut push. De aceea, \ccode{sum} trebuie să conțină chiar suma reală. Deci codul ar trebui să includă și progresiile de pe cei doi fii! Am scris o funcție separată pentru suma unei progresii, căci vor exista trei apeluri la ea (două aici și una în \ccode{push}). Astfel, codul devine:
+
+\begin{minted}{c}
+int64_t sum_prog(int64_t start, int64_t ratie, int lung) {
+  return start * lung + ratie * (lung - 1) * lung / 2;
+}
+
+...
+
+aint[nod].sum =
+  aint[nod * 2].sum +
+  aint[nod * 2 + 1].sum +
+  sum_prog(aint[nod * 2].start, aint[nod * 2].ratie, mid - st + 1) +
+  sum_prog(aint[nod * 2 + 1].start, aint[nod * 2 + 1].ratie, dr - mid);
+\end{minted}
+
+Principial, această funcție merita scrisă de la bun început, chiar dacă era folosită doar în \ccode{push}. Este o funcție scurtă, clară, implementarea unei formule matematice consacrate.
+
+Acum eram destul de încrezător că implementarea respectă contractul și am comentat toate apelurile nenecesare la funcția \ccode{push}. Am ajuns la o nouă sursă, care încă avea un bug.
+
+Am scris un generator rudimentar de date de test și am comparat în buclă această sursă cu soluția mea (corectă) la problemă. Am încercat cu $n=5$ și $q=2$ nu am găsit contraexemple. Așadar, pare că programul gestionează bine o singură actualizare. Dar pentru $n=5$ și $q=3$ am găsit rapid contraexemplul de mai jos, pentru care răspunsul corect este 9, dar programul elevului afișează 8:
+
+\begin{verbatim}
+5 3
+1 1 1 1 1
+1 1 5
+1 1 2
+2 2 3
+\end{verbatim}
+
+De aici încolo putem efectiv să depanăm programul. Cheia sînt figurile pe hîrtie și multe mesaje tipărite. Am afișat arborele după construcție și după fiecare update:
+
+\begin{minted}{c}
+void print() {
+  for (int i = 1; i <= 12; i++) {
+    cerr << "(" << aint[i].sum << " " << aint[i].start << " "
+         << aint[i].ratie << ") ";
+    if ((i & (i + 1)) == 0) {
+      cerr << "| ";
+    }
+  }
+  cerr << "\n";
+}
+
+...
+
+myAint.update(1, 1, n, st, dr);
+cerr << "După update:\n";
+myAint.print();
+\end{minted}
+
+Astfel am obținut codul de debug:
+
+\begin{verbatim}
+(5 0 0) | (3 0 0) (2 0 0) | (2 0 0) (1 0 0) (1 0 0) (1 0 0) | (1 0 0) (1 0 0)
+(0 0 0) (0 0 0) (0 0 0)
+După update:
+(5 1 1) | (3 0 0) (2 0 0) | (2 0 0) (1 0 0) (1 0 0) (1 0 0) | (1 0 0) (1 0 0)
+(0 0 0) (0 0 0) (0 0 0)
+După update:
+(23 0 0) | (12 0 0) (2 4 1) | (2 2 2) (1 3 1) (1 0 0) (1 0 0) | (1 0 0) (1 0 0)
+(0 0 0) (0 0 0) (0 0 0)
+8
+\end{verbatim}
+
+Aici am greșit că nu am mai afișat și arborele după \ccode{query}, care ar fi făcut încă un \ccode{push} care ar fi evidențiat greșeala. Voi o vedeți mai jos?
+
+\begin{verbatim}
+După query:
+(23 0 0) | (12 0 0) (2 4 1) | (8 0 0) (4 0 0) (1 0 0) (1 0 0) | (1 2 2) (4 0 0)
+(0 0 0) (0 0 0) (0 0 0)
+\end{verbatim}
+
+În loc de asta, am tipărit o mulțime de informații în funcția \ccode{push}, care m-au dus la aceeași observație. Iată ce am desenat între timp pe foaie.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\linewidth]{aint-debug.jpg}
+  \caption{Depanarea unei surse la problema Polynomial Queries.}
+\end{figure}
+
+Frunza \texttt{(4 0 0)} ar fi trebuit să fie \texttt{(5 0 0)}. De aici, devine clar că trebuie să ne uităm la spargerea unei progresii între cei doi fii și găsim eroarea pe linia:
+
+\begin{minted}{c}
+aint[nod * 2 + 1].start += aint[nod].start + (mid + 1 - st);
+\end{minted}
+
+Codul corect este:
+
+\begin{minted}{c}
+aint[nod * 2 + 1].start += aint[nod].start + (mid + 1 - st) * aint[nod].ratie;
+\end{minted}
+
+Am testat cu generatorul pe teste cu $n = 50$ și $q = 30$ și nu am găsit erori în \np{10000} de teste. Am încredere că această versiune este corectă.
