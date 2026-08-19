@@ -48,3 +48,72 @@ Odată numărate configurațiile în această manieră \textit{bottom up}, putem
 O dată fixată valoarea unui nod $u$, îi putem asigna și fiii. Acest proces este elementar, dar necesită un pic de cod, în două faze.
 
 În primă fază, asignăm toți fiii lui $u$ care sînt impuși. Dacă un fiu $v$ nu are nicio asignare în care el să fie sincer, iar părintele său $u$ să aibă valoarea fixată, atunci obligatoriu $v$ trebuie să fie mincinos. Similar decidem dacă $v$ trebuie să fie sincer. Dintre restul fiilor, care pot lua orice valoare, știm cîți trebuie să fie sinceri și cîți mincinoși, în funcție de numărul de vecini mincinoși declarați de $u$ și de valoarea acestuia de adevăr. Asignăm și restul de fii ai lui $u$ respectînd aceste cantități. Procedăm astfel pînă în frunze.
+
+\section{Problema Tornade (Baraj ONI 2025)}
+\label{problem:tornade}
+
+\href{https://kilonova.ro/problems/3732}{enunț}
+$\bullet$
+\hyperref[code:tornade]{sursă}
+
+Vă recomand să începeți prin a citi \href{https://github.com/roalgo-discord/Romanian-Olympiad-Solutions/blob/main/Baraj\%20\%2B\%20Lot\%20Seniori\%20(IOI\%20team\%20selection\%20tests)/2025/Editorial\%20baraje\%20ziua\%201\%20\%C8\%99i\%202.pdf}{editorialul}. Conform dictonului „pantofarul n-are pantofi”, site-urile oficiale ale olimpiadei nu au aceste editoriale, dar îi mulțumesc comunității RoAlgo care face efortul de conservare. De asemenea, puteți citi \href{https://kilonova.ro/submissions/722218}{o sursă}, chiar bine scrisă, care implementează algoritmul în $\bigoh(n \log n)$.
+
+Iată însă și o soluție elementară, care folosește doar liste înlănțuite (pe steroizi, ce-i drept) pentru a simula toate operațiile în $\bigoh(n)$. Să considerăm un vector inițial și două operații min:
+
+\begin{verbatim}
+înainte:                    1 1 2 2 3 3 2 2 1 1 2 2 3 3 2 2 1 1
+după prima operație:         1 1 2 2 3 2 2 1 1 1 2 2 3 2 2 1 1
+după a doua operație:         1 1 2 2 2 2 1 1 1 1 2 2 2 2 1 1
+\end{verbatim}
+
+Să urmărim \textit{seriile}, adică grupele maximale de valori egale. Este destul de evident că:
+
+\begin{itemize}
+  \item Minimele locale (seria de 1) se lungesc cu 1.
+  \item Minimele locale de la capetele vectorului își păstrează lungimea.
+  \item Maximele locale (seriile de 3) se scurtează cu 1, inclusiv la capetele vectorului.
+  \item Seriile de valori intermediare își mențin lungimea.
+\end{itemize}
+
+Dacă o serie cu maxime locale ajunge la lungime 0, ea dispare din vector. Seriile vecine ei se alipesc sau, dacă au valori egale, chiar se contopesc într-o singură serie. Este posibil ca în urma alipirii sau contopirii, aceste serii să devină maxime sau minime locale.
+
+Dacă reprezentăm vectorul ca pe o \textbf{listă globală} de serii, pare că avem șanse să gestionăm toate operațiile în $\bigoh(n)$. Dar trebuie să clarificăm:
+
+\begin{itemize}
+  \item cum creștem / scădem lungimile tuturor optimelor locale în $\bigoh(1)$;
+  \item cum identificăm toate seriile care ajung la lungime 0 în $\bigoh(1)$;
+  \item cum luăm în evidență noile serii care devin optime locale în urma ștergerilor.
+\end{itemize}
+
+Vom stoca, pe lîngă lista globală, încă $2n$ liste. Pentru fiecare lungime $l$ vom stoca:
+
+\begin{itemize}
+  \item o listă cu toate seriile care sînt minime locale și au lungime $l$;
+  \item o listă cu toate seriile care sînt maxime locale și au lungime $l$.
+\end{itemize}
+
+Ca să clarific: Fiecare \ccode{struct} care reprezintă o serie are, pentru dubla înlănțuire, patru pointeri: doi pentru lista globală și doi pentru lista cu optimele de aceeași lungime cu a sa.
+
+Acum, cînd toate seriile de minime locale cresc cu o unitate, nu dorim să trecem prin $\bigoh(n)$ serii și să le mutăm pe fiecare de la lungimea $l$ la $l+1$! Ce-i de făcut? Soluția este să ținem un contor global, \ccode{global_min_cnt}, o cantitate de adăugat la toate listele de minime locale pentru a afla lungimea reală. Dacă consultăm o serie și pe ea scrie lungimea $l$, lungimea ei reală este \ccode{l + global_min_cnt}. Atunci putem crește simultan lungimea tuturor seriilor minime locale în $\bigoh(1)$: \ccode{global_min_cnt++}.
+
+Un subcaz aici este că minimele locale de la capetele vectorului nu cresc. Dar noi le-am crescut implicit cînd am crescut \ccode{global_min_cnt}. Dacă există, aceste minime de la capete trebuie scoase din lista lor pe lungimi și mutate în lista pentru lungimea cu 1 mai mică. Astfel le „ținem pe loc” la aceeași lungime.
+
+Au mai rămas de tratat maximele locale, care pierd 1 la lungime. Desigur, vom proceda la fel: folosim o variabilă globală pe care o decrementăm ca să obținem timp constant: \ccode{global_max_cnt--}. Mai ales, iterăm prin lista de maxime locale care prin decrementare au ajuns la lungime 0. Toate aceste elemente dispar. Iar dispariția lor trebuie tratată cu atenție pentru că trebuie să ne gîndim ce se întîmplă cu vecinii lor. Există nenumărate cazuri:
+
+\begin{itemize}
+  \item Unul dintre vecini poate să nu existe.
+  \item Vecinul era optim local și continuă să fie optim local.
+  \item Vecinul nu era optim local, dar devine optim local.
+  \item Vecinul era optim local și încetează să mai fie.
+  \item Vecinii se unesc între ei, căci au aceeași valoare.
+\end{itemize}
+Putem trata simplu și unitar toate aceste cazuri:
+
+\begin{itemize}
+  \item Scoatem ambele noduri din orice listă pe lungimi.
+  \item Le clasificăm ca elemente intermediare (cu această ocazie le calculăm lungimea reală).
+  \item Le unificăm dacă este cazul.
+  \item Le reclasificăm corect conform noilor lor vecini.
+\end{itemize}
+
+Sursa -- nu vă mint -- n-a fost ușor de scris. M-am chinuit mai mult decît era necesar la acest ultim pas, al ștergerii seriilor de lungime 0. Dar, după cum am mai spus, la ONI și chiar și la Baraj este important să putem exprima în cod niște idei rezonabil de grele.
