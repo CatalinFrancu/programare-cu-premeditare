@@ -49,6 +49,63 @@ O dată fixată valoarea unui nod $u$, îi putem asigna și fiii. Acest proces e
 
 În primă fază, asignăm toți fiii lui $u$ care sînt impuși. Dacă un fiu $v$ nu are nicio asignare în care el să fie sincer, iar părintele său $u$ să aibă valoarea fixată, atunci obligatoriu $v$ trebuie să fie mincinos. Similar decidem dacă $v$ trebuie să fie sincer. Dintre restul fiilor, care pot lua orice valoare, știm cîți trebuie să fie sinceri și cîți mincinoși, în funcție de numărul de vecini mincinoși declarați de $u$ și de valoarea acestuia de adevăr. Asignăm și restul de fii ai lui $u$ respectînd aceste cantități. Procedăm astfel pînă în frunze.
 
+\section{Problema Pavare infinită (Lot 2025)}
+\label{problem:pavare-infinită}
+
+\href{https://kilonova.ro/problems/3793}{enunț}
+$\bullet$
+\hyperref[code:pavare-infinită]{sursă}
+$\bullet$
+\href{https://www.youtube.com/watch?v=wH-DvxDh_nw}{coloană sonoră pentru codare}
+
+\href{https://drive.google.com/drive/folders/1-A5BjiaxuC3dEPpeFdaC-oqiVXvnj1TN}{Editorialul} prezintă o soluție tehnică:
+
+\begin{itemize}
+  \item Încercăm toate modurile de a alipi două piese.
+
+  \item Pentru o alipire dată, a treia, a patra piesă etc. trebuie așezate în linie cu primele două.
+
+  \item Ia naștere o bandă infinită de piese, care are două contururi de cele două părți.
+
+  \item Pentru a putea pava planul, trebuie să alipim un număr infinit de asemenea benzi. Pentru aceasta este necesar ca cele două contururi să poată fi suprapuse, adică să fie periodice, cu perioade egale, iar o perioadă să fie permutare circulară a celeilalte.
+\end{itemize}
+
+Iată însă și o soluție bazată pe... matematică recreativă. În copilărie am citit diverse cărți de amuzamente matematice (\href{https://ro.wikipedia.org/wiki/Gheorghe_P\%C4\%83un\#C\%C4\%83r\%C8\%9Bi_de_cultur\%C4\%83_\%C8\%99tiin\%C8\%9Bific\%C4\%83}{Gheorghe Păun}, mai tîrziu \href{https://en.wikipedia.org/wiki/Martin_Gardner_bibliography}{Martin Gardner}). Am văzut la un moment dat ceva despre pavări (engl. \textit{tilings}) și știam că există un criteriu simplu legat de contur, dar nu îl mai țineam minte. Morala? Nu știi de unde sare iepurele! Citiți (și rețineți) cît de mult puteți din sfere care n-au legătură cu interesul vostru imediat.
+
+Criteriul este remarcabil de simplu și se numește \href{https://minos.tessera.li/tiling}{Criteriul de translație}. Implementarea necesită doi pași principali.
+
+\subsection{Găsirea conturului}
+
+Acest pas sună (și este) de clasa a 9-a, dar este migălos. Eu văd două variante de implementare și, ca \href{https://en.wikipedia.org/wiki/Runaround_(story)}{robotul lui Asimov}, am pierdut vreo oră cumpănind pe care s-o implementez.
+
+\begin{enumerate}
+  \item Fie, pornind din colțul stînga-sus al celui cel mai din stînga-sus pătrat, urmăm conturul.
+  \item Fie colectăm toate muchiile, pe care apoi le legăm cap la cap.
+\end{enumerate}
+
+Pînă la urmă, am ales varianta a doua. Ulterior am constatat că prima era cu vreo 30 de linii mai scurtă. \emoji{neutral-face} Am obținut două șiruri în baza 4 care descriu conturul în cele două sensuri. Să denumim aceste șiruri $X$ și $Y$. Ele au o lungime egală, fie ea $L$, unde $L \leq 2n + 2$.
+
+\subsection{Verificarea criteriului}
+
+Verificarea se reduce la \textit{hashing} și la comparări de șiruri. De aceea calculăm valori hash ale tuturor prefixelor (tratăm elementele șirurilor ca pe cifre în baza 4 și operăm modulo un număr mare prim). Prin diferență putem afla valoarea hash a oricărui subșir.
+
+Acum căutăm un semiperimetru al conturului, așadar o jumătate din $X$, care să aibă structura $ABC$, iar jumătatea complementară din $Y$ să aibă structura  $CBA$. Încercăm fiecare rotație posibilă cu $0, 1, \dots L/2-1$ poziții. Pentru o rotație cu $k$ poziții, fie $x$ subșirul $X[k \dots k + L/2 - 1]$ și fie $y$ semiperimetrul complementar din $Y$.
+
+Încercăm fiecare pereche de lungimi pentru $A$ și $C$. Mai exact, pentru fiecare lungime $|A|$ și fiecare lungime $|C|$,
+
+\begin{itemize}
+  \item dacă prefixul de lungime $|A|$ din $x$ coincide cu sufixul de lungime $|A|$ din $y$ și
+  \item dacă sufixul de lungime $|C|$ din $x$ coincide cu prefixul de lungime $|C|$ din $y$ și
+  \item dacă porțiunile $B$ rămase după eliminarea sufixelor și prefixelor sînt egale,
+  \item atunci putem pava planul.
+\end{itemize}
+
+\subsection{Detalii de implementare}
+
+Algoritmul este $\mathcal{O}(n^3)$, dar în practică el se mișcă fulger, deoarece numerele de prefixe din $x$ care sînt sufixe în $y$ și viceversa sînt minuscule. Iterăm doar prin acelea și obținem un algoritm mai degrabă $\mathcal{O}(n^2)$.
+
+Am dublat șirul $Y$ pentru că urmează să facem căutări din $X$ în $Y$, căutări care este posibil să se înfășoare peste finalul lui $Y$.
+
 \section{Problema Tornade (Baraj ONI 2025)}
 \label{problem:tornade}
 
