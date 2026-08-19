@@ -67,6 +67,67 @@ Ce facem cu partea stîngă? Dacă adăugăm elemente în $S$, va trebui să le 
 
 Soluția merge pentru că face ștergeri, dar evită componenta pe care nu știm s-o rezolvăm, a recalculării răspunsului la ștergere.
 
+\subsection{Problema Kiloforces (Concurs RoAlgo \#8)}
+\label{problem:kiloforces}
+
+\href{https://kilonova.ro/problems/2021}{enunț}
+$\bullet$
+\hyperref[code:kiloforces]{sursă}
+
+\begin{itemize}
+  \item Problema are o parte teoretică rezonabil de simplă. Dacă rezolvăm problemele $(p_1, t_1), (p_2, t_2), \dots, (p_k, t_k)$ în această ordine, atunci scorul se obține astfel:
+
+  \item Adunăm punctajele $p_1 + p_2 + \dots + p_k$.
+
+  \item Scădem penalizarea $t_1$ de $k-1$ ori, deoarece ea afectează problemele de la 2 la $k$.
+
+  \item Scădem penalizarea $t_2$ de $k-2$ ori.
+
+  \item \dots
+
+  \item Scădem penalizarea $t_{k-1}$ o dată.
+\end{itemize}
+
+Rezultă că punctajele pozitive sînt aceleași, indiferent de ordinea de rezolvare. Pentru a minimiza penalizările, trebuie să rezolvăm problemele în ordinea crescătoare a penalizării. Deci am redus problema la a menține vectorul $t$ ordonat și a-i calcula suma $t_1 \cdot (k-1) + t_2 \cdot (k-2) + \dots + t_{k-1} \cdot 1$.
+
+Restul ideii (cum implementăm asta) pare greu, dar noi știm de la bun început că vom folosi algoritmul lui Mo. Atunci implementarea devine rezonabilă. Trebuie să menținem pe intervalul curent răspunsul (și orice este necesar pentru aflarea răspunsului). Și trebuie să actualizăm răspunsul cînd adăugăm și cînd ștergem un element (o penalizare).
+
+Ca să proiectăm structura de date, să vedem concret cum arată o adăugare. Logica pentru ștergere este similară. Să spunem că în intervalul curent avem următoarele penalizări, fiecare cu multiplicatorul său:
+
+\begin{verbatim}
+Penalizări:         2   5  10  13  17  21
+Multiplicatori:    x5  x4  x3  x2  x1  x0
+\end{verbatim}
+
+Și acum să spunem că extindem intervalul și adăugăm penalizarea 8. Deci dorim să ajungem în starea:
+
+\begin{verbatim}
+Penalizări:         2   5   8  10  13  17  21
+Multiplicatori:    x6  x5  x4  x3  x2  x1  x0
+\end{verbatim}
+
+Ce s-a schimbat? Am cîștigat la penalizări:
+
+\begin{itemize}
+  \item $2 \times 1 + 5 \times 1$, așadar 2 + 5, întrucît toate penalizările mai mici decît 8 au căpătat +1 la multiplicator.
+
+  \item $8 \times 4$, noul element adăugat, care are multiplicatorul 4 întrucît există 4 penalizări mai mari decît 8.
+
+  \item Penalizările 10, 13, 17, 21 nu și-au schimbat multiplicatorii.
+\end{itemize}
+
+Cu alte cuvinte, ne trebuie o structură care să ofere:
+
+\begin{itemize}
+  \item Suma valorilor pe prefix.
+
+  \item Numărul valorilor pe sufix (care se transformă ușor în prefix, căci cunoaștem mărimea intervalului curent, care coincide cu numărul de penalizări din structură).
+\end{itemize}
+
+Putem folosi un AIB de 0/1 pentru numărul valorilor și un alt AIB pentru sumă în care la poziția penalizării notăm fix valoarea penalizării. Pentru a îmbunătăți localitatea cache-ului, eu am ales să încapsulez cele două cantități într-un struct.
+
+Subliniez că în sursă am încapsulat fiecare structură și i-am definit un scop clar. Asta a făcut implementarea rapidă (ceea ce pentru mine este o realizare \emoji{old-man}). Mi-au trebuit cam 30 de minute pentru codare și 10 pentru depanare.
+
 \subsection{Problema Machine Learning (Codeforces)}
 \label{problem:machine-learning}
 
