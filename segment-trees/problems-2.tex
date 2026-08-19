@@ -82,7 +82,7 @@ Vă veți întîlni des cu probleme unde soluția devine simplă dacă analizăm
 
 Care va fi răspunsul pe ultima coloană? Desigur, va fi maximul din vector. Mult mai interesantă este întrebarea: care va fi răspunsul pe penultima coloană? Va fi cel mai mare element care este vreodată (în cel puțin o fereastră) \textbf{al doilea maxim}.
 
-Exemplu: fie maximul global $1.000$ și fie al doilea maxim global $999$. Dacă $999$ stă foarte departe de $1.000$, la distanță de cel puțin $k$, atunci $999$ va fi maxim în toate ferestrele de lățime $k$ care îl conțin. Cu alte cuvinte, $999$ se va regăsi doar pe ultima coloană în matricea $B$ (și va fi mascat de $1.000$). Să spunem că următoarele valori din șir, în ordine descrescătoare, sînt $998$, $997$ și $996$ și toate se află la distanță mare unele de altele. Niciunul dintre ele nu va apărea pe penultima coloană în $B$.
+Exemplu: fie maximul global $\np{1000}$ și fie al doilea maxim global $999$. Dacă $999$ stă foarte departe de $\np{1000}$, la distanță de cel puțin $k$, atunci $999$ va fi maxim în toate ferestrele de lățime $k$ care îl conțin. Cu alte cuvinte, $999$ se va regăsi doar pe ultima coloană în matricea $B$ (și va fi mascat de $\np{1000}$). Să spunem că următoarele valori din șir, în ordine descrescătoare, sînt $998$, $997$ și $996$ și toate se află la distanță mare unele de altele. Niciunul dintre ele nu va apărea pe penultima coloană în $B$.
 
 În schimb, să spunem că următoarea valoare ca mărime, $995$, se află aproape (la distanță $< k$) de o valoare anterioară, cum ar fi $997$. Atunci există o fereastră în care $995$ și $997$ coexistă, deci $995$ va fi al doilea maxim din acea fereastră și va apărea pe penultima coloană în $B$. Cum alte valori mai mari nu au această proprietate, $995$ este răspunsul pe penultima poziție a soluției.
 
@@ -102,3 +102,225 @@ Implementarea sună fioros, dar nu este! În realitate avem nevoie de o structur
 Operația a doua ne este suficientă deoarece ferestrele nu vor ajunge brusc la 6 elemente. Vor apărea mai întîi ferestre cu 1, 2, 3, 4, 5 elemente. Cu alte cuvinte, soluția se completează de la dreapta spre stînga.
 
 Vom implementa un AINT de maxime în care informația \textit{lazy} din fiecare nod este valoarea de adăugat pe fiecare poziție din intervalul acoperit.
+
+\subsection{Problema A Simple Task (Codeforces)}
+\label{problem:a-simple-task}
+
+\href{https://codeforces.com/problemset/problem/558/E}{enunț}
+$\bullet$
+\hyperref[code:nezzar-and-binary-string]{surse}
+
+Problema cere să sortăm la cerere porțiuni dintr-un string, apoi să afișăm rezultatul.
+
+Este nevoie să facem fiecare operație de sortare în \(\mathcal{O}(\log n)\), deci vom folosi un arbore de segmente cu propagare \textit{lazy}. Ce stocăm în fiecare nod?
+
+\subsubsection*{Varianta 1}
+
+Într-o primă variantă, stocăm 26 de arbori de „biți”, cîte unul pentru fiecare literă a alfabetului. La sortare, colectăm numărul de apariții ale fiecărui caracter în parte. Apoi calculăm poziția secvenței (contigue) de 1-uri pe care o ocupă acel caracter în subsecvența sortată. Setăm acea porțiune pe 1, iar capetele stînga și dreapta le setăm pe 0. Așadar, informația \textit{lazy} ar putea fi: întregul subarbore al acestui nod este 0 (respectiv 1).
+
+De exemplu, dacă stabilim că un nod care acoperă intervalul [16,24) va conține șirul „abcdefgh”, atunci litera „d” va ocupa poziția 19. În AINT-ul pentru litera „d” vom seta un 1 la poziția 19 și 0 la pozițiile [16,19) și [20,24).
+
+\subsubsection*{Varianta 2}
+
+Stocăm un singur arbore în care informația dintr-un nod este un vector $f$ de 26 de elemente cu frecvențele fiecărei litere. Atunci informația \textit{lazy} poate avea 3 valori:
+
+\begin{enumerate}
+  \item Frecvențele din $f$ sînt corecte, dar trebuie propagate la fii în ordine crescătoare.
+
+  \item Frecvențele din $f$ sînt corecte, dar trebuie propagate la fii în ordine descrescătoare.
+
+  \item Frecvențele din $f$ sînt corecte și au fost propagate la copii.
+\end{enumerate}
+
+Atunci o sortare constă din
+
+\begin{itemize}
+  \item Colectarea frecvențelor din intervalele acoperite.
+
+  \item Redistribuirea frecvențelor în aceleași intervale, de la \textit{a} la \textit{z} sau de la \textit{z} la \textit{a}.
+\end{itemize}
+
+Operația \ccode{push} trebuie să împartă un vector de frecvențe în doi vectori, în care literele mai mici sînt repartizate fie în stînga (cînd \ccode{lazy == 1}), fie în dreapta (cînd \ccode{lazy == 2}).
+
+\subsubsection*{Detalii de implementare}
+
+\begin{itemize}
+  \item Am parametrizat buclele de la \textit{a} la \textit{z} și de la \textit{z} la \textit{a} ca să nu duplic codul.
+
+  \item Am separat logic codul pentru noduri (care știe să adune și să împartă vectori de frecvențe) de codul pentru AINT (care știe să colecteze și să distribuie recursiv aceste frecvențe).
+
+  \item Am folosit o variabilă-acumulator locală struct-ului \ccode{segment_tree}, ca să nu-l trimit ca parametru peste tot.
+
+  \item Am denumit funcțiile \ccode{collect} și \ccode{distribute} în loc de \ccode{query} și \ccode{update}, ca să folosesc un limbaj specific problemei.
+\end{itemize}
+
+Este nevoie de atenție la un caz particular. Cînd propagăm în sus informația la finalul unei sortări, nu trebuie să însumăm fiii în acei părinți care au informație \textit{lazy}. Acei părinți au deja frecvențele bine calculate, în schimb fiii lor au informație învechită.
+
+\subsection{Problema Periodic RMQ Problem (Codeforces)}
+\label{problem:periodic-rmq-problem}
+
+\href{https://codeforces.com/contest/803/problem/G}{enunț}
+$\bullet$
+\hyperref[code:periodic-rmq-problem]{sursă}
+
+Principala dificultate a problemei este observația că, din cele $k \cdot n$ coordonate, cel mult $2q$ sînt de interes: capetele operațiilor. Deci putem proceda astfel:
+
+\begin{enumerate}
+  \item Colectăm capetele operațiilor și intervalele dintre ele.
+
+  \item Tratăm capetele ca pe niște intervale de lățime 1.
+
+  \item Calculăm RMQ-ul pe fiecare interval.
+
+  \item Normalizăm de la 0 aceste intervale, și deci și coordonatele operațiilor.
+
+  \item Construim un arbore de segmente cu cel mult $4q$ puncte, cu operații de atribuire pe interval și minim pe interval.
+
+  \item Procesăm operațiile.
+\end{enumerate}
+
+O clarificare: de ce este nevoie să colectăm separat capetele de operații? Deoarece acestea pot și începuturi, și sfîrșituri de interval. De exemplu, dacă avem operații pe [5, 10] și [10, 20], atunci poziția 10 nu poate fi comasată nici cu [5,9], nici cu [11, 20], ci trebuie să stea separat.
+
+Calculul RMQ-ului periodic este relativ facil. Intervalele de lungime cel puțin $n$ acoperă complet vectorul $b$, deci pot returna minimul vectorului. Intervalele mai scurte de $n$ acoperă fie o perioadă, fie două (un sufix și un prefix de perioadă). Le putem procesa cu o structură clasică (\textit{sparse table}).
+
+Normalizarea necesită atenție, de exemplu la perechi de coordonate consecutive. Într-o primă variantă, codul meu insera un interval fictiv, de RMQ infinit, între două coordonate ca \np{1000} și \np{1001}. Dar aceasta ducea la răspunsuri greșite.
+
+Normalizarea cu un simplu vector pare considerabil mai rapidă (sau poate este doar o diferență de evaluator). Eu am ales să colectez, pentru fiecare coordonată de interes $c$, valorile $c$ și $c+1$. Apoi în tabela rară am calculat RMQ pe intervale închise-deschise. Exemplu: pentru interogarea [10, 20] am colectat coordonatele 10, 11, 20 și 21 și am calculat RMQ pe intervalele [10, 11), [11, 20) și [20, 21). Reuniunea acestora este chiar intervalul dorit.
+
+În sfîrșit, arborele de segmente în sine răspunde la atribuiri pe interval și interogări de minim pe interval. L-am implementat cu contractul: $m[x]$ este minimul dintre toate frunzele subîntinse de $x$. În plus, un cîmp boolean $dirty[x]$ este adevărat dacă și numai dacă $m[x]$ trebuie propagat la fii. Așadar, la atribuire pe interval setăm valoarea în cîmpul $m$ și punem $dirty$ pe true, iar la RMQ doar luăm minimul dintre toate valorile $m$ întîlnite, indiferent de valoarea $dirty$.
+
+\subsection{Problema Circuit (Lot 2025)}
+\label{problem:circuit}
+
+\href{https://kilonova.ro/problems/3806}{enunț}
+$\bullet$
+\hyperref[code:circuit]{sursă}
+
+Problemele de lot tind să aibă idei complicate. Este un motiv de bucurie cînd prindem una pe care o putem rezolva băbește!
+
+Să studiem exemplul din enunț, $A = (5\ 3\ 2\ 4\ 1)$. Vom enumera toate subsecvențele și, pentru fiecare, vom nota în cîte subșiruri este fiecare dintre elemente maximul. (Desigur, o subsecvență de lungime $L$ va avea $2^L - 1$ subșiruri.)
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lccccc}
+    \textbf{subsecvența} & \textbf{valoarea 1} & \textbf{valoarea 2} & \textbf{valoarea 3} & \textbf{valoarea 4} & \textbf{valoarea 5}\\
+    \hline
+    5              &   &    &    &    &  1 \\
+    5 3            &   &    &  1 &    &  2 \\
+    5 3 2          &   &  1 &  2 &    &  4 \\
+    5 3 2 4        &   &  1 &  2 &  4 &  8 \\
+    5 3 2 4 1      & 1 &  2 &  4 &  8 & 16 \\
+    3              &   &    &  1 &    &    \\
+    3 2            &   &  1 &  2 &    &    \\
+    3 2 4          &   &  1 &  2 &  4 &    \\
+    3 2 4 1        & 1 &  2 &  4 &  8 &    \\
+    2              &   &  1 &    &    &    \\
+    2 4            &   &  1 &    &  2 &    \\
+    2 4 1          & 1 &  2 &    &  4 &    \\
+    4              &   &    &    &  1 &    \\
+    4 1            & 1 &    &    &  2 &    \\
+    1              & 1 &    &    &    &    \\
+    \hline
+    \textbf{total} & 5 & 12 & 18 & 33 & 31 \\
+  \end{tabular}
+
+  \caption{Subsecvențele șirului $(5\ 3\ 2\ 4\ 1)$ și frecvențele maximelor.}
+\end{table}
+
+De exemplu, în $(3\ 2\ 4\ 1)$, valoarea 3 este maximă de 4 ori pentru că 3 este maxim în toate subșirurile care îl conțin pe 3, dar nu și pe 4.
+
+Desigur, din tabel decurge răspunsul $5 \cdot 1 + 12 \cdot 2 + 18 \cdot 3 + 33 \cdot 4 + 31 \cdot 5 = 370$.
+
+Acum, să înțelegem mai bine de unde vine totalul 33 corespunzător valorii 4. Să figurăm toate subsecvențele care îl conțin pe 4 și contribuțiile acestora la total. În plus, să marcăm cu \texttt{*} valorile mai mici decît 4, căci pe acelea avem libertatea să le includem sau nu în subșir.
+
+\begin{verbatim}
+  5   3   2   4   1
+      *   *       *
+[             4 ]
+[             8     ]
+    [         4 ]
+    [         8     ]
+        [     2 ]
+        [     4     ]
+            [ 1 ]
+            [ 2     ]
+     Total:  33
+\end{verbatim}
+
+Observăm că, dacă extindem o secvență oarecare $[l,r]$ spre stînga, $[l-1,r]$, atunci contribuția ei se dublează cînd poziția $l-1$ conține o valoare mai mică decît valoarea curentă (4), altfel contribuția rămîne constantă. La fel și spre dreapta. De aceea, suma contribuțiilor este un produs de două paranteze. Contribuția din stînga este $1+2+4+4$, iar cea din dreapta este $1+2$. Produsul acestora este 33.
+
+Dat fiind că trebuie să putem număra rapid valorile mai mici decît 4 (sau în general decît $x$) în stînga și în dreapta lui $x$, ne vine ideea să procesăm elementele în ordine crescătoare. Menținem un vector de lungime $n$ de puteri ale lui 2. De la dreapta spre stînga, pornim cu 1 și dublăm valoarea elementului oricînd el este mai mic decît cel curent. Pentru vectorul de mai sus, la momentul procesării valorii 4, vectorul este 8 8 4 2 2. Acum, putem calcula paranteza stîngă (1+2+4+4) ca fiind suma pe prefix la poziția valorii 4 (adică 8+8+4+2) de împărțit la valoarea de pe acea poziție (2).
+
+Pentru sufixe menținem o structură identică, fix aceeași clasă, doar oglindim pozițiile. Folosim un arbore de intervale cu operații de dublare pe prefix și sumă pe prefix.
+
+\subsection{Problema Babel (Baraj ONI 2025)}
+\label{problem:babel}
+
+\href{https://kilonova.ro/problems/3734}{enunț}
+$\bullet$
+\hyperref[code:babel]{sursă}
+
+Soluția din editorial este extrem de elegantă, dar necesită un pic de inspirație divină. Iată soluția pe care am găsit-o eu, mai pămîntească.
+
+Mai întîi, definim o recurență tipică pentru probleme cu turnurile din Hanoi. Pentru o configurație dată, fie $C(k, t)$ costul minim pentru a aduce discurile $0 \dots k$ pe tija $t$. Dacă discul $k$ se află deja pe tija $t$, atunci $C(k, t) = C(k - 1, t)$. Dacă discul $k$ se află pe o altă tijă, $t'$, atunci:
+
+\begin{enumerate}
+  \item Mutăm discurile $0 \dots k-1$ pe cea de-a treia tijă, $t''$. Cost: $C(k - 1, t'')$.
+
+  \item Mutăm discul $k$ pe tija $t$. Cost: $1$.
+
+  \item Mutăm discurile $0 \dots k-1$ de pe tija $t''$ pe $t$. Cost: $2^k - 1$.
+\end{enumerate}
+Așadar, costul total este o sumă din $2^k$ pentru toate discurile $k$ care nu se află pe tija așteptată.
+
+Complicația apare pentru că aceste „așteptări” depind de așteptările anterioare. Concret, să definim trei vectori:
+
+\begin{itemize}
+  \item $r[0 \dots n - 1]$ indică tija pe care se află fiecare disc (am numerotat tijele cu 0, 1 și 2).
+
+  \item $e[0 \dots n - 1]$ indică tija pe care ne așteptăm să se afle fiecare disc ca să nu aibă costuri, și anume:
+
+  \begin{itemize}
+    \item Dacă $r[i + 1] = e[i + 1]$, atunci $e[i] = e[i + 1]$. În cuvinte, dacă $i+1$ se află unde ne dorim, iar $i$ se află deasupra lui, nu trebuie să-l mutăm.
+
+    \item Altfel $e[i] = 3 - r[i + 1] - e[i + 1]$. În cuvinte, $i$ trebuie pus pe a treia tijă.
+  \end{itemize}
+
+  \item $f[i] = r[i] - e[i] \mod 3$.
+\end{itemize}
+
+Cu aceste notații, costul unei configurații este $\sum 2^i$ pentru discurile $i$ pentru care $f[i] \neq 0$. Facem două precizări:
+
+\begin{enumerate}
+  \item Vom duce toate discurile pe tija pe care se află deja discul $n-1$ (pe acela nu are sens să-l mutăm).
+
+  \item Dacă avem un interval oarecare de discuri $[x, y]$ pe aceeași tijă $t$, și dacă $y$ ar fi trebuit să fie pe tija $t'$, atunci $e[x \dots y]$ va avea forma $t'\ t''\ t'\ t''\ \dots t'$ (prima valoare depinde de paritatea lui $y-x$).
+\end{enumerate}
+
+Acum să luăm un exemplu de configurație cu 12 tije și să calculăm vectorii $e$ și $f$:
+
+\begin{verbatim}
+    0  1  2  3  4  5  6  7  8  9 10 11
+r:  1  0  2  2  1  2  2  0  1  0  1  1
+e:  1  2  2  2  0  1  0  0  2  1  1  1
+f:  0  1  0  0  1  1  2  0  2  2  0  0
+\end{verbatim}
+
+Acum să considerăm că mutăm discurile $[st, dr] = [6-10]$ pe tija 0 și să vedem ce se modifică:
+
+\begin{verbatim}
+    0  1  2  3  4  5  6  7  8  9 10 11
+r:  1  0  2  2  1  2  0  0  0  0  0  1
+e:  0  0  1  0  2  2  1  2  1  2  1  1
+f:  1  0  1  2  2  0  2  1  2  1  2  1
+\end{verbatim}
+
+Pe pozițiile $[dr+1, n-1]$, desigur, nu se modifică nimic.
+
+Pe pozițiile $[st, dr]$, dacă discul $dr$ ajunge unde ne așteptăm, atunci \textbf{toate} acele discuri ajung unde ne așteptăm, deci $f[st, dr]$ devine 0. Altfel, toate acele discuri ajung pe tijele greșite, iar $f$ va avea una dintre formele 1 2 1 2 1... sau 2 1 2 1 2...
+
+Pe pozițiile $[0,st-1]$, dacă $e[st-1]$ rămîne nemodificat, atunci mutarea nu afectează acele poziții, iar $f$ rămîne nemodificat. Altfel, valorile $f[0 \dots st-1]$ se modifică alternativ cu +1 -1 +1 -1… sau -1 +1 -1 +1… Nu am demonstrat formal această observație, dar intuitiv ea este adevărată deoarece putem calcula telescopic valoarea $f[i]$ în funcție de $r[i \dots n - 1]$ (reducînd $e$-urile).
+
+Cu aceste observații, folosim trei arbori de intervale. Pentru vectorul $r$ avem nevoie de un aint relativ simplu, cu atribuire pe interval și interogare punctuală.
+
+Pentru vectorul $f$ vom construi doi arbori, unul pentru pozițiile pare și unul pentru pozițiile impare. Atunci atribuirile alternante devin atribuiri de constantă (pe interval), iar modificările alternante cu $\pm 1$ devin incrementări modulo 3 pe interval. Interogările de sumă devin sume de puteri ale lui 4, deoarece fiecare din cei doi arbori conține puteri ale lui 2 din 2 în 2.
