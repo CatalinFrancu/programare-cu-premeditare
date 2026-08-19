@@ -65,3 +65,54 @@ Cu timpul, lungimile blocurilor pot degenera, ceea ce poate încetini operațiil
 Putem face redistribuirea fie periodic (la fiecare $\bigoh(\sqrt{q})$ operații), fie la nevoie, cînd în momentul inserării detectăm că unul dintre blocuri a atins un anumit prag, să zicem dublu față de lungimea inițială. În ambele cazuri, complexitatea rămîne $\bigoh(q \sqrt{n})$.
 
 Această implementare este relativ elementară și se mișcă de circa două ori mai repede decît precedenta!
+
+\subsection{Problema Rev (Lot 2008)}
+\label{problem:rev}
+
+\href{https://kilonova.ro/problems/2316}{enunț}
+$\bullet$
+\hyperref[code:rev]{sursă}
+
+Descompunerea în radical după poziții nu pare să ducă nicăieri. Un interval răsturnat generează modificări majore în blocurile acoperite. În schimb, descompunerea în radical după operații duce la o soluție în $\bigoh((q  + n) \sqrt{q})$. Această descompunere ne permite să tratăm naiv operațiile, căci efortul nu crește dincolo de $\bigoh(\sqrt{q})$.
+
+Concret, inițial vom reprezenta starea vectorului printr-un singur „bloc”:
+
+$$[0,n-1]$$
+
+Semnificația este că trebuie să iterăm prin pozițiile $0, 1, \dots, n-1$ (am indexat pozițiile de la zero). Dacă acum inversăm intervalul $[13, 28]$, atunci pentru a descrie starea curentă a vectorului avem nevoie de trei blocuri:
+
+$$[0,12], [28, 13], [29, n-1]$$
+
+Blocul din mijloc arată că elementele trebuie parcurse de la indicele 28 descrescător către indicele 13. În cazul general în care descrierea vectorului constă din mai multe blocuri și dorim să inversăm intervalul $[l, r]$, urmăm pașii:
+
+\begin{enumerate}
+  \item Găsește blocurile de care aparțin $l$ și $r$.
+
+  \item Dacă $l$ nu cade pe prima poziție a blocului său, sparge blocul în două.
+
+  \item Dacă $r$ nu cade pe ultima poziție a blocului său, sparge blocul în două.
+
+  \begin{itemize}
+    \item Astfel ne asigurăm că intervalul $[l,r]$ acoperă numai blocuri întregi.
+  \end{itemize}
+
+  \item Răstoarnă secvența de blocuri dintre blocurile lui $l$ și $r$.
+
+  \item Inversează capetele fiecărui bloc din această secvență.
+\end{enumerate}
+
+Iată un exemplu mai complicat. Fie $n = 40$ și lista:
+
+$$[20-25], [39-36], [0-15], [35-26], [19-16]$$
+
+(Blocurile au lungimi 6, 4, 16, 10, 4.) Să inversăm intervalul $[6,30]$. Aflăm că poziția \#6 este în blocul $[39-36]$ pe poziția 0 (indice 39), iar poziția \#30 este în blocul $[35,26]$ pe poziția 4 (indice 31). Poziția \#6 este așadar la început de bloc. Poziția \#30 nu este la sfîrșit de bloc, așa că spargem blocul $[35-26]$ și obținem lista:
+
+$$[20-25], [39-36], [0-15], [35-31], [30-26], [19-16]$$
+
+Acum inversăm blocurile $[39-36]$, $[0-15]$, $[35-31]$ și le schimbăm direcția, obținînd:
+
+$$[20-25], [31-35], [15-0], [36-39], [30-26], [19-16]$$
+
+Pentru a găsi valoarea de pe o poziție, parcurgem naiv lista de blocuri pînă ajungem la cel care include poziția dorită. De exemplu, poziția \#20 se regăsește în blocul $[15,0]$ pe poziția 9, așadar la indicele 6 în vectorul original.
+
+Lungimea listei de blocuri poate crește cu 2 la fiecare operație. Ca să nu ajungem la timpi $\bigoh(q)$ per operație, la fiecare (circa) $\sqrt{q}$ operații \textbf{defragmentăm} lista. Pentru aceasta, iterăm prin lista de blocuri și vărsăm într-un vector elementele de la indicii întîlniți. Astfel reconstruim vectorul real. Apoi resetăm lista de blocuri la același unic bloc, $[0,n-1]$.
