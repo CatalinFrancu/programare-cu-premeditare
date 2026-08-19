@@ -72,9 +72,9 @@ $$p + \textrm{rmq}(C_{r-1,c-l+1}, \dots, C_{r-1,c})$$
 
 Implementarea nu este deloc simplă datorită următoarei situații pe care o enunțăm, dar nu o detaliem (ea este descrisă cu exemple în cea de-a doua sursă). Cînd aducem o fereastră din stînga coloanei $c$, decizia este simplă: trebuie să o deplasăm pînă cînd capătul ei drept atinge coloana $c$. Dar, cînd aducem o fereastră din dreapta coloanei $c$, avem libertatea să o deplasăm fie pînă cînd capătul ei stîng atinge coloana $c$, fie mai mult de atît. Depinde ce coloană $c' < c$ ne interesează să „prindem” în recurență. Poate există o  valoare $c'$ destul de mică (costul deplasării pînă acolo este mare), dar unde $C_{r-1,c'}$ este foarte mic și justifică costul deplasării. Ia naștere un al doilea tabel RMQ construit nu peste valorile $C_{r-1,c}$, ci peste $C_{r-1,c} - c$.
 
-\subsubsection*{Cîteva cuvinte despre Arpa's trick}
+\subsubsection*{Cîteva cuvinte despre \textit{Arpa's trick}}
 
-Eu sînt mereu în căutare de noi structuri pentru RMQ. \emoji{face-with-tears-of-joy} Îmi displace tabela rară deoarece folosește  $\bigoh(n \log n)$ memorie și evit să mă reped la ea. Iată o structură interesantă, numită Arpa's trick. Aparent, și alte nații au șmenurile lor... CP Algorithms are \href{https://cp-algorithms.com/data_structures/disjoint_set_union.html#arpa}{o lecție} foarte bună.
+Eu sînt mereu în căutare de noi structuri pentru RMQ. \emoji{face-with-tears-of-joy} Îmi displace tabela rară deoarece folosește  $\bigoh(n \log n)$ memorie și evit să mă reped la ea. Iată o structură interesantă, numită \textit{Arpa's trick}. Aparent, și alte nații au șmenurile lor... CP Algorithms are \href{https://cp-algorithms.com/data_structures/disjoint_set_union.html#arpa}{o lecție} foarte bună.
 
 Algoritmul răspunde la interogări în ordine crescătoare după capătul drept. Deci putem întîi să sortăm interogările sau să le distribuim în liste după capătul drept.  Apoi folosim o pădure de mulțimi disjuncte, pe care o instanțiem pe măsură ce baleiem poziția capătului drept.
 

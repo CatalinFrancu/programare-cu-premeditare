@@ -108,6 +108,42 @@ De asemenea, cînd primim o interogare, trebuie să știm timpul ultimei modific
 
 Informațiile pe linii și pe coloane sînt perfect simetrice. Vom studia codul ca să vedem cum putem elimina duplicarea codului. Asta doar dacă evitarea duplicării codului este importantă pentru noi. \emoji{winking-face}
 
+\subsection{Problema Little Artem and Time Machine (Codeforces)}
+\label{problem:little-artem-and-time-machine}
+
+\href{https://codeforces.com/contest/669/problem/E}{enunț}
+$\bullet$
+\hyperref[code:little-artem-and-time-machine]{sursă}
+
+Este o problemă simplă, cu multe rezolvări. Dar \textbf{citiți atent enunțul}, care este neclar. Pentru intrarea
+
+\begin{verbatim}
+4
+1 1 7
+3 10 7
+2 2 7
+3 11 7
+\end{verbatim}
+
+răspunsul trebuie să fie
+
+\begin{verbatim}
+1
+0
+\end{verbatim}
+
+Așadar, valoarea 7 a fost adăugată la timpul 1 și ștearsă la timpul 2. Dar la momentele 10 și 11 răspunsul este 1, respectiv 0, pentru că prima interogare vine înaintea ștergerii \textbf{în ordinea din fișier}.
+
+Problema se reduce destul de rapid la adăugări punctuale și sume pe prefix. Răspunsul la interogarea de pe poziția $i$ despre timpul $t$ și valoarea $v$ este suma inserărilor (+1) și a ștergerilor (-1) operate pe valoarea $v$ la timpi $t' < t$ și indici de interogare $i' < i$.
+
+Observăm mai întîi că răspunsurile pentru fiecare valoare pot fi grupate și procesate independent. Am ales să fac asta sortînd interogările după valoare și procesînd grupuri de interogări referitoare la aceeași valoare. Pe Codeforces am tot văzut surse care se reped la \ccode{map}, dar... de ce am face asta?
+
+Pentru o valoare fixată, regăsim problema clasică 2D: trebuie să numărăm valorile din dreptunghiul de timpi $[1, t - 1]$ și indici $[1, i - 1]$. Așadar, vom construi un AIB indexat după timp în care adăugăm și ștergem valoarea la diverse momente de timp. Procesăm operațiile în ordinea din fișier și răspunsul la o operație $i$ va fi suma pe prefixul de lungime $i$. Este nevoie să normalizăm timpii în prealabil.
+
+Pentru a pregăti AIB-ul pentru o nouă valoare, trebuie să-l golim după procesarea operațiilor pentru a valoare. Putem face aceasta repetînd operațiile cu semn schimbat (-1 pentru adăugări, +1 pentru ștergeri).
+
+Pentru a scurta codul, putem întoarce pe dos logica structurii: sortăm operațiile după timpii $t$ și indexăm AIB-ul după indicii operațiilor, $i$. Deoarece acești indici sînt deja între 1 și $n$, scăpăm de normalizare! Paradoxal, această implementare este mai lentă, deși face o sortare mai puțin. \emoji{smiling-face-with-tear}
+
 \subsection{Problema Ball (Codeforces)}
 \label{problem:ball}
 
