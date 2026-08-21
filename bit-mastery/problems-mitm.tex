@@ -1,0 +1,218 @@
+\section{Probleme}
+
+\subsection{Problema Meet in the Middle (CSES)}
+\label{problem:meet-in-the-middle}
+
+\href{https://cses.fi/problemset/task/1628/}{enunț}
+$\bullet$
+\hyperref[code:meet-in-the-middle]{surse}
+
+Rezolvarea este esența tehnicii \textit{meet in the middle}: împărțim cele 40 de elemente în două grupe de 20. Pentru fiecare dintre grupe avem destul timp și memorie ca să calculăm sumele celor $2^{20}$ submulțimi și să le ordonăm, obținînd doi vectori. Apoi căutăm, cu tehnica celor doi pointeri, numărul de perechi de indici care dau suma $x$.
+
+La iterarea cu cei doi pointeri trebuie să tratăm atent grupele de elemente egale.
+
+Desigur, pentru o mulțime cu $n/2$ elemente este banal să producem lista ordonată a sumelor celor $2^{n/2}$ submulțimi în $\bigoh(n \cdot 2^{n/2})$. Putem obține lista fie cu un bitmask, fie prin parcurgere recursivă. Ambele metode presupun o sortare la final, care pentru un vector de $2^{n/2}$ elemente are complexitate $\bigoh(2^{n/2} \log 2^{n/2}) = \bigoh(n \cdot 2^{n/2})$.
+
+Dar există și o soluție mai puțin cunoscută în $\bigoh(2^{n/2})$. Pe evaluatorul CSES, ea este de 5 ori mai rapidă! Vom proceda astfel pentru fiecare dintre jumătăți. Considerăm cele $n/2$ elemente unul cîte unul. Să spunem că am obținut lista sortată $L_k$ a sumelor submulțimilor primelor $k$ elemente. Pentru a-l include și pe cel de-al $k+1$-lea element, fie el $x$, observăm că $L_{k+1}$ conține:
+
+\begin{itemize}
+  \item toate valorile din $L_{k}$, pentru că avem opțiunea să nu-l folosim pe $x$;
+  \item toate valorile din $L_{k}$ crescute cu $x$, dacă alegem să îl folosim pe $x$.
+\end{itemize}
+
+Așadar, este suficient să îl stocăm pe $L_{k}$ într-un vector și să-l interclasăm cu $L_{k} + x$. Această operație necesită $2^{k + 1}$ comparații, deci efortul însumat pentru toate $k$-urile este $\bigoh{2^{n/2}}$.
+
+\subsection{Puzzle-urile de pe Infoarena}
+
+Cosmin Negrușeri a scris pentru Infoarena \href{https://www.infoarena.ro/blog/meet-in-the-middle}{un articol} teoretic despre \textit{meet in the middle}. Merită să petrecem cîteva minute cu aceste puzzle-uri, întrucît sînt pe alt tipic decît restul problemelor din acest capitol.
+
+\subsubsection*{Friend of a friend}
+
+Acesta este un puzzle de încălzire. Indexăm cumva listele prietenilor lui $A$ și $B$ și vedem dacă au vreun element în comun. În practică, indexăm doar lista de prieteni a lui $A$ (de exemplu într-o tabelă hash). Apoi, pentru fiecare prieten al lui $B$ verificăm dacă apare în tabelă.
+
+De ce astfel? Presupunînd că o persoană are în medie $k$ prieteni, dacă chiar am colecta lista prietenilor prietenilor lui $A$ am obține $\bigoh(k^2)$ elemente. Algoritmul de mai sus rulează în $\bigoh(k)$.
+
+\subsubsection*{Six degrees of separation}
+
+Similar. Pentru fiecare dintre cei doi utilizatori, colectăm cunoștințele aflate la distanță cel mult 3. Apoi le intersectăm.
+
+\subsubsection*{Equal partitions}
+
+Cum ar funcționa soluția în $\bigoh(2^n)$? De multe ori ea ne conduce spre soluția cu \textit{meet in the middle}. Iterăm prin toate cele $2^n$ măști și le dăm semnificația: biții 0 corespund elementelor din prima mulțime, iar biții 1 elementelor din a doua mulțime. Dacă o mască corespunde unor mulțimi cu sume egale, aceea este soluția.
+
+Acum, să presupunem că iterăm prin cele $2^{n/2}$ măști pentru primele $n/2$ elemente. Vom stoca „ceva” pentru fiecare mască (vom vedea ce). Acum iterăm prin celelalte $2^{n/2}$ măști. Cum spuneam mai sus, acestea corespund unei partiționări a elementelor. Pentru o mască $m$ din dreapta fixată, să spunem că sumele celor două submulțimi sînt $X$ și $Y$. Înseamnă că dorim să întrebăm jumătatea stîngă: există vreo partiționare care obține diferența $|X-Y|$?
+
+Rezultă că exact asta vom stoca în jumătatea stîngă! Calculăm, pentru fiecare mască, sumele submulțimilor aferente, $A$ și $B$, și adăugăm valoarea $|A-B|$ într-o tabelă hash.
+
+\subsubsection*{Minimum vertex cover}
+
+Aici este mai mult de povestit și este un intermezzo interesant. Vom demonstra întîi o egalitate utilă:
+
+Dacă enumerăm toate cele $2^n$ măști pe $n$ biți și pentru fiecare submască enumerăm toate sumăștile, efortul este $\bigoh(3^n)$ (deși intuiția ne spune că ar fi $\bigoh(4^n)$).
+
+Iată \href{https://cp-algorithms.com/algebra/all-submasks.html#iterating-through-all-masks-with-their-submasks-complexity-o3n}{o demonstrație frumoasă} bazată pe combinatorică. Iată și o demonstrație bazată pe bijecții. Să considerăm masca 10011 pe 5 biți. Așadar, am ales ca din cei 5 biți să setăm doi pe 0. Acum îi vom enumera submăștile, de la 00000 la 11111. Așadar pot apărea noi zerouri... dar acestea nu sînt la fel ca primele. \emoji{slightly-smiling-face} Concret, să construim o bijecție între submăștile submăștilor pe $n$ biți și mulțimea numerelor în baza 3 pe $n$ biți:
+
+\begin{itemize}
+  \item Cifra 1 semnifică că am ales bitul 1 în submască, apoi și în submasca submăștii.
+  \item Cifra 0 semnifică că am ales bitul 0 în submască.
+  \item Cifra 2 semnifică că am ales bitul 1 în submască, apoi 0 în submasca submăștii.
+\end{itemize}
+
+De exemplu, 20012 se referă la submasca 00010 obținută ca submască a submăștii 10011.
+
+De aici rezultă un algoritm relativ clasic pentru problema MVC.
+
+\subsubsection*{Square fence}
+
+Ce ar face soluția în $\bigoh(4^n)$? Ar număra în baza 4 pe $n$ cifre. Pentru o mască (în baza 4) fixată, cifrele 0, 1, 2 și 3 dictează partiționarea scîndurilor. Vedem dacă vreo partiție duce la sume egale.
+
+Să facem asta pentru primele $n/2$ scînduri. Obținem diverși cvadrupleți $(a, b, c, d)$, pe care îi punem într-o tabelă hash. Noi știm suma dorită $S$ pentru fiecare submulțime (este $1/4$ din suma lungimilor celor $n$ scînduri). Acum iterăm prin celelalte $n/2$ scînduri și, pentru fiecare cvadruplet $(a', b', c', d')$ găsit, căutăm în tabela hash cvadrupletul $(S - a', S - b', S - c', S - d')$.
+
+\subsubsection*{8 puzzle}
+
+Cu indiciul că ne sînt suficiente 31 de mutări, soluția dorită este probabil: generăm cel mult 15 mutări din poziția de start și le hash-uim. Apoi generăm cel mult 16 mutări din poziția finală (regulile de mutare sînt aceleași indiferent de direcție) și căutăm pozițiile rezultate în tabela hash.
+
+Dar probabil putem și să facem un BFS simplu, căci spațiul de poziții este doar $9!$.
+
+\subsubsection*{4 reversals}
+
+Facem două răsturnări pe șirul $S$, în toate modurile posibile, și punem rezultatele într-o tabelă hash. Apoi facem două răsturnări pe șirul $T$, în toate modurile posibile, și căutăm rezultatul în tabela hash.
+
+
+\subsection{Problema Anya and Cubes (Codeforces)}
+\label{problem:anya-and-cubes}
+
+\href{https://codeforces.com/contest/525/problem/E}{enunț}
+$\bullet$
+\hyperref[code:anya-and-cubes]{surse}
+
+O soluție naivă ar genera toate combinațiile legale de (cel mult) trei posibilități pentru fiecare element:
+
+\begin{itemize}
+  \item nu îl includem;
+  \item îl includem cu valoarea sa proprie;
+  \item îl includem cu valoarea factorial.
+\end{itemize}
+
+Rezultă o complexitate de $\bigoh(3^n)$, prea mare. M-am gîndit foarte sumar la soluții cu programare dinamică, de exemplu definind $D(s, i, j)$ ca numărul de moduri de a obține suma $s$ cu primele $i$ obiecte folosind $j$ abțibilduri. Nu cred că o putem face să meargă, pentru că trebuie să gestioneze prea multe sume distincte.
+
+Astfel ajungem la ideea de a sparge obiectele în 13 în stînga și 12 în dreapta și de a face generarea naivă pe aceste jumătăți. Vom obține doi vectori cu lungimea totală $3^{13} + 3^{12} \approx 2 \cdot 10^6$. Elementele acestor vectori sînt perechi $\langle x, f \rangle$: suma $x$ și numărul de abțibilduri necesare $f$. Pentru fiecare element din stînga trebuie să numărăm perechile corespondente din dreapta, de sumă exact $S-x$ obținută cu cel mult $k-f$ abțibilduri.
+
+De aici soluțiile diverg. Un exemplu cu tabele hash ar putea fi:
+
+\begin{itemize}
+  \item Grupează toate sumele obținute în stînga. Atașează fiecărei sume $x$ un vector $v$ în care $v[i]$ reține în cîte moduri am obținut suma $x$ cu $i$ abțibilduri.
+
+  \item Fă sume parțiale peste acești vectori, astfel va $v[i]$ să rețină în cîte moduri putem obține suma $x$ cu cel mult $i$ abțibilduri.
+
+  \item Pune toate sumele și vectorii lor într-o tabelă hash indexată după suma $x$.
+
+  \item Pentru fiecare pereche $\langle x, f \rangle$ din dreapta, caută în tabela hash suma $S-x$, poziția $k-f$ din vector.
+
+  \item Răspunsul este suma acestor valori din tabela hash.
+\end{itemize}
+
+Ca în multe alte ocazii, putem înlocui $n$ căutări într-o tabelă hash cu sortarea + algoritmul cu doi pointeri. Sortăm vectorii celor două jumătăți. Apoi iterăm un pointer de la stînga la dreapta prin primul vector și de la dreapta la stînga prin al doilea vector, căutînd elemente de sumă egală cu $S$.
+
+Ce este nou este cum procedăm cînd găsim acele elemente. În fapt, vom avea un grup de elemente egale cu $x$ în stînga și un grup de elemente egale cu $S-x$ în dreapta. Acum avem o subproblemă. Trebuie să numărăm perechile cu suma abțibildurilor cel mult $k$. Din fericire, putem  rezolva subproblema cu un nou algoritm two pointers, care de data aceasta iterează doar prin cele două grupuri!
+
+\subsubsection*{Optimizare}
+
+Am reușit să reduc timpul de rulare cu 30\% cu următoarea observație. Perechile <sumă, abțibilduri> ocupă 16 octeți (8 + 1, dar rotunjit la 16). Dar nu este complicat să compactăm cele două valori în doar 64 de biți. Sumele sînt cel mult $10^{16}$, adică ocupă doar 54 de biți, iar abțibildurile sînt cel mult 25, deci ocupă 5 biți. Le vom compacta într-un \ccode{long long} unde suma ocupă biții 5-58, iar abțibildurile biții 0-4. La sortare, comparăm natural aceste variabile, ceea ce duce exact la sortarea dorită: întîi după sumă, apoi după numărul de stegulețe. Astfel folosim jumătate din memorie. Nu știu de ce Codeforces raportează 20 MB, cînd eu în mod evident aloc doar 16 MB + mărunțișuri. Codeforces minte! \emoji{smiling-face-with-tear}
+
+Deși codul face niște operații în plus pentru conversia între structura comprimată și cele două cîmpuri, totuși el este semnificativ mai rapid. Este un exemplu (al cîtelea?) că economia de memorie duce la cod mai rapid.
+
+
+\subsection{Problema Prime Gift (Codeforces)}
+\label{problem:prime-gift}
+
+\href{https://codeforces.com/contest/912/problem/E}{enunț}
+$\bullet$
+\hyperref[code:prime-gift]{sursă}
+
+Cred că acest gen de problemă are nevoie de puțin cod auxiliar, căci este greu să avem intuiția despre dimensiunile problemei și ale subproblemelor.
+
+Indiciul că se face cu \textit{meet in the middle} ar trebui să ne pună pe drumul cel bun. Ca nomenclatură, aceste numere se numesc \href{https://leetcode.com/problems/ugly-number/description/}{numere urîte}. Vom genera numerele urîte cu primii $f$ factori și, separat, numerele urîte cu ultimii $n - f$ factori. Le vom pune în doi vectori, să zicem $A$ și $B$, pe care îi vom sorta. Astfel, orice număr urît (pentru problema inițială) va fi un produs de două numere urîte, cîte unul din fiecare vector.
+
+Nu prea știm cum să generăm direct al $k$-lea număr urît (aceasta era o întrebare clasică din folclor cînd eram eu licean!). Dar putem proceda invers: putem număra numerele urîte din intervalul $[1,z]$. Atunci putem căuta binar cel mai mic $z$ pentru care există exact $k$ numere urîte în $[1,z]$.
+
+Pasul următor: pentru a număra numerele urîte din $[1,z]$, putem itera prin vectorul $A$. Pentru fiecare  $x \in A$, căutăm binar valoarea maximă din $y \in B$ pentru care $xy \leq z$. Dacă  $y$ apare pe poziția $p$, atunci $x$ poate forma $p$ numere urîte.
+
+De fapt, știm că $n$ căutări binare pot fi întotdeauna înlocuite cu un algoritm cu doi pointeri. Așadar, pentru a afla numărul de numere urîte din $[1,z]$ complexitatea este $\bigoh(|A| + |B|)$. Complexitatea totală a algoritmului de căutare este $\bigoh((|A| + |B|) \log VAL\_MAX )$, iar generarea și sortarea vectorilor este $\bigoh(|A| \log |A| + |B| \log |B|)$ presupunînd că reușim să generăm vectorii în $\bigoh(1)$ per element.
+
+Dar aici intervine flerul... sau lipsa lui, pe care o suplinim prin cod auxiliar. \emoji{rolling-on-the-floor-laughing} Cît de mari pot fi vectorii? Milioane? Zeci de milioane? Și cum facem să-i echilibrăm ca să minimizăm $|A| + |B|$? Am scris un program care genera naiv numerele. Este destul de clar că:
+
+\begin{enumerate}
+  \item Cu cît permitem mai multe numere prime, cu atît mai multe numere urîte vom avea.
+  \item Cu cît numerele prime sînt mai mici, cu atît mai multe numere vom avea.
+\end{enumerate}
+
+Așadar, cel mai prost caz va fi $n=16$ și $p=(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53)$. Pe acesta putem face măsurători. Împărțirea în $16=8+8$ nu este fericită. Ea generează \np{7000000} de numere urîte cu primele 8 numere prime și doar \np{70000} cu celelalte 8. Împărțirea cea mai fericită este $16=6+10$, care generează \np{1000000} de numere urîte cu primele 6 numere prime și \np{500000} cu celelalte 10.
+
+
+\subsection{Problema Lizard Era: Beginning (Codeforces)}
+\label{problem:lizard-era-beginning}
+
+\href{https://codeforces.com/contest/585/problem/D}{enunț}
+$\bullet$
+\hyperref[code:lizard-era-beginning]{sursă}
+
+Enunțul problemei este ușor încîlcit, dar rezolvarea teoretică este relativ clară. Există $3^{25} \approx \np{8.4} \cdot 10^{11}$ moduri de a selecta aventurierii, căci pentru fiecare misiune exact unul din 3 va rămîne acasă. Așadar, pentru MITM vom genera două seturi de $3^{13} \approx \np{1.6} \cdot 10^6$ submulțimi și respectiv $3^{12}$ submulțimi.
+
+Pentru fiecare submulțime vom calcula atitudinile lui L, M și W. Apoi, trebuie să găsim toate perechile de cîte un element din cele două seturi care \textbf{se însumează} la valori egale. Cum formulăm asta ca pe o problemă de căutare? Reținem tripletele ca pe primul termen și diferențele. De exemplu, vom stoca (100, 110, 120) ca pe (100, +10, +20) dacă apare în tabela stîngă. Dacă apare în tabela dreaptă, schimbăm semnele diferențelor și stocăm tripletul ca (100, -10, -20).
+
+Cum folosim aceste informații? Fie tripletul (100, 110, 120) din partea stîngă și (200, 190, 180) din partea dreaptă. Observăm că
+
+\begin{itemize}
+  \item Tripletele se însumează la (300, 300, 300), deci reprezintă o soluție validă.
+  \item Tripletele se reprezintă ca (100, +10, +20), respectiv (200, +10, +20).
+\end{itemize}
+
+Rezultă că, atunci cînd căutăm fiecare triplet din partea dreaptă în structura de date din partea stîngă, cheia căutării este perechea de diferențe, în exemplul de mai sus (+10, +20). Atitudinea lui L (100, respectiv 200) va fi valoarea asociată cheii (+10, +20) în cele două structuri. Trebuie să ținem minte că pot exista mai multe soluții pentru același triplet și trebuie să o folosim pe cea mai mare.
+
+Putem implementa structura părții stîngi ca pe o tabelă hash (\ccode{unordered_map}). Dar implementarea mea pare să se miște cu mult mai rapid. Ea toarnă toate tripletele în același vector și le sortează după trei criterii:
+
+\begin{itemize}
+  \item Crescător după cheie (vectorul de diferențe).
+  \item La egalitate, crescător după jumătate (cele din stînga înaintea celor din dreapta).
+  \item La egalitate, pe cele din jumătatea stîngă le sortează crescător după L, iar pe cele din jumătatea dreaptă descrescător după L.
+\end{itemize}
+
+Atunci două perechi complementare vor apărea consecutiv în sortare. Soluția este dominată (cam 75\% din timp) de sortarea a două milioane de triplete. Am încercat o optimizare: să generez și să sortez doar vectorul mic (de $3^{12}$ elemente), iar celorlalte $3^{13}$ elemente să le caut perechea binar în primul vector. Dar este considerabil mai lentă.
+
+Pentru reconstituirea soluției, mi s-a părut cel mai direct să rețin masca în baza trei pentru fiecare triplet, deși aceasta consumă memorie suplimentară.
+
+
+\subsection{Problema Make Them Similar (Codeforces)}
+\label{problem:make-them-similar}
+
+\href{https://codeforces.com/contest/1257/problem/F}{enunț}
+$\bullet$
+\hyperref[code:make-them-similar]{surse}
+
+Soluția naivă este: pentru fiecare din cele $2^{30}$ măști, generăm vectorul $b$ și vedem dacă toate elementele sale sînt similare. De aici decurge soluția \textit{meet in the middle}. Iterăm prin toate măștile pe 15 biți. Pentru fiecare mască și pentru fiecare element al lui $b$, notăm numărul de biți (\textit{popcount}) din jumătatea stîngă a elementului xor-ată cu masca. Obținem așadar $2^{15}$ vectori a cîte $n \leq 100$ elemente cu valori între 0 și 15. Procedăm similar pentru cei 15 biți cel mai puțin semnificativi. Timpul și memoria necesare sînt:
+
+$$2 \cdot 2^{15} \cdot 100 \approx \np{6500000}$$
+
+Pentru fiecare vector mai reținem și masca cu care l-am obținut. Acum trebuie să găsim doi vectori, cîte unul din fiecare jumătate, care însumați să dea un vector cu toate valorile egale. Dacă îi găsim, atunci răspunsul la problemă constă din concatenarea celor două măști.
+
+Cum găsim cei doi vectori $P = (p_0, p_1, \dots, p_{n-1})$ și $Q = (q_0, q_1, \dots, q_{n-1})$? Procedăm ca la problema Lizard Era: Beginning. Nu ne pasă \textbf{care} este suma vectorilor, doar ca ea să fie \textbf{aceeași} pe toate pozițiile. De aceea, putem stoca doar diferențele față de primul termen, așadar
+
+$$P' = (p_1 - p_0, p_2 - p_0, \dots p_{n-1} - p_0)$$
+
+și similar pentru $Q'$. Atunci trebuie să găsim doi vectori $P'$ și $Q'$ cu valori egale în modul, dar cu toate semnele schimbate. Într-adevăr, existența acestor doi vectori ar însemna că, pe orice poziție $i$,
+
+\begin{align*}
+  p_i - p_0 &= -(q_i - q_0)\\
+  p_i + q_i &= p_0 + q_0
+\end{align*}
+
+și deci toate sumele sînt egale. Și mai bine, putem nega toate valorile din $Q'$, caz în care trebuie să găsim doi vectori perfect egali, cîte unul din fiecare jumătate.
+
+De aici implementarea se ramifică. Putem pune jumătatea stîngă într-o tabelă hash de vectori, în care apoi căutăm fiecare element din jumătatea dreaptă. Sursele mele procedează diferit. Ele pun ambele jumătăți în aceeași structură de date (un vector de \ccode{struct}-uri). Pentru fiecare vector de $n-1$ elemente reținem, suplimentar, și jumătatea din care provine. Apoi sortăm această structură după criteriul: \ccode{struct}-ul $a$ vine înaintea \ccode{struct}-ului $b$ dacă vectorul $a$ este mai mic lexicografic decît vectorul $b$. Atunci, dacă există doi vectori egali, din jumătăți diferite, ei vor fi în mod necesar consecutivi. Putem compara naiv fiecare pereche de doi vectori consecutivi, în timp $\bigoh(2^{16} \cdot n)$.
+
+Pentru sortare, este important să evităm comparația naivă de vectori, care reîncepe compararea de la elementul 0. \hyperref[chapter:ternary-sort]{Sortarea ternară} (\textit{three-way radix quicksort}) se pretează mult mai bine.
+
+\subsubsection*{Optimizare de memorie}
+
+A doua versiunea de sursă face o optimizare uriașă de memorie (de la 7 MB la 300 KB). Nu este nevoie să stocăm vectorii de diferențe de lungime $n-1$. Putem recalcula la cerere orice element cu cost $\bigoh(1)$. Este nevoie să stocăm doar masca cu care am construit vectorul și jumătatea stîngă/dreaptă din care provine. Din nou, codul care consumă mai puțină memorie este mai rapid, deși face conversii suplimentare. Cine-ar fi crezut? \emoji{winking-face}

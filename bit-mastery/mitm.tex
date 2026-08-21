@@ -1,0 +1,33 @@
+\chapter{Tehnica \textit{Meet in the middle}}
+
+\section{Definiția tehnicii}
+
+Teoretic nu este foarte mult de spus despre tehnica \textit{meet in the middle}. Tehnica se aplică la probleme cu soluții exponențiale, unde ne ajută să reducem complexitatea de la $\bigoh(p^n)$ la $\bigoh(p^{n/2})$.
+
+Abordarea cu \textit{meet in the middle} sparge problema dată în două subprobleme care sînt tot exponențiale. De aceea, soluțiile seamănă cu soluțiile forță brută. Metoda generală este:
+
+\begin{enumerate}
+  \item Căutați soluția în $\bigoh(p^n)$.
+
+  \item Spargeți problema în două: doi vectori de cîte $n/2$ elemente etc.
+
+  \item Aplicați soluția naivă fiecărei jumătăți.
+
+  \item Găsiți un mod de a combina cele două jumătăți.
+
+  \begin{itemize}
+    \item La acest moment este posibil să descoperim că trebuie să extindem structura jumătății stîngi, ca să stocăm mai multe informații.
+  \end{itemize}
+\end{enumerate}
+
+Dacă vedeți vreo problemă cu limita $30 \leq n \leq 40$, probabil se rezolvă cu această tehnică. \emoji{slightly-smiling-face}
+
+Acest capitol este foarte ingineresc. Majoritatea problemelor duc la subprobleme interesante de implementare și de optimizare. Multe dintre implementări pot fi simplificate cu măști de biți.
+
+Resurse utile:
+
+\begin{itemize}
+  \item Eticheta \href{https://codeforces.com/problemset?order=BY_RATING_ASC\&tags=meet-in-the-middle}{[meet-in-the-middle]} pe Codeforces;
+  \item \href{https://sepi.ro/assets/upload-file/infobits-f1.pdf}{F1!}, colecția de articole SEPI pentru olimpici (capitolul despre MITM).
+
+\end{itemize}

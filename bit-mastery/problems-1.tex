@@ -303,7 +303,7 @@ int get_score(int solvers, int stud_mask) {
 }
 \end{minted}
 
-Se vede că scorul unei întrebări poate varia între $-n$ și $+n$. De aceea, în prima sursă chiar colectez întrebările într-un vector de liste indexat după scor. Astfel putem sorta întrebările în $\mathcal{O}(m + n)$.
+Se vede că scorul unei întrebări poate varia între $-n$ și $+n$. De aceea, în prima sursă chiar colectez întrebările într-un vector de liste indexat după scor. Astfel putem sorta întrebările în $\bigoh(m + n)$.
 
 A doua sursă nu mai colectează întrebările, ci doar distribuția scorurilor într-un simplu vector indexat de la $-n$ la $n$. Din acest vector putem deduce valoarea surprizei totale. De exemplu, dacă $n=10$ și vectorul este $(5, 3, 3, \dots)$, atunci:
 
@@ -321,4 +321,4 @@ Așadar, putem afla valoarea surprizei pentru fiecare mască cu niște sume Gaus
 
 Pentru aceasta, este suficient să calculăm sume parțiale peste vectorul de scoruri: $P=(5, 8, 11, \dots)$. Să observăm că aceste valori sînt exact punctajele cele mai mari pentru o întrebare cu acel scor (notate cu bold mai sus). De exemplu, 11 este ultimul punctaj pentru întrebările de scor -8. Acum parcurgem întrebările în ordine și le calculăm scorurile. Ori de cîte ori vedem o întrebare de scor -8, îi vom atribui punctajul din vectorul $P$, pe care apoi îl vom decrementa. Astfel, cele 3 întrebări de scor -8 (căci știm că sînt exact 3) vor primi punctajele 11, 10 și 9.
 
-Observație de încheiere: Există doar $2^n = \np{1024}$ de măști de rezolvitori pentru cele $m$ întrebări. La prima vedere, pare un cîștig să înlocuim vectorul de lungime $\np{10000}$ cu unul de lungime $\np{1024}$ (frecvențele măștilor de rezolvitori). Din păcate, problema poate avea multe teste mici și atunci $\mathcal{O}(t \cdot 2^n)$ poate fi mai scump decît $\mathcal{O}(\sum m)$.
+Observație de încheiere: Există doar $2^n = \np{1024}$ de măști de rezolvitori pentru cele $m$ întrebări. La prima vedere, pare un cîștig să înlocuim vectorul de lungime $\np{10000}$ cu unul de lungime $\np{1024}$ (frecvențele măștilor de rezolvitori). Din păcate, problema poate avea multe teste mici și atunci $\bigoh(t \cdot 2^n)$ poate fi mai scump decît $\bigoh(\sum m)$.
