@@ -1,0 +1,48 @@
+\section{Probleme}
+
+\subsection{Problema DNA Evolution (Codeforces)}
+\label{problem:dna-evolution}
+
+\href{https://codeforces.com/contest/827/problem/C}{enunț}
+$\bullet$
+\hyperref[code:dna-evolution]{surse}
+
+Iată o problemă aleasă ușor forțat pentru a ilustra compactarea variabilelor. Am căutat „DNA” pe codeforces, întrucît alfabetul ADN are doar 4 litere. \emoji{nerd-face}
+
+\subsubsection*{Soluție în $\bigoh(n \log n)$}
+
+Pentru fiecare literă $L$, pentru fiecare lungime a unei infecții, $1 \leq e \leq 10$, și pentru fiecare rest $h$ modulo $e$, reținem cîte un AIB în care notăm 1 pe pozițiile din $s$ congruente cu $h$ modulo $e$ care conțin o literă $L$. Să presupunem că îl denumim \ccode{aib[L][e][h]}.
+
+Actualizările sînt relativ ușor de făcut. La modificarea poziției $x$, trecem de pe 1 pe 0 valorile din toate AIB-urile corespunzătoare vechii litere și resturilor $x \mod m$ pentru fiecare $1 \leq m \leq 10$. Apoi adăugăm 1 în AIB-urile noii litere și acelorași resturi.
+
+Interogările pornesc de la observația că, dacă litera $L$ apare pe poziția $h$ într-o infecție de lungime $e$, atunci ne interesează de cîte ori apare ea pe pozițiile $l + h, l + 2h$ etc. Trebuie doar să consultăm AIB-ul corespunzător acestui scop, \mintinline{c}|aib[L][e][(l + h) % e|, cerîndu-i suma pe intervalul $[l,r]$. Procedăm la fel pentru fiecare poziție $0 \leq h < m$.
+
+Din ce am observat pe Codeforces, aceste soluții tind să folosească între 150 și 300 MB de memorie. Ordinul de mărime este corect: 55 de AIB-uri pentru 4 litere, fiecare conținînd \np{100000} de întregi, necesită $55 \times 4 \times \np{100000} \times 4 = 88$ MB de memorie. Restul este posibil să fie risipă.
+
+Soluție în $\bigoh(n \sqrt{n})$
+
+Iată și o soluție în $\bigoh(n \sqrt{n})$ care consumă doar 64 kB de memorie. Din această cauză, ea operează 100\% din time în cache-ul L1 și obține timpi comparabili cu soluția anterioară. Nu am ales întîmplător acest deziderat de 64 kB. \href{https://codeforces.com/blog/entry/57248}{Evaluatorul Codeforces} folosește un procesor i5-3470, care are un cache L1 de \href{https://www.techpowerup.com/cpu-specs/core-i5-3470.c1039}{64 kB per core}. Este o cifră comună pentru procesoarele moderne.
+
+Folosim descompunerea în radical, deoarece ea tinde să folosească puțină memorie suplimentară. Pe fiecare bloc stocăm date similare cu metoda anterioară: numărul de litere de fiecare tip pentru fiecare lungime de \textit{query} și fiecare rest modulo acea lungime.
+
+Să facem niște calcule.
+
+\begin{itemize}
+  \item Șirul $s$ necesită 2 biți per literă, așadar \np{25000} de octeți.
+
+  \item Un bloc are nevoie de $1 + 2 + \dots + 10 = 55$ de contoare pentru fiecare dintre cele 4 litere. Contoarele încap pe \ccode{short}. Rezultă un necesar de 440 de octeți per bloc (eu am 444, căci rețin și poziția de început a blocului).
+
+  \item Rezultă că ne permitem circa 90 de blocuri, deoarece $\np{25000} + 90 \cdot 444 = \np{64960} < \np{65536}$.
+\end{itemize}
+
+Prima variantă a codului este directă.
+
+Varianta a doua compactează șirul $s$. Ea este puțin mai lentă.
+
+Varianta a treia elimină majoritatea operațiilor de împărțire. Ea este de circa 3 ori mai rapidă decît celelalte.
+
+Într-o a patra variantă (pe care nu o mai includ), am crescut numărul de blocuri pînă la 317 (valoarea teoretică, $\sqrt{\np{100000}}$). Codul a devenit mai lent.
+
+\subsubsection*{Concluzii}
+
+Această problemă nu este un exemplu perfect pentru compactarea variabilelor. În schimb, ea este un exemplu instructiv că reducerea de \np{3000} de ori a memoriei (de la ~200 MB la ~64 kB) compensează cu succes un algoritm asimptotic mai slab. Să nu uităm că $\log \np{100000} \approx \np{16.6}$, pe cînd $\sqrt{\np{100000}} \approx 316$. În plus, AIB-urile au constantă bună. Deci \textbf{teoretic descompunerea logaritmică ar trebui să fie de 19 ori mai lentă}.

@@ -1,0 +1,130 @@
+\section{Compactarea variabilelor}
+
+Cînd o variabilă are nevoie doar de un bit, putem „înghesui” 8 variabile pe un octet. Dacă avem nevoie de un milion de booleeni, îi putem compacta în 128 KiB de memorie. Vom cheltui puțin la compactare și decompactare, dar vom economisi memorie. Există multiple argumente pentru compactare.
+
+\begin{enumerate}
+  \item Consumul de memorie scade. În loc de 2 GB putem folosi doar 256 MB. Ocazional putem găsi o soluție la care comisia nu s-a gîndit.
+
+  \item Cu cît ne încadrăm mai bine în cache, cu atît viteza crește.
+
+  \item Dacă avem de făcut operații pe vectori booleeni (and, or, xor, numărarea biților), le putem procesa în grupe de cîte 32 sau 64.
+\end{enumerate}
+
+Desigur, putem folosi un \ccode{bitset} STL. Dar este simplu să ne implementăm propria structură. Iar STL-ul nu ne mai ajută la variabile pe 2 biți sau pe 4 biți, care pot fi și ele compactate, sau la probleme ca \href{https://kilonova.ro/problems/4454?list_id=1661}{ERA}, unde avem nevoie de funcții pe care \ccode{std::bitset} nu le oferă.
+
+\subsection{Bitset}
+
+Conceptual, dorim să înlocuim
+
+\begin{itemize}
+  \item atribuirea \ccode{v[pos] = val} cu o funcție \ccode{void set(int pos, bool val)};
+  \item citirea \ccode{v[pos]} cu o funcție \ccode{bool get(int pos)}.
+\end{itemize}
+
+Vom face împărțirea astfel. Elementele 0-31 stau în primul \textit{word} (\ccode{unsigned int}). Elementele 32-63 stau în al doilea \textit{word}. Concret, elementul \ccode{pos} va sta în \textit{word}-ul \ccode{pos / 32}, altfel spus \ccode{pos >> 5}. Dintre cei 32 de biți ai \textit{word}-ului, elementul \ccode{pos} va sta pe bitul \mintinline{c}|pos % 32|, altfel spus \ccode{pos & 31}. Ca fapt divers, compilatoarele moderne fac deja aceste transformări pentru voi. Puteți folosi notația \mintinline{c}|pos % 32| dacă vi se pare mai lizibilă.
+
+Așadar, funcția de citire a unui bit va fi un \textit{one-liner} simplu:
+
+\begin{minted}{c}
+bool get(int pos) {
+  return (v[pos >> 5] >> (pos & 31)) & 1;
+}
+\end{minted}
+
+La atribuire, discuția devine un pic mai nuanțată. Unele operații cum ar fi setarea bitului pe 1 sau pe 0 sînt relativ directe:
+
+\begin{minted}{c}
+void set(int pos) {
+  v[pos >> 5] |= 1 << (pos & 31);
+}
+
+void clear(int pos) {
+  v[pos >> 5] &= ~(1 << (pos & 31));
+}
+\end{minted}
+
+Dar dacă dorim o funcție generică, una care să ia valoarea bitului ca parametru? Este important să nu testăm condiții (să nu facem \textit{branching}). Acest cod este de 3-4 ori mai lent decît un vector naiv de \ccode{bool}:
+
+\begin{minted}{c}
+void set_branching(int pos, bool val) {
+  unsigned& c = v[pos >> 5];
+  unsigned mask = 1 << (pos & 31);
+
+  if (val) {
+    c |= mask;
+  } else {
+    c &= ~mask;
+  }
+}
+\end{minted}
+
+Dar putem face și atribuirea fără \textit{branching}. Prima jumătate a instrucțiunii șterge vechea valoare a bitului, iar a doua jumătate atribuie valoarea nouă.
+
+\begin{minted}{c}
+void set(int pos, bool val) {
+  unsigned& c = v[pos >> 5];
+  int shift = pos & 31;
+  c = (c & ~(1 << shift)) | (val << shift);
+}
+\end{minted}
+
+\label{problem:bitset}
+
+Anexa conține \hyperref[code:bitset]{implementarea completă}. Am inclus și implementări pe 8 biți, care folosesc un vector de $n/8$ \ccode{unsigned char}. Iată niște \textit{benchmark}-uri pentru un vector de $10^6$ elemente cu $10^9$ citiri și $10^9$ scrieri.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{metoda} & \textbf{viteza (milioane de op. / secundă)}\\
+    \hline
+    naiv & \np{1700} \\
+    vector compactat, 32 de biți & \np{1350} \\
+    vector compactat, 8 biți & \np{1200} \\
+    vector compactat, cu \textit{branching}, 8 sau 32 de biți & \np{450} \\
+    \ccode{std::bitset} & \np{500} \\
+    \hline
+  \end{tabular}
+
+  \caption{Implementări de bitset și vitezele lor.}
+\end{table}
+
+\subsubsection*{Aplicație: Operații booleene rapide}
+
+Atît versiunea proprie, cît și cea STL, ne oferă operații logice \textit{en gros}, cîte 32 deodată. TODO: Discuție despre problema rucsacului.
+
+\subsection{Variabile pe 2 biți}
+
+\label{problem:compact-2-bit}
+
+Toată discuția despre \textit{bitsets} se pretează și la variabile pe doi biți. Consumul de memorie scade de 4 ori, întrucît folosim exact doi biți în locul fiecărui octet. Anexa conține \hyperref[code:compact-2-bit]{implementarea completă}. Includ aici doar rutinele principale:
+
+\begin{minted}{c}
+struct packed_array {
+  unsigned v[ARRAY_SIZE / 16];
+
+  void set(int pos, int val) {
+    int word = pos / 16;
+    int offset = pos % 16 * 2;
+    v[word] = (v[word] & ~(3 << offset)) | (val << offset);
+  }
+
+  int get(int pos) {
+    int word = pos / 16;
+    int offset = pos % 16 * 2;
+    return (v[word] >> offset) & 3;
+  }
+};
+\end{minted}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{metoda} & \textbf{viteza (milioane de op. / secundă)}\\
+    \hline
+    naiv & \np{1700} \\
+    vector compactat, 32 de biți & \np{950} \\
+    \hline
+  \end{tabular}
+
+  \caption{Metode de compactare pe doi biți și vitezele lor.}
+\end{table}

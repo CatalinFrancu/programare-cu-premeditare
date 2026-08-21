@@ -1,0 +1,324 @@
+\section{Probleme}
+
+\subsection{Problema Fill the Bag (Codeforces)}
+\label{problem:fill-the-bag}
+
+\href{https://codeforces.com/contest/1303/problem/D}{enunț}
+$\bullet$
+\hyperref[code:fill-the-bag]{sursă}
+
+Dacă suma cutiilor este mai mică decît capacitatea sacului, atunci desigur nu există soluție. Invers, dacă suma cutiilor este mai mare sau egală cu capacitatea sacului, atunci există soluție. În cel mai rău caz, putem tăia totul pînă la mărime 1.
+
+Iată o soluție greedy corectă. Să examinăm cutiile de la mari la mici. Fie $k$ mărimea curentă. Dacă mai avem $k$ spațiu în sac, sigur merită să luăm cutia. Dacă nu o luăm, înseamnă că vom lua o mulțime de cutii mai mici a căror sumă este mai mare sau egală cu $k$. Dar putem demonstra că acea mulțime include o submulțime de sumă exact $k$. Este preferabil să luăm acum cutia de mărime exact $k$ cu zero tăieturi.
+
+Dacă nu mai avem $k$ spațiu în sac, atunci ne punem întrebarea dacă merită să tăiem cutia, fie ca să luăm acum $k/2$, fie ca să continuăm să o tăiem pe viitor în cutii și mai mici. Desigur, tăieturile costă, deci am prefera să nu facem asta, ci să luăm mai tîrziu niște cutii mai mici cu volumul total $k$. De aceea, vom ține permanent evidența cantității pe care ne permitem să o refuzăm. Inițial, această cantitate este $R = \sum a_i - n$. Pe măsură ce refuzăm cutii, $R$ scade cu volumul cutiilor refuzate. Ne permitem să refuzăm cutia curentă dacă $R \geq k$. Dacă nu ne permitem, incrementăm numărul de tăieturi, decrementăm numărul de cutii de mărime $k$ și îl creștem cu 2 pe cel de cutii de mărime $k/2$.
+
+Ca implementare, cel mai simplu este să menținem un singur vector de frecvență, indexat după logaritmul cutiilor. De exemplu, la indicele 3 vom ține numărul de cutii de mărime 8.
+
+\href{https://codeforces.com/blog/entry/73872}{Editorialul} pare să ofere o soluție inversă, de la mic la mare.
+
+
+\subsection{Problema Compatible Numbers (Codeforces)}
+\label{problem:compatible-numbers}
+
+\href{https://codeforces.com/contest/165/problem/E}{enunț}
+$\bullet$
+\hyperref[code:compatible-numbers]{surse}
+
+Să definim operatorul $a \subseteq b$ cu semnificația că reprezentarea binară a lui $a$ conține 1 doar pe poziții unde și $b$ conține 1.
+
+Ideea de bază este că, dacă $y$ este compatibil cu $x$, atunci $y$ este compatibil și cu orice număr $z \subseteq x$. De aceea, calculăm următoarele informații. Pentru orice mască $x$, definim \ccode{fit[x]} ca fiind fie un număr $z$ de la intrare astfel încît \(z \subseteq x\), fie 0 dacă nu există un astfel de $z$.
+
+Calculăm vectorul \ccode{fit} extinzînd măștile cîte un bit la un moment dat. Inițial, \ccode{fit[a[i]] = a[i]} pentru fiecare număr de la intrare. Apoi, pentru un $z$ oarecare, dacă \ccode{fit[z]} nu este încă definit, încercăm să eliminăm pe rînd fiecare bit din masca $z$. Dacă masca $x$ obținută are \ccode{fit[x]} definit, atribuim \ccode{fit[z] = fit[x]}.
+
+Dorim să evaluăm masca $z$ după ce am evaluat toate măștile care au cu un bit de 1 mai puțin. Ordinea naturală, crescătoare, oferă această proprietate, deci codul este simplu.
+
+Odată calculat vectorul fit, trecem prin vectorul $a$ și, pentru fiecare element $a_i$, definim $b = \overline{a_i}$ și tipărim \ccode{fit[b]} sau \ccode{-1}, după caz.
+
+\subsubsection*{Optimizare de memorie}
+
+De amorul artei, am reușit să nu țin un întreg pentru fiecare mască, ci doar un bit. Necesarul de memorie a scăzut de la 20 MB la 4,3 MB. Ideea este să reținem doar informația „există (sau nu) un număr conținut în această mască”. Dacă răspunsul este „da”, atunci la afișare este nevoie să aflăm \textbf{care} este acel număr. Îl putem recupera bit cu bit: pornind de la masca completă, eliminăm cîte un bit, cîte un bit pînă cînd nu se mai poate. Atunci numărul rămas trebuie să fie printre cele de la intrare.
+
+Este interesant că timpul de rulare a rămas practic neschimbat, deși constanta teoretică a crescut: complexitatea afișării nu mai este $\bigoh(n)$, ci $O(p \cdot n)$. Vedem din nou beneficiile consumului redus de memorie. Bufferul de lucru are doar $2^{22}$ biți, adică 512 KiB de memorie.
+
+\subsubsection*{Optimizare de viteză}
+
+Implementarea naturală propagă informația din \ccode{fit} iterînd după mască și, pentru fiecare mască, prin toți biții săi:
+
+\begin{minted}{c}
+void compute_fits() {
+  for (int mask = 1; mask < MAX_VALUE; mask++) {
+    for (int bit = 0; bit < MAX_BITS; bit++) {
+      if ((mask & (1 << bit)) && !fit[mask]) {
+        fit[mask] = fit[mask ^ (1 << bit)];
+      }
+    }
+  }
+}
+\end{minted}
+
+Am fost șocat să descopăr că este de două ori mai rapid să iterăm întîi după bit și apoi după mască:
+
+\begin{minted}{c}
+void compute_fits() {
+  for (int bit = 0; bit < MAX_BITS; bit++) {
+    for (int mask = 1; mask < MAX_VALUE; mask++) {
+      if ((mask & (1 << bit)) && !fit[mask]) {
+        fit[mask] = fit[mask ^ (1 << bit)];
+      }
+    }
+  }
+}
+\end{minted}
+
+Cred că știu explicația. În prima variantă, calculul unei măști accesează și măști relativ îndepărtate ca valoare, ceea ce „rupe” cache-ul. În a doua variantă, cel puțin pentru biții mici (pînă la 12), masca curentă accesează măști la distanță de cel mult $2^{12}$ octeți, deci din \href{https://unix.stackexchange.com/a/317940/276112}{aceeași pagină de memorie} sau una vecină.
+
+
+\subsection{Problema Yet Another Substring Reverse (Codeforces)}
+\label{problem:yet-another-substring-reverse}
+
+\href{https://codeforces.com/contest/1234/problem/F}{enunț}
+$\bullet$
+\hyperref[code:yet-another-substring-reverse]{sursă}
+
+\subsubsection*{Observații teoretice}
+
+Primele observații sînt relativ elementare. În primul rînd, orice două subsecvențe pot fi făcute vecine printr-o operație bine aleasă. Așadar, vom căuta două subsecvențe care:
+
+\begin{enumerate}
+  \item Să fie disjuncte (să ocupe poziții diferite în șir).
+  \item Să conțină caractere distincte.
+  \item Să aibă suma lungimilor maximă.
+\end{enumerate}
+
+De fapt, condiția (1) nu este necesară. Dacă subsecvențele nu sînt disjuncte, nu vor avea nici caractere distincte.
+
+\subsubsection*{Detalii de implementare}
+
+Pentru implementare vom folosi măști de biți. Unele concepte sînt simple și vă vor intra în reflex (dacă nu v-au intrat deja). Oricînd parametrii au ordinul 20-30, sau orice pînă la 64, puteți folosi măști de biți pentru a calcula, compara, reuni, intersecta mulțimi de valori din acel domeniu.
+
+Așadar, să reprezentăm orice subsecvență de caractere distincte printr-o mască de $\Sigma = 20$ de biți corespunzători literelor \textit{a...t}, unde bitul 0 corespunde literei a, iar bitul 19 literei t. Fiecare bit are valoarea 1 dacă și numai dacă litera corespunzătoare apare în subsecvență. De exemplu, subsecvența \textit{cbtf} corespunde măștii \texttt{1000 0000 0000 0010 0110} (nu uitați că bitul 0 este cel mai din dreapta).
+
+Un concept des întîlnit este calcularea tuturor măștilor posibile. În acest caz, există cel mult $2^{20} \approx \np{1000000}$ de măști posibile. Putem construi un vector de \ccode{bool} (sau chiar un \ccode{bitset}) care indică ce măști putem obține, oriunde în șirul dat. Construcția este simplă și durează $\bigoh(\Sigma \cdot 2^\Sigma) \approx \np{20000000}$.
+
+\begin{minted}{c}
+void build_obtainable_masks() {
+  for (int i = 0; i < len; i++) {
+    int mask = 0;
+    int j = i;
+    while ((j < len) && !(mask & (1 << s[j]))) {
+      // Extinde subsecvența (i,j-1) cu poziția j.
+      // Setează bitul corespunzător lui s[j].
+      mask |= 1 << s[j++];
+      obtainable[mask] = true;
+    }
+  }
+}
+\end{minted}
+
+Acum putem reformula cerința astfel. Căutăm două măști cu proprietățile:
+
+\begin{enumerate}
+  \item Ambele pot fi obținute (sînt marcate în vectorul sus-menționat).
+  \item Sînt disjuncte (and-ul pe biți este 0).
+  \item Numărul  total de biți (cardinalul, numit și \textit{populație}) este maxim.
+\end{enumerate}
+
+Dacă iterăm prin măști, pentru fiecare mască $A$ care poate fi obținută putem calcula complementul ei $B = \bar{A}$. Cu alte cuvinte, $B$ indică ce litere mai avem voie să folosim pentru a le lipi de cele din $A$. Pe masca $B$ dorim să o întrebăm: dintre toate submulțimile tale care pot fi obținute, care este populația maximă?
+
+Acesta este un exemplu tipic de programare dinamică pe măști. Există două posibilități:
+
+\begin{enumerate}
+  \item Dacă masca $B$ poate fi obținută, chiar $B$ este răspunsul: dintre toate submulțimile lui $B$, $B$ are cardinalul maxim (\textit{duh}).
+
+  \item Altfel, încercăm pe rînd să modificăm fiecare bit 1 din $B$ la valoarea 0 și vedem care dintre măștile astfel obținute ne dă un răspuns maxim.
+\end{enumerate}
+
+Dacă vă ajută, nu uitați că o mască este o submulțime a mulțimii complete (care în cazul nostru este mulțimea $\{a, b, \dots, t\}$). Reformulată în termeni de mulțimi, recurența de mai sus este: submulțimea maximă a lui $B$ care poate fi obținută este fie $B$ însăși, fie submulțimea maximă a oricărei submulțimi obținute prin eliminarea unui singur element din $B$.
+
+\begin{minted}{c}
+void build_submask_populations() {
+  for (int mask = 1; mask < (1 << SIGMA); mask++) {
+    if (obtainable[mask]) {
+      submask_pop[mask] = __builtin_popcount(mask);
+    } else {
+      for (int bit = 0; bit < SIGMA; bit++) {
+        if (mask & (1 << bit)) {
+          int s = submask_pop[mask ^ (1 << bit)];
+          improve(submask_pop[mask], s);
+        }
+      }
+    }
+  }
+}
+\end{minted}
+
+Codul de mai sus iterează prin toți cei 20 de biți și îi procesează pe cei care au valoarea 1 în masca \ccode{mask}. Cu puțin efort am putea itera doar prin biții de 1, cu metoda Kernighan. Dar intuiesc că nu ar fi mai rapid. Numărul de biți evaluați ar scădea la jumătate (căci numărul mediu de biți 1 este 20/2), dar constanta ar crește.
+
+La final, ultimul pas este să găsim o mască $m$ care maximizează suma \ccode{popcount(m) + submask_pop[~m]}. Cu alte cuvinte, pentru o mască $m$ fixată cel mai bun rezultat este dat de toți biții măștii $m$ și de cît mai mulți biți ai unei măști care reprezintă o subsecvență din șir, dar care este disjunctă cu $m$.
+
+
+\subsection{Problema Cases (Codeforces)}
+\label{problem:cases}
+
+\href{https://codeforces.com/contest/1995/problem/D}{enunț}
+$\bullet$
+\hyperref[code:cases]{sursă}
+
+Putem reformula problema astfel: trebuie să găsim o submulțime $C$ a alfabetului („cazurile”) astfel încît orice subșir de $k$ caractere consecutive să conțină cel puțin un caracter din $C$. Dacă există mai multe astfel de submulțimi $C$, trebuie să o găsim pe cea de cardinal minim.
+
+Ne interesează mai mult ce caractere apar în fiecare fereastră, nu și frecvența lor. De aceea, fiecărei ferestre îi vom asocia o mască. Atunci o mască $C$ este viabilă dacă intersecția ei cu masca fiecărei ferestre este nenulă.
+
+Este mai simplu să operăm pe negativ: dacă o mască este disjunctă cu oricare dintre măștile ferestrelor, acea mască nu poate fi soluție. De aici  rezultă un algoritm în trei pași:
+
+\subsubsection*{Măștile cunoscute a fi rele}
+
+Fie $M$ masca unei ferestre de $k$ caractere. Atunci complementul său, $\overline{M}$, este rău, adică nu poate fi niciodată soluție la problemă. De ce? Prin definiție $\overline{M}$ nu va crea niciun terminator de cuvînt în fereastra curentă. De exemplu, dacă $k = 4$ și fereastra curentă este \textit{bebe}, atunci masca $M$ are biții pentru \textit{b} și \textit{e} setați, iar complementul său ($\overline{M} =$ \textit{acdfghijk...}) este sigur rău, pentru că nu inserează pauze în textul \textit{bebe}.
+
+De asemenea, trebuie obligatoriu ca ultima literă din șir să fie terminator, deci complementul măștii care conține doar ultimul caracter este rău.
+
+\subsubsection*{Propagarea măștilor rele}
+
+Dacă o mască este rea, cu atît mai mult orice submască a ei va fi rea. Pentru propagare, aplicăm metoda cunoscută. Odată ce depistăm o mască rea, nu iterăm prin toate submăștile ei, ci doar prin cele obținute prin eliminarea cîte unui bit. Le marcăm pe acestea ca rele și va fi treaba lor să-și marcheze submăștile ca rele.
+
+Exemplu: Dacă masca \texttt{0011101} este rea, vom marca drept rele măștile \texttt{0001101}, \texttt{0010101}, \texttt{0011001} și \texttt{0011100}.
+
+\subsubsection*{Găsirea soluției}
+
+Acest pas este cel mai simplu. Iterăm prin toate măștile care nu sînt marcate ca rele și o selectăm pe cea cu populație minimă. Putem folosi, de exemplu, unul dintre built-in-urile \ccode{std::popcount} sau \ccode{__builtin_popcount}.
+
+
+\subsection{Problema The Minimum Number of Variables (Codeforces)}
+\label{problem:the-minimum-number-of-variables}
+
+\href{https://codeforces.com/contest/279/problem/D}{enunț}
+$\bullet$
+\hyperref[code:the-minimum-number-of-variables]{sursă}
+
+Și aceasta este o problemă relativ standard de programare dinamică pe măști de biți.
+
+\subsubsection*{Reprezentarea datelor}
+
+Trebuie să vedem unde intervin cele $2^n$ stări așteptate. Este destul de natural să privim lucrurile astfel. Să reindexăm vectorul $a$ de la 0. Să construim acum un vector boolean $p[0 \dots 2^n - 1]$ care reține cîte o informație pentru fiecare mască pe $n$ biți. Pentru o mască $m$, fie $b$ indicele celui mai semnificativ bit 1 (unde $0 \leq b < n$). Atunci desemnăm $v[m]$ ca fiind \ccode{true} dacă și numai dacă putem procesa variabilele $a_0, \dots a_b$ astfel încît pe cele care corespund la biți de 1 să le stocăm în prezent în variabile. De exemplu, pentru masca $77 = 1001101_{(2)}$, $v[77]$ va fi \ccode{true} dacă putem procesa valorile $a_0 \dots a_6$ astfel încît la final să avem patru variabile cu valorile $a_0, a_2, a_3$ și $a_6$.
+
+Subliniem că, prin convenție, o mască unde bitul cel mai semnificativ (MSB) este $b$ se referă întotdeauna la starea sistemului după ce am procesat elementele $a_0, \dots, a_b$. Aceasta deoarece ultima variabilă este în mod necesar stocată (deci bitul aferent este 1).
+
+Putem inițializa sistemul cu $v[1]$ = \ccode{true}, care semnifică că am procesat primul element și l-am salvat într-o variabilă.
+
+\subsubsection*{Programarea dinamică}
+
+Conform enunțului, pentru a procesa elementul $a_b$ trebuie:
+
+\begin{itemize}
+  \item Să fi procesat primele $b$ elemente.
+  \item Să avem între variabilele curente două (sau aceeași luată de două ori) a căror sumă să fie $a_b$.
+  \item Să punem valoarea $a_b$ într-o variabilă nouă sau să suprascriem una dintre variabilele curente.
+\end{itemize}
+
+Putem implementa aceste condiții cu o programare dinamică de tip înainte. Din informațiile despre măștile pe exact $b$ biți le deducem pe cele pe exact $b+1$ biți. Concret, dacă masca $m$ pe $b$ biți poate fi obținută, și dacă există două elemente indicate în masca $m$ a căror sumă este $a_b$, atunci putem obține:
+
+\begin{itemize}
+  \item Masca $m' = m \ | \ 2^b$. Ea are cu un bit în plus față de $m$, semnificînd că folosim o variabilă nouă.
+
+  \item Colecția de măști obținute din masca $m'$ prin ștergerea oricărui bit 1 în afară de bitul $b$. Ele au la fel de mulți biți ca $m$, semnificînd că suprascriem variabila al cărei bit dispare.
+\end{itemize}
+
+Complexitatea este $\bigoh(n \cdot 2^n)$ datorită generării colecției descrise mai sus.
+
+\subsubsection*{Verificarea sumelor}
+
+Așadar, înainte de a completa măștile de variabile pentru bitul $b$, trebuie să ne întrebăm care dintre măștile anterioare (pe $b$ biți) sînt cu adevărat utile, în sensul că includ două elemente a căror sumă este $a_b$. De exemplu, pentru vectorul $a = (1, 2, 3, 100, 200)$, putem procesa primele 3 elemente în diverse moduri, obținînd diverse măști pe 3 biți. Dar toate sînt inutile, căci nicio combinație din primele 3 valori nu ne va da suma 100.
+
+Vom folosi un al doilea bitset de măști pentru acest scop, calculabil tot în $\bigoh(n \cdot 2^n)$. Vom calcula în aceeași iterație toate măștile în care MSB este bitul $b-1$. Le vom procesa în ordine crescătoare, astfel încît la procesarea unei măști să avem garanția că toate submăștile ei au fost procesate. Pentru masca $m$, fie $k$ bitul cel mai puțin semnificativ (LSB). Avem trei cazuri:
+
+\begin{enumerate}
+  \item Dacă $m \oplus 2^k$ oferă suma $a_b$, atunci și $m$ oferă suma $a_b$.
+
+  \item Altfel, iterăm prin toți biții 1 ai lui $m$. Dacă pentru orice bit $i$ avem $a_i + a_k = a_b$, atunci evident masca $m$ oferă suma $a_b$.
+
+  \item Altfel masca $m$ nu oferă suma $a_b$ și nu o vom folosi la programarea dinamică înainte.
+\end{enumerate}
+
+\subsubsection*{Soluția}
+
+Numărul minim de variabile necesar este populația minimă a oricărei măști fezabile pe exact $n$ biți (cu bitul $n-1$ setat).
+
+
+\subsection{Problema Math Test (Codeforces)}
+\label{problem:math-test}
+
+\href{https://codeforces.com/contest/1622/problem/E}{enunț}
+$\bullet$
+\hyperref[code:math-test]{surse}
+
+\subsubsection*{Soluția teoretică}
+
+Ideea problemei mi s-a părut grea. Știind că $n \leq 10$ și că ne permitem să iterăm prin toate submulțimile de elevi, de ce am face-o?
+
+Putem varia \textbf{calculul valorii absolute} pentru fiecare elev. Într-o mască de elevi, un bit 1 pe poziția $i$ va însemna că dorim să calculăm modulul ca $r_i - x_i$. Cu alte cuvinte dorim ca $r_i \geq x_i$. Viceversa, un bit de 0 înseamnă că dorim ca $r_i \leq x_i$. Iau naștere două tabere de elevi, cărora dorim să le maximizăm, respectiv să le minimizăm scorurile. Le vom numi „elevi max” și „elevi min”.
+
+Odată fixată masca, vom căuta să dăm punctaje problemelor care să crească scorurile elevilor max și să evite să le crească pe ale elevilor min. Dar cum? Dacă o întrebare are rezolvitori din ambele tabere, cum să o punctăm? Mai ales, cum ne asigurăm că scorurile elevilor max vor fi deasupra așteptărilor, iar ale elevilor min vor fi sub așteptări?
+
+Observația-cheie este: \textbf{nu trebuie neapărat să respectăm inegalitățile $r_i \geq x_i$ și $r_i \leq x_i$}. Dacă un sistem de punctare nu respectă unele dintre cele $n$ inegalități, este OK. Tot ce pierdem este că obținem o surpriză totală neoptimă. De exemplu, dacă noi insistăm să calculăm $|5 - 7|$ ca $-7 + 5 = -2$, vom obține un total incorect. Dar va exista un alt sistem care respectă inegalitățile și va obține o surpriză mai bună.
+
+Așadar, putem proceda astfel pentru fiecare mască:
+
+\begin{enumerate}
+  \item Inițializează valoarea surprizei cu $-x_i$ pentru elevii max și $+x_i$ pentru elevii min.
+
+  \item Acum, pentru orice întrebare dorim să adunăm punctajul său pentru elevii max care au rezolvat-o și să-l scădem pentru elevii min care au rezolvat-o.
+
+  \item Surpriza totală va fi suma valorilor de la punctele (1) și (2).
+
+  \item Pentru fiecare întrebare, calculează-i scorul ca diferența între numerele de elevi max, respectiv min care au rezolvat-o.
+
+  \item Dacă punctăm cu $P$ puncte o întrebare de scor $S$, ea va contribui cu $P \times S$ puncte la surpriza totală.
+
+  \item Rezultă că putem sorta cele $m$ întrebări crescător după scor și să le atribuim punctajele $1, 2, \dots, m$ în această ordine.
+\end{enumerate}
+
+\subsubsection*{Detalii de implementare}
+
+Merită să citim de la bun început datele ca măști de biți. Fiecare întrebare are o mască de $n$ biți cu rezolvitorii.
+
+\begin{minted}{c}
+for (int stud = 0; stud < n; stud++) {
+  for (int q = 0; q < m; q++) {
+    int bit = getchar() - '0';
+    solvers[q] |= bit << stud;
+  }
+  getchar();
+}
+\end{minted}
+
+Scorul unei întrebări este diferența populațiilor de 1 și de 0:
+
+\begin{minted}{c}
+int get_score(int solvers, int stud_mask) {
+  // solvers = masca de elevi care au răspuns corect la întrebarea curentă
+  // stud_mask = masca curentă de elevi max
+  int good = __builtin_popcount(solvers & stud_mask);
+  int bad = __builtin_popcount(solvers & ~stud_mask);
+  return good - bad;
+}
+\end{minted}
+
+Se vede că scorul unei întrebări poate varia între $-n$ și $+n$. De aceea, în prima sursă chiar colectez întrebările într-un vector de liste indexat după scor. Astfel putem sorta întrebările în $\mathcal{O}(m + n)$.
+
+A doua sursă nu mai colectează întrebările, ci doar distribuția scorurilor într-un simplu vector indexat de la $-n$ la $n$. Din acest vector putem deduce valoarea surprizei totale. De exemplu, dacă $n=10$ și vectorul este $(5, 3, 3, \dots)$, atunci:
+
+\begin{itemize}
+  \item Primele 5 întrebări au punctajele 1, 2, 3, 4, 5 și scor -10. Contribuția acestora la surpriza totală este $15 \cdot (-10) = -150$.
+
+  \item Următoarele 3 întrebări au punctajele 6, 7, 8 și scor -9. Contribuția acestora este $21 \cdot (-9) = -189$.
+
+  \item Următoarele 3 întrebări au punctajele 9, 10, 11 și scor -8. Contribuția acestora este $30 \cdot (-8) = -240$.
+
+  \item etc.
+\end{itemize}
+
+Așadar, putem afla valoarea surprizei pentru fiecare mască cu niște sume Gauss. Apoi alegem masca $M$ care maximizează surpriza. Mai trebuie doar să reconstituim punctajele întrebărilor cunoscînd masca $M$ și vectorul de scoruri aferent.
+
+Pentru aceasta, este suficient să calculăm sume parțiale peste vectorul de scoruri: $P=(5, 8, 11, \dots)$. Să observăm că aceste valori sînt exact punctajele cele mai mari pentru o întrebare cu acel scor (notate cu bold mai sus). De exemplu, 11 este ultimul punctaj pentru întrebările de scor -8. Acum parcurgem întrebările în ordine și le calculăm scorurile. Ori de cîte ori vedem o întrebare de scor -8, îi vom atribui punctajul din vectorul $P$, pe care apoi îl vom decrementa. Astfel, cele 3 întrebări de scor -8 (căci știm că sînt exact 3) vor primi punctajele 11, 10 și 9.
+
+Observație de încheiere: Există doar $2^n = \np{1024}$ de măști de rezolvitori pentru cele $m$ întrebări. La prima vedere, pare un cîștig să înlocuim vectorul de lungime $\np{10000}$ cu unul de lungime $\np{1024}$ (frecvențele măștilor de rezolvitori). Din păcate, problema poate avea multe teste mici și atunci $\mathcal{O}(t \cdot 2^n)$ poate fi mai scump decît $\mathcal{O}(\sum m)$.

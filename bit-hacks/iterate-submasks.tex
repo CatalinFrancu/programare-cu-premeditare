@@ -1,0 +1,41 @@
+\section{Iterarea prin submăștile unei măști}
+
+Ocazional avem nevoie ca, pentru o mască binară $m$, să iterăm prin toate numerele binare care conțin biți 1 doar pe poziții pe care $m$ conține biți 1. De exemplu, pentru masca \texttt{0110010}, dorim să iterăm prin măștile
+
+\begin{verbatim}
+0000000
+0000010
+0010000
+0010010
+0100000
+0100010
+0110000
+0110010 = M
+\end{verbatim}
+
+Surprinzător, putem face acest lucru cu o buclă elementară:
+
+\begin{minted}{c}
+for (unsigned s = m; s; s = (s - 1) & m) {
+  // s este o submască a lui m
+}
+\end{minted}
+
+Remarcăm că bucla nu tratează masca \ccode{s = 0}. Dacă o doriți și pe aceea, faceți un caz particular în afara buclei sau scrieți un cod puțin mai urît pentru a include 0 în buclă, de exemplu:
+
+\begin{minted}{c}
+int s = m + 1;
+do {
+  s = (s - 1) & m;
+  // procesează masca s
+} while (s);
+\end{minted}
+
+De ce funcționează acest cod? În cazul simplu cînd $m$ este contiguă, să zicem \texttt{1111111}, observăm că \ccode{(s - 1) & m = s - 1}, deci \ccode{s} iterează pur și simplu descrescător de la \ccode{1111111} la \ccode{0000000}. Dacă $m$ conține și zerouri intercalate, atunci $s$ va itera descrescător prin combinațiile de 1, ignorînd zerourile. Exemplu:
+
+\begin{verbatim}
+m           = 110111110011000
+s           = 010110000000000
+s - 1       = 010101111111111
+(s - 1) & m = 010101110011000
+\end{verbatim}

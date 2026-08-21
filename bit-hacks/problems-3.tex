@@ -1,0 +1,46 @@
+\section{Probleme}
+
+\subsection{Problema Crisp String (Codeforces)}
+\label{problem:crisp-string}
+
+\href{https://codeforces.com/contest/1117/problem/F}{enunț}
+$\bullet$
+\hyperref[code:crisp-string]{sursă}
+
+Problema ne împinge spre cîteva observații de bază.
+
+\begin{enumerate}
+  \item Putem folosi măști de litere, de exemplu pentru a caracteriza un șir după niște eliminări. Prin convenție, am ales 1 pentru literele eliminate și 0 pentru literele prezente.
+
+  \item Masca șirului inițial este 0 (nu am eliminat nimic).
+
+  \item Ordinea eliminării contează.
+
+  \item Există $2^{17} \approx \np{130000}$ măști, deci ne permitem undeva la \np{1000} de operații elementare per mască.
+\end{enumerate}
+
+Să presupunem că reușim să clasificăm măștile în \textit{bune} (care corespund unui subșir \textit{crisp}) și \textit{rele} (celelalte). Dacă calculăm frecvențele literelor, atunci din orice mască putem afla lungimea șirului corespunzător în $\bigoh(p)$. Problema este 99\% rezolvată, dar nu este suficient să luăm masca bună corespunzătoare șirului minim. Pot exista măști bune, dar la care nu putem ajunge prin eliminări pornind de la masca 0. În particular, masca  $2^p - 1$, corespunzătoare eliminării tuturor caracterelor, este garantat bună (nimeni nu mai este vecin cu nimeni). Dar poate să nu fie accesibilă.
+
+Totuși, completarea este simplă. Evaluăm toate măștile bune. Dacă o mască bună $m$ nu este accesibilă, adică nu există nicio altă mască bună $m'$ din care s-o obținem pe $m$ înlocuind un 0 cu 1, atunci o reclasificăm pe $m$ ca rea. Motivul este că nu există niciun drum de la 0 la $m$. Este important să facem evaluarea măștilor într-o ordine care să garanteze că toate submăștile au fost deja evaluate. Ordinea numerelor naturale este suficientă (deci putem itera prin măști cu un simplu \ccode{for}).
+
+Acum sîntem pregătiți să atacăm miezul problemei: clasificarea măștilor în bune și rele. Ce înseamnă că o mască este rea? Înseamnă că ea are doi biți $x$ și $y$, posibil egali, cu proprietățile:
+
+\begin{itemize}
+  \item Au valoarea 0 (așadar sînt încă prezenți în șir).
+
+  \item Literele corespunzătoare, $x$ și $y$, sînt incompatibile.
+
+  \item Undeva în șirul original există un interval mărginit de literele $x$ și $y$, care nu mai conține alte litere $x$ și $y$, și în care toate literele intermediare au bitul corespunzător 1. Cu alte cuvinte, undeva am făcut o serie de eliminări care au alipit $x$ de $y$.
+\end{itemize}
+
+Cînd depistăm o astfel de situație, atunci nu doar masca sus-menționată este rea, ci și toate supramăștile ei: în afară de biții $x$, $y$ și cei corespunzători literelor intermediare, ceilalți biți pot avea orice valoare (0 sau 1).
+
+Următoarea soluție s-ar putea încadra în timp, foarte la limită. Construim măști ternare pe 17 biți, unde 0 = literă încă activă, 1 = literă eliminată, 2 = literă pentru care încă nu am luat o decizie. În acest vector marcăm măștile rele, unde biților liberi le asociem cifra ternară 2. Apoi parcurgem  recursiv aceste măști, înlocuind valorile de 2 în toate modurile cu 0 sau 1. În final, acele valori care folosesc, în baza 3, doar cifrele 0 și 1 corespund măștilor binare și descriu măștile rele. Complexitatea ar fi $\bigoh(p \cdot 3^p) \approx \np{2.2} \cdot 10^9$, la limită.
+
+Dar iată și o soluție mai naturală. Iterăm prin toate perechile de caractere $(x,y)$. Pentru fiecare pereche, în $\bigoh(n)$ colectăm toate aparițiile acestor caractere în șir și marcăm explicit ca rele măștile dintre apariții. După ce le colectăm pe toate, iterăm prin toate cele $2^{p-2}$ măști care au biții $x$ și $y$ 0 (sau $2^{p-1}$, dacă $x=y$). Extindem mulțimea de măști rele astfel: dacă o mască considerată bună poate proveni dintr-o mască rea cu un bit în plus, masca devine și ea rea.
+
+Este important să judecăm fiecare pereche $(x,y)$ separat de alte perechi. De aceea, după ce găsim toate măștile rele, copiem informația într-un vector global și golim vectorul curent. Facem copierea cu OR, întrucît o mască este rea dacă este rea din cauza oricărei perechi de litere.
+
+Ca optimizare, pentru iterarea doar prin $2^{p-2}$ biți am folosit codul de iterare prin submăștile unei măști. Codul este considerabil mai rapid decît dacă am itera prin toate cele $2^p$ măști și ne-am întreba „au biții $x$ și $y$ valoarea 0?”
+
+Complexitatea pentru colectarea intervalelor este $\bigoh(p^2 \cdot n)$. Ea poate fi redusă la $\bigoh(p \cdot n)$, dar reducerea nu face obiectul acestui curs.

@@ -63,7 +63,7 @@ Măștile au anumite avantaje, cum ar fi:
 
 \section{Numărarea biților de 1 dintr-o valoare (popcount)}
 
-De exemplu, pentru 187, care în binar este 10111011, dorim răspunsul 6. Vom discuta metodele de mai jos și vom studia codul. Puteți citi și \href{https://github.com/CatalinFrancu/nerdvana/blob/main/bit-hacks/popcount.cpp}{programul complet} care măsoară timpii de rulare.
+De exemplu, pentru 187, care în binar este \texttt{10111011}, dorim răspunsul 6. \href{https://github.com/CatalinFrancu/nerdvana/blob/main/bit-hacks/popcount.cpp}{Programul complet} implementează metodele de mai jos și măsoară timpii de rulare.
 
 \subsection{Metoda naivă}
 
@@ -85,6 +85,14 @@ Eliminăm și contorizăm cîte un bit de 1.
 
 Folosim funcțiile \ccode{__builtin_popcount} (pentru \ccode{int}) și \ccode{__builtin_popcountll} (pentru \ccode{long long}) sau \ccode{std::popcount} din STL. Atenție, aceasta din urmă apare doar în standardul C++20.
 
+\textbf{Notă}: Funcțiile built-in pot deveni mult mai rapide pe arhitecturile care admit instrucțiunea nativă \ccode{popcnt}. Dacă știți sigur că mașina de evaluare admite această instrucțiune, îi puteți cere compilatorului să genereze codul adecvat cu comanda:
+
+\begin{minted}{c}
+#pragma GCC target("popcnt")
+\end{minted}
+
+Atenție, dacă CPU-ul evaluatorului nu admite această instrucțiune, rezultatul este nedefinit.
+
 \subsection{Tabel precalculat}
 
 Construim un tabel de 256 de valori care precalculează rezultatul pentru un octet. Extragem octeții numărului prin shiftare.
@@ -95,4 +103,92 @@ Construim același tabel de 256 de valori. Extragem octeții numărului prin con
 
 \subsection{Calcul paralel}
 
-Iată o metodă bazată pe calcul paralel, care face \ccode{log(sizeof(n))} operații.
+Iată o metodă bazată pe calcul paralel, care face \ccode{log(sizeof(n))} operații și nu folosește condiții. Pentru exemplificare, să considerăm numărul pe 16 biți $\overline{abcdefghijklmnop}$. Dorim să facem următoarele 4 operații:
+
+\begin{enumerate}
+  \item Să înlocuim fiecare grupă de doi biți cu suma acelor biți. Cu alte cuvinte, dorim ca în locul grupei $\overline{ab}$ să scriem $00$ dacă $a=b=0$, $01$ dacă $a=0$ și $b=1$ sau $a=1$ și $b=0$, respectiv $10$ dacă $a=b=1$.
+  \item Să înlocuim fiecare grupă de 4 biți cu suma celor două grupe de 2 biți din care se compune.
+  \item Să înlocuim fiecare grupă de 8 biți cu suma celor două grupe de 4 biți din care se compune.
+  \item Să înlocuim întregul număr (16 biți) cu suma celor două grupe de 8 biți din care se compune.
+\end{enumerate}
+
+Astfel, la finalul celor 4 operații, în locul numărului original vom avea exact numărul de biți din număr. Să începem cu operația 1. Secretul este să procesăm toate cele 8 grupe de cîte doi biți simultan, adică în paralel. Pentru aceasta, shiftăm biții impari ($\overline{a0c0e0g0i0k0m0o0}$) la dreapta și îi adunăm cu biții pari ($\overline{0b0d0f0h0j0l0n0p}$). Observăm că, dacă procedăm astfel, grupele de doi biți nu se influențează între ele, deoarece nu există transport dincolo de acești doi biți.
+
+În binar, masca care selectează biții pari este \ccode{0b0101010101010101}, care în hexazecimal se scrie ca \ccode{0x5555}. Pe 32 de biți obținem instrucțiunea:
+
+\begin{minted}{c}
+x = ((x >> 1) & 0x55555555) + (x & 0x55555555);
+\end{minted}
+
+Pentru operația 2, dorim să adunăm fiecare grupă de doi biți cu număr de ordine impar cu grupa de doi biți din dreapta ei. Deci vom shifta numărul cu doi biți, vom reține doar grupele pare folosind masca binară \ccode{0b0011001100110011}, respectiv \ccode{0x3333}, și le vom aduna (în paralel) cu aceleași grupe din numărul original:
+
+\begin{minted}{c}
+x = ((x >> 2) & 0x33333333) + (x & 0x33333333);
+\end{minted}
+
+Procedînd la fel pentru grupe de 4, 8 16 și eventual 32 de biți, obținem codul anexat.
+
+Rezultatele pentru \np{100000000} de operații pe 32 de biți sînt:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{metoda} & \textbf{viteza (milioane de op. / secundă)}\\
+    \hline
+    naiv & 72 \\
+    Kernighan & 69 \\
+    \ccode{std::popcount} / \ccode{__builtin_popcount} & 570 \\
+    \ccode{__builtin_popcount} cu \ccode{pragma} & \np{2350} \\
+    tabel precalculat & 990 \\
+    tabel precalculat + \ccode{char*} & 900 \\
+    calcul paralel & \np{2560} \\
+    \hline
+  \end{tabular}
+
+  \caption{Implementări de \textit{popcount} și vitezele lor.}
+\end{table}
+
+\section{Logaritmul în baza 2}
+
+De exemplu, pentru pentru 187, care în binar este \texttt{10111011}, dorim răspunsul 7 (indicele celui mai din stînga bit 1). \href{https://github.com/CatalinFrancu/nerdvana/blob/main/bit-hacks/log-base-2.cpp}{Codul} implementează (aproape) aceleași metode. De data aceasta, diferențele sînt surprinzător de mici, căci este greu de evitat branching-ul datorat condițiilor.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{lr}
+    \textbf{metoda} & \textbf{viteza (milioane de op. / secundă)}\\
+    \hline
+    naiv & 820 \\
+    tabel precalculat 256 bytes + două \ccode{if}-uri & \np{1694} \\
+    tabel precalculat 256 bytes + \ccode{while} & 768 \\
+    tabel precalculat 64 KiB & \np{1472} \\
+    \ccode{__builtin_clz} / \ccode{std::countl_zero} & 785 \\
+    \ccode{__builtin_clz} cu \ccode{pragma} & \np{2350} \\
+    calcul paralel & 861 \\
+    calcul paralel + \ccode{popcount} & \np{1209} \\
+    \href{https://en.wikipedia.org/wiki/De_Bruijn_sequence\#Finding_least-_or_most-significant_set_bit_in_a_word}{înmulțire de Bruijn} & 719 \\
+    \hline
+  \end{tabular}
+
+  \caption{Implementări de logaritm în baza 2 și vitezele lor.}
+\end{table}
+
+\textbf{Notă}: Ca și în cazul operației \textit{popcount}, multe dintre implementări devin considerabil mai rapide dacă folosim instrucțiunea nativă \ccode{lzcnt}, care numără zerourile din stînga ale unui întreg. Dacă procesorul admite instrucțiunea, i-o putem cere compilatorului cu comanda:
+
+\begin{minted}{c}
+#pragma GCC target("lzcnt")
+\end{minted}
+
+Cu această optimizare, instrucțiunea \ccode{__builtin_clz} devine cea mai rapidă metodă.
+
+\section{Programare dinamică pe măști de biți}
+
+Există o clasă de probleme în care $n$ (dimensiunea intrării) este mică, pe la 20-25. În aceste probleme avem de calculat informații despre fiecare mască pe $n$ biți, de exemplu informații despre fiecare subșir al unui vector cu $n$ elemente sau despre fiecare submulțime a unei mulțimi cu $n$ obiecte. Tehnica de rezolvare pornește de la două observații generale:
+
+\begin{enumerate}
+  \item Este eficient să stocăm aceste informații într-un vector cu $2^n$ poziții, unde poziția $i$ reține informația corespunzătoare măștii $i$ (care la rîndul ei corespunde unui subșir sau unei submulțimi).
+  \item Informațiile despre o mască cu $k$ biți de 1 decurg din măștile cu $k-1$ biți de 1. Cu alte cuvinte, informațiile despre o submulțime cu $k$ obiecte decurg din cele $k$ submulțimi cu $k-1$ obiecte.
+\end{enumerate}
+
+Numim această tehnică \textbf{programare dinamică pe măști de biți}. Rezolvările acestor probleme tind să aibă complexitatea $\bigoh(n \cdot 2^n)$ sau $\bigoh(n^2 \cdot 2^n)$.
+
+În rest, nu este foarte mult de spus teoretic. Vom regăsi multe exemple în problemele aferente.
