@@ -1,0 +1,273 @@
+\chapter{Elemente de teoria numerelor}
+
+\section{Exponențiere binară}
+
+Consider acest subiect ca fiind de bază. Dacă aveți nelămuriri, căutați resurse pe Internet, de exemplu pe \href{https://cp-algorithms.com/algebra/binary-exp.html}{CP Algorithms}. Reiau aici doar codul:
+
+\begin{minted}{c}
+const int MOD = 1'000'000'007;
+
+int bin_exp(int b, int e) {
+  int result = 1;
+
+  while (e) {
+    if (e & 1) {
+      result = (long long)result * b % MOD;
+    }
+    b = (long long)b * b % MOD;
+    e >>= 1;
+  }
+
+  return result;
+}
+\end{minted}
+
+\subsection{Mica teoremă a lui Fermat}
+
+Pentru orice număr prim $p$ și orice $a$ cu $0 \leq a < p$,
+
+$$a^{p-1} \equiv 1 \pmod{p}$$
+
+De aici rezultă și că putem reduce exponentul modulo $p-1$:
+
+$$a^e \equiv a^{e \mod p - 1} \mod p$$
+
+Vom folosi această teoremă în secțiunile următoare pentru a calcula inverse modulare.
+
+\subsection{Exponențiere în \texorpdfstring{$\bigoh(1)$}{O(1)} cu precalculare în \texorpdfstring{$\bigoh(\sqrt{n})$}{O(sqrt(n)}}
+
+Dacă exponențierea este operația critică (adică dacă avem foarte des nevoie de ea), o putem accelera la $\bigoh(1)$ printr-o descompunere în radical. Am avut această nevoie la problema \href{https://kilonova.ro/problems/637}{Ashima} (Lot juniori 2023).
+
+\begin{minted}{c}
+const int MOD = 1'000'000'007;
+const int BITS = 15;
+const int ROOT = 1 << BITS;
+
+// pow2: 2^0, 2^1, 2^2, ..., 2^32767
+// pow2_large: 2^0, 2^32768, 2^65536, 2^98304, ... 2^(32768*32767)
+int pow2[ROOT];
+int pow2_large[ROOT];
+
+void precompute_powers_of_2() {
+  pow2[0] = 1;
+  for (int i = 1; i < ROOT; i++) {
+    pow2[i] = pow2[i - 1] * 2 % MOD;
+  }
+
+  pow2_large[0] = 1;
+  pow2_large[1] = (2 * pow2[ROOT - 1]) % MOD;
+  for (int i = 2; i < ROOT; i++) {
+    pow2_large[i] = (long long)pow2_large[i - 1] * pow2_large[1] % MOD;
+  }
+}
+
+int power_of_2(long long e) {
+  e %= (MOD - 1); // Mica teoremă a lui Fermat.
+
+  long long small = pow2_large[e >> BITS];
+  long long large = pow2[e & (ROOT - 1)];
+  int result = small * large % MOD;
+
+  return result;
+}
+\end{minted}
+
+Codul calculează în $\bigoh(1)$ valori $2^e$ pentru $e < 2^{30}$. Metoda este să îl scriem pe $e = 2^{15} \cdot f + g$. Atunci:
+
+$$2^e = 2^{2^{15} \cdot f + g} = (2^{2^{15}})^f \cdot 2^g$$
+
+În prealabil, codul precalculează $2^i$ și $(2^{2^{15}})^i$ pentru $0 \leq i < 2^{15}$, ceea ce conduce la timp constant.
+
+\subsection{Aplicație: Suma unei progresii geometrice}
+
+Date fiind $a$, $n$ și modulul $M$, să calculăm $S_n = 1 + a + a^2 + \dots + a^{n-1} \mod M$.
+
+Știm deja că putem rescrie:
+
+$$S_n = \frac{a^n - 1}{a - 1}$$
+
+și deci putem răspunde la întrebare printr-o exponențiere rapidă și un invers modular (vom vorbi în curînd despre inverse modulare). Dar dacă modulul nu este prim, atunci inversul modular poate fi nedefinit. De aceea, să căutăm o soluție care apelează doar la înmulțiri.
+
+\subsubsection*{Implementare recursivă v1}
+
+Dacă $n$ este par, putem scrie recurența:
+
+\begin{align*}
+S_n &= (1 + a + a^2 + \dots + a^{\frac{n}{2}-1}) + (a^\frac{n}{2} + \dots + a^{n-1}) \\
+&= (1 + a^\frac{n}{2}) (1 + a + a^2 + \dots + a^{\frac{n}{2}-1}) \\
+&= (1 + a^\frac{n}{2}) S_{\frac{n}{2}}
+\end{align*}
+
+Dacă $n$ este impar, putem reduce problema la una cu $n$ par:
+
+\begin{align*}
+S_n &= 1 + a(1 + a + a^2 + \dots + a^{n-2}) \\
+&= 1 + a \cdot S_{n-1}
+\end{align*}
+
+De aici rezultă imediat codul:
+
+\begin{minted}{c}
+int s(int a, int n) {
+  if (n == 1) {
+    return 1;
+  }
+
+  if (n & 1) {
+    int rec = s(a, n - 1);
+    return (1 + (long long) a * rec) % MOD;
+  } else {
+    long long mult = 1 + bin_exp(a, n / 2);
+    return mult * s(a, n / 2) % MOD;
+  }
+}
+\end{minted}
+
+Problema cu acest cod este că are complexitatea $\bigoh(\log^2 n)$, căci face $\bigoh(\log n)$ exponențieri rapide.
+
+\subsubsection*{Implementare recursivă v2}
+
+Putem scăpa de exponențieri dacă îi cerem funcției reapelate să ne returneze și $a^{\frac{n}{2}}$. În acest caz, vă rog să evitați să returnați două valori din funcție (cum ar fi să pasați două argumente prin referință). Implementarea curată încapsulează cele două valori de returnat într-un \ccode{struct}.
+
+\begin{minted}{c}
+struct prog {
+  long long term; // stochează a^n pentru un n oarecare
+  long long sum;  // stochează 1 + a + ... + a^{n-1} pentru același n
+};
+
+prog s(int a, int n) {
+  if (n == 1) {
+    return { a, 1 };
+  }
+
+  if (n & 1) {
+    prog p = s(a, n - 1);
+    return {
+      p.term * a % MOD,
+      (1 + a * p.sum) % MOD,
+    };
+  } else {
+    prog p = s(a, n / 2);
+    return {
+      p.term * p.term % MOD,
+      (1 + p.term) * p.sum % MOD,
+    };
+  }
+}
+\end{minted}
+
+\subsubsection*{Implementare iterativă}
+
+De amorul artei, să căutăm și o soluție iterativă, similară cu cea pentru exponențierea rapidă. În limbaj natural, exponențierea rapidă enumeră puterile $a, a^2, a^4, a^8 \dots$ și le înmulțește pe cele care compun reprezentarea binară a lui $n$. De exemplu, $a^{42} = a^2 \cdot a^8 \cdot a^{32}$.
+
+Să luăm un exemplu mare, ca să punem în evidență recurența: $n = 364 = 101101100_{(2)}$. Vă recomand și vouă această abordare: nu vă alegeți doar exemple cu $n = 3$. Durează mai mult să scrii un exemplu mai mare, dar soluția iese imediat în evidență.
+
+\begin{align*}
+S_{364} &= (1 + a^{182}) \cdot S_{182} \\
+S_{182} &= (1 + a^{91}) \cdot S_{91} \\
+S_{91} &= 1 + a [(1 + a^{45}) \cdot S_{45}] \\
+S_{45} &= 1 + a \cdot [(1 + a^{22}) \cdot S_{22}] \\
+S_{22} &= (1 + a^{11}) \cdot S_{11} \\
+S_{11} &= 1 + a \cdot [(1 + a^{5}) \cdot S_{5}] \\
+S_{5} &= 1 + a \cdot [(1 + a^{2}) \cdot S_{2}] \\
+S_{2} &= (1 + a^{1}) \cdot S_{1} \\
+S_{1} &= 1 \\
+\end{align*}
+
+Dacă privim lista de indici calculați (1, 2, 5, 11, 22, 45, 91, 182, 364), observăm că acestea sînt exact prefixele lui 364 în baza 2. Deci trebuie să construim termenii lui $S$ de la mic la mare, iterînd prin biții lui $S$ de la stînga la dreapta (invers decît la exponențierea binară). Nu strică să specificăm un contract despre ce stochează iterația curentă, așa cum se vede în codul de mai jos.
+
+\begin{minted}{c}
+int s(int a, int n) {
+  int num_bits = 32 - __builtin_clz(n);
+  long long sum = 0;
+  long long ak = 1;
+
+  for (int i = 0; i < num_bits; i++) {
+    // Contract: fie k numărul format din primii i biți ai lui n.
+    // Atunci la această linie ak = a^k și sum = 1 + a + ... + a^{k-1}.
+    // Din vechiul ak (deci a^{k/2}) calculăm noul sum.
+    sum = (1 + ak) * sum % MOD;
+    ak = ak * ak % MOD;
+
+    int bit = (n >> (num_bits - i - 1)) & 1;
+    if (bit) {
+      sum = (1 + a * sum) % MOD;
+      ak = ak * a % MOD;
+    }
+  }
+
+  return sum;
+}
+\end{minted}
+
+Pentru claritatea contractului, codul este puțin nenatural: valorile mici ale lui $i$ corespund la biți din stînga. Îl putem scurta dacă inversăm direcția lui $i$:
+
+\begin{minted}{c}
+int s(int a, int n) {
+  int num_bits = 32 - __builtin_clz(n);
+  long long sum = 0;
+  long long ak = 1;
+
+  for (int i = num_bits - 1; i >= 0; i--) {
+    sum = (1 + ak) * sum % MOD;
+    ak = ak * ak % MOD;
+
+    if ((n >> i) & 1) {
+      sum = (1 + a * sum) % MOD;
+      ak = ak * a % MOD;
+    }
+  }
+
+  return sum;
+}
+\end{minted}
+
+\label{problem:progression-sum}
+
+Anexa conține \hyperref[code:progression-sum]{implementarea completă}, cu testare.
+
+\section{Divizibilitate}
+
+Această secțiune este doar un ciot ca să reamintim următoarea complexitate. Suma armonică $n + \frac{n}{2} + \frac{n}{3} + ... + \frac{n}{n}$ este $\bigoh(n \log n)$. Vom vedea această egalitate folosită astfel: pentru toate valorile $k$ de la $1$ la $n$, putem să iterăm prin toți multiplii de $k$, iar complexitatea va fi $\bigoh(n \log n)$.
+
+\section{Principiul includerii și excluderii}
+
+Acest principiu nu are legătură directă cu teoria numerelor, dar survine adesea în probleme de divizibilitate. De aceea, pare un moment bun să îl abordăm. La nivelul acestui curs, principiul este cunoscut, dar îl reiau foarte pe scurt. Ocazional îl voi denumi prescurtat pinex (engl. \textit {PIE} sau \textit{inclusion-exclusion principle}).
+
+Din teoria mulțimilor știm că
+
+$$|A \cup B| = |A| + |B| - |A \cap B|$$
+
+Iar pentru trei mulțimi,
+
+$$ | A \cup B \cup C| = (|A| + |B| + |C|) - (|A \cap B| + |B \cap C| + |C \cap A|) + | A \cap B \cap C|$$
+
+Pentru mai mult de trei mulțimi, desigur, regula generală este că luăm cu semnul $+$ intersecțiile de număr impar de mulțimi și cu semnul $-$ intersecțiile de număr impar de mulțimi.
+
+Vom lua ca exemplu problema \href{https://cses.fi/problemset/task/2185}{Prime Multiples} (CSES), pe care o regăsiți și în \hyperref[problem:prime-multiples]{secțiunea de probleme}. Subliniem că numerele de la intrare sînt prime și distincte. De asemenea, numărul de numere între $1$ și $n$ divizibile cu un $x$ dat este de $\lfloor n/x \rfloor$. Atunci găsim soluția astfel:
+
+\begin{enumerate}
+  \item Adunăm numerele divizibile cu oricare număr prim.
+
+  \item Scădem numerele divizibile cu orice pereche de numere prime (adică cu produsul perechii).
+
+  \item Adunăm numerele divizibile cu orice triplet de numere prime.
+
+  \item etc.
+\end{enumerate}
+
+Vedem adesea două implementări pentru acest principiu.
+
+\subsection{Implementare iterativă}
+
+Implementarea iterativă numără binar de la $1$ la $2^k - 1$. Fiecare dintre aceste valori corespunde unei combinații de numere prime. Valoarea este o mască în care biții 1, și doar aceia, indică numerele prime care participă în combinație. Pentru numerele prime $11, 7, 5, 3, 2$, masca $10110_{(2)}$ se referă la combinația $11 \times 5 \times 3$.
+
+Această implementare are complexitatea  $\bigoh(2^k \cdot k)$, deoarece fiecare mască trebuie descompusă pentru a-i afla biții de 1.
+
+\subsection{Implementare recursivă}
+
+Implementarea recursivă construiește masca bit cu bit, cîte unul la fiecare nivel al recursivității. În fapt, nici nu mai transmitem ca parametru masca, ci direct produsul numerelor prime selectate pînă acum. La fiecare nivel putem să selectăm sau nu numărul curent, deci facem două apeluri recursive.
+
+Avem nevoie și de numărul de numere selectate pînă acum. Dar de fapt, paritatea acestui număr ne ajunge. Pentru extra concizie, putem înmulți produsul curent cu -1 ori de cîte ori îl înmulțim cu un număr prim.
+
+Această implementare are complexitate $\bigoh(2^k)$, semnificativ mai mică față de cea recursivă (pe CSES, 0,02 s față de 0,13 s).

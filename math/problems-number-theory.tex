@@ -1,0 +1,239 @@
+\section{Probleme}
+
+Lista include și probleme educaționale, clasice.
+
+\subsection{Problema Exponentiation (CSES)}
+\label{problem:exponentiation}
+
+\href{https://cses.fi/problemset/task/1095}{enunț}
+$\bullet$
+\hyperref[code:exponentiation]{sursă}
+
+Includ această problemă doar ca să trecem în revistă algoritmul de \href{https://en.wikipedia.org/wiki/Exponentiation_by_squaring}{exponențiere rapidă}.
+
+
+\subsection{Problema Exponentiation II (CSES)}
+\label{problem:exponentiation-2}
+
+\href{https://cses.fi/problemset/task/1712}{enunț}
+$\bullet$
+\hyperref[code:exponentiation-2]{sursă}
+
+Includ această problemă doar ca să trecem în revistă \href{https://en.wikipedia.org/wiki/Fermat's_little_theorem}{mica teoremă a lui Fermat}.
+
+Facem o remarcă importantă: modulul este prim. Dacă modulul nu ar fi prim, soluția ar putea fi incorectă. Exemplu: $2^{7^3} \equiv 8 \pmod{10}$, după cum ne putem convinge cu orice calculator sau observînd periodicitatea modulo $4$ a ultimei cifre a lui $2^k$. În schimb, dacă rezolvăm problema ca mai sus, obținem $7^3 \equiv 1 \pmod{9}$ și $2^1 \equiv 2 \pmod{10}$, incorect. Discrepanța izvorăște din faptul că $2^9 \neq 1 \pmod{10}$.
+
+
+\subsection{Problema Eugene and Big Number (CodeChef)}
+\label{problem:eugene-and-big-number}
+
+\href{https://www.codechef.com/problems/KBIGNUMB}{enunț}
+$\bullet$
+\hyperref[code:eugene-and-big-number]{sursă}
+
+Problema este o aplicație directă a sumei unei progresii geometrice.
+
+
+\subsection{Problema Counting Divisors (CSES)}
+\label{problem:counting-divisors}
+
+\href{https://cses.fi/problemset/task/1713}{enunț}
+$\bullet$
+\hyperref[code:counting-divisors]{sursă}
+
+Putem rezolva problema și cu ciurul lui Eratostene cu păstrarea unui divizor pentru fiecare număr. Dar iată o soluție alternativă, care calculează toți divizorii tuturor numerelor din $[1, 10^{6}]$. Soluția are două \ccode{for}-uri, este elegantă și rapidă.
+
+Regăsim aici observația că suma armonică $n + \frac{n}{2} + \frac{n}{3} + ... + \frac{n}{n}$ este $\bigoh(n \log n)$.
+
+
+\subsection{Problema Common Divisors (CSES)}
+\label{problem:common-divisors}
+
+\href{https://cses.fi/problemset/task/1081}{enunț}
+$\bullet$
+\hyperref[code:common-divisors]{sursă}
+
+La prima vedere, iterarea prin toți divizorii posibili $d$ și numărarea tuturor multiplilor posibili nu are cum să se încadreze în timp. Suprimați-vă acest instinct! \emoji{slightly-smiling-face} Regăsim și aici suma armonică și complexitatea totală $\bigoh(n \log n)$.
+
+Cînd valorile sînt mici, nu uitați de posibilitatea vectorilor de frecvență.
+
+
+\subsection{Problema Sum of Divisors (CSES)}
+\label{problem:sum-of-divisors}
+
+\href{https://cses.fi/problemset/task/1082}{enunț}
+$\bullet$
+\hyperref[code:sum-of-divisors]{sursă}
+
+Multe probleme de sumă se rezolvă agregînd răspunsurile în altă ordine. Haideți să iterăm după valoarea divizorului de adunat. Divizorul $k$ intră în suma divizorilor lui $k, 2k, 3k, \dots$, așadar trebuie adunat de $\lfloor n/k \rfloor$ ori. Contribuția lui $k$ la răspunsul final este $\lfloor n/k \rfloor \cdot k$. De aici obținem o soluție în $\bigoh(n)$, prea lentă:
+
+$$S = \sum_{k=1}^{n} \lfloor n/k \rfloor \cdot k$$
+
+Aici regăsim o aplicație a \hyperref[sec:sqrt-split]{descompunerii în radical} unde procedăm diferit înainte și după $\sqrt{n}$. Pînă la $k = \sqrt{n}$, calculăm suma ca mai sus cu efort $\bigoh(\sqrt{n})$.
+
+Între $\sqrt{n}$ și $n$, există doar $\sqrt{n}$ valori distincte pentru $\lfloor n/k \rfloor$. De exemplu, pentru $n=100$ observăm că toți divizorii între 21 și 25 trebuie adunați de 4 ori și toți divizorii între 26 și 33 trebuie adunați de 3 ori. De aceea, este mai eficient să punem întrebarea: care divizori trebuie contorizați de $t$ ori (unde $1 \leq t \leq \sqrt{n}$)? Pentru a afla răspunsul, fie așadar $k$ unul dintre divizorii care trebuie contorizați de $t$ ori. Pornim de la definiție:
+
+\begin{align*}
+& \frac{n}{k} - 1 < \lfloor \frac{n}{k} \rfloor \leq \frac{n}{k} \implies \\
+& \frac{n}{k} - 1 < t \leq \frac{n}{k} \implies \\
+& n - k < tk \leq n \implies \\
+& \frac{n}{t+1} < k \leq \frac{n}{t}
+\end{align*}
+
+Așadar, contribuția la răspunsul final a divizorilor care trebuie contorizați de $t$ ori este
+
+$$t \cdot \biggl(\biggl[\Bigl\lfloor \frac{n}{t + 1} \Bigr\rfloor + 1 \biggr] + \dots + \Bigl\lfloor \frac{n}{t} \Bigr\rfloor \biggr)$$
+
+
+\subsection{Problema Prime Multiples (CSES)}
+\label{problem:prime-multiples}
+
+\href{https://cses.fi/problemset/task/2185}{enunț}
+$\bullet$
+\hyperref[code:prime-multiples]{surse}
+
+Aceasta este o problemă tipică rezolvabilă cu principiul includerii și excluderii. Vezi secțiunea teoretică pentru discuție.
+
+
+\subsection{Problema List of Integers (Codeforces)}
+\label{problem:list-of-integers}
+
+\href{https://codeforces.com/contest/920/problem/G}{enunț}
+$\bullet$
+\hyperref[code:list-of-integers]{surse}
+
+Rezolvarea implică să factorizăm multe numere de cel mult \np{1000000}, deci am început cu ciurul lui Eratostene în care pentru fiecare număr calculez cel mai mic divizor prim și cîtul după împărțirea prin acest divizor de cîte ori se poate. De exemplu, pentru $x=225$ divizorul este $3$, iar cîtul este $225/3^2=25$.
+
+Nu cred că există o formulă directă pentru aflarea lui $L(x, p)$, dar putem folosi căutarea binară. Fie $C(n,p)$ numărul de numere între 1 și $n$ coprime cu $p$. Aflarea lui $C(n,p)$ pentru un $n$ dat este exact problema anterioară, Prime Multiples, dar negată. Deci știm să o rezolvăm cu pinex. Numărul maxim de factori primi distincți ai lui $n$ este 7.
+
+Apoi, $L(x, p)$ este cea mai mică valoare a lui $n$ pentru care $C(n, p)$ atinge valoarea $C(x, p) + k$. Îl putem căuta binar pe $n$. (Întrebare: cum alegem o valoare inițială acoperitoare pentru extrema dreaptă?)
+
+Am anexat două implementări, una care îl factorizează explicit pe $p$ și face pinex pe mulțimea divizorilor și alta care consumă cel mai mic divizor al lui $p$, direct din $p$.
+
+
+\subsection{Problema Small GCD (Codeforces)}
+\label{problem:small-gcd}
+
+\href{https://codeforces.com/contest/1900/problem/D}{enunț}
+$\bullet$
+\hyperref[code:small-gcd]{sursă}
+
+Dorim să calculăm suma funcției $f$ aplicate la cei $C_n^3$ tripleți dintr-un vector de numere. Putem încerca diverse lucruri, dar ar fi bine ca, la un moment dat, să ne vină ideea (clasică) să agregăm datele altfel: să grupăm tripleții după valoarea $f$.
+
+Așadar, fie $T(x)$ numărul de tripleți pentru care funcția $f$ are valoarea $x$. Atunci răspunsul la problemă va fi:
+
+$$\sum_{x=1}^{MAX\_VAL} x \cdot T(x)$$
+
+Fiind la lecția de pinex, să calculăm $T'(x)$ ca numărul de tripleți pentru care funcția $f$ este \textbf{multiplu} de $x$ (așadar $x, 2x, 3x, \dots$), apoi să calculăm $T(x)$ ca:
+
+$$T(x) = T'(x) - T(2x) - T(3x) - \dots$$
+
+Vom calcula aceste valori descrescător de la $x = MAX\_VAL$ la 1, astfel încît valorile necesare pentru $T(x)$ să fie deja calculate. Vedem că efortul necesar pentru $T(x)$ este $\bigoh(MAX\_VAL / x)$, ceea ce înseamnă că putem obține complexitatea $\bigoh(MAX\_VAL \log MAX\_VAL)$.
+
+Cum procedăm pentru un $x$ fixat? Pentru a-l afla pe $T'(x)$ vrem să numărăm tripletele $(a,b,c)$ unde:
+
+\begin{itemize}
+  \item $a$ și $b$ sînt multipli de $x$;
+  \item $a \leq b \leq c$
+\end{itemize}
+
+Aici cred că merg diverse abordări: să iterăm după $a$, $b$ sau $c$ din enunț. Următoarea soluție funcționează. Pentru un $x$ fixat, iterăm prin toate valorile lui $b$ multiplu de $x$. Pentru un $b$ fixat, putem afla numărul de tripleți cu acel $b$ și de valoare $f(a,b,c)=x$. Pentru aceasta, definim trei cantități, pe care le putem menține relativ ușor pe baza vectorului de frecvențe și care corespund candidaților posibili pentru $a$, $b$ și $c$:
+
+\begin{itemize}
+  \item $l$ = numărul de multipli ai lui $x$ strict mai mici decît $b$ (acestea corespund oarecum $a$-urilor);
+
+  \item $f_b$ = frecvența lui $b$;
+
+  \item $r$ = numărul de elemente strict mai mari decît $b$ (acestea corespund oarecum $c$-urilor).
+\end{itemize}
+
+Există o mică complicație: trebuie să generăm separat patru cazuri posibile:
+
+\begin{itemize}
+  \item $a < b < c$: numărul acestor tripleți este $l \cdot f_b \cdot r$.
+  \item $a = b < c$: numărul acestor tripleți este $C_{f_b}^2 \cdot r$.
+  \item $a < b = c$: numărul acestor tripleți este $l \cdot C_{f_b}^2$.
+  \item $a = b = c$: numărul acestor tripleți este $C_{f_b}^3$.
+\end{itemize}
+
+
+\subsection{Problema Secvxor (Baraj ONI 2023)}
+\label{problem:secvxor}
+
+\href{https://kilonova.ro/problems/563}{enunț}
+$\bullet$
+\hyperref[code:secvxor]{surse}
+
+Problema este un pic artificială, ca toate problemele cu xor. Totuși, dacă încercăm exemplul cu hîrtie și creion, ne vom lămuri ce este acel xor al xor-urilor tuturor subsecvențelor bune. În definitiv, răspunsul va fi un xor al unor elemente din vector, luate o singură dată. Aceasta deoarece, tipic pentru xor,  dacă luăm un element de două ori, cele două apariții se anulează.
+
+Și atunci, ce elemente participă la xor-ul final? Acelea care apar \textbf{într-un număr impar de secvențe bune}. Deci putem reformula problema astfel: pentru fiecare element din vector, vrem să aflăm cîte secvențe bune îl includ.
+
+Deoarece nu ne interesează numărul, ci doar paritatea lui, în implementare putem menține această contabilitate boolean, modulo 2. Optimizarea nu este doar teoretică, ci și practică! Pentru că nu ne mai pasă dacă adunăm sau scădem valori, nu mai este nevoie să transmitem variabila de semn (±1) în funcția recursivă. Astfel am redus timpul de la 192 ms la 120 ms!
+
+De aici, problema devine una de optimizare. Colegul vostru Horia are \href{https://kilonova.ro/submissions/417274}{o rezolvare} foarte interesantă, care nici nu stochează elementele vectorului, ci le procesează chiar la citire. Nu înțeleg toate detaliile, dar el răspunde la întrebarea: pentru elementul curent, care este contribuția la răspuns a tuturor secvențelor bune care se termină aici?
+
+Abordarea mea este mai elementară. Să presupunem că știm numărul de secvențe bune care conțin poziția $k-1$. Cum îl putem deduce pe cel pentru poziția $k$? Trebuie să operăm două modificări:
+
+\begin{itemize}
+  \item Să scădem secvențele bune care s-au terminat la poziția $k-1$.
+  \item Să adăugăm secvențele bune care încep la poziția $k$.
+\end{itemize}
+
+Vom precalcula răspunsul pentru (2) într-un vector \ccode{right[k]} = numărul de secvențe bune care încep la poziția $k$. Cum facem asta? Trebuie să știm cîte elemente la dreapta poziției $k$ au un factor prim comun cu \ccode{v[k]}. De aceea, vom calcula vectorul \ccode{right} de la dreapta la stînga. Vom menține pentru fiecare valoare $x$ informația \ccode{mult[x]} = numărul de elemente văzute pînă acum care sînt multipli de $x$. La fiecare pas, vom aplica pinex pe divizorii lui \ccode{v[k]}, apoi vom include acei divizori în vectorul \ccode{mult}.
+
+Odată precalculată această informație, vom rula același algoritm de la stînga la dreapta și vom calcula un vector \ccode{left} (pe acesta nu îl mai stocăm explicit). Acum avem ce ne trebuie ca să menținem răspunsul la întrebarea originală: Cîte secvențe bune acoperă poziția $k$?
+
+\subsubsection*{Optimizare}
+
+Sursa lui Horia m-a ambiționat și pe mine să caut o rezolvare care să apeleze doar $n$ pinex-uri, nu $2n$. Am reușit astfel. Parcurgem vectorul doar de la stînga la dreapta și construim doar informația despre multipli la stînga lui $k$. Pentru a o putea accesa, în același timp, și pe cea din dreapta, facem o precalculare în timp $\bigoh(MAX\_VAL \log MAX\_VAL)$ care calculează, global pentru tot vectorul, numărul de multipli ai fiecărei valori.
+
+Atunci putem afla numărul de multipli de $x$ la dreapta poziției curente $k$ prin diferența între numărul global și numărul cunoscut la stînga.
+
+
+\subsection{Problema Afacere (Lot 2009)}
+\label{problem:afacere}
+
+\href{https://kilonova.ro/problems/2297}{enunț}
+$\bullet$
+\hyperref[code:afacere]{surse}
+
+Problema miroase de la o poștă a problemă rezolvabilă cu principiul includerii și excluderii. Există două indicii:
+
+\begin{enumerate}
+  \item $n \leq 20$
+  \item Ni se cere numărul de șiruri compatibile cu \textbf{cel puțin un} \textit{wildcard}.
+\end{enumerate}
+
+Așadar, vom genera submulțimi de \textit{wildcards}. Pentru fiecare submulțime, contribuția ei la total este numărul de șiruri compatibile cu toate \textit{wildcard}-urile din submulțime, iar semnul contribuției este + sau cu - în funcție de cardinalul submulțimii.
+
+\subsubsection*{Algoritmul de bază}
+
+Cum calculăm contribuția unei submulțimi? Dacă pe cel puțin o coloană (poziție în șiruri) găsim două sau mai multe litere distincte, atunci desigur niciun șir nu se va potrivi cu toate simultan, deci contribuția este zero. Altfel, pe fiecare coloană numărul de posibilități va fi 1 dacă există vreo literă (sîntem obligați să luăm acea literă) sau $\Sigma$ dacă există doar caractere \ccode{?} (putem lua orice literă). Prin $\Sigma$ ne referim la valoarea 26 + extinderea curentă. Așadar, contribuția submulțimii va fi $\Sigma^q$, unde $q$ este numărul de coloane care conțin doar \ccode{?}.
+
+De aici rezultă un algoritm în $\bigoh(nr \cdot 2^n \cdot l)$, prea lent. Pentru fiecare dintre cele $nr$ extensii rulăm cîte un pinex recursiv. La fiecare apel recursiv avem nevoie de $\bigoh(l)$ ca să combinăm \textit{wildcard}-ul curent cu submulțimea construită pînă acum.
+
+\subsubsection*{Eliminarea factorului $nr$}
+
+Putem să rulăm un singur algoritm pinex în locul celor $nr$, astfel. Am spus că toate contribuțiile vor fi de tipul $\Sigma^q$. În loc să le calculăm imediat, hai să le contabilizăm într-un vector de frecvență, \ccode{coef}, indexat după $q$. Dacă, de exemplu, dorim să adunăm la soluție $\Sigma^5$, vom executa \ccode{coef[5]++}.
+
+În fapt, noi calculăm coeficienții unui polinom în variabila $\Sigma$, de gradul $l$.
+
+La finalul pinexului, vom evalua acest polinom pentru fiecare $\Sigma$ dintre cele $nr$.
+
+Complexitatea acestei soluții este $\bigoh(2^n \cdot l + l \cdot nr)$.
+
+\subsubsection*{O implementare mai eficientă}
+
+Putem chiar și să eliminăm factorul $\bigoh(l)$ de pe fiecare nivel din pinex, astfel. Pe parcursul recursivității, noi trebuie să răspundem la următoarele două întrebări despre \textit{wildcard}-ul curent:
+
+\begin{enumerate}
+  \item Este el compatibil cu submulțimea existentă?
+
+  \item Cîte semne de întrebare are reuniunea dintre \textit{wildcard} și submulțimea existentă? (De aici aflăm care este contribuția ei la răspuns.)
+\end{enumerate}
+
+Dacă o submulțime este incorectă, înseamnă că trebuie să existe două \textit{wildcards} în această submulțime care conțin litere diferite pe o poziție. Putem precalcula naiv această informație în $\bigoh(n^2 \cdot l)$, căci valorile sînt minuscule. Rezultă, pentru fiecare \textit{wildcard}, o mască pe 20 de biți care reține cu ce alte \textit{wildcards} este el compatibil.
+
+O submulțime are \ccode{?} pe o poziție $k$ dacă toate elementele sale au \ccode{?} pe acea poziție. De aceea, vom precalcula pentru fiecare \textit{wildcard} o mască pe $l$ biți cu 1 pentru \ccode{?} și 0 pentru litere (avem nevoie de \ccode{__int128}). Atunci masca unei submulțimi de \textit{wildcards} este AND-ul pe biți al măștilor elementelor, iar numărul de \ccode{?} din masca submulțimii este populația acelei măști.
+
+Complexitatea totală este $\bigoh(n^2 \cdot l + 2^l + l \cdot nr)$.
