@@ -216,3 +216,138 @@ Pentru sortare, este important să evităm comparația naivă de vectori, care r
 \subsubsection*{Optimizare de memorie}
 
 A doua versiunea de sursă face o optimizare uriașă de memorie (de la 7 MB la 300 KB). Nu este nevoie să stocăm vectorii de diferențe de lungime $n-1$. Putem recalcula la cerere orice element cu cost $\bigoh(1)$. Este nevoie să stocăm doar masca cu care am construit vectorul și jumătatea stîngă/dreaptă din care provine. Din nou, codul care consumă mai puțină memorie este mai rapid, deși face conversii suplimentare. Cine-ar fi crezut? \emoji{winking-face}
+
+
+\subsection{Problema Light Switches (Codeforces)}
+\label{problem:light-switches}
+
+\href{https://codeforces.com/contest/1423/problem/L}{enunț}
+$\bullet$
+\hyperref[code:light-switches]{sursă}
+
+Pornim de la observația elementară că două apăsări ale aceluiași buton se anulează reciproc. De aceea, vom apăsa fiecare buton cel mult o dată. Deci putem reformula problema astfel: pentru fiecare zi, trebuie să găsim un subset minim de butoane care, pornind din starea „zero” (toate becurile stinse) să ducă becurile exact în starea în care le lasă eroul în acea zi.
+
+Putem gîndi totul în termeni de \ccode{bitset}-uri. Fie $x_1, \dots, x_s$ bitseturile celor $s$ butoane, unde $x_i[j]=1$ dacă și numai dacă butonul $i$ afectează becul $j$. Fie $y_1, \dots, y_d$ bitseturile celor $d$ zile. Atunci soluția pentru ziua $i$ va fi un subset minimal al lui $x$ al cărui xor să fie $y_i$.
+
+Soluția în $\bigoh(n \cdot d \cdot 2^s)$ ar fi: calculează xor-ul pentru fiecare submulțime a lui $x$, apoi pentru fiecare zi caută bitsetul zilei în mulțimea de bitseturi generate. Fiecare comparație este liniară, în $\bigoh(n)$. Desigur, această soluție este ineficientă, dar ne dă ideea pentru \textit{meet in the middle}:
+
+\begin{enumerate}
+  \item Calculăm $2^l$ bitseturi pe care le putem obține doar cu primele $l$ butoane. Le punem într-o tabelă hash (vom avea nevoie să căutăm prin ele). Pentru fiecare bitset reținem și cu cîte butoane l-am obținut. Dacă mai multe combinații de butoane duc la același bitset, reținem numărul minim de apăsări.
+
+  \item Calculăm $2^r$ bitseturi pe care le putem obține doar cu ultimele $r=n-l$ butoane. Le stocăm într-un vector simplu. Din nou, reținem numărul de apăsări.
+
+  \item Acum răspundem la interogări. Pentru bitsetul zilei curente, $y$, iterăm prin vectorul de $2^r$ elemente. Pentru fiecare element $x$ din acest vector, căutăm valoarea $x \oplus y$ în tabela hash. Dacă îl găsim, însumăm numărul de apăsări necesare pentru $x \oplus y$, respectiv pentru $x$. Minimul acestor sume este răspunsul pentru ziua curentă.
+\end{enumerate}
+
+Complexitatea este $\bigoh(2^l + d \cdot 2^r)$. Așadar, cele două jumătăți nu sînt neapărat egale. \emoji{slightly-smiling-face} Această situație îmi amintește de descompunerea în radical, unde blocurile pot devia considerabil de la $\sqrt{n}$ elemente.
+
+\subsubsection*{Optimizări}
+
+Merită să deviem puțin de la subiectul zilei pentru a enumera multe idei de optimizare. Unele nu au contat, dar cele care au contat au redus timpul de 4 ori. \href{https://codeforces.com/contest/1423/status?order=BY_CONSUMED_TIME_ASC}{Alte surse} (neinteligibile...) reduc timpul de încă 8-9 ori!
+
+\begin{enumerate}
+  \item Memoria este și ea un factor. Împărțirea 30=18+12 consumă de 4 ori mai puțină memorie decît împărțirea 30=20+10 și este doar cu 10\% mai lentă.
+
+  \item Implementarea naivă folosește chei de tip \ccode{bitset}. Deci STL trebuie să știe să calculeze coduri hash pentru așa ceva. Oare cît de bine se descurcă? În versiunea 2 mi-am implementat propria funcție \ccode{hash_code} pentru bitseturi, exprimată ca $(r^{p_1} \oplus r^{p_2} \oplus \dots \oplus r^{p_k}) \mod M$, unde $p_i$ sînt pozițiile biților. Am ales $r = 37$, iar $M$ este un număr prim pe 64 de biți. Probabilitatea unei coliziuni este infimă, căci folosim doar $2^{30}$ de coduri hash dintr-un spațiu de $2^{64}$.
+
+  \item De la un punct mi-am implementat propriul bitset.
+
+  \item Am precalculat puterile $r^i$, ca să nu mai fac operații modulo în calculul codurilor hash.
+
+  \item La procesarea unei zile, cînd iterăm prin vectorul drept și observăm că deja folosim mai multe butoane decît soluția optimă găsită pînă la acel moment, nu mai are sens să facem și căutarea în tabela hash. Oricum nu putem obține o soluție mai bună. Putem chiar să sortăm bitseturile din vectorul drept după numărul de butoane apăsate.
+
+  \item Marele avantaj al funcției hash descrise mai sus este că, pentru două bitseturi $A$ și $B$, avem $h(A \oplus B) = h(A) \oplus h(B)$. Asta înseamnă că putem menține incremental codul hash, odată la citirea bitsetului și ulterior la operațiile xor între bitseturi.
+
+  \item Odată ajunși aici, ne dăm seama că nu mai avem nevoie de bitseturi propriu-zise! Un bitset este doar un cod hash pe 64 de biți.
+\end{enumerate}
+
+
+\subsection{Problema Algebra Flash (Codeforces)}
+\label{problem:algebra-flash}
+
+\href{https://codeforces.com/contest/1767/problem/E}{enunț}
+$\bullet$
+\hyperref[code:algebra-flash]{sursă}
+
+Problema are o soluție naivă în $\bigoh(2^m \cdot n)$: generăm toate combinațiile de culori și, pentru fiecare combinație, verificăm dacă putem parcurge vectorul. Deci ideea de \textit{meet in the middle} este să generăm, separat, combinații de cîte $m/2$ culori.
+
+Dar chiar și așa, $\bigoh(2^{m/2} \cdot n)$ va depăși timpul! Trebuie să scăpăm cumva de factorul de $n$. Observăm că o pereche de culori consecutive $\langle x,y \rangle$ înseamnă că trebuie să cumpărăm măcar una dintre culorile $x$ și $y$. Numim această pereche o \textit{relație} între $x$ și $y$. Astfel ia naștere o matrice de relații de $m \times m = \np{1600}$, mult mai puțin decît $n=\np{300000}$. Matricea este chiar simetrică și are doar $m \times (m + 1) / 2 = 780$ de valori utile.
+
+Am reprezentat matricea ca pe un vector de măști de 40 de biți, ceea ce paralelizează unele operații. De exemplu, dacă avem o mască de culori deja cumpărate $a$ și masca $b$ de relații a unei alte culori $x$, putem verifica ușor dacă $x$ trebuie cumpărată obligatoriu: $b \land \neg a$. Astfel testăm dacă $x$ are relații care nu apar în $a$. Dar cred că, și dacă nu sînteți versați în folosirea măștilor pe biți, puteți lua punctaj maxim. Unele operații ar fi de $m/2$ ori mai scumpe, dar s-ar încadra în timp.
+
+La citirea datelor, am inclus explicit relațiile $\langle c_1, c_1 \rangle$ și $\langle c_n, c_n \rangle$. Este cel mai simplu mod de a forța cumpărarea culorilor pentru prima și ultima platformă. Tehnic, puteam să elimin liniile $c_1$ și $c_n$ din calcule și să reduc problema la $m-1$ sau $m-2$ culori, dar ar fi necesitat cod în plus.
+
+Acum, să procesăm cele două jumătăți ca pînă acum. Intenția generală este:
+
+\begin{enumerate}
+  \item Generează toate combinațiile din jumătatea stîngă $L$, adică cu culorile din intervalul $[m/2, m)$.
+
+  \item Generează toate combinațiile din jumătatea dreaptă $R$, adică cu culorile din intervalul $[0,m/2)$.
+
+  \item Pentru fiecare combinație din $L$, găsește cea mai ieftină pereche din $R$ astfel încît cele două să satisfacă:
+
+  \begin{itemize}
+    \item toate relațiile între două culori din $L$;
+
+    \item toate relațiile între o culoare din $L$ și una din $R$;
+
+    \item toate relațiile între două culori din $R$.
+  \end{itemize}
+\end{enumerate}
+
+Să considerăm întîi $L$. Vom opera pe măști compuse cu biții $[m/2, m)$. Dar nu toate măștile ne interesează, ci doar cele care satisfac relațiile din $L$. În această privință, jumătatea $R$ nu ne poate ajuta ulterior. Putem să generăm (recursiv sau iterativ) fiecare mască, iar la final să verificăm dacă ea satisface toate relațiile din $L$. Dar este mai eficient, și deloc greu, să verificăm validitatea pe parcursul recursivității. Observația este că, pentru orice pereche de biți/culori $\langle j, k \rangle$ cu $j < k$, dacă nu am cumpărat bitul $j$ la vremea sa, trebuie să îl cumpărăm pe $k$. Așadar: dacă bitul curent, $k$, are vreo relație cu orice bit 0 din intervalul $[m/2, k]$, atunci bitul $k$ poate avea doar valoarea 1. Altfel el poate avea valorile 0 sau 1, ca de obicei în recursivitate. Codul ar putea arăta astfel:
+
+\begin{minted}{c}
+void rec(int k, int total_cost, u64 mask) {
+  ...
+  u64 unsat = rel[k] & bit_range(k, mid) & ~mask;
+  if (!unsat) {
+    // Sîntem liberi să alegem valoarea 0.
+    rec(k + 1, total_cost, mask);
+  }
+  // Întotdeauna sîntem liberi să alegem valoarea 1.
+  rec(k + 1, total_cost + cost[k], mask | (1ull << k));
+}
+\end{minted}
+
+Tot pe parcursul recursivității din $L$ putem gestiona și relațiile dintre $L$ și $R$. Cînd alegem valoarea 1 pentru un bit din $L$, aceasta nu spune nimic despre biții din $R$ cu care el are relații. Aceia pot fi 0 sau 1. În schimb, cînd alegem valoarea 0 pentru un bit din $L$, sîntem forțați să cumpărăm toți biții din $R$ care au o relație cu el. Așadar, ori de cîte ori completăm o mască validă din $L$, vom fi completat și o mască din $R$, o submulțime pe care sîntem obligați să o cumpărăm.
+
+Acum, fie $S \subseteq R$ masca cu restul biților din $R$, cei pe care (încă) avem libertatea să-i cumpărăm sau nu. Ce relații mai avem de satisfăcut? Doar cele între biți din $S$! Desigur, vrem să facem asta cu cost minim. Astfel  ajungem, în sfîrșit, la întrebarea pe care vrem să i-o putem adresa fiecărei măști $S \subseteq R$: care este submulțimea cea mai ieftină a lui $S$ pe care trebuie să o cumpărăm pentru a satisface toate relațiile dintre doi biți din $S$? Sursa mea numește acesta \textit{costul redus} al măștii $S$ și îl calculează tot într-o singură parcurgere.
+
+Fie $k$ bitul cel mai semnificativ (cu valoare 1) din $S$. Facem următoarele observații:
+
+\begin{enumerate}
+  \item Costul redus minim se obține luînd minimul din două variante: fie cumpărăm bitul $k$, fie nu-l cumpărăm.
+
+  \item Dacă îl cumpărăm, îl plătim și reducem problema la aflarea costului redus al restului măștii.
+
+  \item Dacă nu îl cumpărăm, sîntem obligați să cumpărăm toți ceilalți biți din $S$ cu care $k$ are relații. Eliminăm toți acești biți și bitul $k$ însuși din mască și reducem problema la aflarea costului redus al măștii rămase.
+\end{enumerate}
+
+Sursa anexată calculează pasul (3) în $\bigoh(1)$ per bit cumpărat. A doua variantă precalculează costul tuturor măștilor și obține timp $\bigoh(1)$, dar merge la fel de repede.
+
+
+\subsection{Problema Helping Hiasat (Codeforces)}
+\label{problem:helping-hiasat}
+
+\href{https://codeforces.com/contest/1105/problem/E}{enunț}
+$\bullet$
+\hyperref[code:helping-hiasat]{sursă}
+
+Problema seamănă considerabil cu Algebra Flash.
+
+Problema Helping Hiasat seamănă bine cu cele discutate în clasă.
+
+Mai întîi, să abstractizăm enunțul. Dacă Hiasat își schimbă username-ul, apoi este vizitat de $k$ prieteni, îl poate mulțumi doar pe (cel mult) unul dintre ei. O primă idee care mi-a venit mie de aici este: pentru fiecare grup de vizite consecutive construim o mască $X$. Orice submască a lui $X$ care are cel puțin doi biți setați este nefezabilă (prietenii corespunzători biților 1 nu pot fi mulțumiți simultan).
+
+Dar putem simplifica această observație. Orice pereche de biți din $X$ se exclud reciproc. Soluția poate include cel mult unul dintre ei. Așadar, putem construi o matrice booleană de $m \times m$ cu perechile de biți / prieteni care se exclud reciproc. Am ales să stochez această matrice ca pe $m$ variabile \ccode{long long}, căci este util ca fiecare bit să aibă o mască a biților cu care se exclude.
+
+Problema se reduce la găsirea unei \href{https://en.wikipedia.org/wiki/Maximal_independent_set}{mulțimi independente maxime}.
+
+Soluția în $\mathcal{O}(2^m)$ este acum directă. Parcurgem recursiv toți biții. Avem întotdeauna opțiunea să nu alegem bitul $k$. Avem și opțiunea să îl alegem doar dacă el nu se exclude cu niciun bit din masca biților aleși pînă acum.
+
+Pentru \textit{meet in the middle}, ne închipuim că am rezolvat subproblema pentru jumătatea stîngă și am obținut cel mult $2^{20}$ măști fezabile. Cînd rezolvăm jumătatea dreaptă, ori de cîte ori obținem o mască fezabilă acolo, $Y$, vrem să ne întrebăm: \textbf{Care este populația maximă a unei măști fezabile, $X$, din stînga care nu intră în conflict cu $Y$}?
+
+Aici este singurul pas specific problemei. Trebuie să ne asigurăm că niciun bit din $X$ nu se exclude cu niciun bit din $Y$-ul curent. De aceea, pe măsură ce compunem (recursiv, ca de obicei) masca $Y$ vom construi și „masca excluziunilor”: masca tuturor biților din stînga care devin interziși. Cînd adăugăm un bit $k$ la masca dreaptă $Y$, masca excluziunilor lui $Y$ crește (cu OR) cu masca excluziunilor lui $k$.
+
+Ultima subproblemă de rezolvat este: am completat o mască $Y$, îi știm masca excluziunilor și, prin negație, obținem o mască $Z$ cu biții din stînga care ne sînt încă permiși. Acum dorim să obținem rapid submasca fezabilă a lui $Z$ de populație maximă. Pe aceasta o precalculăm cu programare dinamică pe biți, imediat după recursivitatea stîngă și înainte de a da drumul la cea dreaptă.
