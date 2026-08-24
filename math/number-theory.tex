@@ -494,7 +494,7 @@ Trebuie să facem acest lucru chiar și dacă $a$ este coprim cu $M$. De exemplu
 
 \subsection{Prin algoritmul lui Euclid extins}
 
-Din algoritmul lui Euclid decurge o metodă imediată de calcul al inverselor. Inversul lui $a$ modulo $n$ este valoarea \(b\) pentru care
+Din algoritmul lui Euclid decurge o metodă imediată de calcul al inverselor. Inversul lui $a$ modulo $n$ este valoarea $b$ pentru care
 
 $$ab \equiv 1 \pmod{M} \implies ab + kM = 1$$
 
@@ -659,6 +659,7 @@ void compute_mobius(int n) {
 \end{minted}
 
 \subsubsection*{Metoda 3}
+\label{subsubseq:mobius-method-3}
 
 Pe aceasta am învățat-o de la \href{https://kilonova.ro/submissions/84735}{Mircea Rebengiuc}! Ea este considerabil mai lentă pentru $n$ foarte mare. Dar pentru valori practice ($n \leq \np{1000000}$), diferențele sînt neglijabile.
 
@@ -679,6 +680,154 @@ Cum funcționează? Putem da și o demonstrație combinatorică. De exemplu, pen
 
 $$u[i] = \sum_{k=0}^{f-1} C_f^k \cdot (-1)^k$$
 
-, sumă care coincide cu dezvoltarea binomială a lui $(1 - 1)^f$, cu excepția ultimului termen. Ea va avea valoarea $\pm 1$ în funcție de paritatea lui $f$.
+Această sumă coincide cu dezvoltarea binomială a lui $(1 - 1)^f$, cu excepția ultimului termen. Ea va avea valoarea $\pm 1$ în funcție de paritatea lui $f$.
 
 O explicație mult mai elegantă pornește de la egalitatea $\sum_{d|n} \mu(d) = 0$ (pentru $n > 1$), pe care o vom studia în secțiunea despre formula de inversiune Möbius.
+
+\section{Formula de inversiune Möbius}
+
+Această secțiune este mai mult teoretică.
+
+\subsection{Funcția Möbius este multiplicativă}
+
+Să demonstrăm întîi că funcția Möbius este multiplicativă, adică $\mu(1) = 1$ și $\mu(mn) = \mu(m)\mu(n)$ pentru orice valori $m$ și $n$ \textbf{coprime} (acest aspect este important).
+
+Voi urma \href{https://math.stackexchange.com/a/895388}{această demonstrație}. Dacă fie $m$ fie $n$ \textbf{nu} sînt libere de pătrate, atunci nici $mn$ nu va fi liber de pătrate. Atunci fie $\mu(m)$, fie $\mu(n)$ vor fi 0, iar $\mu(mn)$ va fi tot 0. Deci se verifică egalitatea $\mu(mn) = \mu(m)\mu(n)$.
+
+Altfel, $m$ și $n$ sînt libere de pătrate și coprime. Atunci $m$ este un produs de $k$ factori primi distincți, iar $n$ este un produs de \textbf{alți} $l$ factori primi distincți. Rezultă că $mn$ este un produs de $k+l$ factori primi distincți (și liber de pătrate). Deci avem pe de o parte că $\mu(mn) = (-1)^{k+l}$, iar $\mu(m)\mu(n) = (-1)^k (-1)^l$, deci din nou se verifică egalitatea $\mu(mn) = \mu(m)\mu(n)$.
+
+\subsection{Suma funcției Möbius peste divizori este multiplicativă}
+
+Mai facem un pas către inversiunea Möbius și introducem funcția
+
+$$f(n) \triangleq \sum_{d|n} \mu(d)$$
+
+Să demonstrăm că și această funcție este multiplicativă. Clar, $f(1) = 1$ deoarece 1 are un singur divizor și $\mu(1) = 1$. Acum, fie două numere coprime $m$ și $n$. Orice divizor $d$ al lui $mn$ poate fi scris ca produs dintre un divizor $d_1$ al lui $m$ și unul $d_2$ al lui $n$. Mai mult, deoarece $m$ și $n$ sînt coprime, și divizorii $d_1$ și $d_2$ vor fi coprimi, așadar $\mu(d_1 d_2) = \mu(d_1) \mu(d_2)$. Punînd totul cap la cap obținem:
+
+\begin{align*}
+f(mn) &= \sum_{d|mn} \mu(d) \\
+&= \sum_{d_1 | m,\ d_2 | n} \mu(d_1 d_2) \\
+&= \sum_{d_1 | m,\ d_2 | n} \mu(d_1) \mu(d_2) \\
+&= \sum_{d_1|m} \sum_{d_2|n} \mu(d_1)\mu(d_2) \\
+&= \Big( \sum_{d_1|m} \mu(d_1) \Big) \cdot \Big( \sum_{d_2|n} \mu(d_2) \Big) \\
+&= f(m) f(n)
+\end{align*}
+
+\subsection{Valoarea sumei funcției Möbius peste divizori}
+
+Să demonstrăm egalitatea:
+
+$$
+f(n) \triangleq \sum_{d|n} \mu(d) =
+\begin{cases}
+1 & \textrm{dacă} \; n = 1\\
+0 & \textrm{dacă} \; n > 1
+\end{cases}
+$$
+
+Desigur, dacă $n = 1$, singurul divizor este $1$, iar $\mu(1) = 1$.
+
+\subsubsection*{Demonstrație cu combinatorică}
+
+Dacă $n$ nu este liber de pătrate, atunci el va avea și divizori neliberi de pătrate. Aceia vor avea $\mu(d) = 0$ și îi putem ignora la sumă. Așadar, în $f(n)$ putem ține cont doar de divizorii lui $n$ liberi de pătrate, adică putem lua în calcul doar factorii primi ai lui $n$ la puterea 1. De exemplu, pentru $n = 84 = 2^2 \cdot 3 \cdot 7$ putem calcula efectiv suma pentru $n' = 2 \cdot 3 \cdot 7 = 42$.
+
+Dacă $n$ este liber de pătrate și constă din $r$ factori primi, atunci pentru fiecare $k = 0, 1, \dots, r$ vor exista $C_r^k$ moduri de a forma divizori cu $k$ dintre factorii primi, iar toți acei divizori vor avea $\mu = (-1)^k$. De aceea,
+
+$$f(n) = \sum_{k=0}^{r} C_r^k \cdot (-1)^k = (1 + (-1))^r = 0$$
+
+\subsubsection*{Demonstrație pornind de la multiplicativitatea lui \texorpdfstring{$f$}{f}}
+
+Dacă $n$ are forma $n = p^k$ pentru un număr prim $p$ și $k \geq 1$, atunci divizorii lui $n$ sînt $1, p, p^2, \dots, p^k$. Știm că $\mu(1) = 1$, $\mu(p) = -1$, iar pentru exponenți $e \geq 2$, $\mu(p^e) = 0$ pentru că acei divizori nu sînt liberi de pătrate. Deci $f(n) = 1 + (-1) + 0 + \dots + 0 = 0$.
+
+În cazul general, fie $n = p_1^{k_1} \cdot p_2^{k_2} \cdot\dots \cdot p_r^{k_r}$. Atunci:
+
+\begin{align*}
+f(n) &= f(p_1^{k_1} \cdot p_2^{k_2} \cdot \dots \cdot p_r^{k_r}) \\
+&= f(p_1^{k_1}) \cdot f(p_2^{k_2}) \cdot \dots \cdot f(p_r^{k_r}) \\
+&= 0 \cdot 0 \cdot \dots \cdot 0 \\
+&= 0
+\end{align*}
+
+\subsubsection*{Corolar: Calculul funcției Möbius}
+
+Acum înțelegem \hyperref[subsubseq:mobius-method-3]{metoda 3} de calcul al funcției Möbius. Pornind de la funcția $f$, ea definește
+
+$$\mu(n) = -\sum_{d|n,\ d \neq n} \mu(d)$$
+
+\subsection{Formula de inversiune a lui Möbius}
+
+Acum avem tot ce ne trebuie ca să demonstrăm \href{https://en.wikipedia.org/wiki/M\%C3\%B6bius_inversion_formula}{Formula de inversiune a lui Möbius}. O reluăm și aici. Dacă $f$ și $g$ sînt două funcții care satisfac relația
+
+$$g(n) = \sum_{d|n} f(d) \ \textrm{pentru}\ n \geq 1$$
+
+atunci
+
+$$f(n) = \sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) \ \textrm{pentru}\ n \geq 1$$
+
+Vom urma \href{https://math.stackexchange.com/q/1757352}{demonstrația aceasta} și primul răspuns. Pornim de la formula lui $f$ în care facem schimbarea de notație $d \to n/d$:
+
+$$\sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) = \sum_{d|n} \mu\Big(\frac{n}{d}\Big) g(d)$$
+
+Aici îl înlocuim pe $g$ conform ipotezei date:
+
+$$\sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) = \sum_{d|n} \Biggl(\mu\Big(\frac{n}{d}\Big) \sum_{d'|d} f(d')\Biggr)$$
+
+Exprimăm această sumă de perechi sub altă formă:
+
+$$\sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) = \sum_{d'|d|n} f(d') \mu\Big(\frac{n}{d}\Big)$$
+
+Așadar, ne pregătim să-l trecem pe $d'$ în exterior. Acum, pentru un $d'$ fixat, ce valori poate lua $n/d$? Deoarece $d'|d$, rezultă că $(n/d) | (n/d')$. Facem notația $m = n/d$ și ajungem la:
+
+$$\sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) = \sum_{d'|n} f(d') \sum_{m|\frac{n}{d'}}\mu(m)$$
+
+În partea dreaptă recunoaștem suma funcției Möbius peste divizorii lui $n/d'$. Iau naștere două cazuri.
+
+\begin{enumerate}
+  \item Cînd $d' = n$, suma din dreapta iterează prin divizorii lui 1. Știm că valoarea acelei sume este 1.
+
+  \item Cînd $d' < n$, atunci $n/d' > 1$, deci suma din dreapta este 0.
+\end{enumerate}
+
+Rezultă, în sfîrșit, că:
+
+$$\sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) = f(n) \cdot 1 + \sum_{d'|n,\ d < n} f(d') \cdot 0 = f(n)$$
+
+\subsection{Aplicații}
+
+Spre șocul meu, nu am găsit aplicații directe ale acestei formule. Invariabil am descoperit că toate problemele pe care le rezolvă inversiunea Möbius pot fi rezolvate și direct cu funcția Möbius sau chiar mai elementar. Iată totuși cîteva exemple.
+
+\subsubsection*{Numărul de divizori}
+
+Dacă alegem $f(n) = 1$, atunci $g(n) = \sum_{d|n} f(d)$ este numărul de divizori ai lui $n$. Prin inversiunea Möbius obținem că:
+
+$$\sum_{d|n} \mu(d) g\Big(\frac{n}{d}\Big) = 1$$
+
+Exemplu: Pentru $n = 10$, divizorii săi sînt 1, 2, 5 și 10, care au respectiv 1, 2, 2 și 4 divizori. Obținem că
+
+$$\mu(1) g(10) + \mu(2) g(5) + \mu(5) g(2) + \mu(10) g(1) = 1 \cdot 4 - 1 \cdot 2 - 1 \cdot 2 + 1 \cdot 1 = 1$$
+
+Putem folosi inversiunea Möbius ca să calculăm $g(k)$ = numărul de divizori ai lui $k$ pentru fiecare valoare $1 \leq k \leq n$ dacă separăm unul dintre termenii sumei:
+
+$$g(n) = \mu(1) \cdot g\Big(\frac{n}{1}\Big) = 1 - \sum_{d|n,\ d \neq 1} \mu(d) g\Big(\frac{n}{d}\Big)$$
+
+Putem implementa această formulă: fiecare divizor contribuie la numărul de divizori ai fiecărui multiplu al său. Dar... noi am făcut deja fix acest lucru în problema \hyperref[problem:counting-divisors]{Counting Divisors}.
+
+\subsubsection*{Suma divizorilor}
+
+Similar, dacă alegem $f(n) = n$, atunci $g(n) = \sum_{d|n} f(d)$ este suma divizorilor lui $n$, notată cu $\sigma(n)$, despre care am vorbit la problema \hyperref[problem:sum-of-divisors]{Sum of Divisors}. Prin inversiunea Möbius obținem că:
+
+$$\sum_{d|n} \mu(d) \sigma\Big(\frac{n}{d}\Big) = n$$
+
+Ca și în exemplul anterior, putem calcula $\sigma(k)$ pentru toate valorile $1 \leq k \leq n$, dar știm deja să facem acest lucru fără să folosim inversiunea Möbius.
+
+\subsubsection*{Numărul de perechi coprime}
+
+Vom urma Exemplul 1 din \href{https://codeforces.com/blog/entry/53925}{acest articol de pe Codeforces}. Dat fiind $n$, trebuie să numărăm perechile coprime $(x,y) \in [1, n] \times [1,n]$. Cerința seamănă cu problema \hyperref[problem:playing-with-gcd]{Playing with GCD}, cu trei diferențe:
+
+\begin{enumerate}
+  \item Trebuie să calculăm perechile coprime în loc de necoprime.
+  \item Trebuie să includem și perechile neordonate, adică $x > y$.
+  \item Trebuie să aflăm răspunsul doar pentru un $n$ dat, nu pentru toate $1 \leq k \leq n$.
+\end{enumerate}
+
+Soluția la Playing with GCD era o sumă de valori $\varphi$. Inversiunea Möbius duce la o soluție diferită, care însă calculează răspunsul pentru un singur $n$.
