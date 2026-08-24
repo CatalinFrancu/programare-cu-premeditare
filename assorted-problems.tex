@@ -102,7 +102,7 @@ Acum căutăm un semiperimetru al conturului, așadar o jumătate din $X$, care 
 
 \subsection{Detalii de implementare}
 
-Algoritmul este $\mathcal{O}(n^3)$, dar în practică el se mișcă fulger, deoarece numerele de prefixe din $x$ care sînt sufixe în $y$ și viceversa sînt minuscule. Iterăm doar prin acelea și obținem un algoritm mai degrabă $\mathcal{O}(n^2)$.
+Algoritmul este $\bigoh(n^3)$, dar în practică el se mișcă fulger, deoarece numerele de prefixe din $x$ care sînt sufixe în $y$ și viceversa sînt minuscule. Iterăm doar prin acelea și obținem un algoritm mai degrabă $\bigoh(n^2)$.
 
 Am dublat șirul $Y$ pentru că urmează să facem căutări din $X$ în $Y$, căutări care este posibil să se înfășoare peste finalul lui $Y$.
 
@@ -174,3 +174,316 @@ Putem trata simplu și unitar toate aceste cazuri:
 \end{itemize}
 
 Sursa -- nu vă mint -- n-a fost ușor de scris. M-am chinuit mai mult decît era necesar la acest ultim pas, al ștergerii seriilor de lungime 0. Dar, după cum am mai spus, la ONI și chiar și la Baraj este important să putem exprima în cod niște idei rezonabil de grele.
+
+
+\section{Problema Scurtcircuit (Lot 2025)}
+\label{problem:scurtcircuit}
+
+\href{https://kilonova.ro/problems/3805}{enunț}
+$\bullet$
+\hyperref[code:scurtcircuit]{sursă}
+
+Problema necesită cîteva cunoștințe de nișă despre \href{https://en.wikipedia.org/wiki/Adder_(electronics)}{sumatoare}. Eu aveam doar bazele, dar am reușit să redescopăr o bună parte, pînă la 90p. \emoji{slightly-smiling-face}
+
+Sigur, am putem proiecta sumatorul băbește. Pe ultima coloană adunăm doi biți, din care rezultă un rezultat și un bit de transport pentru penultima coloană. Rezultatul îl adunăm cu al treilea bit și rezultă încă un transport pentru penultima coloană etc. Dificultatea problemei constă în faptul că ține cont de adîncimea circuitului, adică de numărul maxim de porți înlănțuite astfel încît intrarea uneia să depindă de ieșirea precedentei. Această adîncime trebuie să fie oarecum logaritmică pentru punctaj maxim (vezi coloana $D_{lim_5}$ din enunț). Sumatorul naiv va ajunge la adîncime $\bigoh(nk)$, mult prea rea.
+
+\subsection{Compresorul 3:2}
+
+Să observăm că un sumator pentru două numere nu adună doar doi cîte doi biți. Pe fiecare poziție, sumatorul are nevoie de un circuit elementar cu \textbf{trei} intrări: biții de pe acea poziție și transportul de la poziția anterioară. Acest circuit se numește sumator integral (engl. \textit{full adder}), spre deosebire de un sumator fără transport, care se numește semisumator (engl. \textit{half adder}).
+
+Rezultatul adunării a 3 biți va fi între 0 și 3 (cine a spus că nu învățăm și matematică la acest cerc??). Așadar, la ieșire ne ajung doar doi biți: rezultatul pe aceeași poziție și transportul pentru următoarea poziție. De aceea, sumatoarele integrale se mai numesc și \href{https://en.wikipedia.org/wiki/Adder_(electronics)#3:2_compressors}{compresoare 3:2}.
+
+Merită să petrecem puțin timp ca să proiectăm un compresor 3:2 cît mai eficient (conform problemei), căci este cărămida de bază a soluției. Adîncimea este crucială; numărul de celule suplimentare este doar cireașa de pe tort. Iată un sumator integral care folosește 3 celule suplimentare și are adîncime 3. Codul de mai jos adună biții din celulele $x$, $y$ și $z$ și pune suma în $s$ și transportul (\textit{carry}) în $c$. Folosim formulele:
+
+\begin{itemize}
+  \item $s = x \oplus y \oplus z$
+  \item $c = x \cdot y + y \cdot z + z \cdot x$ sau, ca să refolosim celulele, $x \cdot y + (x \oplus y) \cdot z$
+\end{itemize}
+
+\begin{minted}{c}
+void compress_32(int x, int y, int z, int* s, int* c) {
+int x_xor_y = new_cell(OP_XOR, x, y);
+*s = new_cell(OP_XOR, x_xor_y, z);
+int x_and_y = new_cell(OP_AND, x, y);
+int x_xor_y_and_z = new_cell(OP_AND, x_xor_y, z);
+*c = new_cell(OP_OR, x_and_y, x_xor_y_and_z);
+}
+\end{minted}
+
+\subsection{Reducerea de la \texorpdfstring{$k$}{k} numere la două numere}
+
+Noi putem folosi compresorul 3:2 și la modul general, adunînd orice 3 biți vrem noi. Să privim numerele ca pe o matrice de $n \cdot k$ biți. Pe fiecare coloană $c$, luăm grupe de cîte trei biți și îi înlocuim cu doi: unul pe coloana $c$ și unul pe coloana $c + 1$. Procedăm astfel pe toate coloanele și obținem o nouă colecție de biți, toți calculabili la adîncime 3, căci așa funcționează sumatorul (biții rămași ca rest modulo 3 sînt la adîncime 0, dar ne interesează maximul).
+
+Repetăm acest procedeu, reducînd la fiecare trecere numărul de biți la circa 2/3. Așadar, vor fi necesare circa $\log_{3/2}(n/2)$ iterații pentru a reduce $n$ biți la 2 biți, iar fiecare iterație crește adîncimea cu 3. Mai există niște rotunjiri în sus datorită biților rămași modulo 3, dar ne încadrăm bine în limitele problemei. Ca să dăm un exemplu la întîmplare, pentru $n = 500$ și $k = 200$ ne trebuie $\log_{3/2} 250 < 14$ iterații ca să reducem 500 de numere la două numere, adică adîncime 42 din totalul de 65 permis pentru punctaj maxim.
+
+\subsection{Generarea și propagarea transportului}
+
+Am redus așadar problema la două numere de $k + \log_2 n$ biți (vom spune $k$ pentru simplitate). Nu ne permitem să adunăm numerele naiv, de la dreapta la stînga, căci fiecare transport ar depinde de anteriorul, ceea ce ar duce la o adîncime $\bigoh(k)$. Este nevoie să paralelizăm efortul, adică să scriem sumatoare progresiv mai mari pentru subsecvențe ale numerelor. Dar sumatoarele au nevoie, la intrare, de transport. Cum putem ști, pe distanțe mari, dacă există transport? Pentru aceasta, să introducem noțiunea de \textit{generare-propagare} (GP).
+
+Să considerăm o coloană $i$ cu biții $a$ și $b$. La adunare,
+
+\begin{itemize}
+  \item Coloana \textbf{generează} transport dacă $a = b = 1$.
+
+  \item Coloana \textbf{propagă} transportul primit de la coloana $i-1$ către coloana $i+1$ dacă $a \oplus b = 1$.
+\end{itemize}
+
+Să definim așadar cantitățile booleene $g$ și $p$ care indică, respectiv, dacă coloana $i$ generează și propagă transport. Acum, să considerăm două zone mai mari de coloane, de lățimi arbitrare, alipite. Să spunem că le-am calculat caracteristicile $g_1$ și $p_1$ (pentru zona mai puțin semnificativă), respectiv $g_2$ și $p_2$ (pentru zona mai semnificativă). Ce putem spune despre reuniunea zonelor?
+
+\begin{itemize}
+  \item Reuniunea generează transport dacă zona 2 generează transport \textbf{sau} zona 1 generează transport, iar zona 2 îl propagă. Așadar, $g = g_2 + g_1 \cdot p_2$ (operatorii $+$ și $\cdot$ sînt booleeni).
+
+  \item Reuniunea propagă transportul dacă și zona 1, și zona 2 îl propagă. Așadar, $p = p_1 \cdot p_2$.
+\end{itemize}
+
+Putem exprima aceste formule ca pe un operator:
+
+$$(g_1, p_1) \circ (g_2, p_2) = (g_2 + g_1 \cdot p_2, p_1 \cdot p_2)$$
+
+Implementarea acestui operator este în funcția \ccode{combine()}, care are adîncime 2:
+
+\begin{minted}{c}
+struct gen_prop {
+  int g, p;
+};
+
+gen_prop combine(gen_prop a, gen_prop b) {
+  gen_prop res;
+  int a_gen_b_prop = new_cell(OP_AND, a.g, b.p);
+  res.g = new_cell(OP_OR, b.g, a_gen_b_prop);
+  res.p = new_cell(OP_AND, a.p, b.p);
+  return res;
+}
+\end{minted}
+
+\subsection{Adunarea a două numere}
+
+În sfîrșit putem ataca adunarea finală. Să definim $G_i$ și $P_i$ = generarea, respectiv propagarea transportului în zona de coloane $0 \dots i$. Dacă reușim să le calculăm, atunci suma celor două numere este ușor de calculat. Transportul la intrare pe orice coloană i va fi $G_{i-1}$, iar suma (bitul de rezultat care ne interesează) va fi $a_i \oplus b_i \oplus G_{i-1} = P_i \oplus G_{i-1}$. Foarte convenabil, toate aceste valori pot fi calculate în paralel (adică la adîncime 1).
+
+Iar, pentru a calcula $G_i$ și $P_i$, vom construi o tabelă rară \ccode{GP}, unde \ccode{GP[p][i]} reține valorile parțiale \ccode{G[i-2^p+1...i]} și \ccode{P[i-2^p+1...i]}. Calculăm fiecare celulă combinînd două jumătăți, ca la RMQ. Ca să ne facem viața mai ușoară, definim și valorile \ccode{GP[p][i]} pentru care $i < 2^p$, cu convenția că în acele cazuri ne referim la tot intervalul $[0, i]$. Atunci pe ultima linie a tabelei \ccode{GP}, fie ea linia $h$ (cu $2^h \geq k$) toate intervalele vor începe de la 0, deci linia $h$ conține fix valorile $G_i$ și $P_i$ care ne interesează.
+
+Calculul tabelei \ccode{GP} crește adîncimea circuitului cu $2 \log_2 k$ niveluri.
+
+Mai rămîne doar să calculăm rezultatul, în adîncime 1, așa cum am spus.
+
+Acest circuit se numește \href{https://en.wikipedia.org/wiki/Kogge\%E2\%80\%93Stone_adder}{sumator Kogge-Stone}. În prima mea încercare am folosit un alt sumator, \href{https://en.wikipedia.org/wiki/Brent\%E2\%80\%93Kung_adder}{Brent-Kung}, dar acesta necesită o adîncime mai mare, $4 \log_2 k$ și depășea limita pentru punctaj maxim.
+
+
+\section{Problema Lungcircuit (Lot 2025)}
+\label{problem:lungcircuit}
+
+\href{https://kilonova.ro/problems/3807}{enunț}
+$\bullet$
+\hyperref[code:lungcircuit]{surse}
+
+Problema Lungcircuit îmi aparține. Inițial căutam o problemă pentru lotul de juniori, bazată pe jocul \href{https://ruwix.com/twisty-puzzles/hungarian-rings-sliding-puzzle/}{Hungarian Rings}. A rezultat o problemă prea grea pentru juniori. În seara dinaintea unei probe, comisia de seniori mi-a cerut problema ca să o dea a doua zi, pentru că problema avea un mare avantaj: era la cheie (teste, subtaskuri, soluții pentru toate subtaskurile, chiar și editorial). Uneori gradul de pregătire bate calitatea problemei. \emoji{smiling-face-with-tear}
+
+Problema are o soluție „tractor” și o soluție elegantă, care este mai mult de idee. \href{https://drive.google.com/drive/folders/1EqiZNtAgVsJ-FbrPRqzF-OIpyOPeztnR}{Editorialul} include și soluții pentru subtaskuri.
+
+\subsection{Soluția „tractor”}
+
+Introducem doi termeni pentru a ușura descrierea. Numim pozițiile comune \textbf{noduri}. Primul nod este la poziția 0, iar ultimul nod este la poziția $(k-1)d$. Numim \textbf{lanțuri exterioare} pozițiile $(k-1)d + 1 \dots n - 1$ pe fiecare circuit.
+
+Pentru subtaskurile mici, putem menține circuitele complete la fiecare mișcare. Pentru o soluție în $\bigoh((q + n) \log k)$, să schimbăm paradigma. Să urmărim traseul fiecărei bile și să aflăm poziția ei finală după cele $q$ mutări. Vom accelera simularea procesînd rapid porțiuni de circuit. Pornind de la mutarea 0, fiecare bilă va trece prin următoarele etape (sau o submulțime a lor):
+
+\begin{enumerate}
+  \item Avansează pînă la următorul nod.
+  \item Avansează pînă la ultimul nod.
+  \item Avansează pînă la primul nod (parcurgînd lanțul exterior).
+  \item Găsește ultima mutare cînd bila mai revine în primul nod.
+  \item Avansează un număr întreg de noduri (cel mult $k-1$).
+  \item Avansează pozițiile rămase pînă la epuizarea operațiilor.
+\end{enumerate}
+
+Pentru (1), (3) și (6), știind că bila se află pe circuitul $c$ la mutarea $t$ și că dorim să avanseze $p$ pași, trebuie să putem răspunde la întrebarea „ce indice are a $p$-a mutare de tip $c$, începînd cu mutarea $t$”? Putem răspunde la aceste întrebări cu o precalculare ușoară, colectînd în doi vectori pozițiile literelor \textbf{R} și \textbf{A} în șirul de mutări.
+
+Pentru (2) și (5), să remarcăm că bila pornește dintr-un nod, deci prima mișcare dictează pe ce drum pornește bila. Pentru a avansa un interval în $\bigoh(1)$, dacă prima mișcare este $c$ la momentul $t$, trebuie să găsim rapid a $d$-a apariție a lui $c$, începînd cu mutarea $t$, în șirul de mutări. Și această informație poate fi precalculată.
+
+Noi dorim să avansăm eficient $\bigoh(k)$ intervale, deci peste informația de mai sus construim o tabelă rară (\textit{sparse table}). Astfel putem avansa pînă la ultimul nod în $\bigoh(\log k)$.
+
+Pentru (4), dorim să răspundem la întrebări de forma: „dacă o bilă se află în nodul 0 la momentul $t$, cînd va reveni ea în nodul 0?”. Putem refolosi exact codul anterior. Dacă răspunsul există și este $t'$, atunci putem completa de la sfîrșitul spre începutul vectorului de mutări momentul \textbf{ultimei} reveniri în nodul 0: el va fi același pentru $t$ și pentru $t'$.
+
+\subsection{Soluție cu liste}
+
+O soluție în $\bigoh(n + q)$, semnificativ mai simplu de codat, pornește de la următoarea observație. Bilele din noduri (în exemplul dat, 0, 3, 6, 9 și 12) au o traiectorie similară. Dacă prima mutare este \textbf{R} și bila 0 intră pe circuitul roșu, la fel vor face și celelalte. Cînd 0 revine într-un nod, la fel și celelalte. Similar sînt unite și bilele 1, 4, 7, 10 și 13.
+
+De aceea, putem să grupăm aceste bile și să le mutăm pe toate cu efort mic. Concret, reprezentăm un circuit ca:
+
+\begin{itemize}
+  \item $d$ liste, prima de $k$ bile, iar restul de cîte $k-1$ bile. Numim această structură \textbf{rețea}, căci elementele listelor sînt intercalate. Prima listă conține nodurile și este comună celor două circuite.
+  \item Lanțul exterior (inițial 16-31, respectiv 42-57).
+\end{itemize}
+
+Ce se întîmplă la o mutare \textbf{R} (cazul \textbf{A} este simetric)?
+
+\begin{itemize}
+  \item Lanțul exterior capătă o bilă la început, și anume ultimul nod (15).
+  \item Lanțul exterior pierde o bilă de la final (31), care ajunge la începutul ultimei liste din rețea, care devine 31, 2, 5, 8, 11, 14.
+  \item Permutăm circular listele rețelei. Ultima listă devine prima. Astfel, bila 31, care acum stă în nodul 0, devine în mod corect prima bilă din prima listă.
+  \item Notificăm circuitul albastru că prima sa listă nu mai este $0, 3, \dots$, ci este $31, 2, \dots$
+\end{itemize}
+
+Cu această reprezentare putem simula toți pașii de mai sus, și deci toate mutările, în $\bigoh(1)$ fiecare. Putem reprezenta atît listele din rețea, cît și lista de liste (rețeaua însăși), ca pe buffere circulare, ca să le putem permuta circular în $\bigoh(1)$.
+
+Unele implementări se simplifică considerabil dacă stocăm ultimul nod separat de rețea. Atunci toate listele din rețea au lungime egală, $k-1$.
+
+Implementarea cu \ccode{deque}-uri este chiar mai scurtă, dar este foarte ineficientă cînd $d$ este mare, deoarece creează o mulțime de \ccode{deque}-uri mici.
+
+
+\section{Problema Cal-cule (Lot 2025)}
+\label{problem:cal-cule}
+
+\href{https://kilonova.ro/problems/3820}{enunț}
+$\bullet$
+\hyperref[code:cal-cule]{surse}
+
+\subsection{Enunțul}
+
+Să clarificăm mai întîi enunțul problemei (uneori este necesar).
+
+\begin{itemize}
+  \item Există un șir secret de $n \leq \np{1000}$ elemente.
+
+  \item La intrare primim $n$ și un alt număr $k$.
+
+  \item Trebuie să aflăm histograma (distribuția frecvențelor) din șirul secret.
+
+  \item Putem face interogări despre histograma oricărui subșir, specificînd indicii elementelor din subșirul dorit.
+
+  \item \textbf{Dar} nu primim ca răspuns histograma, ceea ce ar fi prea simplu. În schimb, comisia trece histograma printr-o funcție pe care tot noi o implementăm, care reduce o histogramă la o valoare între $0$ și $k-1$.
+\end{itemize}
+
+Concret,
+
+\begin{itemize}
+  \item Trebuie să implementăm funcția \ccode{descuie_grajdul}.
+
+  \item Din \ccode{descuie_grajdul} putem apela funcția comisiei, \ccode{intreaba_cal}, trimițîndu-i indicii din subșirul dorit.
+
+  \item \ccode{intreaba_cal} calculează histograma subșirului, iar cu acea histogramă apelează funcția noastră, \ccode{dreseaza_cal}.
+
+  \item Funcția \ccode{dreseaza_cal} trebuie să reducă orice vector la o valoare între $0$ și $k-1$.
+\end{itemize}
+
+Restricțiile includ un tabel de valori posibile pentru $k$. Vedem că, cu cît $k$ este mai mare, cu atît limita pentru numărul de interogări scade (firește).
+
+\subsection{O soluție în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)}}
+
+Prima mea idee a fost să aflu efectiv vectorul. Desigur, nu putem afla exact valorile, dar putem afla clasele de echivalență (pe ce poziții apar valori egale). De exemplu, este relevant că $v[0] = v[2] = v[7]$, dar nu este relevantă valoarea efectivă.
+
+Să considerăm că am aflat clasele pe pozițiile $0, 1, \dots, i-1$ și dorim să aflăm clasa poziției $i$, adică dorim să aflăm cu ce poziție anterioară este egal $v[i]$ sau dacă $v[i]$ este o valoare încă nemaiîntîlnită. Putem căuta binar această informație astfel. Să colectăm indicii primei apariții a fiecărei valori distincte. De exemplu, dacă $i = 9$ și dacă știm că
+
+\begin{itemize}
+  \item $v[0] = v[2] = v[7]$
+  \item $v[1] = v[3] = v[4] = v[6]$
+  \item $v[5] = v[8]$
+\end{itemize}
+
+atunci vom colecta indicii 0, 1 și 5. Subliniem că elementele $v[0]$, $v[1]$ și $v[5]$ sînt distincte. Cu alte cuvinte, vectorul de frecvențe pentru subșirul $(v[0], v[1], v[5])$ va fi (1, 1, 1). Acum, dacă adăugăm elementul $v[9]$ la acest subșir apar două posibilități:
+
+\begin{enumerate}
+  \item Fie vectorul de frecvențe rezultat este (1, 1, 1, 1), caz în care $v[9]$ este o valoare nouă, diferită de $v[0 \dots 8]$.
+
+  \item Fie vectorul de frecvențe rezultat este (1, 1, 2), caz în care $v[9]$ este egal cu unul dintre elementele anterioare.
+\end{enumerate}
+
+Astfel, putem căuta binar cel mai scurt prefix al subșirului format din indicii primelor apariții care, împreună cu poziția $v[i]$, produce o frecvență de 2. Pentru aceasta, vom face \ccode{dreseaza_cal} să returneze 0 sau 1 după cum vectorul de frecvențe se termină sau nu cu o frecvență 2.
+
+Această soluție ajunge la \np{8000} de interogări, iar principalul său neajuns este că \ccode{dreseaza_cal} returnează doar două valori posibile, indiferent de valoarea lui $k$. Cu alte cuvinte, soluția nu încearcă să partiționeze spațiul de posibilități suficient de rapid.
+
+\subsection{Soluția optimă}
+
+Eu nu văd niciun mod de a împinge soluția anterioară mai departe. Prin natura ei, căutarea binară utilizează doar două valori din cele $k$, pentru că pune întrebări de tip da/nu.
+
+În loc de asta, ne mulțumim să baleiem vectorul și să aflăm la fiecare pas histograma (distribuția frecvențelor). De exemplu, dacă primele 5 elemente sînt distincte, vom avea 5 valori cu frecvența 1. Dacă al 6-lea element este egal cu unul anterior, nu insistăm să aflăm \textbf{cu care}. Ne interesează doar noua histogramă: 4 frecvențe de 1 și o frecvență de 2.
+
+Un indiciu valoros este că, pentru $k = \np{1000}$, avem doar 999 de interogări. Cu alte cuvinte, pentru fiecare poziție de la 1 la $n-1$ trebuie să facem exact o interogare. Atunci, haideți să presupunem că am pus întrebări pentru elementele $0, 1, \dots, i-1$ și să gîndim soluția prin prisma elementului $i$. Cînd îl procesăm, exact o frecvență va crește cu exact o unitate față de prefixul anterior. Dacă elementul este la prima apariție, un 0 devine 1. Altfel un 1 devine 2 sau un 2 devine 3 etc. Cum decidem? Am vrea să facem o interogare astfel încît toate cele $k$ răspunsuri posibile să fie relevante. De exemplu, răspunsul 0 să indice că o frecvență 0 devine 1, răspunsul 1 să indice că o frecvență 1 devine 2 etc.
+
+Ideal, am putea dresa calul să raporteze numărul de perechi egale în prefixul interogat. De exemplu, șirul $(7, 8, 8, 9, 9, 9)$ conține 4 perechi (perechea 8-8 și 3 perechi 9-9). Dacă extindem șirul la $(7, 8, 8, 9, 9, 9, 8)$, el va conține 6 perechi, cu 2 mai multe decît anteriorul, ceea ce arată că o frecvență a crescut de la 2 la 3. Așadar, de acum încolo cînd spunem „răspuns” ne referim la perechile formate de elementul curent, calculate ca diferența dintre răspunsul dat de cal și numărul de perechi cunoscute din interogarea pe care noi am format-o.
+
+Partea bună este că nu avem nevoie să știm șirul ca să aflăm numărul de perechi, ci doar frecvențele. Deci \ccode{dreseaza_cal} doar însumează $f \cdot (f-1)/2$ pentru fiecare frecvență $f$. Dar trebuie clarificate multe aspecte.
+
+\subsubsection*{Cazul cu puține valori distincte}
+
+Întîi, suma frecvențelor va depăși $k$. Cînd $k=n$, putem opera modulo $k$, deoarece la orice pas creșterea numărului de perechi nu va depăși $n-1$. Dar, cînd $k$ este mic, nu putem diferenția răspunsul. De exemplu, dacă $k=4$ și creșterea este 1, atunci s-ar putea ca o frecvență de 1 să fi devenit 2 sau una de 5 să fi devenit 6 etc. Putem reduce confuzia dacă numărul de elemente distincte este cel mult $k-1$. De exemplu, să considerăm următorul șir cu $k=4$, frecvențele 1, 5, 9 și elementul deocamdată necunoscut $x$:
+
+\begin{verbatim}
+8 13 13 13 13 13 20 20 20 20 20 20 20 20 20 x
+\end{verbatim}
+
+Vom construi interogarea astfel:
+
+\begin{itemize}
+  \item Elementul cu frecvența 1 îl luăm o dată.
+  \item Elementul cu frecvența 5 îl luăm de două ori.
+  \item Elementul cu frecvența 9 îl luăm de trei ori.
+  \item Îl adăugăm și pe $x$.
+\end{itemize}
+
+Rezultă interogarea 8 13 13 20 20 20 $x$ (reamintesc că vom trimite poziții, nu valori, căci acesta este protocolul). Interpretăm răspunsul astfel:
+
+\begin{itemize}
+  \item Dacă este 0, $x$ este un element nou întîlnit.
+  \item Dacă este 1, $x$ este 8.
+  \item Dacă este 2, $x$ este 13.
+  \item Dacă este 3, $x$ este 20.
+\end{itemize}
+
+Așadar, deși frecvențele sînt mari, putem ști exact ce fel de element este $x$ întrucît avem mai puțin de $k$ elemente distincte.
+
+\subsubsection*{Cazul cu multe valori distincte}
+
+Dacă numărul de elemente distincte este cel puțin $k$, vom folosi mai multe interogări, dar cum? Vom partiționa lista de frecvențe în $k$ grupe cît mai egale. Apoi vom construi o interogare astfel încît, în funcție de răspuns, să putem restrînge căutarea la una dintre grupe. De exemplu, fie $k=5$ și următoarea listă de frecvențe (inclusiv 0):
+
+\begin{verbatim}
+0 1 2 5 8 10 12 15 20 23 25 28 33
+\end{verbatim}
+
+Vom partiționa elementele în grupele [0 1 2], [5 8 10], [12 15 20], [23 25] și [28 33]. Vom construi interogarea astfel:
+
+\begin{itemize}
+  \item Elementele cu frecvențe 0, 1, 2 nu le luăm.
+  \item Elementele cu frecvențe 5, 8, 10 le luăm o dată.
+  \item Elementele cu frecvență 12, 15, 20 le luăm de 2 ori.
+  \item Elementele cu frecvență 23, 25 le luăm de 3 ori.
+  \item Elementele cu frecvență 28, 33 le luăm de 4 ori.
+  \item Adăugăm și poziția curentă.
+\end{itemize}
+
+Acum, dacă răspunsul este 4, am redus posibilitățile la două: o frecvență de 28 a devenit 29 sau o frecvență de 33 a devenit 34. Facem a doua (și ultima) interogare pentru a diferenția aceste cazuri:
+
+\begin{itemize}
+  \item Elementele cu frecvență 28 nu le luăm.
+  \item Elementele cu frecvență 33 le luăm o dată.
+\end{itemize}
+
+Acum, dacă răspunsul este 0, atunci explicația este că un element de frecvență 28 a crescut la 29. Altfel răspunsul este 1, ceea ce înseamnă că un element de frecvență 33 a crescut la 34.
+
+\subsubsection*{Localizarea elementelor cu o frecvență cerută}
+
+Mai este un ultim aspect, de care eu nu m-am prins pînă nu am citit \href{https://kilonova.ro/submissions/761967}{soluția aceasta}. Ca să adăugăm la interogare, de exemplu, elementele cu frecvențele 28 și 33 de 4 ori, trebuie să cunoaștem pozițiile aparițiilor acelor elemente. Dar cum? Din nou, nu este practic să încercăm să construim lista de poziții care conțin elemente egale.
+
+Soluția este să notăm, pe fiecare poziție procesată, concluzia interogărilor: frecvența la care a ajuns acel element. Dacă un element a ajuns la frecvență 28, el a ajuns cîndva anterior și la frecvențele 1, 2, \dots, 27. Deci, pentru prima interogare de mai sus, putem proceda astfel:
+
+\begin{itemize}
+  \item Tipărim toate pozițiile pe care am ajuns la frecvență 5.
+  \item Tipărim toate pozițiile pe care am ajuns la frecvență 12.
+  \item Tipărim toate pozițiile pe care am ajuns la frecvență 23.
+  \item Tipărim toate pozițiile pe care am ajuns la frecvență 28.
+\end{itemize}
+
+Atunci obținem ce dorim, adică:
+
+\begin{itemize}
+  \item Pozițiile elementelor cu frecvență 0, 1 sau 2 nu vor fi tipărite.
+
+  \item Pozițiile elementelor cu frecvență 5, 8 sau 10 vor fi tipărite o singură dată, respectiv la momentul la care ating frecvența 5.
+
+  \item \dots
+
+  \item Pozițiile elementelor cu frecvență 28 sau 33 vor fi tipărite de 4 ori, respectiv la momentele la care ating frecvențele 5, 12, 23 și 28.
+\end{itemize}
+
+\subsubsection*{Detaliu de implementare}
+
+Evaluatorul ne impune să nu folosim memorie globală, ceea ce are sens, deoarece cu memorie globală funcțiile \ccode{descuie_grajdul} și \ccode{dreseaza_cal} ar putea comunica direct între ele, șuntînd funcția \ccode{intreaba_cal} și făcînd problema banală. Din păcate, evaluatorul este prea zelos. El interzice complet declararea de \ccode{struct}-uri sau clase (mă întreb de ce!). De aceea, implementarea anexată este lizibilă, dar nu se va compila. Am rescris \href{https://kilonova.ro/submissions/772576}{sursa} pentru a obține 100p, dar o consider ilizibilă (cel puțin după standardele mele).
