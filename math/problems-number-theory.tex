@@ -237,3 +237,209 @@ Dacă o submulțime este incorectă, înseamnă că trebuie să existe două \te
 O submulțime are \ccode{?} pe o poziție $k$ dacă toate elementele sale au \ccode{?} pe acea poziție. De aceea, vom precalcula pentru fiecare \textit{wildcard} o mască pe $l$ biți cu 1 pentru \ccode{?} și 0 pentru litere (avem nevoie de \ccode{__int128}). Atunci masca unei submulțimi de \textit{wildcards} este AND-ul pe biți al măștilor elementelor, iar numărul de \ccode{?} din masca submulțimii este populația acelei măști.
 
 Complexitatea totală este $\bigoh(n^2 \cdot l + 2^l + l \cdot nr)$.
+
+
+\subsection{Problema Playing with GCD (SPOJ)}
+\label{problem:playing-with-gcd}
+
+\href{https://www.spoj.com/problems/NAJPWG/}{enunț}
+$\bullet$
+\hyperref[code:playing-with-gcd]{sursă}
+
+Această problemă este „servită” pentru algoritmul de calcul simultan al funcției Euler pentru toate numerele de la $1$ la $n$.
+
+Să ne imaginăm o matrice $A$ de $n \times n$ elemente în care doar jumătatea de sub diagonală este definită. Definim $A_{i,j}$ ca fiind 1 dacă $\text{cmmdc}(i, j) > 1$ și 0 altfel. Atunci prin definiție suma de pe rîndul $i$ este numărul de numere care \textbf{nu} sînt coprime cu $i$, adică $i - \varphi(i)$. Răspunsul pentru un $n$ dat este:
+
+$$\sum_{i=1}^n (i - \varphi(i))$$
+
+
+\subsection{Problema Power Tower (Codeforces)}
+\label{problem:power-tower}
+
+\href{https://codeforces.com/contest/906/problem/D}{enunț}
+$\bullet$
+\hyperref[code:power-tower]{sursă}
+
+Vom folosi Teorema lui Euler. Facem deocamdată abstracție de condiția de coprimalitate. Să considerăm o expresie ca $a^{b^{c^d}} \mod m$. O putem descompune astfel:
+
+\begin{itemize}
+  \item Dorim să calculăm $a^{b^{c^d}} \mod m$
+  \item Putem reduce exponentul lui $a$ modulo $\varphi(m)$.
+  \item Deci trebuie să calculăm $b^{c^d} \mod \varphi(m)$.
+  \item Putem reduce exponentul lui $b$ modulo $\varphi(\varphi(m))$.
+  \item Deci trebuie să calculăm $c^d \mod \varphi(\varphi(m))$.
+  \item Putem reduce exponentul lui $c$ modulo $\varphi(\varphi(\varphi(m)))$.
+  \item Deci trebuie să calculăm $d \mod \varphi(\varphi(\varphi(m)))$.
+\end{itemize}
+
+La prima vedere, o abordare în $\bigoh(n)$ este ineficientă, dar să observăm că funcția compusă $\varphi(\varphi(\dots\varphi(m)))$ scade rapid. Dacă $m$ este prim, iar $\varphi(m) = m-1$, atunci $m-1$ va fi par, și deci nu va fi coprim cu niciun alt număr par, deci $\varphi(m - 1) < \frac{m-1}{2}$. Cu alte cuvinte, prin compunere repetată $\varphi$ se înjumătățește la fiecare două iterații, deci va deveni 1 după $2 \log m$ iterații. Indiferent cît de lung este intervalul $[l,r]$, ne putem opri cînd modulul devine 1.
+
+Partea frumoasă a problemei este că, pentru orice interogare $[l,r]$, ultimul rezultat trebuie calculat modulo $m$, penultimul modulo $\varphi(m)$ etc. Deci putem precalcula lista modulilor o singură dată, la început.
+
+Partea grea a problemei este că posibil va trebui să calculăm $a^b \mod c$ în cazul în care $a$ și $c$ nu sînt coprime, deci aplicarea Teoremei lui Euler și reducerea lui $b$ modulo $\varphi(c)$ nu funcționează. Am înțeles acest lucru după ce rezolvasem restul problemei; altfel nu aș fi selectat problema pentru curs. \emoji{smiling-face-with-smiling-eyes} Am găsit o explicație rezonabilă pe \href{https://stackoverflow.com/a/21368784/6022817}{Stack Overflow}, care arată că putem lua exponentul modulo $\varphi(c)$, dar trebuie să adăugăm încă $c$. Ideea este că valorile $a^1, a^2, a^3, \dots$ ciclează după o vreme, dar au nevoie de un număr de pînă la $\varphi(c)$ iterații ca să intre în ciclu. Așadar,
+
+$$a^b \equiv a^{\varphi(c) + b \mod \varphi(c)} \pmod c$$
+
+
+\subsection{Problema GCD Extreme (SPOJ)}
+\label{problem:gcd-extreme}
+
+\href{https://www.spoj.com/problems/GCDEX/}{enunț}
+$\bullet$
+\hyperref[code:gcd-extreme]{sursă}
+
+Să considerăm matricea naivă $A$ unde $A_{i,j} = \text{cmmdc}(i,j)$, definită doar pentru triunghiul de deasupra diagonalei ($i < j$). Atunci răspunsul la problemă pentru un $n$ dat va fi suma coloanelor $1 \dots n$. Să calculăm suma pe fiecare coloană, fără a construi explicit matricea. La final vom face sume parțiale peste sumele coloanelor, pentru a putea oferi răspunsurile în timp constant.
+
+Ca la multe alte probleme, în loc să iterăm pe linii sau coloane, să iterăm prin cmmdc-uri. Fie un cmmdc $g$. Pe ce coloane apare el și de cîte ori? Desigur, prin definiție $g$ divide numărul liniei și pe al coloanei, deci va apărea pe coloanele de forma $kg$ cu $k \geq 1$. De cîte ori apare $g$ pe coloana $kg$? În mod sigur, pe linii de forma $lg$, dar nu pe toate. Este necesar ca $\text{cmmdc}(k,l) = 1$, căci altfel $\text{cmmdc}(kg, lg) > g$ și numărul scris la coloana $kg$, linia $lg$ ar fi diferit de $g$.
+
+Cu alte cuvinte, dorim să numărăm cîte valori $l$ între $1$ și $k$ sînt coprime cu $k$. Aceasta este exact definiția lui $\varphi(k)$. Punînd cap la cap observațiile, contribuția fiecărui divizor comun $g$ pe fiecare coloană $kg$ este $g \cdot \varphi(k)$. Datorită sumei armonice, complexitatea este $\bigoh(n \log n)$.
+
+
+\subsection{Problema Counting Coprime Pairs (CSES)}
+\label{problem:counting-coprime-pairs}
+
+\href{https://cses.fi/problemset/task/2417/}{enunț}
+$\bullet$
+\hyperref[code:exponentiation]{surse}
+
+Am folosit problema în secțiunea de teorie. O includ și aici pentru completitudine.
+
+
+\subsection{Problema Coprime Sequences (Codeforces)}
+\label{problem:coprime-sequences}
+
+\href{https://codeforces.com/contest/803/problem/F}{enunț}
+$\bullet$
+\hyperref[code:coprime-sequences]{sursă}
+
+Și aici recunoaștem principiul includerii și excluderii. Să considerăm că valorile din vector ar fi doar 1, 2, 3 și 6. Notăm cu $M(d)$ numărul de multipli de $d$ din șir. Atunci răspunsul este
+
+$$(2^{n} - 1) - (2^{M(2)} - 1) - (2^{M(3)} - 1) + (2^{M(6)} - 1)$$
+
+Într-adevăr, din toate cele $2^n - 1$ submulțimi le scădem pe cele care au divizorul comun 2. Similar pentru 3, dar am scăzut de două ori submulțimile care au divizorul comun 6.
+
+Pe cazul general, codul pinex ar itera prin toți divizorii de la 1 la $MAX\_VAL$. I-ar ignora pe cei liberi de pătrate, iar pentru restul ar lua contribuția cu semnul $+$ sau $-$ conform parității numărului de factori primi. De aceea putem regîndi problema, iterînd după divizor ca și la problema anterioară. Rezultă algoritmul:
+
+\begin{enumerate}
+  \item Numărăm în $\bigoh(n \log n)$ multiplii fiecărui divizor.
+
+  \item Calculăm funcția Möbius $\mu$.
+
+  \item Contribuția fiecărui divizor $d$ este $\mu(d) \cdot (2^{M(d)} - 1)$.
+\end{enumerate}
+
+
+\subsection{Problema Coprime Triples (CodeChef)}
+\label{problem:coprime-triples}
+
+\href{https://www.codechef.com/problems/COPRIME3}{enunț}
+$\bullet$
+\hyperref[code:coprime-triples]{sursă}
+
+\textit{More of the same}. \emoji{slightly-smiling-face} Problema aceasta are rating 2484 pe CodeChef, dar odată ce ne vine ideea să folosim funcția Möbius, soluția este imediată. Din toți tripleții posibili, îi scădem pe cei cu cmmdc 2, îi scădem pe cei cu cmmdc 7, dar îi adunăm la loc pe cei cu cmmdc 14 etc. Așadar, contribuția fiecărui divizor $d$ este $\mu(d) \cdot C_{M(d)}^{3}$.
+
+
+\subsection{Problema Mocha and Stars (Codeforces)}
+\label{problem:mocha-and-stars}
+
+\href{https://codeforces.com/contest/1559/problem/E}{enunț}
+$\bullet$
+\hyperref[code:mocha-and-stars]{sursă}
+
+Problema are o parte de teoria numerelor și o parte de programare dinamică. Ca dificultate, o consider o problemă de nivel de baraj ONI.
+
+\subsubsection*{Teoria numerelor}
+
+Putem să pictăm direct formula cu funcția Möbius sau, pentru claritate, putem să pornim de la Pinex (principiul includerii și excluderii), ca în multe alte probleme. Inițial presupunem că toate șirurile au cmmdc-ul 1. Doar că astfel le-am numărat și pe cele care au cmmdc-ul 2 sau un multiplu, pe care le scădem. Similar și pentru 3. Dar astfel am scăzut de două ori șirurile care au cmmdc-ul 6, pe care le adunăm la loc etc. De aceea, fie $P(d)$ numărul de șiruri al căror cmmdc este $d$ sau un multiplu de $d$. Atunci trebuie să calculăm formula, de-acum familiară:
+
+$$P(1) - P(2) - P(3) - P(5) + P(6) - \dots$$
+
+Pe aceasta o putem rescrie folosind funcția Möbius, $\mu$:
+
+$$\sum_{d=1}^{m} \mu(d) \cdot P(d)$$
+
+\subsubsection*{Programare dinamică}
+
+Acum, pentru un $d$ fixat, să calculăm $P(d)$. Așadar, să numărăm șirurile $a_1, \dots, a_n$ care întrunesc condițiile:
+
+\begin{enumerate}
+  \item Toate valorile sînt multipli de $d$.
+  \item $a_i \in [l_i, r_i]$ pentru $1 \leq i \leq n$.
+  \item Suma valorilor este cel mult $m$.
+\end{enumerate}
+
+Putem să împărțim toate cantitățile prin $d$. Notăm $l_i' = \lceil l_i / d \rceil$, $r_i' = \lfloor r_i / d \rfloor$ și $m' = \lfloor m / d \rfloor$ și reducem condițiile la două:
+
+\begin{enumerate}
+  \item $a_i \in [l_i', r_i']$ pentru $1 \leq i \leq n$
+  \item Suma valorilor este cel mult $m'$.
+\end{enumerate}
+
+Această subproblemă este o numărare de partiții cu o soluție destul de directă în $\bigoh(n \cdot m'^2)$. Fie $C(k,s)$ numărul de moduri de a fixa primele $k$ valori astfel încît să obținem exact suma $s$. Atunci fiecare valoare posibilă pentru $a_{k+1}$, adică $x \in [l_{k+1}', r_{k+1}']$, adaugă valoarea $C(k,s)$ la $C(k + 1, s + x)$. Cu alte cuvinte, adăugăm valoarea celulei $C(k,s)$ la tot intervalul $C(k+1, s + l_{k+1}' \dots s + r_{k+1}')$.
+
+Putem să reducem complexitatea programării dinamice la $\bigoh(m'n)$ dacă facem adăugările pe interval în $\bigoh(1)$. Cum? Cu un vector de diferențe (aka șmenul lui Mars). Cînd propagăm celula $C(k,s)$, o adunăm cu $+$ la $C(k+1, s + l_{k+1})$ și cu $-$ la $C(k+1, s + r_{k+1}' + 1)$. Facem aceasta pentru toate sumele $s$ de pe linia $k$. Apoi calculăm sume parțiale pe linia $C(k + 1)$ ca să aflăm valorile reale.
+
+Să nu uităm însă că $m' = \frac{m}{d}$ și că noi trebuie să rulăm programarea dinamică pentru $d = 1, 2, \dots, m$. Așadar, complexitatea totală este
+
+$$\bigoh(\frac{m}{1} \cdot n + \frac{m}{2} \cdot n + \frac{m}{3} \cdot n + \dots) = \bigoh(mn \log m)$$
+
+O notă despre optimizare: \ccode{if}-ul de mai jos a redus timpul de rulare cu 20\%. Am uitat complet acest aspect! De asemenea, mă miră că compilatorul execută \ccode{count_partitions(d)} chiar și atunci cînd știe că produsul va fi 0.
+
+\begin{minted}{c}
+for (int d = 1; d <= m; d++) {
+  if (mu[d]) {
+    answer += (long long)mu[d] * count_partitions(d);
+  }
+}
+\end{minted}
+
+
+\subsection{Problema Pastile (Baraj ONI 2021)}
+\label{problem:pastile}
+
+\href{https://kilonova.ro/problems/69}{enunț}
+$\bullet$
+\hyperref[code:pastile]{sursă}
+
+Problema este complexă, dar o piesă de bază este funcția Möbius. Din enunț rezultă destul de direct că există $\prod_{i=1}^{n} p_i$ vectori, dintre care trebuie să îi numărăm pe cei cu cmmdc = 1. Mulțumită funcției Möbius, știm că trebuie să numărăm, pentru fiecare $k$, vectorii care au cmmdc-ul $k$ sau multiplu de $k$. \href{https://drive.google.com/drive/folders/1lug67SRVk6iLzgRbgBwdFzLMHDgWxh57}{Editorialul} notează această cantitate cu $cnt_{k}$. Atunci răspunsul va fi
+
+$$\sum_{k=1}^{V_{min}} \mu(k) \cdot cnt_{k}$$
+
+Să vedem acum cum aflăm valorile $cnt_k$. Formula naivă este:
+
+$$cnt_k = \prod_{i=1}^{n} \left\lfloor \frac{p_i}{k} \right\rfloor$$
+
+De exemplu, pentru $k=7$ și vectorul $(10, 15, 17, 20, 30, 32)$ obținem:
+
+$$cnt_7 = 1 \cdot 2 \cdot 2 \cdot 2 \cdot 4 \cdot 4 = 1 \cdot 2^3 \cdot 4^2$$
+
+Desigur, nu dorim să facem efort $\bigoh(n)$, dar ne reîntîlnim (din nou) cu suma armonică. Ne permitem să facem efort $\bigoh(V_{max} / k)$ pentru divizorul $k$ pentru a obține complexitatea $\bigoh(V_{max} \log V_{max})$. Și atunci putem calcula expresia de mai sus iterînd prin valori, nu prin vector. Ne întrebăm: cîte valori dau cîtul 2 la împărțirea prin 7? Răspuns: trei valori, anume 15, 17 și 20. Și cîte valori dau cîtul 4 la împărțirea prin 7? Răspuns: două valori, anume 30 și 32.
+
+Așadar, ultima cărămidă necesară este: dat fiind vectorul original, valoarea lui $k$ și un cît dorit, $m$, cîte valori din vector dau cîtul $m$ la împărțirea prin $k$? Răspunsul, desigur, este numărul de elemente cu valori între $mk$ și $(m + 1)k - 1$. Putem afla răspunsurile în $\bigoh(1)$ dacă precalculăm sume parțiale peste vectorul de frecvență.
+
+
+\subsection{Problema Beautiful Numbers (Codeforces)}
+\label{problem:beautiful-numbers}
+
+\href{https://codeforces.com/contest/300/problem/C}{enunț}
+$\bullet$
+\hyperref[code:beautiful-numbers]{sursă}
+
+Problema este elementară. O folosim ca să ilustrăm inversele modulare.
+
+Toate numerele frumoase de lungime $n$ pot fi grupate în $n + 1$ grupe:
+
+\begin{itemize}
+  \item cele care conțin $n$ cifre $a$ și $0$ cifre $b$;
+  \item cele care conțin $n-1$ cifre $a$ și o cifră $b$;
+  \item \dots
+  \item cele care conțin $0$ cifre $a$ și $n$ cifre $b$.
+\end{itemize}
+
+Toate numerele din grupa cu $x$ cifre $a$ și $n-x$ cifre $b$ au suma cifrelor $xa + (n-x)b$ și vor fi excelente dacă și numai dacă $xa + (n-x)b$ este un număr frumos. Știm și că grupa conține $C(n, x)$ numere. Așadar, trebuie pur și simplu să însumăm combinările $C(n, x)$ pentru acele valori $x$ pentru care suma cifrelor este frumoasă.
+
+Întrucît $n$ este mare, vom folosi formula
+
+$$C(n, k) = n! \cdot [k! \cdot (n-k)!]^{-1}$$
+
+Există diverse moduri de a face acest lucru. Sursa mea calculează inversele din formula de mai sus. Dar putem și să precalculăm toate factorialele inverse.

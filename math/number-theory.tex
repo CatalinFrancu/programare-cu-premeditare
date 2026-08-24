@@ -271,3 +271,414 @@ Implementarea recursivă construiește masca bit cu bit, cîte unul la fiecare n
 Avem nevoie și de numărul de numere selectate pînă acum. Dar de fapt, paritatea acestui număr ne ajunge. Pentru extra concizie, putem înmulți produsul curent cu -1 ori de cîte ori îl înmulțim cu un număr prim.
 
 Această implementare are complexitate $\bigoh(2^k)$, semnificativ mai mică față de cea recursivă (pe CSES, 0,02 s față de 0,13 s).
+
+
+\section{Indicatorul lui Euler}
+
+În lumea programării competitive, multe probleme de calcul modular se referă la moduli primi. Aceasta se întîmplă din motivul, destul de tangențial, că majoritatea problemelor cer răspunsul modulo $10^9 + 7$ sau modulo altă valoare primă și de aceea avem nevoie să calculăm puteri, inverse, combinări etc. modulo acea valoare.
+
+Dar vom da, acolo unde putem, și generalizări pentru moduli neprimi. Vom lua fără demonstrație unele dintre afirmații (știu că asta vă întristează peste măsură).
+
+\begin{definition}[Indicatorul lui Euler]
+Indicatorul lui Euler (engl. \href{https://en.wikipedia.org/wiki/Euler\%27s_totient_function}{Euler's totient function}) al unui număr $n$ este numărul de numere coprime cu $n$ cuprinse între $1$ și $n$. Îl notăm cu $\varphi(n)$.
+\end{definition}
+
+O formulă de calcul este:
+
+$$\varphi(n) = n \prod_{p|n} \left(1 - \frac{1}{p}\right)$$
+
+unde $p$ iterează prin divizorii primi ai lui $n$. În limbaj natural, pentru fiecare divizor prim $p$, eliminăm o fracție de $1/p$ din $n$, căci fiecare al $p$-lea număr se divide cu $p$ și deci nu este coprim cu $n$. Exemple:
+
+\begin{itemize}
+  \item Pentru orice număr prim, $\varphi(n) = n-1$, căci toate numerele de la $1$ la $n-1$ sînt coprime cu $n$.
+
+  \item Pentru orice produs de numere prime distincte, $\varphi(pq) = (p-1)(q-1)$. Vezi tabelul următor.
+\end{itemize}
+
+\begin{table}[!htbp]
+  \centering
+  \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+    \sout{0} & 1 & 2 & 3 & 4 & \sout{5} & 6 \\
+    \hline
+    \sout{7} & 8 & 9 & \sout{10} & 11 & 12 & 13 \\
+    \hline
+    \sout{14} & \sout{15} & 16 & 17 & 18 & 19 & \sout{20} \\
+    \hline
+    \sout{21} & 22 & 23 & 24 & \sout{25} & 26 & 27 \\
+    \hline
+    \sout{28} & 29 & \sout{30} & 31 & 32 & 33 & 34 \\
+    \hline
+  \end{tabular}
+
+  \caption{O demonstrație că $\varphi(5 \cdot 7) = 4 \cdot 6 = 24$. Numerele care \textbf{nu} sînt coprime cu 35 sînt tăiate. Din cele 35 de numere, cele de pe prima coloană se divid cu 7. Pe fiecare dintre celelalte coloane există exact un număr divizibil cu 5 (din cauză că 5 și 7 sînt coprime). În general, dintr-un tabel de $pq$ valori vom tăia $p+q-1$ valori și vom reține $(p-1)(q-1)$. }
+\end{table}
+
+\begin{itemize}
+  \item Pentru orice produs de puteri de numere prime,
+\end{itemize}
+$$\varphi(n = p^a \cdot q^b) = n \cdot \frac{p-1}{p} \frac{q-1}{q}$$
+
+Generalizînd la oricîți factori primi, rezultă a doua formulă din pagina Wikipedia. Mai exact, dacă $n = p_1^{k_1}p_2^{k_2} \dots p_r^{k_r}$, atunci
+
+$$\varphi(n) = p_1^{k_1-1}(p_1 - 1) p_2^{k_2-1} (p_2 - 1) \dots p_r^{k_r-1} (p_r - 1)$$
+
+\subsection{Calculul lui \texorpdfstring{$\varphi$}{phi}}
+
+Calculul în $\bigoh(\sqrt{n})$ este absolut elementar. El ia fracția $(p-1)/p$ pentru prima apariție a unui factor prim $p$, apoi elimină din $n$ toate aparițiile lui $p$.
+
+\begin{minted}{c}
+int euler_totient(int n) {
+  int phi = n;
+  for (int p = 2; p * p <= n; p++) {
+    if (n % p == 0) {
+      phi = phi / p * (p - 1);
+      while (n % p == 0) {
+        n /= p;
+      }
+    }
+  }
+  if (n > 1) {
+    phi = phi / n * (n - 1);
+  }
+  return phi;
+}
+\end{minted}
+
+\subsection{Calculul lui \texorpdfstring{$\varphi$}{phi} de la \texorpdfstring{$1$}{1} la \texorpdfstring{$n$}{n}}
+
+Putem folosi o metodă similară cu Ciurul lui Eratostene pentru a calcula toate valorile lui $\varphi$ de la $1$ la $n$:
+
+\begin{minted}{c}
+void compute_all_phi() {
+  for (int i = 0; i <= MAX_N; i++) {
+    phi[i] = i;
+  }
+
+  for (int i = 2; i <= MAX_N; i++) {
+    if (phi[i] == i) {
+      for (int j = i; j <= MAX_N; j += i) {
+        phi[j] -= phi[j] / i;
+      }
+    }
+  }
+}
+\end{minted}
+
+Inițial, considerăm că fiecare număr este coprim cu toate numerele (inclusiv cu el însuși). Cînd considerăm un număr \ccode{i} pentru care încă avem egalitatea \ccode{phi[i] == i}, atunci \ccode{i} este prim. Doar pentru numerele prime, codul iterează prin toți multiplii și îi înmulțește cu \ccode{(i - 1) / i} (în practică, codul face o scădere pentru a evita o înmulțire). Rezultatul final este cel dorit: fiecare număr este înmulțit cu $\frac{p-1}{p}$ pentru fiecare factor prim $p$ al său.
+
+Complexitatea este $O(n \log \log n)$, deoarece avem de-a face cu \href{https://en.wikipedia.org/wiki/Divergence_of_the_sum_of_the_reciprocals_of_the_primes}{suma inverselor numerelor prime}.
+\section{Teorema lui Euler}
+
+\href{https://en.wikipedia.org/wiki/Euler\%27s_theorem}{Teorema lui Euler} este o generalizare a Micii teoreme a lui Fermat. Dacă $a$ și $n$ sînt întregi coprimi, atunci
+
+$$a^{\varphi(n)} \equiv 1 \pmod{n}$$
+
+Recunoaștem cazul particular al Micii teoreme a lui Fermat, cînd $p$ era prim, iar $\varphi(p) = p - 1$. Rezultă că, pentru a calcula $a^b \mod n$, putem întîi să calculăm $\varphi(n)$ și să reducem exponentul $b$ modulo $\varphi(n)$.
+
+
+\section{Algorithmul lui Euclid extins}
+
+O cărămidă de bază în teoria numerelor este calcularea inverselor modulare. Majoritatea elevilor le calculează folosind exponențierea rapidă, și vom învăța și noi cum. Dar este bine să știți și algoritmul lui Euclid, deoarece acesta este mai rapid și funcționează indiferent dacă modulul este prim sau compus.
+
+Algoritmul lui Euclid simplu primește două numere $a$ și $b$ și returnează $d = \text{cmmdc}(a, b)$. Algoritmul extins găsește, pe lîngă $d$, și două valori $x$ și $y$ pentru care
+
+$$ax + by = d$$
+
+Exemplu: $\text{cmmdc}(14, 35) = 7$. Algoritmul lui Euclid va găsi și valorile $x = -2$ și $y = 1$ cu care
+
+$$14 \cdot (-2) + 35 \cdot 1 = 7$$
+
+Pentru cei pasionați de matematică, \href{https://en.wikipedia.org/wiki/B\%C3\%A9zout's_identity}{Identitatea lui Bézout} demonstrează că aceste valori există. Valorile nu sînt unice. Alte valori posibile sînt $14 \cdot 3 + 35 \cdot (-1) = 7$ sau $14 \cdot 8 + 35 \cdot (-3) = 7$.
+
+\subsection{Implementarea recursivă}
+
+Ca și algoritmul lui Euclid simplu, și cel extins reduce problema $(a,b)$ la problema $(b,r)$. Fie $a = qb + r$. Odată ce am găsit $x'$ și $y'$ care satisfac $bx' + ry' = d$, cum calculăm $x$ și $y$? Nu este greu; doar îl înlocuim pe $r$ cu $a - qb$:
+
+\begin{align*}
+  d &= bx' +ry' \\
+    &= bx' + (a - qb)y' \\
+    &= a(y') + b(x' - qy')
+\end{align*}
+
+, de unde rezultă coeficienții lui $a$ și $b$, respectiv $y'$ și $x' - qy'$.
+
+\begin{minted}{c}
+void extended_euclid_recursive(int a, int b, int& d, int& x, int& y) {
+  if (!b) {
+    d = a;
+    x = 1;
+    y = 0;
+  } else {
+    int xp, yp;
+    extended_euclid_recursive(b, a % b, d, xp, yp);
+    x = yp;
+    y = xp - (a / b) * yp;
+  }
+}
+\end{minted}
+
+\subsection{Implementarea iterativă}
+
+Varianta iterativă este mai alunecoasă și nu este cu mult mai rapidă. O prezentăm doar ca experiment de gîndire. Fie $A$ și $B$ valorile inițiale. Implementarea distruge valorile $a$ și $b$, înlocuindu-le după cum știm cu $b$ și $a \mod b$. Concomitent, ea menține patru valori $x, y, x', y'$ cu invariantul că, la orice moment:
+
+\begin{equation}
+  \left\{
+  \begin{aligned}
+    Ax &+ By &= a\\
+    Ax' &+ By' &= b
+  \end{aligned}
+  \right.
+\end{equation}
+
+Inițial, $A = a$ și $B = b$, deci $x = 1$, $y = 0$, $x' = 0$ și $y' = 1$. Știm că la finalul algoritmului $a = d$ și $b = 0$, deci valorile pe care trebuie să le returneze algoritmul sînt valorile finale pentru $x$ și $y$. Pentru menținerea invariantului, știm că dorim să înlocuim perechea $(a, b)$ cu $(b, r)$. Cu ce trebuie să înlocuim sistemul de ecuații? Să scriem:
+
+$$
+\begin{aligned}
+  a &- qb &= r\\
+  (Ax + By) &- q(Ax' + By') &= r\\
+  A(x - qx') &+ B(y - qy') &= r
+\end{aligned}
+$$
+
+Așadar, noul sistem de ecuații este:
+
+\begin{equation}
+  \left\{
+  \begin{aligned}
+    Ax' &+ By' &= b\\
+    A(x - qx') &+ B(y - qy') &= r
+  \end{aligned}
+  \right.
+\end{equation}
+
+Și rezultă înlocuirile $(x, x') \to (x', x - qx')$ și $(y, y') \to (y', y - qy')$.
+
+\begin{minted}{c}
+void extended_euclid_iterative(int a, int b, int& d, int& x, int& y) {
+  x = 1;
+  y = 0;
+  int xp = 0, yp = 1;
+  while (b) {
+    int q = a / b;
+    int tmp = b; b = a - q * b; a = tmp;
+    tmp = xp; xp = x - q * xp; x = tmp;
+    tmp = yp; yp = y - q * yp; y = tmp;
+  }
+  d = a;
+}
+\end{minted}
+
+Ca și algoritmul simplu, cel extins se oprește cînd $b = 0$, iar atunci c.m.m.d.c.-ul este $a$ (ultimul rest obținut).
+
+
+\section{Inverse modulare}
+
+Dorim să calculăm inversul lui $a$ modulo un număr $M$, adică să găsim un număr $b$ astfel încît
+
+$$a \cdot b \equiv 1 \pmod{M}$$
+
+Reamintesc că inversul există dacă și numai dacă $a$ și $M$ sînt coprime. Altfel, dacă $\text{cmmdc}(a, M) = d > 1$, orice „invers” $b$ am propune vom observa că $ab \pmod M > 1$, căci se divide cu $d$.
+
+\subsection{Prin exponențiere rapidă}
+
+Din teorema lui Fermat rezultă imediat că
+
+$$a^{M-2} \equiv a^{-1} \pmod{M}$$
+
+Așadar, putem calcula inversul $a^{-1}$ prin exponențiere rapidă. Acest mecanism funcționează doar cînd modulul $M$ este prim. Cînd modulul este compus este nevoie să calculăm indicatorul lui Euler și să folosim formula:
+
+$$a^{\varphi(M)-1} \equiv a^{-1} \pmod{M}$$
+
+Trebuie să facem acest lucru chiar și dacă $a$ este coprim cu $M$. De exemplu, inversul lui $a = 5$ modulo $M = 14$ este $3$, căci $5 \cdot 3 = 15 \equiv 1 \pmod{14}$. În schimb, $5^{14-2} = 5^{12} \equiv 1 \pmod{14}$, incorect. Este nevoie să calculăm $\varphi(14) = 6$ și $5^5 = 3125 \equiv 3 \pmod{14}$.
+
+\subsection{Prin algoritmul lui Euclid extins}
+
+Din algoritmul lui Euclid decurge o metodă imediată de calcul al inverselor. Inversul lui $a$ modulo $n$ este valoarea \(b\) pentru care
+
+$$ab \equiv 1 \pmod{M} \implies ab + kM = 1$$
+
+Apelînd algoritmul lui Euclid extins între $a$ și $M$ îl aflăm pe $b$ (și, ca produs secundar, pe $k$). Observăm din nou că $a$ are invers dacă și numai dacă este coprim cu $M$. Dacă $\text{cmmdc}(a, M) = d > 1$, atunci combinația liniară $ab + kM$ va fi întotdeauna multiplu de $d$, niciodată 1.
+
+Atenție: algoritmul poate returna un invers negativ. Dacă este așa, adăugați-i $M$ pentru a-l aduce în intervalul $[1, M)$.
+
+\subsection{Benchmarks}
+
+Am \href{https://github.com/CatalinFrancu/nerdvana/blob/main/number-theory/inverse-benchmark.cpp}{măsurat} vitezele calculării de inverse cu cele trei metode. Diferențele sînt notabile, dar nu cruciale. Rețineți algoritmul lui Euclid extins pentru situații de TLE.
+
+\begin{verbatim}
+[cata@neil number-theory]$ ./inverse-benchmark
+Fermat: 10518 ms pentru 100000000 inverse (9.5 M inverse/sec)
+Euclid recursiv: 7549 ms pentru 100000000 inverse (13.2 M inverse/sec)
+Euclid iterativ: 6831 ms pentru 100000000 inverse (14.6 M inverse/sec)
+\end{verbatim}
+
+
+\section{Funcția Möbius}
+
+\subsection{Relația cu principiul includerii și excluderii}
+
+Să pornim de la problema \href{https://cses.fi/problemset/task/2417/}{Counting Coprime Pairs} (CSES), pe care o regăsiți și în \hyperref[problem:counting-coprime-pairs]{secțiunea de probleme}. Soluția bazată pe pinex este următoarea. Examinăm succesiv numerele și, pentru fiecare număr $x$, ne propunem să aflăm cu cîte numere examinate anterior este el coprim. Suma acestor răspunsuri este răspunsul la problemă.
+
+Pentru a afla răspunsul pentru $x$, întîi îl factorizăm pe $x$ (construim ciurul ca să factorizăm rapid toate numerele). Apoi, de exemplu, dacă $x=14$, el va fi coprim:
+
+\begin{itemize}
+  \item cu toate numerele anterioare;
+  \item minus cele anterioare divizibile cu 2;
+  \item minus cele anterioare divizibile cu 7;
+  \item plus cele anterioare divizibile cu 14.
+\end{itemize}
+
+\hyperref[code:counting-coprime-pairs]{Implementarea cu pinex} este anexată. Remarc în treacăt artificiul cu care numărăm multiplii unui număr și îi incrementăm într-o singură trecere recursivă.
+
+\subsection{Definiția funcției Möbius}
+
+Haideți acum, în loc să contorizăm contribuția fiecărui număr, să contorizăm contribuția fiecărui divizor. Ar fi bine ca totalul general să fie același. \emoji{slightly-smiling-face} Să considerăm divizorul 14. Ori de cîte ori examinăm un multiplu de 14 (cum ar fi 14, 28 sau 70), în cursul pinex vom procesa și divizorul 14. El va contribui întotdeauna cu semnul +, căci are un număr par de factori primi distincți. La primul multiplu de 14 el va adăuga 0 (căci nu există anterior alți multipli de 14). La al doilea va adăuga 1, apoi 2, apoi 3 etc. Așadar, contribuția unui divizor $d$ va fi o sumă Gauss luată cu un semn anume:
+
+$$\mu(d) \times \frac{M(d)(M(d) - 1)}{2}$$
+
+Cu $M(d)$ am notat numărul de multipli de $d$ printre cele $n$ numere date, iar $\mu$ este funcția Möbius, care ne va spune cu ce semn trebuie să luăm contribuția. Pentru a-l calcula pe $M(d)$ pentru toți divizorii $d$, ne reamintim de suma armonică. Așadar, ne permitem să calculăm frecvențele numerelor de la intrare, apoi să însumăm frecvențele tuturor multiplilor lui $d$, pentru fiecare $d$.
+
+Acum putem să iterăm prin toți divizorii de la 1 la $MAX\_VAL$ și să însumăm contribuția lor. Dar trebuie să aflăm rapid pe care îi luăm cu $+$, pe care cu $-$ și pe care îi omitem, căci conțin factori repetați (cum ar fi $18 = 2 \cdot 3 \cdot 3$).
+
+Am ajuns în sfîrșit la \href{https://en.wikipedia.org/wiki/M\%C3\%B6bius_function}{Funcția Möbius}, notată cu $\mu(x)$. Ea definește exact cantitatea care ne interesează în această problemă, respectiv:
+
+\begin{itemize}
+  \item $+1$ dacă $x$ este liber de pătrate și are un număr par de factori primi.
+
+  \item $-1$ dacă $x$ este liber de pătrate și are un număr impar de factori primi.
+
+  \item $0$ dacă $x$ nu este liber de pătrate (adică se divide cu un pătrat perfect).
+\end{itemize}
+
+\subsection{Diagramă Euler-Venn}
+
+Simt nevoia să explic de ce ignorăm numerele libere de pătrate. Un prim argument este „așa procedează și pinex”. Într-adevăr, cînd factorizăm numărul curent noi colectăm doar factorii primi distincți, indiferent de exponent. Pentru numărul $72=2^3 \cdot 3^2$, pinex va lua în calcul doar divizorii 1, 2, 3 și 6.
+
+Iată și o altă demonstrație (\textit{kill it twice} \emoji{slightly-smiling-face}). Pentru un divizor ca $24=2^3 \cdot 3$, este suficient să facem o diagramă cu factorii primi 2 și 3. Ne interesează zona cu c.m.m.d.c = 1.
+
+\import{./figures}{math-square-free-1.tex}
+
+Dacă ținem morțiș, putem și să adăugăm mulțimi pentru numerele divizibile cu 4, 8, 12 și 24, dar muncim degeaba. Scopul nostru este să măsurăm cardinalul mulțimii „1” cu minimum de efort, iar submulțimile numerelor divizibile cu 2, 3 și 6 ne sînt suficiente.
+
+\import{./figures}{math-square-free-2.tex}
+
+\subsection{Implementare}
+
+Vom studia trei metode de calcul, bazate pe trei idei diferite, toate interesante.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ll}
+    \textbf{metoda} & \textbf{timp pentru $n = \np{10000000}$} \\
+    \hline
+    $\bigoh(n \log \log n)$, ciur & 180 ms \\
+    $\bigoh(n \log \log n)$, ciur + cel mai mic factor & 250 ms \\
+    $\bigoh(n \log n)$ & 640 ms (\np{1000} ms fără optimizare) \\
+    \hline
+  \end{tabular}
+
+  \caption{Operații pe măști de biți.}
+\end{table}
+
+\subsubsection*{Metoda 1}
+
+Metoda 1 calculează, în primă fază, în $u[i]$ produsul divizorilor primi ai lui $i$, mai mici sau egali cu $\sqrt{n}$, cu semnul + dacă există un număr par de divizori primi sau - în caz contrar. Concomitent, atribuie $u[i] = 0$ pentru toate valorile $i$ care se divid cu un pătrat perfect. De exemplu $u[6] = 6$, $u[42] = -42$, $u[18] = 0$.
+
+Ce valori nenule putem întîlni la final?
+
+\begin{itemize}
+  \item Fie $u[i] = \pm i$, caz în care $\mu[i]$ este exact semnul lui $u[i]$,
+
+  \item fie $u[i] \neq \pm i$, caz în care $i$ mai are un factor prim, mai mare decît $\sqrt{n}$, deci $\mu[i]$ are semn opus lui $u[i]$.
+\end{itemize}
+
+\begin{minted}{c}
+// Învățat de la https://mathoverflow.net/a/99545
+void compute_mobius(int n) {
+  for (int i = 1; i <= n; i++) {
+    u[i] = 1;
+  }
+
+  for (int i = 2; i * i <= n; i++) {
+    if (u[i] == 1) {
+      for (int j = i; j <= n; j += i) {
+        u[j] *= -i;
+      }
+      for (int j = i * i; j <= n; j += i * i) {
+        u[j] = 0;
+      }
+    }
+  }
+
+  for (int i = 2; i <= n; i++) {
+    if (u[i] == i) {
+      u[i] = 1;
+    } else if (u[i] == -i) {
+      u[i] = -1;
+    } else if (u[i] < 0) {
+      u[i] = 1;
+    } else if (u[i] > 0) {
+      u[i] = -1;
+    }
+  }
+}
+\end{minted}
+
+Complexitatea este $\bigoh(n \log \log n)$. Ne reîntîlnim cu suma inverselor numerelor prime.
+
+\subsubsection*{Metoda 2}
+
+Metoda 2 este cea din \hyperref[code:counting-coprime-pairs]{sursa anexată}. Ea folosește un ciur cu cel mai mic factor și tratează școlărește cele trei cazuri de mai sus.
+
+\begin{minted}{c}
+// Adaptat după https://www.geeksforgeeks.org/program-for-mobius-function-set-2/
+void compute_smallest_factors(int n) {
+  factor[1] = 1;
+  for (int i = 2; i <= n; i++) {
+    if (!factor[i])  {
+      for (int j = i; j <= n; j += i) {
+        if (!factor[j]) {
+          factor[j] = i;
+        }
+      }
+    }
+  }
+}
+
+void compute_mobius(int n) {
+  u[1] = 1;
+  for (int i = 2; i <= n; i++) {
+    if (factor[i] == factor[i / factor[i]]) {
+      u[i] = 0;
+    } else {
+      u[i] = -u[i / factor[i]];
+    }
+  }
+}
+\end{minted}
+
+\subsubsection*{Metoda 3}
+
+Pe aceasta am învățat-o de la \href{https://kilonova.ro/submissions/84735}{Mircea Rebengiuc}! Ea este considerabil mai lentă pentru $n$ foarte mare. Dar pentru valori practice ($n \leq \np{1000000}$), diferențele sînt neglijabile.
+
+\begin{minted}{c}
+void compute_mobius(int n) {
+  u[1] = 1;
+  for (int i = 1; i <= n; i++) {
+    if (u[i]) { // optional speed optimization
+      for (int j = 2 * i; j <= n; j += i) {
+        u[j] -= u[i];
+      }
+    }
+  }
+}
+\end{minted}
+
+Cum funcționează? Putem da și o demonstrație combinatorică. De exemplu, pentru $i = 30$, valorile care vor contribui la $u[30]$ vor fi $u[2]$, $u[3]$ și $u[5]$ cu semnul + și $u[1]$, $u[6]$, $u[10]$ și $u[15]$ cu semnul -. Rezultat: -1. Presupunînd că $i$ are $f$ factori primi, și considerînd toate submulțimile acestor factori, vom obține suma
+
+$$u[i] = \sum_{k=0}^{f-1} C_f^k \cdot (-1)^k$$
+
+, sumă care coincide cu dezvoltarea binomială a lui $(1 - 1)^f$, cu excepția ultimului termen. Ea va avea valoarea $\pm 1$ în funcție de paritatea lui $f$.
+
+O explicație mult mai elegantă pornește de la egalitatea $\sum_{d|n} \mu(d) = 0$ (pentru $n > 1$), pe care o vom studia în secțiunea despre formula de inversiune Möbius.
