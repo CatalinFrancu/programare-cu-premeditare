@@ -1,0 +1,38 @@
+\begin{figure}[H]
+
+  \centering
+  \begin{tikzpicture}[
+    scale=0.8, every node/.style={scale=0.8},
+    tree/.style={
+      circle,
+      draw,
+    },
+    transform shape, % make scaling work with fit
+    level distance=30mm,
+    ]
+
+    \node[tree] (c1) {$C_1$}
+    child[grow=north] {node[tree] (c5) {$C_5$}}
+    child[grow=east] {node[tree] (c6) {$C_6$}}
+    child[grow=west] {node[tree] (c2) {$C_2$}
+      child[grow=west] {node[tree] (c7) {$C_7$}}
+      child[grow=south] {node[tree] (c3) {$C_3$}
+        child[grow=west] {node[tree] (c8) {$C_8$}}
+        child[grow=south] {node[tree] (c9) {$C_9$}}
+        child[grow=east] {
+          node[tree] (c4) {$C_4$}
+          edge from parent node[above] {$90$}
+        }
+        edge from parent node[left] {$80$}
+      }
+      edge from parent node[above] {$100$}
+    };
+
+    \node[fit=(c1)(c2), shape=ellipse, inner xsep=0.2ex,inner ysep=1ex, draw, red] {};
+    \node[fit=(c3)(c4), shape=ellipse, inner xsep=0.2ex,inner ysep=1ex, draw, red] {};
+    \node[fit=(c1)(c2)(c3)(c4), shape=circle, inner sep=3ex, draw, red] {};
+  \end{tikzpicture}
+
+  \caption{Unificarea componentelor biconexe prin punți.}
+  \label{fig:regate-bcc-bridges}
+\end{figure}

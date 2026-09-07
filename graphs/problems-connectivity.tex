@@ -273,3 +273,60 @@ Acum, algoritmul lui Tarjan, în momentul în care termină de explorat componen
 Cu această recurență, este suficient să facem un singur DFS din $T_1$. La final, ultima componentă explorată îl va conține pe $T_1$, iar intervalul său va avea forma $[1, X]$, semnificînd că putem vizita primele $X$ noduri din $T$.
 
 Pentru a răspunde la întrebări de tipul „există muchia $(u,v)$?”, eu am folosit pur și simplu un \ccode{unordered_set} de \ccode{long long} și am mapat fiecare pereche $(u,v)$ la valoarea $u \cdot n + v$.
+
+\subsection{Problema Regate (ONI 2022, clasele 11-12)}
+\label{problem:regate}
+
+\href{https://kilonova.ro/problems/138}{enunț}
+$\bullet$
+\hyperref[code:regate]{sursă}
+
+Aceasta este o problemă de punți în grafuri neorientate, pe steroizi. Să considerăm arborele componentelor biconexe, $G^{BCC}$, care sînt conectate între ele prin punți. Ce putem spune despre un nod $u$? El va prefera să plătească, pentru fiecare nod $v$, costul minim al unei muchii de pe calea dintre componentele lui $u$ și $v$ din $G^{BCC}$, sau costul $c_u$ dacă nu există punți mai ieftine decît $c_u$ pe acea cale.
+
+De fapt, să considerăm două noduri $u$ și $u'$ din aceeași componentă biconexă. Dacă calculăm punțile de la $u$ și de la $u'$ către toate celelalte noduri, desigur vom găsi aceeași colecție. Ce diferă între $u$ și $u'$ sînt pragurile $c_u$ și $c_{u'}$ peste care nodurile preferă să renunțe la punți. Dacă toate costurile nodurilor ar fi mai mari decît toate costurile punților, am putea judeca problema doar pe punți.
+
+\subsubsection*{Algoritmul 1: Eliminarea costurilor din noduri}
+
+O tehnică cu care ne întîlnim ocazional simplifică grafurile care au costuri atît în noduri, cît și pe muchii. Tehnica este \textbf{dublarea nodurilor} și detaliile depind de la caz la caz. Pentru problema Regate, să creăm pentru fiecare nod $u$ o dublură, $u'$, legată doar de $u$ cu muchia $(u, u')$ de cost $r_u$. Toate muchiile astfel create vor fi punți. Rezultă că de acum încolo putem judeca algoritmul doar pe punți. Răspunsul pentru un nod $u$ este suma costurilor pentru legarea dublurii $u'$ de toate nodurile originale, folosind cea mai ieftină punte. La final, din sumă vom scădea $r_u$ deoarece $u'$ nu trebuie legat și de $u$.
+
+Mai departe, o idee destul de naturală este să procesăm punțile în ordinea costurilor. Ordonarea crescătoare nu pare să ducă nicăieri și iată de ce. Fie $e$ puntea de cost minim, fie acesta $c_e$. Atunci observăm că toate nodurile aflate de o parte a muchiei $e$ vor plăti cîte $c_e$ pentru a se conecta cu fiecare nod aflat de cealaltă parte a muchiei $e$ și viceversa. Apoi putem șterge muchia $e$ și putem trata separat cei doi subarbori. Aceasta este o abordare cu \textbf{conectivitate decrementală}, de obicei grea.
+
+Dar ea ne duce la ideea corectă: să inversăm operațiile, întrucît \textbf{conectivitatea incrementală} este ușor de gestionat cu structuri de mulțimi disjuncte! Să presupunem acum că $e$ este puntea de cost maxim $c_e$ și că ea unește componentele biconexe $C_1$ și $C_2$ Atunci nodurile din $C_1$ trebuie să se conecteze cu cele din $C_2$ cu costul unitar $c_e$, și viceversa, căci altă punte nu au la dispoziție.
+
+Mai interesant, de acum încolo nodurile din $C_1$ și din $C_2$ vor avea o soartă comună: următoarea punte mai ieftină care unește $C_1$ \textbf{sau} $C_2$ cu o componentă $C_3$ va fi folosită de nodurile din ambele componente. La acel moment nodurile din $C_1$ și $C_2$ vor plăti interconectarea cu $C_3$ și invers. Aici intervine deci operația de unificare a mulțimilor disjuncte.
+
+\import{./figures}{graphs-regate-bcc-bridges.tex}
+
+În figura de mai sus, cea mai scumpă punte are costul 100 și unește $C_1$ cu $C_2$. Să notăm cu $|X|$ numărul de noduri din componenta $X$, exceptînd dublurile. Atunci $C_1$ își va nota costul $100 |C_2|$, iar $C_2$ își va nota costul $100 |C_1|$. Apoi vom unifica cele două componente. Similar vom unifica $C_3$ cu $C_4$ cu puntea de cost 90. Să denumim componentele rezultate după unificări $C_{12}$ și $C_{34}$.
+
+Cînd procesăm muchia de cost 80, fiecare nod din $C_{12}$ își va nota costul $80 |C_{34}|$ și viceversa. De aici deducem că dorim două lucruri suplimentare de la structura de mulțimi disjuncte.
+
+\subsubsection*{Stocarea mărimilor în structura de mulțimi disjuncte}
+
+În primul rînd, cînd unificăm două componente trebuie să le cunoaștem mărimile. Această parte este simplă. Fiecare rădăcină din structura de mulțimi disjuncte stochează mărimea mulțimii sale. Inițial aceste mărimi sînt 1 pentru nodurile originale și 0 pentru dubluri. Dacă printr-o unificare $v$ devine fiu al lui $u$, mărimea lui $u$ crește cu $|v|$. Informația despre mărime este garantat corectă doar în rădăcini, dar asta este suficient.
+
+\subsubsection*{Stocarea costurilor în structura de mulțimi disjuncte}
+
+În al doilea rînd, avem nevoie să memorăm costuri distincte pentru oricare două componente $C_i$ și $C_j$ pînă la unificarea lor, apoi costuri comune după unificare. Putem satisface această nevoie particularizînd structura de mulțimi disjuncte astfel:
+
+\begin{enumerate}
+  \item Fiecare nod din structură (așadar, fiecare componentă biconexă) reține costul plătit de fiecare nod din componentă.
+
+  \item Costul total plătit de nodurile dintr-o componentă este dat de suma costurilor de pe calea de la nodul din structură pînă la rădăcina mulțimii.
+
+  \item Costurile trebuie ajustate atît la compresia căii, cît și la unificarea a două mulțimi, pentru a continua să respecte regula (2). Figura de mai jos ilustrează modificările necesare la compresia căii.
+\end{enumerate}
+
+\import{./figures}{graphs-regate-path-compression.tex}
+
+\subsubsection*{Algoritmul 2: Interclasarea nodurilor și a punților}
+
+Iată și o soluție ceva mai scurtă. Nu mai dublăm nodurile. În loc de aceasta, procesăm în ordine descrescătoare punțile și nodurile, interclasînd valorile.
+
+Să considerăm nodul $u$ de cost $r_u$. Înaintea lui am procesat toate punțile mai scumpe decît $r_u$ și am unificat corespunzător diverse componente biconexe. Să ne imaginăm așadar nodul $u$ într-un subarbore al lui $G^{BCC}$, și anume subarborele care conține componenta lui $u$ și componentele accesibile prin punți mai scumpe decît $r_u$. Dacă acest subarbore conține $t$ noduri, atunci $u$ ar prefera să plătească $r_u \cdot (t - 1)$ pentru a se interconecta cu celelalte noduri, deoarece punțile sînt prea scumpe.
+
+Răspunsul pentru $u$ va consta din acest cost, plus costurile interconectărilor viitoare, cu punți mai ieftine decît $r_u$ și care vor fi preferabile. Problema este că noi nu știm (încă) acele costuri. Vom ști la final costul total pentru componenta lui $u$, dar acel cost va include și interconectările trecute, cu punți mai scumpe decît $r_u$.
+
+Dar acest neajuns îl putem rezolva ușor: măsurăm costul componentei lui $u$ în clipa în care procesăm nodul $u$, apoi din nou la final. Prin diferență, aflăm costul interconectării componentei lui $u$ cu punți mai ieftine decît $r_u$.
+
+Sursa anexată implementează acest algoritm.
