@@ -38,3 +38,45 @@ Vom menține aceleași informații, dar global:
 \end{itemize}
 
 Notă de implementare: putem stoca listele de adiacență și listele de interogări ca \ccode{vector} sau ca \ccode{list}, căci nu avem nevoie de acces aleatoriu. \href{https://codeforces.com/contest/375/submission/294270594}{Implementarea} cu \ccode{list} este considerabil mai lentă și consumă mai multă memorie.
+
+
+\subsection{Problema Dominant Indices (Codeforces)}
+\label{problem:dominant-indices}
+
+\href{https://codeforces.com/contest/1009/problem/F}{enunț}
+$\bullet$
+\hyperref[code:dominant-indices]{surse}
+
+Problema nu este mult mai complicată decît precedenta. Doar enunțul este ușor greoi.
+
+\subsubsection*{Soluție cu \textit{small-to-large} clasic}
+
+Să definim întîi un termen pentru a simplifica discuția. Numim \textbf{lățimea} la adîncime $d$ a subarborelui unui nod $u$ ca fiind numărul de descendenți ai lui $u$ aflați la adîncime $d$ față de $u$. Cu această definiție, problema ne cere să tipărim, pentru fiecare nod $u$, adîncimea la care lățimea subarborelui lui $u$ este maximă. La egalitate, vom prefera adîncimea minimă (așadar, mai aproape de rădăcina subarborelui, $u$).
+
+Vom construi, în fiecare nod $u$, un vector $h$ în care $h[i]$ reține lățimea la adîncime $i$ a subarborelui. L-am denumit astfel întrucît, în fapt, $h$ este o histogramă a distanței de la $u$ la nodurile din subarbore. Simultan vom menține și indicele dominant din acest vector.
+
+Vom calcula recursiv structura de date combinînd structurile fiilor. Pentru a reduce complexitatea de la $\bigoh(n^2)$ vom „vărsa” mereu vectorul mai mic în cel mai mare.
+
+Rămîne întrebarea cum menținem sau cum găsim indicele dominant. Dar să observăm că toate operațiile sînt de adăugare. Niciodată nu vom avea nevoie să scădem valori din vectorii $h$. De aceea, structura poate menține indicele maximului, pe care îl recalculăm la fiecare operație de adăugare.
+
+\subsubsection*{Soluție cu \textit{small-to-large} exclusiv}
+
+Reluăm același șablon, care este mare, dar care se particularizează în mod banal pentru această problemă. Vom menține o singură structură globală în care inserăm și ștergem subarbori. Algoritmul garantează că, pentru orice nod $u$, la sfîrșitul apelului recursiv în nodul $u$, structura globală va conține exclusiv informații despre subarborele lui $u$.
+
+Calculăm înălțimile tuturor nodurilor. Cînd inserăm sau cînd ștergem un nod, incrementăm sau decrementăm frecvența nodurilor pe nivelul corespunzător adîncimii lui $u$. Atunci răspunsul pentru $u$ este pur și simplu poziția frecvenței maxime în structura globală (poziția minimă, dacă există mai multe), minus înălțimea nodului $u$.
+
+Pentru a ține evidența maximului, putem folosi o structură logaritmică, să spunem un arbore de intervale. Dar putem afla răspunsul și în timp constant, astfel:
+
+\begin{itemize}
+  \item Cînd inserăm un nod, iar lățimea nivelului său crește, actualizăm în mod elementar maximul.
+
+  \item Cînd ștergem noduri nu actualizăm maximul, căci nu știm cum (vedeți ce simplu este? \emoji{slightly-smiling-face}).
+
+  \item În schimb, înainte să demarăm parcurgerea recursivă a unui fiu care nu este \textit{heavy}, salvăm poziția maximului.
+
+  \item După ce parcurgem acel fiu, imediat îl și ștergem. Apoi restaurăm poziția maximului din valoarea salvată.
+\end{itemize}
+
+Complexitatea este $\bigoh(n \log n)$ datorită algoritmului \textit{small-to-large} exclusiv.
+
+Sursa anexată folosește vectori STL pentru listele de adiacență. Am scris și o implementare cu \href{https://codeforces.com/contest/1009/submission/357104295}{liste proprii}, care este puțin mai lentă. Cred că explicația este următoarea: pentru un arbore atît de mare, faptul că listele sînt împrăștiate prin memorie dăunează cache-ului. În schimb, \ccode{stl::vector} își ține elementele grupate și are \textit{cache locality} bun.

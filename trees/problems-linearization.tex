@@ -155,6 +155,47 @@ Soluția mai eficientă, în $\bigoh(n \log n)$, este cea studiată în capitole
 
 De aceea vă încurajez mereu să adaptați cunoștințele voastre la particularitățile problemei. Per ansamblu, veți cîștiga timp și eficiență.
 
+\subsection{Problema Arb (Lot 2008)}
+\label{problem:arb}
+
+\href{https://kilonova.ro/problems/2333}{enunț}
+$\bullet$
+\hyperref[code:arb]{surse}
+
+Problema este de lot, dar rezolvabilă cu liniarizare și chiar și fără, doar cu tehnici de bază pe arbori. 2008 erau vremuri mai simple...
+
+\subsubsection*{Soluția cu liniarizare}
+
+Noi știm deja să construim un AIB peste liniarizarea DFS pentru a face interogări pe subarbore. Dar problema ne cere sume peste vîrful subarborelui, la o adîncime dată. Acel vîrf nu mai ocupă neapărat un interval contiguu în liniarizare. Cum ne adaptăm?
+
+Ne reîntîlnim cu o tehnică pe care sper că v-ați amintit-o. Vom adăuga valorile în AIB într-o anumită ordine astfel încît, pentru orice interogare, să existe un moment cînd intervalul subîntins de subarbore să conțină doar valorile necesare pentru interogare, nu și pe cele de mai jos în subarbore.
+
+Care ar fi această ordine? Ea pare să aibă legătură cu adîncimea nodurilor. Concret, facem întîi o liniarizare DFS în care doar notăm timpii de intrare și de ieșire din noduri (așadar, intervalele subîntinse). Apoi, începem să inserăm valorile din noduri în AIB în ordinea adîncimii nodurilor. Există două metode pentru a face asta, ambele rezonabil de ușoare:
+
+\begin{enumerate}
+  \item Fie pe parcursul liniarizării colectăm și nodurile în liste după adîncimea lor.
+  \item Fie facem un BFS clasic, cu coadă.
+\end{enumerate}
+
+Să considerăm o interogare $(u, h)$ referitoare la subarborele lui $u$ la adîncime cel mult $h$. Dacă adîncimea lui $u$ este $d[u]$, atunci momentul optim pentru a răspunde la această interogare este după ce am inserat în AIB toate nodurile pînă la adîncimea $d[u] + h$ inclusiv. În acel moment, o interogare în AIB pe intervalul $[t_i[u], t_o[u]]$ va aduna contribuția 0 pentru nodurile aflate la adîncime mai mare decît $d[u] + h$.
+
+\subsubsection*{Soluția fără liniarizare}
+
+Dacă vreți, soluția anterioară are restricții pe două dimensiuni. Ea cere suma nodurilor (1) cu timpi între $t_i[u]$ și $t_o[u]$ și (2) cu adîncimi între $d[u]$ și $d[u] + h$. Așa cum ne amintim de la lecția despre AIB-uri, \textbf{am procesat nodurile în ordinea adîncimii și am indexat AIB-ul după timp}.
+
+Dar tot la lecția de AIB-uri spuneam că putem trata invers dimensiunile. Concret, la problema \hyperref[problem:little-artem-and-time-machine]{Little Artem and Time Machine} inversarea dimensiunilor ne scăpa de nevoia unei normalizări. Așadar, \textbf{vom indexa AIB-ul după adîncime și vom procesa nodurile în ordinea timpului}. Mai exact, vom parcurge nodurile cu un banal DFS, iar cînd adăugăm valoarea unui nod în AIB (chiar la intrarea DFS-ului în acel nod), o adăugăm la poziția dată de adîncimea nodului.
+
+Atunci, cînd putem răspunde la interogarea $(u, h)$? Răspunsul la interogare constă din suma modificărilor din AIB pe pozițiile de la $d[u]$ la $d[u] + h$, dar numai între intrarea și ieșirea din nodul $u$. Desigur, putem calcula această cantitate ca pe o diferență: calculăm suma din AIB la intrarea în nod, la ieșirea din nod, apoi le scădem între ele.
+
+Implementarea este foarte comparabilă ca viteză cu prima, dar mai scurtă.
+
+\subsubsection*{O soluție în \texorpdfstring{$\bigoh(n + q)$}{O(n + q)}}
+
+De la unii dintre elevi (\href{https://kilonova.ro/submissions/898474}{1}, \href{https://kilonova.ro/submissions/899325}{2} etc.) am învățat o soluție în $\bigoh(n + q)$! Ea combină ideile celor două soluții anterioare. Răspunsul pentru interogarea $(u, h)$ este suma subarborelui lui $u$ minus suma sumelor subarborilor tuturor descendenților lui $u$ la adîncime $d[u] + h + 1$. Menținem un vector în care, pe fiecare nivel, însumăm sumele subarborilor ale căror rădăcini sînt pe acel nivel. Consultăm acel vector la intrarea și la ieșirea din nodul $u$, pentru fiecare interogare despre nodul $u$.
+
+Timpul de rulare nu este semnificativ mai mic. Fișierele de intrare sînt respectabile (7-8 MB), ceea ce mai atenuează timpii de rulare, iar AIB-urile au constantă bună. Dar asta nu ne știrbește plăcerea de a reduce complexitatea asimptotică.
+
+
 \subsection{Problema Disconnect (Infoarena)}
 \label{problem:disconnect}
 
