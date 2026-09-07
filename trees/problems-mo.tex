@@ -73,3 +73,75 @@ struct mo_tracker {
 \subsubsection*{Comparația implementărilor}
 
 Implementarea pe care o consideram mai eficientă este cea cu Tarjan pentru LCA și cu liste proprii. Dar ea este doar cu 10\% mai rapidă decît implementarea mai scurtă, cu metoda celor doi pointeri pentru LCA și cu vectori STL. Fie Codeforces este foarte neconsecvent, fie eu nu mai înțeleg lumea. \emoji{smiling-face-with-tear}
+
+\subsection{Problema Notdivisible (IIOT 2022-2023 runda 3)}
+\label{problem:notdivisible}
+
+\href{https://kilonova.ro/problems/364/}{enunț}
+$\bullet$
+\hyperref[code:notdivisible]{surse}
+
+Problema ne cere să răspundem la interogări pe căi. Cred că abordarea doar cu liniarizare și interogări pe calea pînă la rădăcină nu duce nicăieri. În schimb, abordarea cu algoritmul lui Mo pe arbore este promițătoare.
+
+Implementarea algoritmului în sine este relativ \textit{boilerplate}: liniarizare de tip Euler, precalcularea informațiilor pentru interogări de LCA și algoritmul lui Mo propriu-zis. Acum, să vedem ce menținem în structura pentru intervalul curent.
+
+Avem nevoie să includem/excludem o valoare de pe cale, preferabil în timp $\bigoh(1)$. Dar ce înseamnă să „includem/excludem” o valoare? Aici este partea matematică a problemei. Desigur, n-am vrea să bifăm/debifăm toți multiplii acelei valori.
+
+Ideea necesară este: ar putea fi vreodată răspunsul 15? Cu alte cuvinte, putem atribui niște valori pe o cale astfel încît $2, 3, \dots, 14$ să nu fie răspunsul, dar 15 să fie? Este destul de clar că nu. Pentru ca 3 să nu fie răspunsul, este necesar ca una dintre valorile de pe cale să fie chiar 3, căci 3 nu are alți divizori. Dar valoarea 3 îl va exclude și pe 15 dintre răspunsurile posibile. De aceea, răspunsul la orice interogare va fi un număr prim.
+
+Mai mult decît atît, dacă o cale conține o valoare compusă, cum ar fi 15, o putem ignora pur și simplu. Decizia dacă răspunsul pe acea cale va fi 2 sau 3 sau 5 etc. nu este influențată de numărul 15, deoarece niciun număr prim nu se divide cu 15.
+
+Și atunci problema se reduce (1) la a menține evidența numerelor prime din intervalul curent, cu frecvențele lor și (2) la a găsi primul număr prim care nu apare în evidență. De aici rezultă și că avem nevoie doar de primele $n+1$ numere prime și le putem ignora pe cele mai mari. În cazul cel mai defavorabil, calea va conține toate cele $n$ noduri cu numere prime distincte, deci al $n+1$-lea va fi răspunsul.
+
+Vă reamintesc că am prezentat în capitolul de descompunere în radical problema \hyperref[problem:mexitate]{Mexitate}, din care am învățat o metodă să includem/excludem valori în $\bigoh(1)$ și să determinăm mex-ul în $\bigoh(\sqrt{n})$.
+
+\subsubsection*{Moment de inginerie software}
+
+Haideți să zăbovim puțin asupra implementării. Ea este bine modularizată, delimitînd următoarele niveluri de abstracție:
+
+\begin{enumerate}
+  \item Un generator de numere prime (ciur). Nu are nevoie să știe nimic despre lumea de afară, ci doar de un parametru $n$ ca să știe cîte numere să genereze. Apoi expune metodele:
+
+  \begin{itemize}
+    \item \ccode{get(k)}: returnează al $k$-lea număr prim;
+    \item \ccode{find(p)}: returnează numărul de ordine al lui $p$ sau \ccode{NONE} dacă $p$ nu este prim.
+  \end{itemize}
+
+  \item Un gestionar de mex-uri pe intervalul $[0, n)$. Nu are nevoie să știe nimic despre lumea de afară. În particular, nu știe că indicii pe care îi gestionează sînt indici în lista de numere prime. Sînt etaje complet separate. Expune metodele:
+
+  \begin{itemize}
+    \item \ccode{add(x)};
+    \item \ccode{remove(x)};
+    \item \ccode{get_mex()}.
+  \end{itemize}
+
+  \item Un arbore. Se bazează pe generatorul de numere prime. Încă de la citire, înlocuiește numerele prime cu numerele lor de ordine, iar numerele compuse cu \ccode{NONE}. Expune metodele:
+
+  \begin{itemize}
+    \item \ccode{read()}: citire;
+    \item \ccode{flatten()}: construiește liniarizarea Euler;
+    \item \ccode{make_query(u, v)}: convertește un query pe arbore într-un query pe liniarizare.
+    \item Nu expune metodele \ccode{is_ancestor(u, v)} și \ccode{lca(u, v)}. Nu este treaba restului lumii cum funcționează metoda \ccode{make_query()}.
+  \end{itemize}
+
+  \item Un gestionar pentru Mo. Se bazează pe gestionarul de mex. Nu știe nimic despre arbore. Expune metodele:
+
+  \begin{itemize}
+    \item \ccode{init()};
+    \item \ccode{query(l, r, extra_val)}.
+  \end{itemize}
+
+  \item Programul principal, scurt ($\sim 35$ de linii), \textbf{singurul} care are viziunea de ansamblu. El orchestrează:
+
+  \begin{itemize}
+    \item generarea numerelor prime;
+    \item citirea arborelui;
+    \item liniarizarea arborelui;
+    \item citirea și convertirea interogărilor;
+    \item ordonarea interogărilor conform algoritmului lui Mo;
+    \item procesarea interogărilor;
+    \item afișarea răspunsului.
+  \end{itemize}
+\end{enumerate}
+
+Nu am pretenția că aceasta este singura implementare corectă. Putem coda același lucru și în C, fără încapsulare, dar atunci o implementare elegantă ar separa altcumva etajele logice. Ce este important este să nu lăsați aceste etaje să se încîlcească. Dacă variabilele și codul acestor etaje se amestecă, complexitatea programului crește pătratic.
