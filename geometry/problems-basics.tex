@@ -110,6 +110,49 @@ $\bullet$
 
 Pentru a putea roti \textbf{simultan} $A$ peste $B$ și $B$ peste $C$, să ne închipuim că rotim cercul centrat în $P$. Este nevoie ca $\angle APB = \angle BPC$, ceea ce se poate exprima mai simplu ca $AB=BC$.
 
+\subsection{Problema Part (Baraj ONI 2006)}
+\label{problem:part}
+
+\href{https://kilonova.ro/problems/1861}{enunț}
+$\bullet$
+\hyperref[code:part]{sursă}
+
+Ideile de geometrie necesare sînt facile. Trebuie doar să evităm să testăm explicit condiția „piesele acoperă toată porțiunea desenată”, care sună infernal. În loc de asta, putem verifica următoarele condiții:
+
+\begin{enumerate}
+  \item Suma ariilor triunghiurilor este egală cu aria tablei.
+  \item Toate cele $3n$ puncte sînt pe tablă.
+  \item Oricare două triunghiuri nu au intersecții nedegenerate.
+\end{enumerate}
+
+Condiția (1) este banală. Aplicăm pur și simplu determinantul pentru calculul ariei triunghiului. Ca să rămînem pe tipuri de date întregi, calculăm dublul tuturor ariilor.
+
+Condiția (2) se reduce la un test de includere a unui punct $P$ într-un triunghi $ABC$. Un mod de a implementa asta este să verificăm că ariile triunghiurilor $PAB$, $PBC$ și $PCA$ au același semn (sau 0). Dar triunghiul $ABC$ nu este oarecare, ci este chiar tabla. Știm deja că $P$ este în primul cadran și trebuie să aflăm doar dacă este sub segmentul $(0,b)-(a,0)$. De aceea, putem reduce mult testul. Eu am ales să calculez, pentru coordonata $x$ dată, care este $y$-ul maxim admisibil. Astfel am ajuns la formula:
+
+$$ay + bx \leq ab$$
+
+Ajungem astfel la condiția (3), cea mai dificil de testat. Prima mea idee a fost: două triunghiuri se intersectează dacă și numai dacă unul are un vîrf strict în interiorul celuilalt. Dar această idee greșește pe cazuri ca \href{https://en.wikipedia.org/wiki/Star_of_David}{Steaua lui David} sau două triunghiuri confundate. Am ajuns la următoarea idee corectă, posibil prea complicată:
+
+\begin{itemize}
+  \item Dacă oricare din cele $3 \times 3$ perechi de laturi se intersectează, atunci triunghiurile se intersectează. Atenție, vorbim de intersecții nedegenerate: segmentele nu au aceeași dreaptă-suport, iar intersecția nu este fix la capătul niciunui segment.
+
+  \item Dacă unul dintre triunghiuri este complet inclus în celălalt (inclusiv pe latură), atunci triunghiurile se intersectează.
+
+  \item Altfel triunghiurile nu se intersectează.
+\end{itemize}
+
+Ca detalii de implementare:
+
+\begin{itemize}
+  \item Încă de la citire ne putem asigura că toate triunghiurile sînt date în ordine trigonometrică. Aceasta simplifică diverse teste.
+
+  \item Toate operațiile sînt pe întregi.
+
+  \item Metodele sînt scurte și încapsulate în \ccode{struct}-urile \ccode{point}, \ccode{segment} și \ccode{triangle}.
+
+  \item Unde există ambiguități, am adăugat un scurt comentariu, în special privind tratarea cazurilor-limită.
+\end{itemize}
+
 \subsection{Problema Bear and Floodlight (Codeforces)}
 \label{problem:bear-and-floodlight}
 
