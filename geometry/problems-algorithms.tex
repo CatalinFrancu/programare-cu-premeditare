@@ -130,6 +130,33 @@ O necesitate tipică pentru multe probleme este să clarificăm în ce ordine pr
 
 Pentru claritate, vă îndemn să definiți și să colectați explicit evenimentele. La procesarea unui eveniment, în funcție de tipul său, apelați o funcție bine denumită. Atunci scrierea programului devine ușoară.
 
+\subsection{Problema Nuke (Lot 2010)}
+\label{problem:nuke}
+
+\href{https://kilonova.ro/problems/2260/}{enunț}
+$\bullet$
+\hyperref[code:nuke]{sursă}
+
+Enunțul spune, în două locuri diferite, că cercurile nu se suprapun. De ce este asta important? Pentru că fiecare punct poate contribui cu $+1$ la cel mult un cerc. Cu puțin fler, ajungem la concluzia că este mult mai simplu să examinăm punctele și să punem pentru fiecare întrebarea „este acest punct inclus într-un cerc, iar dacă da, în care?”. Regăsim principiul des întîlnit că procesarea datelor într-o anumită ordine bine aleasă poate ușura mult rezolvarea unei probleme.
+
+De aici pînă la baleiere mai este un singur pas. Sortăm punctele și cercurile după o coordonată (eu am ales $x$). Astfel, cînd procesăm punctul $P$ ne interesează doar evidența cercurilor C active: cele care au  $x_C - r \leq x_P$ și $x_C + r \geq x_P$. Așadar, evenimentele pe care le vom crea sînt:
+
+\begin{itemize}
+  \item începutul unui cerc (la coordonata $x_C - r$ pentru fiecare cerc);
+  \item sfîrșitul unui cerc (la coordonata $x_C + r$ pentru fiecare cerc);
+  \item punct (la coordonata $x_P$ pentru fiecare punct).
+\end{itemize}
+
+Să ne imaginăm linia de baleiere cînd trece printr-un punct $P$. Ea este verticală, trecînd prin $x_P$. Punctul, desigur, este un punct pe linie, la coordonata $y_P$. Dar ce sînt cercurile? Ce „vede” linia de baleiere? Vede coarde verticale (segmente). În mod notabil, \textbf{segmentele nu se intersectează}. De aici rezultă că putem stoca centrele cercurilor active într-o simplă structură ordonată (\ccode{set}, \ccode{map} etc.) Eu am ales un \ccode{map} deoarece, pentru un $y$ dat, doresc să pot afla și care este cercul cu centrul la acel $y$.
+
+Merită clarificat că nu insistăm să cunoaștem situația exactă a segmentelor (între ce coordonate $y$ se întinde fiecare cerc). Ne este suficient să știm că ordinea centrelor nu se schimbă niciodată, pentru că dacă s-ar schimba, aceasta ar presupune că două cercuri s-au intersectat. De aceea, intervalul dintre două centre poate aparține fie unuia dintre cercuri, fie niciunuia, dar nu poate aparține altor cercuri.
+
+Acum, cînd primim un punct $P$, îl căutăm pe $y_P$ în această structură. El va fi încadrat de (cel mult) două centre de cercuri, unul deasupra și unul dedesubt. Acestea sînt singurele cercuri-candidat care l-ar putea conține pe $P$ deoarece, cum am spus, cercurile ocupă segmente disjuncte pe linia de baleiere. Deci testăm acești doi candidați. Singura formulă de geometrie necesară este apartenența unui punct într-un cerc.
+
+Ca de obicei, atenție la sortarea evenimentelor cu $x$ egal! Ordinea este: deschide cerc, procesează punct, închide cerc, pentru a contoriza corect un punct care se află la extrema stîngă / dreaptă a unui cerc.
+
+Sursa mea este didactică, cu rutine separate pentru citire, crearea evenimentelor, sortarea evenimentelor, baleiere și tipărire. Baleierea denumește clar evenimentele și apelează rutine separate pentru fiecare tip de eveniment. Desigur, codul poate fi (mult) condensat, dar mi se pare mai util să vedeți scheletul, care este reutilizabil la alte probleme de baleiere.
+
 \subsection{Problema Hill Walk (USACO Gold 2013)}
 \label{problem:hill-walk}
 
