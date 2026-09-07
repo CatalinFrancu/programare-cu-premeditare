@@ -266,3 +266,85 @@ Pornind de la această observație, putem optimiza soluția de mai sus astfel. S
 \end{enumerate}
 
 Odată fixat capătul stîng, orice amestecare distinctă a caracterelor din $[l,r]$, cîtă vreme garantează că îl modifică pe $s[l]$, este o soluție distinctă și numărată o singură dată. Dacă am grupa acum aceste amestecări după poziția ultimului caracter modificat, $r$, am regăsi subsecvențele $[l,r]$ din soluția anterioară.
+
+\subsection{Problema Manhattan (Lot 2017)}
+\label{problem:manhattan}
+
+\href{https://kilonova.ro/problems/518}{enunț}
+$\bullet$
+\hyperref[code:manhattan]{surse}
+
+Această problemă ne forțează să trecem prin cîteva formule de combinatorică. Iată soluția, așa cum am conceput-o eu.
+
+Algoritmul naiv ar face efort $\bigoh(MAX\_COORD^4)$ pentru a procesa fiecare pereche de puncte. Este nevoie de îmbunătățiri succesive pentru a inventaria drumurile în grupe mai mari.
+
+\subsubsection*{Oglindiri pentru reducerea numărului de cazuri}
+
+Enunțul garantează că există o dreaptă (orizontală sau verticală) care separă zonele. Cu alte cuvinte, zona $B$ se află undeva „în jurul” zonei $A$. Am vrut să reduc numărul de cazuri la unul singur: zona $B$ se află strict în dreapta zonei $A$. De aceea am aplicat două transformări, la nevoie:
+
+\begin{enumerate}
+  \item Dacă separația este pe verticală (zona $B$ este deasupra sau dedesubtul zonei $A$), atunci oglindim zonele față de diagonală, inversînd $x$-ii cu $y$-ii. Astfel ne asigurăm că există un $x$ care separă zonele.
+
+  \item Dacă A este în dreapta lui B, interschimbăm A cu B.
+
+  \item Pentru simplitate, am translatat totul pentru aduce latura stîngă a zonei $A$ pe axa $Oy$.
+\end{enumerate}
+
+Observăm că toate liniile orizontale din zona $A$ ocupă același interval pe axa $Ox$, pe care îl vom denumi $[0, w]$ (de la engl. \textit{width}). Similar, toate liniile orizontale din zona $B$ ocupă același interval pe axa $Ox$, pe care îl vom denumi $[x_1, x_2]$.
+
+\subsubsection*{Drumuri de la un punct la o linie}
+
+Fie $PL(d)$ numărul de drumuri de la un punct de pe latura stîngă a zonei $A$ (așadar $x=0$) la o linie din zona $B$, astfel încît distanța pe verticală de la punct la linie să fie $d$. Pentru simplitate, vom considera punctul ca fiind originea $(0,0)$ și linia ca fiind $(x_1, d) \to (x_2, d)$. Desigur, numărul de drumuri de la $(0,0)$ la un punct oarecare $(x, d)$ este $C_{x + d}^d$. Deci avem:
+
+$$PL(d) = \sum_{x=x_1}^{x_2} C_{x+d}^{d} = C_{x_2 + d + 1}^{d + 1} - C_{x_1 + d}^{d + 1}$$
+
+Am folosit formula pentru sume de combinări cu $k$ fixat:
+
+$$\sum_{m = 0}^n C_m^k = C_{n + 1}^{k + 1}$$
+
+\subsubsection*{Drumuri de la o linie la o linie}
+
+Mai departe, fie $LL(d)$ numărul de drumuri de la orice punct de pe o linie din zona $A$ la orice punct de pe o linie din zona $B$, astfel încît distanța pe verticală dintre linii să fie $d$. Pentru simplitate, vom considera liniile $(0,0) \to (w, 0)$ și $(x_1, d) \to (x_2, d)$.
+
+Observăm că, pe măsură ce punctul din zona $A$ avansează la $(1,0)$, apoi la $(2,0)$ etc., distanțele pînă la zona $B$ scad la $[x_1 - 1, x_2 - 1]$, apoi la $[x_1 - 2, x_2 - 2]$ etc. Obținem sumele:
+
+$$
+LL(d) = \sum_{x = 0}^{w} (C_{x_2 + d + 1 - x}^{d + 1} - C_{x_1 + d - x}^{d + 1})\\
+= (C_{x_2 + d + 2}^{d + 2} - C_{x_2 + d + 1 - w}^{d + 2}) - (C_{x_1 + d + 1}^{d + 2} - C_{x_1 + d - w}^{d + 2})
+$$
+
+Acest rezultat exprimă drumurile între orice două linii aflate la distanță $d$ pe verticală. Remarcăm că valorile $w$, $x_1$ și $x_2$ sînt constante pentru orice pereche de linii din cele două zone. Mai remarcăm și că $LL(d) = LL(-d)$: nu contează dacă drumurile merg $d$ pași în sus sau în jos.
+
+De aici, există (cel puțin) doi algoritmi.
+
+\subsubsection*{Varianta 1: Agregarea pînă la zone întregi}
+
+\paragraph*{Drumuri de la o linie la o zonă}
+
+Fie acum $LZ(d_1, d_2)$ numărul de drumuri de la linia $(0,0) \to (w, 0)$ la zona $(x_1, d_1) \to (x_2, d_2)$, unde $0 \leq d_1 \leq d_2$. Desigur, trebuie doar să însumăm $LL(d)$ de la $d_1$ la $d_2$. Pentru a putea calcula sumele de combinări cu aceeași formulă ca mai sus, îl vom rescrie pe $LL(d)$ folosind egalitatea $C_n^k = C_n^{n-k}$.
+
+$$
+LZ(d_1, d_2) = \sum_{d = d_1}^{d_2} LL(d)\\
+= \sum_{d = d_1}^{d_2} [(C_{x_2 + d + 2}^{d + 2} - C_{x_2 + d + 1 - w}^{d + 2}) - (C_{x_1 + d + 1}^{d + 2} - C_{x_1 + d - w}^{d + 2})]\\
+= \sum_{d = d_1}^{d_2} [(C_{x_2 + d + 2}^{x_2} - C_{x_2 + d + 1 - w}^{x_2 - 1 - w}) - (C_{x_1 + d + 1}^{x_1 - 1} - C_{x_1 + d - w}^{x_1 - 2 - w})]\\
+$$
+
+Rezultă o formulă cu 8 termeni, pe care o omitem pentru economie de spațiu și timp. Ea se regăsește în cod.
+
+\paragraph*{Drumuri între cele două zone}
+
+Acest ultim pas se complică deoarece zonele nu sînt neapărat separate pe verticală. De aceea, nu putem pur și simplu să însumăm formula din secțiunea anterioară pentru toate coordonatele $y$ din zona A. În loc de aceasta, ne vom mulțumi cu o soluție în $O(MAX\_COORD)$.
+
+Iterăm prin fiecare coordonată $y$ din zona $A$. Dacă această coordonată nu intersectează zona B, atunci apelăm exact formula de mai sus, înlocuind însă limitele verticale $d_1$ și $d_2$ cu $y_1 - y$ și $y_2 - y$. Dacă însă coordonata $y$ intersectează zona B, atunci împărțim drumurile care pornesc de pe linia $y$ în două categorii:
+
+\begin{enumerate}
+  \item drumuri care urcă înspre zona $(x_1, y) \to (x_2, y_2)$;
+  \item drumuri care coboară înspre zona $(x_1, y-1) \to (x_2, y_1)$.
+\end{enumerate}
+Cazul (1) îl tratăm ca și pînă acum, iar cazul (2) îl oglindim față de $y$, obținînd dreptunghiul $(x_1, y+1) - (x_2, 2y - y_1)$.
+
+\subsubsection*{Varianta 2: Agregarea pînă la linii, apoi contabilitate}
+
+Ne folosim doar de $LL(d)$. Iterăm prin toate valorile posibile pentru deplasarea $d$. Pentru o deplasare $d$ aleasă, adunăm la rezultat cantitatea $LL(d)$ înmulțită cu numărul de perechi de linii, una din $A$ și una din $B$, între care distanța pe verticală este $d$. Să notăm această cantitate cu $P(d)$.
+
+Cît este $P(d)$? Dat fiind că zona $B$ ocupă liniile pe verticală de la $y_1$ la $y_2$, o putem pune în corespondență cu liniile din zona $A$ cu coordonate între $y_1-d$ și $y_2-d$ (astfel ca deplasarea pe verticală să fie de $d$ pași). Așadar, trebuie doar să intersectăm intervalul zonei A, să-l numim $(y^A_1, y^A_2)$, cu intervalul de interes $(y_2 - d, y_1 - d)$. Această operație este elementară.
