@@ -270,3 +270,79 @@ Să considerăm tranșa de numere cu 7 biți 1 de lățime 10. Cum arată aceast
 \end{enumerate}
 
 Piesa finală din puzzle este să tipărim al $p$-lea bit din tranșă. Calculînd cîtul împărțirii lui $p$ la 40 știm în zona cărei combinări se află el, iar calculînd restul împărțirii lui $p$ la 10 știm al cîtelea bit din combinare îl dorim. Aceasta este o operație clasică de \textit{combination unranking}, implementată în funcția \ccode{find_bit()}.
+
+\subsection{Problema Bubblesort (Lot 2010)}
+\label{problem:bubblesort}
+
+\href{https://kilonova.ro/problems/2270}{enunț}
+$\bullet$
+\hyperref[code:bubblesort]{sursă}
+
+Aceasta este clar o problemă de unranking. Dintre toate permutările care au o anumită proprietate, trebuie să o tipărim pe a $k$-a. Dar detaliile sînt relativ dificile.
+
+\subsubsection*{Detalierea ordinului unei permutări}
+
+Mai întîi, cum putem exprima ordinul unei permutări într-un mod util?
+
+Să încercăm să calculăm numărul de treceri pe care îl face algoritmul bubblesort. Un mod vizual de a explica acest algoritm este: el „ia în mînă” un element $x$ pe care îl mută spre dreapta, poziție cu poziție, pînă cînd întîlnește un alt element $y > x$. Acolo îl depune pe $x$, îl ia pe $y$ în mînă și continuă astfel pînă la poziția $n$.
+
+De aici putem face următoarea observație. Dacă un element $v[i]$ are $g$ elemente mai mari decît el la stînga lui, atunci \textbf{exact unul} dintre aceste $g$ elemente va migra la dreapta lui $i$ la fiecare trecere făcută de bubblesort. Într-adevăr,
+
+\begin{enumerate}
+  \item Algoritmul va veni dinspre stînga cu cel mai mare element găsit pînă la poziția $i-1$ inclusiv, pe care îl va interschimba cu $v[i]$.
+
+  \item Pe $v[i]$ nu îl vor sări două sau mai multe elemente, deoarece pozițiile interschimbărilor cresc.
+
+  \item $v[i]$ însuși nu poate migra spre dreapta cît timp are elemente mai mari decît el la stînga sa.
+\end{enumerate}
+
+Avînd în vedere că bubblesort mai face o ultimă trecere pentru a se asigura că vectorul este sortat, rezultă că numărul necesar de treceri, adică ordinul permutării, este
+
+$$m = 1 + \max_{i = 1}^{n} g[i]$$
+
+unde $g[i]$ este numărul de elemente mai mari decît $v[i]$ aflate la stînga lui $v[i]$.
+
+\subsubsection*{Numărarea permutărilor de un ordin dat}
+
+Cîte permutări de ordin $m$ există? Dorim ca $\max_i g[i] = m - 1$. Din experiență, numărarea unor vectori în care maximul are \textbf{fix} o valoare cerută este complicată. În loc de aceasta, să numărăm permutările în care maximul are \textbf{cel mult} o valoare dată, ceea ce este mai simplu. Așadar, vom număra permutările de ordin cel mult $m$ și, separat, pe cele de ordin $m-1$. Prin diferență le putem număra pe cele de ordin exact $m$. Atunci valorile $g[i]$ trebuie să ia valori între 1 și un maxim dat ($m-1$ sau $m-2$).
+
+Să judecăm această proprietate nu după poziții, ci după valori (pentru ordinul $m$). Valoarea 1 trebuie să apară undeva pe pozițiile $1 \dots m$. Dacă ar apărea pe poziția $m+1$ sau mai mare, atunci ar avea cel puțin $m$ valori mai mari decît ea la stînga, incorect. Spunem că valoarea 1 are $m$ \textbf{libertăți}.
+
+Valoarea 2 trebuie să apară pe pozițiile $1 \dots m+1$. Astfel ne asigurăm că ea are cel mult $m$ valori la stînga, dintre care cel mult $m-1$ sînt mai mari ca valoare (cealaltă este valoarea 1). Similar, valoarea 3 trebuie să apară pe pozițiile $1 \dots m+2$ etc. Ultima valoare cu $m$ libertăți este $n - m + 1$, care trebuie să ocupe una dintre pozițiile $1 \dots n$. Restul valorilor pot fi așezate oriunde pe pozițiile rămase.
+
+Numărul de permutări de ordin $m$ este produsul acestor libertăți, adică $m^{n - m + 1} \cdot (m-1)!$.
+
+\textbf{Calculul permutării de un rang dat}
+
+Acum procedăm așa cum știm: încercăm să așezăm pe prima poziție valoarea 1, apoi 2, apoi 3, și pentru fiecare valoare numărăm permutările de ordin $m$ care încep cu ea. Cînd suma acestor numere devine cel puțin egală cu $k$, ultima valoare încercată este soluția pe poziția 1. Procedăm similar pe pozițiile $2, 3, \dots, n$.
+
+Deci ajungem la întrebarea: cîte permutări de ordin exact $m$ încep cu un prefix dat? Așa cum mă cunoașteți, \emoji{slightly-smiling-face} am încercat băbește un exemplu mai mare, ca să înțeleg cum evoluează libertățile elementelor.
+
+Am căutat manual datele pentru permutarea \texttt{4 2 5 1 3 7 6}, care sînt $n = 7$, $m = 4$ și $k=590$. Următorul tabel arată căutarea primei valori din soluție.
+
+\begin{verbatim}
+Permutări de ordin         ≤ 4          |          ≤ 3        | exact 4
+Libertăți pentru: 1 2 3 4 5 6 7         | 1 2 3 4 5 6 7       |
+Prefix []         4×4×4×4×3×2×1 = 1536  | 3×3×3×3×3×2×1 = 486 | 1050
+                                                          (ca fapt divers)
+
+Prefix [1]        1×4×4×4×3×2×1 =  384  | 1×3×3×3×3×2×1 = 162 |  222
+Prefix [2]        3×1×4×4×3×2×1 =  288  | 2×1×3×3×3×2×1 = 108 |  180
+Prefix [3]        3×3×1×4×3×2×1 =  216  | 2×2×1×3×3×2×1 =  72 |  144
+Prefix [4]        3×3×3×1×3×2×1 =  162  | 2×2×2×1×3×2×1 =  48 |  114
+\end{verbatim}
+
+Să explicăm linia pentru prefixul $[1]$. Valoarea 1 nu mai are decît o libertate, deoarece i-am impus să stea pe poziția 1. Dar valoarea 2 continuă să aibă 4 libertăți (pozițiile 2-5) etc. Pe linia pentru prefixul $[2]$ observăm că 1 își recapătă 3 din cele 4 libertăți: el poate sta pe pozițiile 2-4, căci poziția 1 este ocupată. Valoarea 2 nu mai are decît o libertate, iar de la valoarea 3 încolo situația este normală etc.
+
+Ne oprim la valoarea 4, întrucît $222 + 180 + 144 + 114 > 590$. Rezultă că am identificat $222 + 180 + 144 = 546$ permutări care încep cu valorile 1, 2 și 3 și trebuie să o găsim pe a $590-546=44$-a care începe cu 4.
+
+Includ aici și calculele pentru poziția a doua. Restul este similar.
+
+\begin{verbatim}
+Prefix [4 1]      1×3×3×1×3×2×1 =   54  | 1×2×2×1×3×2×1 =  24 |   30
+Prefix [4 2]      2×1×3×1×3×2×1 =   36  | 1×1×2×1×3×2×1 =  12 |   24
+\end{verbatim}
+
+Aici ne oprim deoarece $30+24 > 44$. Rezultă că al doilea element din soluție este 2 și trebuie să găsim a $44-30=14$-a permutare care începe cu 4 2. \textit{Rinse and repeat}.
+
+Programul cere și numere mari, ceea ce poate nu este un lucru rău, este o ocazie să le exersați. Sursa devine de 10 ori mai rapidă dacă folosim o bază mare, să spunem 10.000, în loc de 10 pentru numerele mari.
