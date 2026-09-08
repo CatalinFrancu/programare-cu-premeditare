@@ -298,3 +298,44 @@ De amorul artei, am încercat și următoarea abordare. Să observăm că întî
 După primul DFS, am sortat tripleții și am comasat duplicatele (însumînd frecvențele). Pentru a căuta informații, am folosit căutarea binară.
 
 Timpul de rulare s-a înjumătățit. De reținut!
+
+
+\subsection{Problema Cucuruz (Concurs RoAlgo \# 7)}
+\label{problem:cucuruz}
+
+\href{https://kilonova.ro/problems/1908}{enunț}
+$\bullet$
+\hyperref[code:cucuruz]{sursă}
+
+O primă dificultate este să ne decidem în ce mod să agregăm datele pentru a le calcula.
+
+Fie $C(u,v)$ suma valorilor de pe calea $u-v$. Facem întîi observația că fiecare pereche de noduri $(u, v)$ aflate la distanță cel mult $p$ trebuie luată în calcul la răspuns. Într-adevăr,
+
+\begin{itemize}
+  \item fie $u < v$ și atunci $C(u,v)$ contribuie la $Fss(v)$,
+  \item fie $u > v$ și atunci $C(u,v)$ contribuie la $Fss(u)$.
+\end{itemize}
+
+S-ar putea să existe soluții bazate pe tehnica \textit{small-to-large} care pornesc de la această observație. Dar iată soluția bazată pe descompunere în centroizi. Ea amintește (pînă la un punct) de problema \hyperref[problem:fixed-length-paths-1]{Fixed-Length Paths I}.
+
+\subsubsection*{Procesarea din fiecare centroid}
+
+Cînd procesăm un centroid $u$ dorim să contabilizăm contribuția tuturor căilor de lungime $l \leq p$ care trec prin acel centroid (dar nu și prin alt centroid de nivel mai înalt). Restul căilor sînt complet cuprinse în subarborele unuia dintre fii și vor fi găsite la un moment viitor.
+
+Ca să contabilizăm toate căile, vom considera că am procesat primii fii ai lui $u$ și că avem informațiile despre ei într-o structură (vedem imediat ce informații și ce structură). Acum procesăm și fiul următor, să-i spunem $v$. Dorim să modelăm faptul că orice cale din fiii anteriori de lungime $d \leq p$ poate fi combinată cu orice căi din subarborele lui $v$ de lungime cel mult $p - d$. Ca să fim eficienți, trebuie să încercăm să ținem totaluri pe nivel. Așadar, pentru fiecare adîncime $d$ între $0$ și $p$ vom ține $left[d]$ = suma costurilor $C(u, x)$ pentru toate căile $(u, x)$, din fiii procesați anterior, terminate în noduri $x$ care se află la adîncimea $d$ (raportat la nodul $u$). Similar vom ține $right[d]$ pentru căile de lungime $d$ din fiul curent.
+
+Să studiem regula de combinare. Dacă am avea explicit patru căi în stînga cu sumele $a, b, c, d$ și trei căi în dreapta cu sumele $e, f, g$, atunci am obține prin combinare 12 căi cu sumele $a+e, a+f, a+g, b+e, \dots, d + g$. Observăm că fiecare dintre sumele $a, b, c, d$ trebuie adunată de 3 ori și fiecare dintre sumele $e, f, g$ trebuie adunată de 4 ori. De aici rezultă că:
+
+\begin{enumerate}
+  \item Nu este nevoie să ținem sume individuale, ci doar sumele în stînga $(a + b + c + d)$ și în dreapta $(e + f + g)$.
+
+  \item Avem nevoie să ținem minte nu doar \textbf{sumele} costurilor căilor pe fiecare nivel, ci și \textbf{numărul} de căi pe fiecare nivel, fie ele $cnt\_left[d]$ și $cnt\_right[d]$.
+\end{enumerate}
+
+După ce calculăm contribuția la răspuns pentru aceste combinații între fiul $v$ și fiii anteriori, vom încorpora informația din $right$ în $left$. În principiu, facem o simplă adunare pe fiecare nivel, cu completarea că la $right[d]$ trebuie să mai adăugăm și $cnt\_right[d] \cdot V[u]$, deoarece la toate acele căi trebuie să adăugăm și nodul $u$ cu valoarea sa.
+
+\subsubsection*{\textit{Back to basics}}
+
+Cum spuneam, căile de adîncime $d \leq p$ din fiii anteriori trebuie combinate cu căile din subarborele fiului curent de lungime cel mult $p - d$, adică de adîncimi $0, 1, \dots, p - d$. Este tentant să ne gîndim la sume pe interval, iar de aici la AIB-uri.
+
+Dar nu uitați de uneltele elementare! În primul rînd, vom parcurge complet fiul curent. Abia apoi vom face interogări de sumă pe prefix. Rezultă că ne sînt suficiente sumele parțiale peste vectorul $right$! Astfel eliminăm un factor de $\bigoh(\log n)$ și obținem o soluție în $\bigoh(n \log n)$.
