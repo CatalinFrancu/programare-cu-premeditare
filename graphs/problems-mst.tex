@@ -224,6 +224,54 @@ Soluția mea folosește un \textit{disjoint set forest} cu suport pentru \textit
 
 Aveam așteptări mari de la implementare, dar este cam lentă. \emoji{smiling-face-with-tear}
 
+\subsection{Problema Gift (Codeforces)}
+\label{problem:gift}
+
+\href{https://codeforces.com/contest/76/problem/A}{enunț}
+$\bullet$
+\hyperref[code:gift]{surse}
+
+Problema are „undeva” o componentă de APM, dar trebuie să construim în jurul ei. Iată două abordări.
+
+\subsubsection*{Soluție bazată pe Kruskal repetat}
+
+O variantă ar fi să sortăm muchiile după valorile $g$. Apoi, în bucla exterioară a algoritmului, încercăm toate prefixele acestui vector. Pentru prefixul pînă la poziția $i$ inclusiv, înseamnă că sîntem dispuși să cheltuim $g_i$ aur și să renunțăm la muchiile de la $i+1$ la $m$. Cu primele $i$ muchii încercăm să formăm un arbore parțial minim. Dintre toate variantele posibile, ne interesează cea care minimizează costul maxim în argint. Așadar, în bucla interioară ordonăm muchiile din prefix după valorile $s$ și rulăm algoritmul lui Kruskal.
+
+Pentru implementare, eu am sortat muchiile după $g$ și, separat, am ținut un vector de indirectare (o permutare) după valorile $s$. Pentru Kruskal, parcurgeam toate cele $m$ muchii, dar le procesam doar pe cele care respectau limita maximă pentru $g$. Acest algoritm este $\bigoh(m^2 \log^{*} m)$, prea lent. Dar l-am îmbunătățit succesiv astfel:
+
+\begin{enumerate}
+  \item Am creat separat o listă de muchii „admisibile”, la care adăugam muchii pe măsură ce limita pentru $g$ creștea. Am menținut această listă sortată, inserînd naiv muchiile admisibile. Avantajul este că Kruskal nu mai iterează de fiecare dată prin toate cele $m$ muchii.
+
+  \item Dacă algoritmul lui Kruskal examinează doar primele $k$ muchii admisibile, am trunchiat lista la poziția $k$. Niciodată algoritmul lui Kruskal nu va mai avea nevoie de restul de muchii. Ne interesează doar muchiile admisibile viitoare, în măsura în care ele sînt ieftine.
+
+  \item Cel mai important, am aruncat din lista de muchii admisibile chiar și muchiile ieftine, dar pe care Kruskal le-a refuzat din cauză că închid cicluri. Nu greșim dacă le aruncăm. De exemplu, dacă din 5 muchii de cost 10 Kruskal alege doar 3, el va continua să le prefere pe aceleași și în iterațiile viitoare. Se poate ca o muchie mai ieftină, să zicem de cost 8, să facă inutile unele dintre acele muchii de cost 10. Dar în niciun caz nu va reactiva o muchie deja refuzată.
+\end{enumerate}
+
+Aceasta înseamnă că lista de muchii admisibile va avea, la sfîrșitul fiecărei iterații, lungime cel mult $n-1$! Acum să analizăm complexitatea:
+
+\begin{itemize}
+  \item Inserarea naivă în această listă a tuturor celor $m$ muchii costă $\bigoh(mn)$.
+
+  \item Rularea algoritmului lui Kruskal de $m$ ori costă $\bigoh(mn \log^{*} n)$.
+
+  \item Sortarea inițială a muchiilor costă $\bigoh(m \log m)$.
+\end{itemize}
+
+Așadar, complexitatea totală este $\bigoh(mn \log^{*} n + m \log m)$.
+
+\subsubsection*{Soluție bazată pe actualizarea APM}
+
+Să reluăm ideea că, pe măsură ce sîntem dispuși să plătim mai mult aur, lista muchiilor disponibile crește. Cu aceste muchii noi urmărim să construim un APM care minimizează costul în argint.
+
+Soluția anterioară rulează complet de la zero algoritmul lui Kruskal pe măsură ce lista de muchii admisibile crește. Dar avem și opțiunea să construim un prim APM, pe care apoi să îl actualizăm la adăugarea fiecărei muchii. Știm să facem asta în teorie: la adăugarea muchiei $(u,v)$, căutăm cea mai scumpă muchie $e$ de pe calea $u \rightsquigarrow v$ din arbore. Dacă costul muchiei $(u,v)$ este mai mic decît costul muchiei $e$, ștergem muchia $e$ și adăugăm muchia $(u,v)$.
+
+Cum implementăm asta? Dacă încercăm o soluție logaritmică în $n$, dăm de greu (și nu sînt sigur că se poate). Dar să nu uităm că $n$ este mic! Ne permitem o soluție în $\bigoh(n)$, care este facilă folosind o parcurgere DFS.
+
+În implementarea mea, am dorit să evit codul pentru construcția inițială a APM-ului. De aceea, am pornit cu un „APM” inițial vid, care știe să raporteze din cîte componente conexe este format (inițial $n$). Luăm în calcul la răspunsul final doar valorile pentru $g$ care duc la APM-uri conexe. Pentru a putea raporta costul maxim în argint, APM-ul menține un multiset al valorilor $s$ de pe toate muchiile.
+
+Complexitatea acestui algoritm este dominată de sortarea muchiilor și de cele $m$ DFS-uri, așadar $\bigoh(mn + m \log m)$.
+
+
 \subsection{Problema DFS Trees (Codeforces)}
 \label{problem:dfs-trees}
 
