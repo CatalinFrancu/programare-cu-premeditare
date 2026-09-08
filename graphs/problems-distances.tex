@@ -112,6 +112,61 @@ Pe acest graf rulăm algoritmul lui Dijkstra. Intenția este să găsim orice st
 
 O particularitate pe care am întîlnit-o în sursele multor elevi este precalcularea nodurilor finale: acele noduri $u$ care au un vecin comun $v$ în ambele grafuri. Acest lucru nu este necesar: putem depista finalul în Dijkstra, în momentul în care expandăm o stare $(u,u)$ și întîlnim același vecin $(v,v)$.
 
+
+\subsection{Problema Termite (Lot 2014)}
+\label{problem:termite}
+
+\href{https://kilonova.ro/problems/2020}{enunț}
+$\bullet$
+\hyperref[code:termite]{surse}
+
+Problema necesită o idee, dar sper că v-ați întîlnit cu ea suficient de des încît să o recunoașteți.
+
+Observăm că, în timp, graful se fragmentează. Interogările cer, în esență, să stabilim momentul cînd două noduri se deconectează. Această problemă se numește \textit{conectivitate decrementală} și este grea. Sper că ați recunoscut cu toții șablonul: putem să răsturnăm ordinea operațiilor, să pornim cu un graf vid și să reconectăm nodurile.
+
+Faptul că din graf dispar noduri, nu muchii, cere doar o adaptare minoră. Două noduri unite printr-o muchie devin reconectate cînd ambele reapar, deci la minimul momentelor în care cele două noduri reapar. De asemenea, componenta $t$ a fiecărei interogări $(a, b, t)$ este doar o diversiune. Realmente ne interesează momentul cînd $a$ și $b$ se deconectează, urmînd ca din acel moment să scădem valoarea $t$.
+
+În ce ordine dispar/reapar nodurile? Aceasta aflăm cu algoritmul lui Dijkstra, care este (aș zice) partea mai simplă a problemei. Așadar, scheletul algoritmului este:
+
+\begin{enumerate}
+  \item Rulează algoritmul lui Dijkstra.
+
+  \item Inițializează mulțimea de structuri disjuncte (DSF),
+
+  \item Parcurge nodurile în ordinea descrescătoare a distanțelor.
+
+  \item Pentru fiecare nod $u$, pentru fiecare vecin $v$ al lui $u$, dacă nodul $v$ a reapărut înaintea lui $u$, atunci conectează în DSF nodurile $u$ și $v$.
+\end{enumerate}
+
+Partea mai dificilă a problemei este cum să răspundem la interogări. Iată două soluții, ambele în timp logaritmic per interogare.
+
+\subsubsection*{Soluție cu \textit{small-to-large}}
+
+Fiecare componentă $u$ din DSF menține și o listă $L_u$ a ID-urilor interogărilor care au \textbf{exact} un capăt în acea componentă. Pentru inițializare, vom distribui interogarea $(a, b, t)$ în $L_a$ și $L_b$. Așadar, suma lungimilor listelor din toate componentele este $2q$.
+
+Cînd unificăm componentele nodurilor $u$ și $v$, dorim să unificăm $L_u$ cu $L_v$, mutînd lista mai mică în lista mai mare pentru a obține un număr de $\bigoh(q \log q)$ mutări. Dar există o excepție. Dacă o interogare apare în ambele liste, înseamnă că muchia $(u,v)$ este prima a cărei dispariție deconectează nodul $u$ de $v$. Așadar, notăm momentul adăugării muchiei $(u,v)$ ca răspuns la interogare, apoi ștergem interogarea din ambele liste.
+
+Cum implementăm această structură? O variantă este să stocăm listele de interogări ca \ccode{std::set}. Dar atunci timpii pentru căutare / inserare / ștergere sînt $\bigoh(\log q)$, iar complexitatea totală a unificărilor va fi $\bigoh(q \log^2 q)$, probabil prea lentă pentru limita de timp.
+
+Dar putem să eliminăm un factor logaritmic cu o structură elementară. Să stocăm listele de interogări ca pe niște simple liste înlănțuite. Desigur, știm să copiem elementele din $L_u$ în $L_v$. Dar trebuie să răspundem la două întrebări pentru celelalte operații.
+
+\begin{enumerate}
+  \item Cum facem căutările? Cînd considerăm o interogare $h = (a, b, t)$ din $L_u$, cum știm dacă ea există și în $L_v$? Soluția este să vedem, în primă fază, care dintre $a$ și $b$ fac parte din componenta lui $u$. Să spunem că este $a$. Atunci verificăm din ce componentă face parte nodul $b$. Dacă face parte din componenta $v$, atunci în mod evident va face apărea și în $L_v$.
+
+  \item Cum facem ștergerile? Cînd iterăm prin $L_u$ și depistăm o interogare $h$ care există și în $L_v$, cum îi găsim poziția ca să o ștergem? Soluția este să facem ștergerile lazy. Pe moment îl lăsăm pe $h$ în $L_v$ (dar cel puțin nu adăugăm și a doua copie, care provine din $L_u$). În compensație, de cîte ori mutăm un element $h$ între două liste de interogări, ne asigurăm că nu avem deja răspunsul pentru $h$. Dacă îl avem, aruncăm valoarea $h$ în loc să o mutăm.
+\end{enumerate}
+
+\subsubsection*{Soluția cu mulțimi disjuncte modificate}
+
+Iată o structură cu care am rezolvat și problema \hyperref[problem:mst-for-each-edge]{Minimum Spanning Tree for Each Edge} de la lecția de arbori parțiali. Menținem pentru fiecare componentă din DSF mărimea sa. Nu mai facem compresia căii, dar facem unificarea după mărime. Aceasta înseamnă că drumul de la orice nod pînă la rădăcina componentei nu va depăși $\log n$ noduri.
+
+Definim \textit{momentul} unei muchii $(u,v)$ drept minimul distanțelor de la surse la $u$ sau la $v$. Acesta este chiar momentul cînd muchia $(u,v)$ dispare din graf ca urmare a dispariției unuia dintre noduri.
+
+Cînd unificăm componentele lui $u$ și $v$ în DFS, identificăm ca de obicei rădăcinile componentelor, $u'$ și $v'$. Să presupunem că componenta lui $u$ este mai mică. Atunci unim $u'$ cu $v'$ ca de obicei și notăm în $u'$ momentul muchiei $(u,v)$. Să notăm această cantitate cu $t[u']$. Ce semnifică $t[u']$? El este momentul de timp la care orice nod din componenta lui $u$ se deconectează de orice nod din componenta lui $v$.
+
+Putem folosi această informație ca să răspundem la interogări. Pentru o interogare $(a, b)$, căutăm cel mai mic moment de pe calea $a \to b$ din DSF. Acela este momentul cînd $a$ și $b$ se deconectează. Ca detaliu de implementare, nu este nevoie să calculăm informații pentru LCA. Pur și simplu, în mod repetat urcăm un nivel cu acel nod dintre $a$ și $b$ care are mărimea cea mai mică (în număr de noduri).
+
+
 \subsection{Problema President and Roads (Codeforces)}
 \label{problem:president-and-roads}
 
