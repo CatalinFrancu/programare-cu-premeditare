@@ -108,6 +108,39 @@ Testele sînt mici, deci nu prea concludente, dar iată rezultatele:
   \item Cu \textit{small-to-large} exclusiv: 55 ms, 12 MB.
 \end{itemize}
 
+
+\subsection{Problema Subway Lines (Codeforces)}
+\label{problem:subway-lines}
+
+\href{https://codeforces.com/gym/101908/problem/L}{enunț}
+$\bullet$
+\hyperref[code:subway-lines]{sursă}
+
+Problema este o aplicație directă a descompunerii \textit{heavy-light}. Pentru a afla numărul de noduri comune între căile $(a, b)$ și $(c, d)$,
+
+\begin{itemize}
+  \item Adăugăm 1 în toate nodurile de pe calea $(a,b)$.
+
+  \item Aflăm suma pe calea $(c,d)$. Acesta este și răspunsul la interogare.
+
+  \item Scădem 1 din toate nodurile de pe calea $(a,b)$, pentru a face curățenie înaintea următoarei interogări.
+\end{itemize}
+
+Primele mele implementări foloseau structuri de date cu adăugări pe interval și sume pe interval: Un arbore de intervale cu propagare \textit{lazy}, respectiv un AIB cu adăugare pe interval. Dar iată și o soluție doar cu HLD, fără alte structuri.\footnote{Am învățat această rezolvare de la elevii mei. Pare că nu mi-am urmat propriul avertisment de a nu mă repezi la structuri de date. De aceea s-a inventat proverbul „să faci ce zice popa, să nu faci ce face popa”.}
+
+\begin{itemize}
+  \item Vizităm calea $(a,b)$. Aceasta vizitează porțiuni din niște lanțuri. Pe acele lanțuri notăm intervalul vizitat.
+
+  \item Vizităm calea $(c,d)$. Pe fiecare dintre lanțurile vizitate, intersectăm porțiunea vizitată de $(c, d)$ cu porțiunea vizitată de $(a, b)$, dacă există. Răspunsul la interogare este suma acestor intersecții.
+
+  \item Revizităm calea $(a,b)$ și ștergem intervalele notate pentru a face curățenie.
+\end{itemize}
+
+În practică, am folosit un contor global de operații ca să evit pasul de curățenie. La vizitarea căii $(a, b)$ scriem contorul pe lanțurile vizitate, iar la vizitarea căii $(c, d)$ comparăm contorul curent cu cel scris pe lanțurile vizitate.
+
+Pentru a scurta codul, am unificat funcțiile pentru căile $(a, b)$ și $(c, d)$.
+
+
 \subsection{Problema Rafaela (Lot 2014)}
 \label{problem:rafaela}
 
