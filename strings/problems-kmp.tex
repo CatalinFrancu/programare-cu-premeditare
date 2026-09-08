@@ -32,3 +32,51 @@ Cum construim funcția $\pi$ astfel modificată? Să pornim de la $\pi[2] = 2$ (
 Putem verifica aceste (in)egalități dacă stocăm, pentru fiecare poziție $k$, poziția apariției anterioare a lui $P[k]$ în $P$.
 
 Același raționament îl facem și în a doua trecere, în care îl căutăm pe $P$ în $S + S$. Cînd evaluăm $S[i]$ și sîntem în starea $k$, vom confrunta aparițiile anterioare ale lui $S[i]$ în $S$ cu aparițiile lui $P[k]$ în $P$.
+
+\subsection{Problema Anthem of Berland (Codeforces)}
+\label{problem:anthem-of-berland}
+
+\href{https://kilonova.ro/problems/1862}{enunț}
+$\bullet$
+\hyperref[code:anthem-of-berland]{sursă}
+
+Problema ne poate duce rapid cu gîndul la elementele de bază:
+
+\begin{itemize}
+  \item KMP și funcția prefix, deoarece avem un șablon ale cărui apariții se pot suprapune.
+  \item Programare dinamică.
+\end{itemize}
+
+Să punem la punct detaliile. Voi folosi simbolul $P$ (\textit{pattern}) în loc de $T$, din obișnuință. Ne putem convinge rapid că o abordare greedy nu funcționează. Iată un exemplu similar cu cel din enunț: $S$ = \texttt{????abcab}, $P$ = \texttt{abcab}. Atunci este important să completăm șirul ca $S$ = \texttt{?abcabcab}, începînd cu a doua poziție, pentru a obține două potriviri.
+
+Ce parametri ne trebuie ca să definim bine recurența? Din exemplul de mai sus observăm că nu este suficient să definim $i$ = numărul de litere consumate din $S$ ($0 \leq i \leq |S|$). Trebuie să putem spune „după prima literă, vrem să fim în starea 0, și abia de la a doua începînd să trecem în stările 1, 2 etc.” Deci mai definim și $j$ = starea în care ne aflăm ($0 \leq j \leq |P|$). Fie $d_{i,j}$ numărul maxim de suprapuneri pe care îl putem obține pînă la aceste coordonate sau -1 dacă nu putem ajunge la aceste coordonate.
+
+Eu am ales să formulez programarea dinamică înainte, astfel: din $d_{i,j}$ trecem în $d_{i+1,k+1}$, unde:
+
+\begin{itemize}
+  \item $k$ este orice tranziție posibilă din starea $j$;
+
+  \item $S[i] = P[k]$ sau $S[i] = \texttt{?}$;
+
+  \item Cînd spunem „trecem în”, vrem să spunem că $d_{i+1,k+1}$ primește maximul din ce avea deja și $d_{i,j}$, eventual plus încă o unitate dacă $k +1 = |P|$ (deoarece am completat încă o apariție).
+\end{itemize}
+
+De exemplu, pentru șirul $P$ = \texttt{abacaba}, valoarea $d_{20}{7}$ arată cîte potriviri putem obține în primele 20 de caractere, astfel încît după al 20-lea (deci $S[19]$) să fim în starea 7 (deci să terminăm o potrivire). De aici putem trece:
+
+\begin{itemize}
+  \item în $d_{21,4}$ dacă următorul caracter este \texttt{c} sau \texttt{?}, deoarece din \texttt{abacabac} putem refolosi 4 litere;
+
+  \item în $d_{21,2}$ dacă următorul caracter este \texttt{b} sau \texttt{?}, deoarece din \texttt{abacabab} putem refolosi 2 litere;
+
+  \item în $d_{21,1}$ dacă următorul caracter este \texttt{a} sau \texttt{?}, deoarece din \texttt{abacabaa} putem refolosi o literă;
+
+  \item în $d_{21,0}$, altfel.
+\end{itemize}
+
+\subsubsection*{Soluție în \texorpdfstring{$\bigoh(SP^2)$}{O(SP2)}}
+
+Prima iterație a codului meu proceda chiar astfel. Pentru fiecare $i$ și fiecare $j$, pornea cu $k = j$ și repeta $k = \pi[k - 1]$ pînă cînd ajungea la 0. Dar acest cod este prea lent, deoarece ajunge la $\bigoh(SP^2)$ atunci cînd funcția $\pi$ scade lent, de exemplu pentru un șablon ca $P$ = \texttt{aaa \dots aaa}.
+
+\subsubsection*{Soluție în \texorpdfstring{$\bigoh(SP\Sigma)$}{SP Sigma}}
+
+În loc de aceasta, putem să calculăm tranzițiile din starea $d_{i,j}$ în alte stări conform următorului caracter, care fie este impus (literă), fie poate lua $\Sigma$ valori (\texttt{?}). Practic, trebuie să răspundem la întrebări de tipul: „Dacă ne aflăm în starea $j$, iar următorul caracter de la intrare este $S[i]$, în ce stare ajungem?”. Aceste informații reprezintă exact matricea de tranziție despre care am vorbit în capitolul despre automate! Cu ajutorul funcției de prefix $\pi$, putem calcula această matrice în $\bigoh(P^2)$ (\href{https://codeforces.com/contest/808/submission/376033109}{o sursă} mai veche) sau chiar $\bigoh(P \Sigma)$.
