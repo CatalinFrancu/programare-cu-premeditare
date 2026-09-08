@@ -52,6 +52,30 @@ Acum, date fiind pozițiile de start $x$ și $y$, aflăm cu RMQ lungimea $w$ a c
 \end{enumerate}
 
 
+\subsection{Problema Periodic Words (IIOT 2023-2024 runda 1)}
+\label{problem:periodic-words}
+
+\href{https://kilonova.ro/problems/1940}{enunț}
+$\bullet$
+\hyperref[code:periodic-words]{surse}
+
+Problema pornește de la următoarea observație. Pentru o lungime de perioadă aleasă, putem reduce testul de periodicitate la o singură comparație de sufixe. Sper că v-ați amintit acest truc de la problema \hyperref[problem:bart]{Bart}.
+
+De exemplu, pentru a afla dacă $S[20 \dots 79]$, de lungime 60, are perioadă 5, vrem să aflăm dacă subșirurile $S[20 \dots 24], S[25 \dots 29], \dots S[74 \dots 79]$ sînt egale. Dar este suficient să testăm dacă $S[20 \dots 74] = S[25 \dots 79]$.
+
+Astfel, ambele soluții de mai jos calculează, pentru fiecare interogare $[l, r]$ și fiecare divizor $d$ al lui $r - l + 1$, dacă $S[l \dots r - d] = S[l + d \dots r]$. Ca optimizare, este suficient să testăm doar perioadele care corespund unui număr de repetiții prim. De exemplu, dacă un subșir de lungime 60 poate fi scris ca 20 de repetiții cu perioadă 3, el poate fi scris și ca 2 repetiții cu perioadă 30 sau 5 repetiții cu perioadă 12.
+
+\subsubsection*{Soluția cu hashing}
+
+O primă soluție calculează hash-urile prefixelor într-o bază $B$ și modulo o valoare $M$. Din acestea putem calcula hash-ul oricărui subșir.
+
+Întrucît există circa $5 \cdot 10^9$ subșiruri, paradoxul zilei de naștere ne spune că trebuie să operăm modulo o valoare cel puțin $25 \cdot 10^{18}$ și preferabil chiar mai mare. Deci, la prima vedere, trebuie să alegem două module pentru a elimina coliziunile. De fapt, situația este mai simplă. Noi nu comparăm decît subșiruri \textbf{de aceeași lungime}, deci avem cel mult $10^6$ subșiruri în aceeași clasă. Coliziunile între subșiruri de lungimi diferite nu ne deranjează. Dacă operăm modulo $2^{64} \approx 1,8 \cdot 10^{19}$, probabilitatea unei coliziuni este infimă.
+
+\subsubsection*{Soluția cu șiruri de sufixe}
+
+Calculăm șirul de sufixe al lui $S$, precum și vectorul $LCP$ și informații de RMQ peste acesta. Acum, date fiind interogarea $[l, r]$ și divizorul $d$, verificăm dacă sufixele care încep la pozițiile $l$ și $l + d$ au un prefix comun de lungime cel puțin $r - l + 1 - d$.
+
+
 \subsection{Problema Phone Book (Finala IIOT 2022-2023)}
 \label{problem:phone-book}
 
