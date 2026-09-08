@@ -85,3 +85,45 @@ Să ne imaginăm o operație \textit{split($x$)} pe un treap cu toate cheile ega
 Acum să ne imaginăm operația \textit{insert($x$)}, din nou într-un treap cu toate cheile egale cu $x$. După cum știm, \textit{insert} începe prin a coborî de la rădăcină pînă cînd prioritatea noului nod depășește prioritatea subarborelui curent. Toate cheile fiind egale, noi decidem dacă lăsăm funcția să coboare în nodul stîng sau în cel drept. Cînd prioritatea noului nod este maximă, spargem subarborele în două treapuri care devin fiii nodului inserat.
 
 Aici intervine dezechilibrarea. Dacă lăsăm funcția \textit{insert} să coboare în fiul drept, iar dacă \textit{split} transferă toate nodurile existente tot în fiul drept, putem obține în timp un treap de adîncime $\bigoh(n)$. Este important ca \textit{insert} să prefere direcția opusă lui \textit{split}.
+
+
+\subsection{Problema Clasament (Lot 2016)}
+\label{problem:clasament}
+
+\href{https://kilonova.ro/problems/1972}{enunț}
+$\bullet$
+\hyperref[code:clasament]{surse}
+
+Cred că problema „se cere” rezolvată cu hashing. Nu știu cum altfel putem compara și clasifica $m$ permutări de lungime $n$. Dacă acceptăm asta, atunci cumva trebuie să menținem eficient codul hash al permutării. Un algoritm de hashing eficient și ușor de implementat este să privim permutarea ca pe un număr de $n$ cifre într-o bază $B$ și să calculăm acel număr modulo un $m$ ales.
+
+\subsubsection*{Soluție cu treap}
+
+Fiindcă sîntem la capitolul de treapuri, să ținem într-un treap ID-urile elevilor (de la $0$ la $n-1$), ordonate după scor și timp. Atunci putem calcula recursiv codul hash al unui treap. Dacă treapul stochează ID-urile 5, 8 și 2 în subarborele stîng, 4 în rădăcină și 3 și 7 în subarborele drept, și dacă luăm $B=10$ pentru simplitate, atunci dorim ca codul hash să fie 582437, pe care îl putem sparge ca:
+
+$$582437 = 582 \cdot 10^3 + 4 \cdot 10^2 + 37$$
+
+Generalizînd,
+
+\begin{itemize}
+  \item Fie $L$ codul hash al subarborelui fiului stîng.
+  \item Fie $R$ codul hash al subarborelui fiului drept.
+  \item Fie $S_R$ mărimea (numărul de noduri) al subarborelui fiului drept.
+  \item Fie $i$ ID-ul din rădăcina subarborelui.
+  \item Atunci codul hash este $(L \cdot B^{S_R + 1} + i \cdot B^{S_R} + R) \bmod M$
+\end{itemize}
+
+Este important să alegem o bază $B$ primă. Altfel putem ajunge la coliziuni (permutări diferite cu coduri hash identice).
+
+Acum putem definitiva structura de date. În fiecare nod avem nevoie să stocăm codul hash și mărimea subarborelui. Putem recalcula aceste valori în $\bigoh(1)$ cînd reorganizăm treapul, fie că alegem implementarea cu \textit{split} și \textit{merge}, fie cu rotații.
+
+Ca detaliu de implementare, cînd un scor se modifică trebuie să ștergem ID-ul elevului respectiv din treap și să-l reinserăm conform noului scor. Ca să nu risipim memorie, cu puțină atenție putem refolosi chiar nodul șters.
+
+\subsubsection*{Soluție cu descompunere în radical}
+
+Putem să stocăm permutarea curentă și în blocuri de mărime $\bigoh(\sqrt{n})$. Această descompunere amintește de problema \hyperref[problem:serega-and-fun]{Serega and Fun} de la capitolul de descompunere în radical. Acolo aveam nevoie să facem rotații pe subsecvențe, dar operația din problema de față este similară.
+
+Nu insistăm ca blocurile să aibă fix lungime $\sqrt{n}$, ci le lăsăm să se dezechilibreze prin ștergeri și inserări. Dacă un bloc ajunge la o lungime-limită, să spunem $2 \sqrt{n}$, atunci reechilibrăm structura: colectăm toate blocurile într-un vector, apoi le redistribuim. În practică, testele problemei nu duc la reechilibrări.
+
+Pe fiecare bloc menținem codul hash al fragmentului de permutare din acel bloc. La o modificare de scor, recalculăm în $\bigoh(\sqrt{n})$ codul hash al celor (cel mult) două blocuri afectate. După fiecare modificare, recalculăm codul hash al întregii permutări combinînd codurile celor $\bigoh(\sqrt{n})$ fragmente după aceeași regulă ca mai sus.
+
+Cele două soluții au timpi practic egali, ceea ce arată că treapurile au constantă cam proastă.
