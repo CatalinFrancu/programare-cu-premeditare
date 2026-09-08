@@ -10,6 +10,27 @@ $\bullet$
 Problema este educațională și necesită aflarea cuplajului maxim.
 
 
+\subsection{Problema Revoluție (ONI 2009, clasele 11-12)}
+\label{problem:revolutie}
+
+\href{https://kilonova.ro/problems/175}{enunț}
+$\bullet$
+\hyperref[code:revolutie]{sursă}
+
+Dacă aveți destulă experiență cu cuplajele în grafuri bipartite, s-ar putea să găsiți imediat reducerea problemei Revoluție. Trebuie să găsim un cuplaj de la linii la coloane cu condiția că putem cupla linia $i$ cu coloana $j$ numai dacă $A[i][j] = 1$.
+
+Putem ajunge la aceeași concluzie și analizînd problema de la zero. Două valori de 1 pe aceeași coloană vor rămîne întotdeauna pe aceeași coloană:
+
+\begin{itemize}
+  \item La interschimbarea a două linii, valorile își păstrează coloana.
+  \item La interschimbarea a două coloane, valorile vor migra împreună pe noua coloană.
+\end{itemize}
+
+Aceasta înseamnă că, oricîte interschimbări am face, putem folosi exact un 1 de pe fiecare linie și de pe fiecare coloană. Deci, pentru a putea aduce $n$ valori de 1 pe diagonală, trebuie în primă fază să găsim $n$ valori de 1 pe linii și pe coloane diferite. Echivalent, pentru fiecare linie trebuie să selectăm o celulă care conține un 1, astfel încît toate celulele selectate să fie pe coloane diferite. Aceasta este exact problema cuplajului.
+
+Odată găsit cuplajul, este nevoie de un minim de atenție ca să generăm operațiile corecte. Este suficient să iterăm fie prin linii, fie prin coloane, completînd diagonala principală de sus în jos. Pe măsură ce emitem operații de interschimbare, trebuie să actualizăm cuplajul, altfel operațiile viitoare vor fi incorecte.
+
+
 \subsection{Problema Valuable Paper (Codeforces)}
 \label{problem:valuable-paper}
 
