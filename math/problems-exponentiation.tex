@@ -449,3 +449,32 @@ Recapitulînd, algoritmul este:
 
   \item Răspunsul la problemă este suma elementelor de pe linia 0 a matricei $A$, întrucît începem din starea 0 ($s = d = 0$) și putem sfîrși în orice stare.
 \end{itemize}
+
+\subsection{Problema Options (IIOT 2017-2018 runda internațională)}
+\label{problem:options}
+
+\href{https://kilonova.ro/problems/2893}{enunț}
+$\bullet$
+\hyperref[code:options]{sursă}
+
+Problema are multe elemente comune cu problema \hyperref[problem:marfa]{Marfa}. Dacă ați înțeles-o pe aceea, puteți reutiliza multe idei.
+
+Pornim de la recurența relativ simplă (la valoarea noastră...). Fie $w[r][c]$ numărul de drumuri de la $(0,0)$ la $(r, c)$ (judecăm 0-based). Condițiile inițiale sînt $w[0][0] = 1$, $w[*][0] = 0$ în rest . Formula de recurență este:
+
+$$
+w[r][c] =
+\begin{cases}
+w[r - 1][c - 1] + w[r][c - 1] + w[r + 1][c - 1] & \quad \textrm{dacă celula} \; (r, c) \; \textrm{este uscat} \\
+0 & \quad \textrm{altfel}
+\end{cases}
+$$
+
+(cu verificări suplimentare pentru ca $r \pm 1$ să nu iasă de pe hartă). Recurența funcționează, dar calculele necesită efort $\bigoh(LC)$, prea mare.
+
+Observăm că nu putem scrie o matrice generatoare pentru toate coloanele, căci regulile de tranziție depind de natura terenului (uscat / apă). În schimb, putem scrie o matrice generatoare \textbf{pentru o întreagă perioadă}. În esență, matricea $G$ ar avea semnificația: $G_{r_1, r_2}$ este numărul de drumuri de la celula $(r_1, 0)$ la celula $(r_2, k)$. Atunci $G^p$ ar avea semnificația: $G^p_{r_1, r_2}$ este numărul de drumuri de la celula $(r_1, 0)$ la celula $(r_2, pk)$.
+
+Subliniem că nu mai este suficient un vector. Nu putem număra doar drumurile de la $(0,0)$ la $(r_2, k)$, deoarece în al doilea și următoarele blocuri de $k$ coloane putem începe de pe orice rînd.
+
+Dacă notăm cu $b = \lfloor \frac{c}{k} \rfloor$ numărul de blocuri complete și cu $r = c \mod k$ numărul de coloane din ultimul bloc, atunci cu matricea $G^b$ ajungem pînă la coloana $kb$. Putem să rezolvăm separat ultimele $r$ coloane, dar ar fi păcat. În procesul de construire a matricei $G$, noi vom fi construit la un moment dat matricea de tranziție pentru primele $r$ coloane. Trebuie doar să-i facem o copie la momentul potrivit.
+
+Este nevoie de atenție la detalii. Bunăoară, mie mi-a fost mai ușor să vizualizez tranzițiile astfel. Pentru blocul de coloane $[0, k)$, $G_{r_1, r_2}$ este numărul de drumuri care încep pe linia $r_1$, \textbf{în stînga blocului} (deci pe coloana -1) și se termină pe linia $r_2$, coloana $k-1$.
