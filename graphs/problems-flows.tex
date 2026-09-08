@@ -87,6 +87,82 @@ Algoritmul Edmonds-Karp simplu (fără încercarea de optimizare) pare să fie s
 La final, trebuie să colectăm ciclurile rezultate. Remarcăm că de la stînga la dreapta mergem pe muchii saturate (capacitate reziduală 0), iar de la dreapta la stînga revenim pe muchii reziduale (capacitate reziduală 1). Astfel, putem să iterăm prin toate valorile pare și, pentru fiecare valoare încă neexplorată, să urmăm muchiile pînă închidem un ciclu. Deoarece pentru orice unitate de flux la intrare există și una la ieșire, acest algoritm nu se va bloca niciodată, ci va găsi toate ciclurile.
 
 
+\subsection{Problema Petya and Graph (Codeforces)}
+\label{problem:petya-and-graph}
+
+\href{https://codeforces.com/contest/1082/problem/G}{enunț}
+$\bullet$
+\hyperref[code:petya-and-graph]{sursă}
+
+Problema este relativ clasică. Haideți să prezentăm o formă mai generală.
+
+Există $m$ proiecte și $n$ instrumente. Fiecare proiect are o listă de instrumente necesare ca să putem termina proiectul. Pentru fiecare proiect terminat $i$ primim un venit $p_i$ și fiecare instrument $i$ are un cost $c_i$. Dacă cumpărăm un instrument, îl putem folosi la oricîte proiecte. Trebuie să găsim o mulțime de proiecte de terminat și instrumente de cumpărat ca să maximizăm profitul.
+
+Trecerea de la problema dată la aceasta este simplă: muchiile sînt proiecte, iar nodurile sînt instrumente. Într-adevăr,
+
+\begin{itemize}
+  \item Muchiile contribuie cu $+$ la profitul total.
+
+  \item Nodurile contribuie cu $-$ la profitul total.
+
+  \item Putem selecta o muchie doar dacă îi selectăm ambele noduri.
+
+  \item Odată plătit costul unui nod, putem folosi nodul la oricîte muchii.
+
+  \item Problema dată este mai particulară, deoarece o muchie depinde de exact două noduri, pe cînd un proiect poate depinde de oricîte instrumente.
+\end{itemize}
+
+Vom folosi terminologia cu proiecte și instrumente pentru a nu crea confuzie între graful dat la intrare și rețeaua de flux indusă.
+
+Acum, reducerea la rețele de flux poate fi simplă, dar demonstrația de corectitudine nu. Putem încerca diverse variante de modelare pînă cînd ajungem la aceasta:
+
+\begin{itemize}
+  \item Pe o coloană creăm cîte un nod $A_i$ pentru fiecare proiect $i$.
+
+  \item Pe o altă coloană creăm cîte un nod $B_j$ pentru fiecare instrument $j$.
+
+  \item În plus, folosim o sursă $s$ și o destinație $t$.
+
+  \item Pentru fiecare proiect $i$ creăm o muchie de la $s$ la $A_i$ de capacitate $p_i$.
+
+  \item Pentru fiecare instrument $j$ creăm o muchie de la $B_j$ la $t$ de capacitate $c_j$.
+
+  \item De la fiecare proiect la fiecare instrument de care depinde creăm o muchie de capacitate $\infty$.
+\end{itemize}
+
+De ce așa? Ce ar însemna un flux maxim în această problemă? Să facem următoarele observații.
+
+\begin{remark}
+  O unitate de flux pompată prin această rețea „seamănă” cu un dolar încasat pe un proiect, care se duce prin rețeaua de flux și plătește un dolar pentru un instrument de care proiectul depinde.
+\end{remark}
+
+\begin{remark}
+  Dacă saturăm o muchie $(s, A_i)$, atunci „pare” că nu rentează să terminăm proiectul $i$, întrucît toate veniturile sale ($p_i$) le-am cheltuit pe instrumente.
+\end{remark}
+
+\begin{remark}
+  Dacă după găsirea fluxului maxim nu saturăm o muchie $(s, A_i)$, atunci înseamnă că nu mai putem pompa nicio unitate pe ea. De ce? Pentru că toate căile cu care se continuă muchia sînt saturate. De la proiect la instrumentele de care el depinde capacitățile sînt infinite, prin construcție. Înseamnă că muchiile saturate sînt de la toate aceste instrumente la $t$. Cu alte cuvinte, proiectul și-a cumpărat instrumentele, iar capacitatea reziduală (pozitivă) pe muchia $(s, A_i)$ este profitul, deci proiectul merită terminat.
+\end{remark}
+
+\begin{remark}
+  Dacă o muchie $(B_j, t)$ este saturată, înseamnă că unul sau mai multe proiecte au găsit cu cale să satureze muchia, pentru a rămîne cu profit rezidual conform observației 3. Deci instrumentul $j$ merită cumpărat. Invers, dacă muchia $(B_j, t)$ rămîne nesaturată, atunci nu mai există niciun mod de a pompa vreo unitate de flux de la $s$ către vreun proiect care folosește instrumentul $j$. Toate aceste proiecte sînt saturate, deci conform Observației 3 sînt neprofitabile. Instrumentul $j$ nu merită cumpărat.
+\end{remark}
+
+Pe mine m-a ajutat \href{https://codeforces.com/blog/entry/101354}{o schimbare de perspectivă} ca să formalizez aceste observații intuitive. Să considerăm că am încasat (în avans) banii pentru toate proiectele. Acum trebuie să cumpărăm o submulțime a instrumentelor. Desigur, trebuie să plătim costul acestei submulțimi. Mai mult, pentru orice proiect $i$ care depinde de un instrument care nu este în submulțime, trebuie să returnăm venitul $p_i$. Urmărim să minimizăm suma dintre instrumentele cumpărate și profiturile returnate.
+
+TODO: figură
+
+De aici mai avem doar un pas, dar fluxul maxim nu ne oferă imaginea corectă. Mult mai de ajutor ne este tăietura minimă! Vom folosi algoritmul de flux maxim doar ca să aflăm valoarea tăieturii minime (știm că ele sînt egale).
+
+Noi dorim să evităm scenariul în care păstrăm un proiect $i$, dar refuzăm să cumpărăm un instrument necesar $j$. Să modelăm acest lucru ca pe calea $s \to A_i \to B_j \to t$ în rețeaua de flux. Dorim să nu existe nicio astfel de cale. Hai să găsim o colecție de muchii pe care să le eliminăm ca să ne îndeplinim dorința!
+
+Nu putem tăia muchii dintre $A_i$ și $B_j$. Asta ar simboliza că ne prefacem că proiectul $i$ nu depinde de instrumentul $j$. \emoji{slightly-smiling-face} Dar putem tăia muchii de tipul $(s, A_i)$ sau $(B_j, t)$. O muchie $(s, A_i)$ tăiată înseamnă că renunțăm la proiectul $i$, iar o muchie $(B_j, t)$ tăiată înseamnă că cumpărăm instrumentul $j$.
+
+Prin definiție, cînd spunem „vrem să nu existe nicio cale $s \to A_i \to B_j \to t$”, spunem că vrem să deconectăm $s$ de $t$. Și vrem asta cu cost minim. Am ajuns exact la definiția tăieturii minime!
+
+Așadar, profitul maxim pe care îl putem obține este suma veniturilor proiectelor, minus costul tăieturii minime pe care sîntem obligați să îl plătim (instrumente cumpărate + proiecte la care am renunțat). Iar costul tăieturii minime este egal cu costul fluxului maxim.
+
+
 \subsection{Problema Asfalt (Lot 2011)}
 \label{problem:asfalt}
 
