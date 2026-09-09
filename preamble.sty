@@ -10,6 +10,7 @@
 \usepackage{fontspec} % for the Inconsolata font
 \usepackage{gensymb} % for \degree etc
 \usepackage[a4paper, margin=1.8cm]{geometry}
+\usepackage{numprint}
 \usepackage{parskip}
 \usepackage{ragged2e} % For the flushright environment.
 \usepackage{rotating} % For upside-down text.
@@ -110,9 +111,6 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
   frame=lines,
 }
 
-\usepackage{numprint}
-\def\np{\numprint}
-
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\ding{55}}
@@ -138,7 +136,10 @@ BoldItalicFont={InconsolataLGCNerdFont-BoldItalic.ttf}
 \usetikzlibrary{shapes.geometric}
 
 \newcommand*{\backlink}[1]{\hyperref[problem:#1]{\tiChevronLeft \ înapoi}}
-\def\bigoh{\mathcal{O}}
 \newcommand*{\ccode}[1]{\mintinline{c}{#1}}
-\newcommand*{\defeq}{\stackrel{\text{def}}{=}}
-\newcommand*{\noteq}{\stackrel{\text{not}}{=}}
+
+% Keep these in sync with mathjax-macros.tex
+\def\bigoh{\mathcal{O}}
+\def\defeq{\stackrel{\text{def}}{=}}
+\def\noteq{\stackrel{\text{not}}{=}}
+\def\np{\numprint}
