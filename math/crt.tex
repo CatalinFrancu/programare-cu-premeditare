@@ -1,0 +1,234 @@
+\chapter{Teorema chinezească a resturilor}
+
+Teorema chinezească a resturilor (engl. \textit{The Chinese remainder theorem} sau \textit{CRT}) nu este strict necesară pentru olimpiade, dar ne ajută mult să ne familiarizăm cu algebra modulară
+
+\begin{theorem}[Teorema chinezească a resturilor]
+  Fie $n$ numere întregi $m_1, m_2, \dots, m_n$, astfel încît oricare două dintre ele sînt coprime. În plus, fie $n$ numere întregi $a_1, a_2, \dots, a_n$ astfel încît $0 \leq a_i < m_i, \forall i$. Atunci există un unic $x$ cu $0 \leq x < \prod_{i} m_i$ astfel încît $x \equiv a_i \pmod{m_i}, \forall i$.
+\end{theorem}
+
+Dacă sînteți familiari cu teoria numerelor, puteți citi direct:
+
+\begin{itemize}
+  \item \href{https://en.wikipedia.org/wiki/Chinese_remainder_theorem}{pagina Wikipedia};
+
+  \item \href{https://sites.millersville.edu/bikenaga/number-theory/chinese-remainder-theorem/chinese-remainder-theorem.html}{o pagină} care tratează și cazul în care modulii nu sînt coprimi;
+
+  \item \href{https://kconrad.math.uconn.edu/blurbs/ugradnumthy/crt.pdf}{o pagină} cu rezultate mai avansate (dincolo de scopul acestui capitol);
+
+  \item pagina \href{https://cp-algorithms.com/algebra/chinese-remainder-theorem.html}{CP Algorithms} pentru cod.
+\end{itemize}
+
+Eu voi încerca să demonstrez lucrurile mai băbește și să arăt de unde scoatem unele formule (\textit{hint}: nu din inspirația divină).
+
+\section{Un exemplu tabelar}
+
+Iată tabelul complet pentru $m_1 = 4, m_2 = 7$.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{c|ccccccc}
+    & $a_2 = 0$ & $a_2 = 1$ & $a_2 = 2$ & $a_2 = 3$ & $a_2 = 4$ & $a_2 = 5$ & $a_2 = 6$ \\
+    \hline
+    $a_1 = 0$ & 0 & 8 & 16 & 24 & 4 & 12 & 20 \\
+    $a_1 = 1$ & 21 & 1 & 9 & 17 & 25 & 5 & 13 \\
+    $a_1 = 2$ & 14 & 22 & 2 & 10 & 18 & 26 & 6 \\
+    $a_1 = 3$ & 7 & 15 & 23 & 3 & 11 & 19 & 27 \\
+    \hline
+  \end{tabular}
+
+  \caption{Toate valorile posibile pentru $a_1$ și $a_2$ cînd $m_1 = 4$ și $m_2 = 7$.}
+\end{table}
+
+Pornind de la acest tabel putem demonstra existența și unicitatea unei valori între 0 și 27 pentru fiecare pereche $(a_1, a_2)$. Într-adevăr, toate valorile între 0 și 27 își au locul undeva în tabel. Vom demonstra întîi că $x$-ul pentru fiecare celulă este unic. Să presupunem că două valori $x_1$ și $x_2$ ar sta în aceeași celulă. Atunci am avea că
+
+$$
+\begin{cases}
+4 \ | \ (x_1 - x_2) \\
+7 \ | \ (x_1 - x_2)
+\end{cases}
+$$
+
+De aici deducem că
+
+$$28 \ | \ (x_1 - x_2)$$
+
+Singura explicație este că $x_1 = x_2$. Din unicitatea lui $x$ rezultă și existența lui $x$. Avem de distribuit 28 de numere în 28 de celule de capacitate 1, deci rezultă că toate celulele sînt ocupate. Acest argument se generalizează la oricîți moduli coprimi.
+
+Acum să vedem cum îl putem afla algoritmic pe $x$.
+
+\section{Un exemplu cu doi moduli}
+
+Să rezolvăm sistemul de ecuații
+
+$$
+\begin{cases}
+x &\equiv 3 \pmod{7}\\
+x &\equiv 4 \pmod{11}
+\end{cases}
+$$
+
+Cu puțin chin putem găsi răspunsul 59; de exemplu, putem enumera valorile $11k + 4$, respectiv 4, 15, 26, 37, 48, 59. Ne oprim pentru că $59 \equiv 3 \pmod{7}$.
+
+Iată și o soluție constructivă. Dorim să scriem $x = 3P + 4Q$ și să găsim niște valori $P$ și $Q$ astfel încît
+
+\begin{itemize}
+  \item Modulo 7, $Q$ să dispară, iar $P$ să fie 1 (astfel rămînem cu 3).
+  \item Modulo 11, $P$ să dispară, iar $Q$ să fie 1 (astfel rămînem cu 4).
+\end{itemize}
+
+Dacă vreți, am redus problema originală la două probleme similare, dar speciale: căutăm $P \equiv 1 \pmod{7}$ și $P \equiv 0 \pmod{11}$, respectiv $Q \equiv 1 \pmod{11}$ și $Q \equiv 0 \pmod{7}$.
+
+Calculăm inversul fiecărui modul modulo celălalt (putem face asta, pentru că modulii sînt coprimi).
+
+\begin{itemize}
+  \item $8 \cdot 7 = 56 \equiv 1 \pmod{11}$, deci inversul lui 7 modulo 11 este 8.
+  \item $2 \cdot 11 = 22 \equiv 1 \pmod{7}$, deci inversul lui 11 modulo 7 este 2.
+\end{itemize}
+
+Acum scriem $P = 2 \cdot 11$, tocmai pentru că el dispare modulo 11 și este 1 modulo 7. Similar, scriem $Q = 8 \cdot 7$, pentru că el dispare modulo 7 și este 1 modulo 11. Rezultă
+
+$$x = 3 \cdot 2 \cdot 11 + 4 \cdot 8 \cdot 7 = 290$$
+
+Este destul de clar că putem folosi orice valoare congruentă cu $x$ modulo 77, în particular $290 \mod 77 = 59$. Pentru cazul general, vezi Wikipedia.
+
+\section{Un exemplu cu 3 moduli}
+
+Să rezolvăm sistemul de ecuații
+
+$$
+\begin{cases}
+x &\equiv 2 \pmod{5}\\
+x &\equiv 6 \pmod{7}\\
+x &\equiv 4 \pmod{11}
+\end{cases}
+$$
+
+Ca mai sus, căutăm $x = 2P + 6Q + 4R$ unde:
+
+\begin{itemize}
+  \item Modulo 5, $Q$ și $R$ să dispară, iar $P$ să fie 1;
+  \item Modulo 7, $P$ și $R$ să dispară, iar $Q$ să fie 1;
+  \item Modulo 11, $P$ și $Q$ să dispară, iar $R$ să fie 1.
+\end{itemize}
+
+Rezultă că $P$ este multiplu de 7 și de 11 (deci de 77). Inversul lui 77 modulo 5 este 3. Deci fixăm $P = 7 \cdot 11 \cdot 3 = 231$. De amorul artei, am putea alege și valoarea $2 \cdot 77 = 154$, iar inversul acesteia ar fi 4. Deci am putea fixa și $P = 2 \cdot 7 \cdot 11 \cdot 4 = 616$. Dar nu am avea nimic de cîștigat.
+
+Similar, inversul lui $5 \cdot 11$ modulo 7 este 6, deci $Q = 5 \cdot 11 \cdot 6$. În sfîrșit, inversul lui $5 \cdot 7$ modulo 11 este 6, deci $R = 5 \cdot 7 \cdot 6$. Punînd totul cap la cap, obținem:
+
+$$
+x = 2 \cdot (7 \cdot 11 \cdot 3) + 6 \cdot (5 \cdot 11 \cdot 6) + 4 \cdot (5 \cdot 7 \cdot 6) = 3282
+$$
+
+Ca mai sus, putem opera modulo $5 \cdot 7 \cdot 11 = 385$, așadar putem alege $x = 202$.
+
+\section{Cazul general cu \texorpdfstring{$n$}{n} moduli}
+
+Putem generaliza formula de mai sus observînd că $x$ este o sumă de termeni, cîte unul pentru fiecare rest și modul. Termenul pentru $a_i$ și $m_i$ este un produs dintre $a_i$, produsul tuturor modulilor în afară de $m_i$ și inversul acestui produs față de $m_i$. În limbaj matematic,
+
+$$M \defeq \prod_{i=1}^{n} m_i$$
+
+$$M_i \defeq \frac{M}{M_i}$$
+
+$$b_i = M_i^{-1} \mod m_i$$
+
+$$x = \sum_{i=1}^{n} a_i \cdot M_i \cdot b_i \mod M$$
+
+Codul necesar este elementar:
+
+\begin{minted}{c}
+long long crt() {
+  long long M = 1;
+  for (int i = 0; i < n; i++) {
+    M *= m[i];
+  }
+
+  long long x = 0;
+  for (int i = 0; i < n; i++) {
+    long long others = M / m[i];
+    long long b = inverse(others, m[i]);
+    x = (x + r[i] * others % M * b) % M;
+  }
+
+  return x;
+}
+\end{minted}
+
+\section{Cazul cu moduli necoprimi}
+
+Metoda de mai sus nu funcționează dacă modulii sînt necoprimi, deoarece poate eșua cînd încearcă să inverseze modulii unii față de alții (exemplu: 6 nu are invers față de 8). Studiem altă metodă mai generală, care desigur poate fi aplicată și în cazul anterior. Rețineți-o pe oricare vă place!
+
+\subsection{Condiția de existență}
+
+Mai întîi, condiția de existență a soluției. Să rezolvăm sistemul de ecuații
+
+$$
+\begin{cases}
+x &\equiv 10 \pmod{28}\\
+x &\equiv 11 \pmod{35}
+\end{cases}
+$$
+
+Putem să aplicăm CRT în sens invers ca să desfacem modulii în valori coprime. Din fiecare ecuație de mai sus deducem două:
+
+$$
+\begin{cases}
+x &\equiv 2 \pmod{4}\\
+x &\equiv 3 \pmod{7}\\
+x &\equiv 1 \pmod{5}\\
+x &\equiv 4 \pmod{7}
+\end{cases}
+$$
+
+Observăm imediat că sistemul nu are soluții datorită ecuațiilor (2) și (4). Descompunerea ne arată și cum putem repara contradicția. Pentru fiecare doi moduli necoprimi $m_1$ și $m_2$, condiția necesară pentru ca sistemul să aibă ecuații este
+
+$$
+\text{cmmdc}(m_1, m_2) \ | \ (a_1 - a_2)
+$$
+
+De exemplu, sistemul de mai jos are soluții pentru că $7 \ | \ (25-11)$:
+
+$$
+\begin{cases}
+x &\equiv 25 \pmod{28}\\
+x &\equiv 11 \pmod{35}
+\end{cases}
+$$
+
+Dacă există, soluția este unică modulo $\text{cmmmc}(m_1, m_2, \dots, m_n)$ (în cazul de mai sus, 140).
+
+\subsection{Metoda de construcție}
+
+Metoda funcționează pentru două ecuații. Dacă avem trei sau mai multe, le procesăm pe primele două și obținem o nouă congruență modulo $\text{cmmmc}(m_1, m_2)$. La aceasta adăugăm a treia ecuație ș.a.m.d. Așadar, fie sistemul:
+
+$$
+\begin{cases}
+x &\equiv a \pmod{m}\\
+x &\equiv b \pmod{n}
+\end{cases}
+$$
+
+Să scriem naiv ce înseamnă prima congruență. Există un $k$ astfel încît
+
+$$x = km + a$$
+
+Inserăm în a doua congruență:
+
+$$
+\begin{aligned}
+km + a & \equiv b \pmod{n} \implies \\
+km & \equiv (b-a) \pmod{n} \implies \\
+\text{Există un $l$ astfel încît }\ km &= (b-a) + ln
+\end{aligned}
+$$
+
+Ne-ar plăcea să spunem pur și simplu $k=(b-a) \cdot [m^{-1} \pmod{n}]$, dar inversul poate fi nedefinit. În schimb, fie $g = \text{cmmdc}(m, n)$. Să observăm în ultima ecuație că toți termenii se divid cu $g$, după cum rezultă din condiția de existență. Atunci scriem:
+
+$$
+\begin{aligned}
+k \frac{m}{g} & = \frac{b-a}{g} + l \frac{n}{g} \\
+k \frac{m}{g} & \equiv \frac{b-a}{g} \pmod{\frac{n}{g}} \\
+k & \equiv \frac{b-a}{g} \left(\frac{m}{g}\right)^{-1} \pmod{\frac{n}{g}}
+\end{aligned}
+$$
+
+De data aceasta inversul este definit, căci $m/g$ și $n/g$ sînt coprime și pozitive.

@@ -1,0 +1,211 @@
+\section{Probleme}
+
+\subsection{Problema Koxia and Number Theory (Codeforces)}
+\label{problem:koxia-and-number-theory}
+
+\href{https://codeforces.com/contest/1770/problem/C}{enunț}
+$\bullet$
+\hyperref[code:koxia-and-number-theory]{sursă}
+
+O primă observație: dacă există două valori egale, $a_i = a_j$, atunci $\text{cmmdc}(a_i + x, a_j + x) = a_i + x \geq 2$, deci problema nu are soluție. Deci o primă condiție este ca toate valorile să fie distincte. Nu știu cum să includ acest caz în restul codului, așa că l-am testat explicit.
+
+Ca atîtea alte probleme, și aceasta devine ușoară dacă procesăm datele în altă ordine decît cea pe care o implică enunțul. În loc să tratăm perechile una cîte una, să tratăm divizorii unul cîte unul. Ce înseamnă că cmmdc-ul oricărei perechi este 1? Înseamnă că orice număr prim divide cel mult una dintre valorile $a_i + x$. Să alegem un număr prim la întîmplare: 2. \emoji{slightly-smiling-face} Ce ne trebuie ca să existe un $x$ astfel încît 2 să dividă cel mult una dintre valorile $a_i + x$? Trebuie ca
+
+\begin{enumerate}
+  \item fie cel mult o valoare $a_i$ să fie pară (caz în care vom alege un $x$ par);
+  \item fie cel mult o valoare $a_i$ să fie impară (caz în care vom alege un $x$ impar).
+\end{enumerate}
+
+Dacă există două valori pare și două valori impare în vectorul $a$, atunci problema nu are soluție. Similar și pentru 3 și pentru alți divizori. Să considerăm un divizor prim $p$. Valorile $a_i$ se vor încadra în $p$ clase de resturi modulo $p$ (similar și valorile $a_i + x$). Deci trebuie ca
+
+\begin{enumerate}
+  \item fie cel mult o valoare $a_i$ să fie congruentă cu 0 modulo $p$ (caz în care vom alege un $x$ de forma $kp$);
+
+  \item fie cel mult o valoare $a_i$ să fie congruentă cu 1 modulo $p$ (caz în care vom alege un $x$ de forma $kp - 1$);
+
+  \item fie cel mult o valoare $a_i$ să fie congruentă cu 2 modulo $p$ (caz în care vom alege un $x$ de forma $kp - 2$);
+
+  \item \dots
+\end{enumerate}
+
+Deci trebuie să iterăm prin numerele prime și să verificăm, pentru fiecare număr prim $p$, dacă clasificarea valorilor $a_i$ în clase de resturi modulo $p$ lasă cel puțin un rest care apare cel mult o dată.
+
+Mai rămîne o întrebare: cîte numere prime trebuie să verificăm? Toate pînă la $MAX\_VAL$? Răspunsul este nu: sînt suficiente primele $n/2$ numere prime. Dincolo de asta, este clar că va exista un rest care apare cel mult o dată (principiul cutiei): împărțim cele $n$ numere date în mai mult de $n/2$ clase de resturi.
+
+Odată ce știm ce rest dorim modulo fiecare dintre aceste numere prime, Teorema chinezească a resturilor ne spune că există un $x$ care obține toate aceste resturi simultan. Problema este un exemplu de aplicare a CRT care nu necesită și implementarea ei.
+
+
+\subsection{Problema Remainders Game (Codeforces)}
+\label{problem:remainders-game}
+
+\href{https://codeforces.com/contest/687/problem/B}{enunț}
+$\bullet$
+\hyperref[code:remainders-game]{sursă}
+
+Putem rezolva problema doar cu cunoștințe de divizibilitate. Fie $k = 100 = 2^2 \cdot 5^2$. Dacă $x \mod 100$ este unic determinat, atunci putem afla în mod banal $x \mod 4$ și $x \mod 25$. Contrapozitiva (implicația în sens invers) este: dacă nu putem afla $x \mod 4$ și $x \mod 25$, atunci nici $x \mod 100$ nu este unic determinat.
+
+Ca să-l aflăm pe $x \mod 4$, trebuie ca un $c_i$ să fie divizibil cu $2^2$ (sau mai mult). De exemplu, dacă $c_i = 24 = 2^3 \cdot 3$ pentru un $i$ oarecare, din restul modulo 24 aflăm imediat restul modulo 4. Dacă, în schimb, niciun $c_i$ nu se divide cu 4, ci doar cu 2 (sau nici măcar cu 2), nu avem destule informații ca să cunoaștem restul lui $x$ modulo 4.
+
+Desigur, acest argument se aplică pentru orice alt factor prim $p$ din descompunerea lui $k$. Deci o primă soluție este: factorizează-l pe $k$, apoi pentru fiecare factor prim $p^e$ verifică dacă vreun $c_i$ se divide cu $p^e$. Există $\bigoh(\log k)$ factori primi, deci algoritmul rulează în $\bigoh(\sqrt{k} + n \log k)$.
+
+Din \href{https://codeforces.com/contest/687/submission/18789803}{această implementare} am învățat o idee mai scurtă, mai elegantă și care folosește $\bigoh(1)$ memorie. Reformulăm algoritmul anterior astfel: pentru fiecare factor prim $p^e$, asigură-te că maximul exponenților lui $p$ în vectorul $c$ este cel puțin $e$. Cu alte cuvinte, asigură-te că
+
+$$p^e \ | \ \text{cmmmc}(c_1, c_2, \dots, c_n)$$
+
+Doar că cmmmc-ul poate depăși reprezentarea. Dar facem observația că nu ne interesează \textbf{cît de mare} este exponentul maxim, ci doar dacă \textbf{atinge} valoarea $e$. Pentru fiecare $c_i$ putem limita exponentul lui $p$ ca să nu depășească $e$, iar aici ne ajută funcția cmmdc:
+
+$$p^e \ | \ \text{cmmmc}(\text{cmmdc}(c_1, p^e), \dots, \text{cmmdc}(c_n, p^e))$$
+
+Iar observația finală este că putem procesa toți factorii primi simultan. Efectiv, \textbf{cmmmc și cmmdc sînt operații de maxim și respectiv de minim pe exponenți}, pentru toți factorii primi independent și simultan:
+
+$$k \ | \ \text{cmmmc}(\text{cmmdc}(c_1, k), \dots, \text{cmmdc}(c_n, k))$$
+
+Toată această demonstrație decurge direct și din Teorema chinezească a resturilor: $x \mod k$ este unic determinat dacă și numai dacă $k$ este un divizor al celui mai mic multiplu comun, $[c_1, c_2, \dots, c_n]$.
+
+
+\subsection{Problema Decipher the String (Codeforces)}
+\label{problem:decipher-the-string}
+
+\href{https://codeforces.com/contest/1117/problem/E}{enunț}
+$\bullet$
+\hyperref[code:decipher-the-string]{surse}
+
+Să observăm că, pînă la lungimea 26, putem trimite șirul \texttt{ab...z} sau un prefix al său și vedem ce permutare primim. Obținem răspunsul aplicînd permutarea inversă șirului citit de la intrare. Dincolo de lungimea 26, această abordare nu mai funcționează, deoarece trebuie să introducem litere duplicat în interogări și nu știm cum le mapează permutarea.
+
+Dat fiind că $26^3 > \np{10000}$, vom compune cele trei interogări astfel:
+
+\begin{enumerate}
+  \item \texttt{ab...zab...zab...z...} (perioadă 26).
+  \item \texttt{a*26 b*26 ... z*26 a*26 ...} (fiecare caracter se repetă de 26 de ori).
+  \item Fiecare caracter se repetă de $26^2=676$ de ori.
+\end{enumerate}
+
+Astfel, pe fiecare din cele $n$ poziții vom avea o combinație unică de litere. Concret, dacă interpretăm literele ca pe cifrele $0 \dots 25$ în baza 26, atunci cifrele de pe coloana $c$ vor fi exact reprezentarea lui $c$ în baza 26 (pe trei cifre).
+
+Acum interpretăm răspunsul astfel. Pe fiecare coloană $d$ luăm cele trei cifre și formăm un număr $c$ cu ele. Atunci permutarea secretă mapează coloana $c$ la coloana $d$.
+
+Există însă și o soluție frumoasă, chiar dacă nenecesară, bazată pe Teorema chinezească a resturilor. Alegem trei numere coprime între ele al căror produs să depășească \np{10000}. Eu am ales 18, 23 și 25, dar puteau fi și 23, 25 și 26 sau orice altceva. Emitem următoarele trei interogări:
+
+\begin{enumerate}
+  \item \texttt{abcdefghijklmnopqr} (18 litere) repetat pînă la lungime $n$;
+  \item \texttt{abcdefghijklmnopqrstuvw} (23 de litere) repetat pînă la lungime $n$;
+  \item \texttt{abcdefghijklmnopqrstuvwxy} (25 de litere) repetat pînă la lungime $n$.
+\end{enumerate}
+
+Astfel, pe fiecare coloană $c$ cele trei litere ne indică resturile lui $c$ modulo 18, 23 și 25. Acum interpretăm răspunsul astfel. Pe fiecare coloană $d$ luăm cele trei cifre/resturi. Conform CRT, există un rest unic al coloanei $c$ modulo $18 \cdot 23 \cdot 25 = \np{10350}$. Cu alte cuvinte, $c$ este unic determinat, iar CRT ne arată și un mecanism de calculare.
+
+
+\subsection{Problema Two Chandeliers (Codeforces)}
+\label{problem:two-chandeliers}
+
+\href{https://codeforces.com/contest/1500/problem/B}{enunț}
+$\bullet$
+\hyperref[code:two-chandeliers]{sursă}
+
+Problema este o aplicație relativ directă a CRT pentru doi moduli, posibil necoprimi.
+
+Să considerăm întîi cazul $\text{cmmdc}(n, m) = 1$. Atunci știm că cele două șiruri se vor repeta identic după o perioadă $P = nm$. Dacă o valoare $v$ apare în ambele șiruri, ea se va suprapune fix o dată în fiecare perioadă. De ce? Dacă $a_i = b_j = v$, atunci poziția suprapunerii, $x$, întrunește condițiile:
+
+$$
+\begin{cases}
+  x &\equiv i \pmod{n}\\
+  x &\equiv j \pmod{m}
+\end{cases}
+$$
+
+Așadar, conform CRT, $0 \leq x < P$ există, este unic și îl putem calcula. Similar putem afla toate zilele dintr-o perioadă în care se suprapun culori identice. Numărul de zile cu culori diferite din fiecare $P$ zile este $P - S$, unde \(S\) este numărul de culori care apar în ambele șiruri. Aflăm numărul de perioade complete $C = k / (P - S)$ și reducem $k$-ul modulo $P - S$. Fie $k'$ restul. Pentru a afla poziția lui $k'$ în ultima perioadă, notăm într-un vector toate pozițiile suprapunerilor tuturor culorilor din $S$, îl sortăm și căutăm liniar în el. De exemplu, dacă zilele cu suprapuneri sînt 3, 8, 12, 20, atunci a 11-a zi de enervare este 14: 1, 2, 4, 5, 6, 7, 9, 10, 11, 13, 14.
+
+În cazul general, \(m\) și \(n\) nu sînt coprime, ceea ce schimbă cîteva lucruri:
+
+\begin{itemize}
+  \item Perioada \(P\) se generalizează la $\text{cmmmc}(n, m)$.
+
+  \item Trebuie folosită metoda CRT care funcționează și pe moduli necoprimi.
+
+  \item Două poziții $a_i = b_j = v$ nu se mai suprapun garantat, ci doar dacă $\text{cmmdc}(n, m) \ | \ (a_i - b_j)$ (așa cum știm de la CRT).
+\end{itemize}
+
+Partea specifică problemei (căutarea celui de-al $k$-lea element lipsă într-un vector sortat) cere și ea puțină atenție. Cred că implementarea se simplifică dacă în loc de enervarea $k$ folosim „răbdarea” $k-1$, adică numărul de zile în care Vasya nu se enervează. Atunci răspundem la întrebarea „cîte zile rezistă Vasya fără să se enerveze?” și adăugăm 1.
+
+
+\subsection{Problema GCD Guess (Codeforces)}
+\label{problem:gcd-guess}
+
+\href{https://codeforces.com/contest/1665/problem/D}{enunț}
+$\bullet$
+\hyperref[code:gcd-guess]{surse}
+
+\subsubsection*{Soluție cu 30 de întrebări}
+
+O primă abordare îl compune pe $x$ bit cu bit. De exemplu, putem afla paritatea lui $x$ astfel: punem întrebarea $(1, 3)$. Dacă $\text{cmmdc}(x + 1, x + 3)$ este par, atunci $x$ este în mod necesar impar și viceversa.
+
+Acum să presupunem că am aflat deja biții cei mai nesemnificativi ai lui $x$, să spunem $10110_{2}=22$. Așadar, $x \equiv 22 \pmod{32}$. Ce ar putea fi bitul 5? Fie 0, caz în care $x \equiv 22 \pmod{64}$, fie 1, caz în care $x \equiv 54 \pmod{64}$. Să construim o interogare care diferențiază posibilitățile! Am vrea să alegem $a$ și $b$ astfel încît
+
+$$\text{cmmdc}(a + 22, b + 22) \neq \text{cmmdc}(a + 54, b + 54)$$
+
+Cu puțin efort, găsim de exemplu $a = 32 - 22 = 10$ și $b = 3 \cdot 32 - 22 = 74$. Așadar, punem întrebarea $(10, 74)$ și putem primi două răspunsuri:
+
+Dacă $x = 64k + 22$, răspunsul este $\text{cmmdc}(64k + 32, 64k + 96)$, deci cmmdc-ul va fi divizibil cu 32, dar nu cu 64.
+
+Dacă $x = 64k + 54$, răspunsul este $\text{cmmdc}(64k + 64, 64k + 128)$, deci cmmdc-ul va fi divizibil cu 64.
+
+\subsubsection*{Soluție cu 23 sau 22 de întrebări}
+
+Soluția bazată pe Teorema chinezească a resturilor pornește de la următoarea observație. Putem afla restul lui $x$ modulo $p$ punînd $p-1$ întrebări:
+
+\begin{itemize}
+  \item $(1, p + 1)$: Dacă cmmdc-ul este multiplu de $p$, atunci $x$ are forma $kp - 1$.
+  \item $(2, p + 2)$: Dacă cmmdc-ul este multiplu de $p$, atunci $x$ are forma $kp - 2$.
+  \item \dots
+  \item $(p-1, 2p-1)$: Dacă cmmdc-ul este multiplu de $p$, atunci $x$ are forma $kp - (p-1) = kp + 1$.
+  \item Altfel, $x$ este multiplu de $p$.
+\end{itemize}
+
+Mai mult, calculul pentru doi moduli coprimi $p_1 < p_2$ durează doar $p_2 - 1$ întrebări. De exemplu, pentru a afla resturile lui $x$ modulo 17 și 23 punem întrebările:
+
+\begin{itemize}
+  \item $(1, 17 \cdot 23 + 1)$
+  \item $(2, 17 \cdot 23 + 2)$
+  \item \dots
+  \item $(22, 17 \cdot 23 + 22)$
+\end{itemize}
+
+Dacă pentru 5 răspunsul este multiplu de 17, iar pentru 8 răspunsul este multiplu de 23, atunci știm că $x \equiv -5 \equiv 12 \pmod{17}$ și $x \equiv -8 \equiv 15 \pmod{23}$. Generalizînd, vom căuta un set de moduli coprimi astfel încît:
+
+\begin{itemize}
+  \item Produsul modulilor să depășească 1 miliard.
+  \item Maximul modulilor să fie cît mai mic (acesta dictează numărul de întrebări, căci numărul necesar este modulul maxim minus unu).
+\end{itemize}
+
+Maximul minim pe care îl putem găsi este 23, iar un exemplu de moduli este
+
+$$2^4 \cdot 3^2 \cdot 7 \cdot 11 \cdot 13 \cdot 17 \cdot 19 \cdot 23 = \np{1070845776}$$
+
+Implementarea mea pune 23 de întrebări, deoarece nu am mai tratat separat cazul în care din 22 de întrebări nu găsim restul. \emoji{smiling-face-with-smiling-eyes}
+
+\subsubsection*{Soluție cu 12 întrebări (!!)}
+
+Am învățat următoarea abordare remarcabilă de la \href{https://codeforces.com/contest/1665/submission/290848945}{Rareș Neculau}. El alege modulii astfel:
+
+$$2^{11} \cdot 3^6 \cdot 5^2 \cdot 7^2 = \np{1828915200}$$
+
+Ca și în secțiunea anterioară, putem trata modulii simultan (de exemplu, punînd inițial întrebări modulo $2 \cdot 3 \cdot 5 \cdot 7$). Mai mult decît atît, putem afla restul modulo 49 din doar 12 întrebări:
+
+\begin{itemize}
+  \item Punem întîi 6 întrebări pentru a afla dacă $x$ are forma $7k + 0, \dots 7k + 6$. Să spunem că aflăm că $x = 7k + 5$.
+
+  \item Apoi punem încă 6 întrebări pentru a afla dacă $x$ are forma $49k + 5, 49k + 12, \dots, 49k + 47$.
+\end{itemize}
+
+Deci din restul modulo $p^e$ algoritmul poate decide restul modulo $p^{e+1}$ în $p - 1$ întrebări. De aceea el poate decide toate lucrurile următoare simultan:
+
+\begin{itemize}
+  \item resturile modulo $2, 2^2, 2^3, \dots, 2^{11}$ (necesită 11 întrebări);
+  \item resturile modulo $3, 3^2, \dots, 3^6$ (necesită $2 \cdot 6 = 12$ întrebări);
+  \item resturile modulo 5 și 25 (necesită $2 \cdot 4 = 8$ întrebări);
+  \item resturile modulo 7 și 49 (necesită $2 \cdot 6 = 12$ întrebări).
+\end{itemize}
+
+De exemplu, la întrebarea a 7-a vom ști ce resturi vrem să încercăm modulo $2^7$, $3^4$, $5^2$ și $7^2$. Este posibil ca modulo unele dintre aceste numere să fi aflat deja restul. Facem produsul celorlalți moduli și, cu CRT, aflăm restul global care ne interesează, pe care îl trimitem în întrebare.
+
+Din resturile modulo $2^{11}, 3^6, 5^2$ și $7^2$ aflăm restul modulo $\np{1828915200}$. Cu restricția de 12 întrebări, problema s-ar încadra cu brio la lot, posibil chiar la un concurs internațional.

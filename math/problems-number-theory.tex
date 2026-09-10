@@ -339,6 +339,44 @@ $\bullet$
 \textit{More of the same}. \emoji{slightly-smiling-face} Problema aceasta are rating 2484 pe CodeChef, dar odată ce ne vine ideea să folosim funcția Möbius, soluția este imediată. Din toți tripleții posibili, îi scădem pe cei cu cmmdc 2, îi scădem pe cei cu cmmdc 7, dar îi adunăm la loc pe cei cu cmmdc 14 etc. Așadar, contribuția fiecărui divizor $d$ este $\mu(d) \cdot C_{M(d)}^{3}$.
 
 
+\subsection{Problema Coprime Arrays (Codeforces)}
+\label{problem:coprime-arrays}
+
+\href{https://codeforces.com/contest/915/problem/G}{enunț}
+$\bullet$
+\hyperref[code:coprime-arrays]{sursă}
+
+\subsubsection*{Rezolvarea pentru un singur \texorpdfstring{$i$}{i}}
+
+Problema pornește de la o observație elementară. Numărul de valori între 1 și $i$ care se divid cu $d$ este $\lfloor i/d \rfloor$. De aceea, fie $f(i,d)$ numărul de vectori de lungime $n$, cu valori între $1$ și $i$ și al căror cmmdc este multiplu de $d$. Atunci:
+
+$$f(i,d) = \lfloor i/d \rfloor^{n}$$
+
+Putem precalcula valorile $1^n, 2^n, \dots, k^n$ ca să le avem la îndemînă.
+
+Fie $C(i)$ răspunsul pentru un $i$ fixat. Putem folosi principiul includerii și excluderii ca să îl aflăm pe $C(i)$:
+
+$$C(i) = f(i,1) - f(i,2) - f(i,3) - f(i,5) + f(i, 6) - f(i,7) + f(i, 10) - f(i,11) - f(i,13) + f(i,14) + \dots$$
+
+Ne interesează valoarea lui $f$ doar pentru numere $i$ libere de pătrate. Este același raționament cu diagrame Euler-Venn, doar că acum mulțimea lui $d$ nu se mai referă la multiplii de $d$, ci la vectorii care au un GCD multiplu de $d$. Rescriem ușor formula de mai sus folosind funcția Möbius:
+
+$$C(i) = \sum_{d=1}^{k} \mu(d) f(i,d)$$
+
+Rezultă un algoritm în $\bigoh(k)$ pentru un $i$ fixat. Global, este nevoie să calculăm funcția Möbius în $\bigoh(k \log \log k)$ și puterile $x^n$ în $\bigoh(k \log n)$.
+
+\subsubsection*{Rezolvarea completă}
+
+Ca să nu facem efort total $\bigoh(k^2)$, să încercăm să calculăm doar diferențele la trecerea de la $i-1$ la $i$. Care dintre valorile $f(i,d)$ se vor schimba? Reamintim că $f(i,d) = \lfloor i/d \rfloor^{n}$, deci valoarea $f$ va crește cu $1$ atunci cînd $d|i$, iar pentru alte valori ale lui $d$ va rămîne constantă.
+
+O primă abordare este deci: pentru $i$-ul curent, iterăm prin toți divizorii săi. Pentru fiecare divizor $d$ scădem din $C(i-1)$ valoarea $(i/d -1)^{n}$ și adăugăm valoarea $(i/d)^{n}$. La final, valoarea obținută este $C(i)$. S-ar putea să se încadreze în timp, dar nu am încercat.
+
+O abordare mai eficientă pornește de la conceptul des întîlnit: să agregăm datele după divizorul $d$, nu după $i$. Să construim vectorul de diferențe $\Delta(i) = C(i) - C(i-1)$. Atunci răspunsurile $C(i)$ vor fi sume parțiale peste vectorul $\Delta$ și le putem afla la final în $\bigoh(k)$.
+
+Divizorul $d$ va contribui la diferențele $\Delta(d), \Delta(2d), \Delta(3d)...$. Regăsim din nou suma armonică, iar efortul total necesar pentru a construi vectorul $\Delta$ este $\bigoh(k \log k)$.
+
+Pentru un mic bonus de viteză (10\%), am redus numărul de operații modulo prin stocarea vectorului de diferențe pe \ccode{long long}.
+
+
 \subsection{Problema Mocha and Stars (Codeforces)}
 \label{problem:mocha-and-stars}
 
