@@ -52,6 +52,20 @@ $\bullet$
 
 Problema este aproape identică cu precedenta. Enunțul este mai strict și ne cere să nu includem puncte pe laturile înfășurătorii, ci doar în colțuri. Este nevoie de un \ccode{if} în plus la sortare (la unghi polar egal, luăm în calcul și distanța față de \ccode{p[0]}). De asemenea, trebuie să folosim operatorul corect la scoaterea din stivă, ca să excludem punctele de pe laturile înfășurătorii.
 
+\subsection{Problema Testament (Lot 2011)}
+\label{problem:testament}
+
+\href{https://kilonova.ro/problems/2227}{enunț}
+$\bullet$
+\hyperref[code:testament]{sursă}
+
+Ideea rezolvării problemei este relativ directă. Trebuie să separăm cumva cele $mn$ puncte în $m$ mulțimi ale căror poligoane înfășurătoare să fie disjuncte. Am ales să ordonez punctele după $x$, iar la egalitate după $y$. Apoi luăm tranșe de cîte $n$ puncte și le facem înfășurătoarea convexă.
+
+Datorită acestei ordonări, primul și ultimul punct din fiecare tranșă vor fi garantat pe înfășurătoare (nu pot face unghiuri de $180 \degree$ cu vecinii).
+
+Pentru implementare, am ales varianta cu lanțuri monotone, deoarece punctele sînt deja sortate după $x$. Un punct eliminat din stivă este automat adăugat la lista punctelor interioare.
+
+
 \subsection{Problema Magic (JBOI 2023)}
 \label{problem:magic}
 
