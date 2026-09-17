@@ -106,6 +106,93 @@ Algoritmul este $\bigoh(n^3)$, dar în practică el se mișcă fulger, deoarece 
 
 Am dublat șirul $Y$ pentru că urmează să facem căutări din $X$ în $Y$, căutări care este posibil să se înfășoare peste finalul lui $Y$.
 
+
+\section{Problema Takara (Baraj ONI 2019)}
+\label{problem:takara}
+
+\href{https://kilonova.ro/problems/411}{enunț}
+$\bullet$
+\hyperref[code:takara]{surse}
+
+Problema necesită „doar” cozi monotone (deque-uri), pentru care acest curs nu are un capitol dedicat. Totuși, raționamentele din spate sînt dificile.
+
+\subsection{Formula de recurență}
+
+Recurența decurge relativ ușor din enunț. Fie $D_{i,j}$ costul pentru a găsi comoara în intervalul închis $[i,j]$. Atunci trebuie să existe undeva o „spargere”, o primă interogare la o poziție $k$. Odată ce plătim costul $C_k$ vom reduce problema fie la $[i, k - 1]$, fie la $[k + 1, j]$, și trebuie să presupunem scenariul cel mai defavorabil. Astfel rezultă formula de recurență:
+
+$$D_{i,j} = \min_{i \leq k \leq j} \{ C_k + \max(D_{i,k-1}, D_{k+1,j}) \}$$
+
+Prima sursă implementează fix acest lucru, în $\bigoh(n^3)$, fără alte zorzoane. Dacă aș fi la concurs, aș trimite din principiu această sursă, ca să verific că primesc doar TLE, nu și alte erori. Ea cere doar 9 linii în plus față de scheletul programului, deci este un preț mic.
+
+\subsection{Eliminarea funcției max}
+
+Avem intuiția că trebuie să îl calculăm pe $D_{i,j}$ din $D_{i,j-1}$ și din $D_{i+1,j}$. Dar nu putem ataca frontal această idee. Între perechile $(D_{i,k-1}, D_{k+1,j})$ și $(D_{i,k-1}, D_{k+1,j+1})$, toate elementele din dreapta se modifică, ceea ce afectează toate operațiile de maxim. De altfel, în problemele de programare dinamică am observat adesea că formulele care implică maxime, minime sau valori absolute nu sînt utile ca atare, căci nu putem face calcule (sume etc.) pe astfel de valori. Este mai util să enumerăm intervalele pe care aceste funcții iau diverse valori.
+
+Este nevoie să înțelegem mai bine natura valorilor din matrice. Un sfat practic este: tipăriți matricea! Cine știe ce amănunt interesant observați. În acest caz, observăm că matricea $D$ crește spre dreapta pe linie și în sus pe coloană. Era și de așteptat, deoarece costul de a găsi comoara în intervalul $[i, j]$ trebuie să fie mai mic sau egal cu costurile pentru $[i - 1, j]$ și $[i, j + 1]$, care îl includ.
+
+Acum, să privim mai atent formula de recurență. Observăm că valorile de care depinde $D_{i,j}$ aparțin liniei $i$ sau coloanei $j$. Ele sînt comparate două cîte două pentru a alege maximul, ca în figura \ref{fig:assorted-takara}. Fiecare comparație implică două celule de aceeași culoare, una de pe linia $i$ și una de pe linia $j$.
+
+\import{./figures}{assorted-takara.tex}
+
+Deoarece valorile $D$ cresc la dreapta și în sus, înseamnă că pentru valori mici ale lui $k$ maximul va fi dat de $D_{k+1, j}$, ceea ce este natural, întrucît intervalul $[i, k - 1]$ este mai mic decît intervalul $[k + 1, j]$. Cînd $k$ crește, valorile $D_{i,k-1}$ cresc, iar valorile $D_{k+1,j}$ scad. Deci va exista o ultimă poziție, să-i spunem $p$, unde $D_{i,p-1} < D_{p+1,j}$.
+
+Ce deducem de aici? Că valoarea lui $D_{i, j}$ este minimul tuturor valorilor din zona roșie de pe linia $i$ și din zona albastră de pe coloana $j$. În limbaj matematic,
+
+\begin{align*}
+  D_{i,j} = \min \big\{ & \min_{i \leq k \leq p} \{ C_k + D_{k+1, j} \},\\
+  & \min_{p < k \leq j} \{ C_k + D_{i, k-1} \} \big\}
+\end{align*}
+
+\subsection{Reducerea la \texorpdfstring{$\bigoh(n^2)$}{O(n^2)}}
+
+Acum \textbf{aproape} putem să gestionăm corect trecerea de la $D_{i,j}$ la $D_{i,j+1}$. Ce se schimbă în zona roșie de pe linia $i$? Mai facem o observație privind natura matricei $D$: valoarea lui $p$ nu poate să scadă.
+
+Într-adevăr, să nu uităm cine este $p$: este punctul din intervalul $[i, j]$ unde, dacă facem spargerea, partea stîngă devine mai costisitoare decît partea dreaptă. Cu siguranță, dacă $j$ crește, partea dreaptă devine mai costisitoare, iar $p$ poate rămîne constant sau poate avansa spre dreapta.
+
+Recunoaștem nevoia clasică de a menține minimul într-o fereastră glisantă. Înseamnă că putem reprezenta cantitățile din zona roșie a liniei $i$ cu o coadă dublă (deque). Dar cum procedăm cu cantitățile de pe coloana $j$? Acestea se schimbă radical cînd avansăm la coloana $j + 1$. Am putea să parcurgem matricea pe coloane, dar atunci dăm peste problema inversă: la urcarea pe o coloană toate elementele de pe linie se schimbă radical.
+
+Soluția este elegantă: menținem cîte un deque \textbf{pe fiecare coloană}, plus încă un deque pe linia curentă $i$. Deque-ul pe linie avansează spre dreapta, iar cele pe coloane avansează în sus. Calculăm $D_{i,j}$ folosind deque-urile liniei $i$ și coloanei $j$, apoi „punem la păstrare” deque-ul coloanei $j$. Pentru $D_{i+1,j}$ folosim deque-ul coloanei $j+1$. Cu deque-ul coloanei $j$ ne vom reîntîlni cînd va veni momentul să calculăm $D_{i-1,j}$.
+
+O primă variantă a codului meu încapsula deque-urile într-o structură în care menținea explicit valoarea lui $p$. De exemplu, codul pentru deque-ul pe linie era:
+
+\begin{minted}{c}
+struct row_queue {
+  std::deque<int> q;
+  int i, p;
+
+  void init(int i) {
+    this->i = p = i;
+    q.clear();
+    q.push_back(i);
+  }
+
+  int cost(int j) {
+    return d[i][j - 1] + c[j];
+  }
+
+  int first() {
+    return cost(q.front());
+  }
+
+  void advance(int j) {
+    while (d[i][p - 1] < d[p + 1][j]) {
+      p++;
+    }
+    while (q.front() < p) {
+      q.pop_front();
+    }
+    int z = cost(j);
+    while (!q.empty() && (z < cost(q.back()))) {
+      q.pop_back();
+    }
+    q.push_back(j);
+  }
+};
+\end{minted}
+
+În realitate, nu avem nevoie să stocăm explicit valoarea lui $p$. Pentru a ști dacă trebuie să eliminăm un element de la începutul deque-ului, de pe o poziție $k$, putem să testăm direct dacă $D_{i,k-1} < D_{k+1,j}$, cu alte cuvinte dacă elementul se află în zona albastră din figura \ref{fig:assorted-takara}. Am învățat această optimizare din \href{https://infoarena.ro/job_detail/3198563?action=view-source}{sursa lui Andrei C}.
+
+
 \section{Problema Tornade (Baraj ONI 2025)}
 \label{problem:tornade}
 

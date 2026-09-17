@@ -1,0 +1,75 @@
+\begin{figure}[H]
+  \centering
+
+  \tikzset{
+    row 1/.style={
+      font=\small,
+    },
+    column 1/.style={
+      font=\small,
+    },
+  }
+
+  \colorlet{myblue}{RoyalBlue}
+  \colorlet{myred}{Red}
+
+  \begin{tikzpicture}
+    \matrix (mat) at (2, 0) [
+    matrix of nodes,
+    nodes={anchor=center, inner sep=0pt, minimum size=14pt},
+    ] {
+      $D$ & \ & \ & $i$ & \ & \ & \ & \ & \ & \ & \ & $p$ & \ & \ & \ & \ & $j$ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      $i$ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \textbf{?} & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      $p$ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      $j$ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+      \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ & \ \\
+    };
+
+    \foreach \x in {1,...,19} {
+      \draw [help lines, lightgray] (mat-1-\x.south east) -- (mat-19-\x.south east);
+      \draw [help lines, lightgray] (mat-\x-1.south east) -- (mat-\x-19.south east);
+    }
+
+    \foreach [
+    evaluate=\x as \col using int(\x + 4),
+    evaluate=\x as \row using int(\x + 6),
+    evaluate=\x as \shade using int(45 - \x * 5),
+    ] \x in {0,...,7} {
+      \fill[fill=myblue!\shade] (mat-4-\col.north west) rectangle (mat-4-\col.south east);
+      \fill[fill=myblue!\shade] (mat-\row-17.north west) rectangle (mat-\row-17.south east);
+    }
+
+    \foreach [
+    evaluate=\x as \col using int(\x + 12),
+    evaluate=\x as \row using int(\x + 14),
+    evaluate=\x as \shade using int(10 + \x * 5),
+    ] \x in {0,...,3} {
+      \fill[fill=myred!\shade] (mat-4-\col.north west) rectangle (mat-4-\col.south east);
+      \fill[fill=myred!\shade] (mat-\row-17.north west) rectangle (mat-\row-17.south east);
+    }
+
+    \draw (mat-4-12.north west) rectangle (mat-4-16.south east);
+    \node at (mat-4-14) {deque};
+
+    \draw (mat-5-17.north west) rectangle (mat-13-17.south east);
+    \node[rotate=90] at (mat-9-17) {deque};
+
+  \end{tikzpicture}
+
+  \caption{Matricea $D$ și zonele de interes pentru calculul lui $D_{i,j}$.}
+  \label{fig:assorted-takara}
+\end{figure}
