@@ -14,10 +14,10 @@ struct segment_tree {
 
   void init(char* s) {
     int len = strlen(s);
-    this->n = next_power_of_2(len);
+    n = next_power_of_2(len);
 
     for (int i = 0; i < len; i++) {
-      v[i + this->n] = 1 << (s[i] - 'a');
+      v[i + n] = 1 << (s[i] - 'a');
     }
 
     build();

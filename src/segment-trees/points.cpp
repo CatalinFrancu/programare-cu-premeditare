@@ -14,11 +14,7 @@ struct query {
 };
 
 int next_power_of_2(int n) {
-  while (n & (n - 1)) {
-    n += (n & -n);
-  }
-
-  return n;
+  return 1 << (32 - __builtin_clz(n - 1));
 }
 
 int max(int x, int y) {
@@ -43,9 +39,11 @@ struct max_segment_tree {
 
   void set(int pos, int val) {
     pos += n;
-    v[pos] = val;
-    for (pos /= 2; pos; pos /= 2) {
-      v[pos] = max(v[2 * pos], v[2 * pos + 1]);
+    if (v[pos] != val) { // optimizare de viteză (nu ajută)
+      v[pos] = val;
+      for (pos /= 2; pos; pos /= 2) {
+        v[pos] = max(v[2 * pos], v[2 * pos + 1]);
+      }
     }
   }
 

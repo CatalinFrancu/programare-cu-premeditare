@@ -131,7 +131,7 @@ Ca să putem construi un arbore de intervale, în primul rînd normalizăm coord
 
 Am putea reformula întrebarea pentru operația \texttt{find x y}: dintre toate punctele cu $x'>x$, există vreunul cu $y' > y$? Ne gîndim că am putea folosi un AINT de maxime, indexat după $x$, cu valori din $y$, cu interogarea: „Caută maximul pe intervalul $[x + 1, n)$ și spune-mi dacă este mai mare decît $y$”.
 
-Dar astfel aflăm doar dacă există un punct. Ca să-l găsim, întrebarea corectă este: „dă-mi cea mai din stînga poziție după $x$ pe care maximul depășește $y$”. Din fericire, putem face asta cu același AINT maxime, așa cum am explicat în secțiunea de teorie:
+Dar astfel aflăm doar dacă există un punct. Ca să-l găsim, întrebarea corectă este: „dă-mi cea mai din stînga poziție după $x$ pe care maximul depășește $y$”. Din fericire, putem face asta cu același AINT de maxime, așa cum am explicat în secțiunea de teorie:
 
 \begin{enumerate}
   \item Pornind de la prima poziție validă (în cazul nostru, $x+1$), mergem în sus și spre dreapta, spre intervale tot mai mari, pînă cînd găsim o poziție de valoare $> y$. Ca să evităm cazurile particulare, adăugăm la finalul vectorului o santinelă de valoare infinită.
