@@ -346,3 +346,108 @@ Prefix [4 2]      2×1×3×1×3×2×1 =   36  | 1×1×2×1×3×2×1 =  12 |   24
 Aici ne oprim deoarece $30+24 > 44$. Rezultă că al doilea element din soluție este 2 și trebuie să găsim a $44-30=14$-a permutare care începe cu 4 2. \textit{Rinse and repeat}.
 
 Programul cere și numere mari, ceea ce poate nu este un lucru rău, este o ocazie să le exersați. Sursa devine de 10 ori mai rapidă dacă folosim o bază mare, să spunem 10.000, în loc de 10 pentru numerele mari.
+
+\subsection{Problema Valentine's Day (infO(1) Cup 2023)}
+\label{problem:valentines-day}
+
+\href{https://kilonova.ro/problems/428/}{enunț}
+$\bullet$
+\hyperref[code:valentines-day]{sursă}
+
+Problema este relativ pe față una de \textit{unranking}, dar optimizările sînt interesante.
+
+\subsubsection*{Formularea ca problemă de \textit{unranking}}
+
+Să abordăm problema clasic. Pornim cu toate valorile în mînă, urmînd să le depunem în $p[1], p[2]$ etc. Ne întrebăm: după ce completăm un prefix, ce valoare alegem dintre cele din mînă?  Din nou, soluția clasică este să iterăm printre valorile din mînă în ordine crescătoare. Pentru fiecare valoare $x$ ne punem întrebarea: dacă depunem valoarea $x$, putem completa restul permutării în cel puțin $k$ moduri? Dacă da, chiar extindem prefixul cu $x$. Altfel, scădem numărul de moduri din $k$ și încercăm următoarea valoare din mînă.
+
+Așadar, am redus problema de unranking la o cărămidă mai simplă: cîte permutări valide există cu setul de valori din mînă și setul de constrîngeri din sufixul rămas? Dacă n-am avea constrîngeri, atunci răspunsul ar fi pur și simplu $h!$, unde $h$ este numărul de valori pe care le ținem în mînă.
+
+\subsubsection*{Pasul specific problemei}
+
+Partea aceasta am rezolvat-o pur și simplu rulînd exemplul 4 pe hîrtie.
+
+Soluția teoretică (fără să ne preocupăm de eficiență) este să procesăm valorile din mînă în ordine crescătoare. Valoarea 1 o putem depune peste orice constrîngere egală cu 1. Valoarea 2 o putem depune peste orice constrîngere mai mică sau egală cu 2, minus unu căci una dintre acele poziții a fost ocupată de valoarea 1.
+
+În general, numărul de posibilități pentru valoarea $x$ este $C[x] = A[x] - B[x]$, unde $A[x]$ este numărul de constrîngeri mai mici sau egale cu $x$, iar $B[X]$ este numărul de valori din mînă mai mici decît $x$. Numărul de permutări posibile este $P = \prod_{x} C[x]$.
+
+Desigur, dorim să calculăm $P$ mai repede decît $\bigoh(n)$. Să vedem cum îl putem calcula incremental pe măsură ce depunem valori din mînă. Să pornim de la exemplul 4 din enunț și să spunem că am așezat primele 6 valori ($6\ 12\ 1\ 2\ 13\ 4$) peste primele 6 constrîngeri ($6\ 12\ 1\ 2\ 13\ 3$).  Să spunem că la acest moment avem calculat vectorul $C$ și produsul aferent, $P$.
+
+\begin{verbatim}
+constr = 1  1  1  4  5  6  6  6  7  7  9 11 13 18
+mînă   = 3  5  7  8  9 10 11 14 15 16 17 18 19 20
+C      = 3  4  8  7  7  6  6  6  5  4  3  3  2  1,
+P = 365.783.040, k = 331.301.270
+\end{verbatim}
+
+Exemplu: valoarea 8 poate fi așezată peste primele 10 constrîngeri, dar 3 dintre acestea vor fi fost ocupate de valorile 3, 5 și 7. Deci $C[8] = 7$.
+
+Următoarea constrîngere pe care trebuie să o acoperim este $a[7] = 13$. Deci încercăm pe rînd valorile din mînă începînd cu 14. Dacă eliminăm constrîngerea 13 și valoarea 14, obținem vectorul:
+
+\begin{verbatim}
+constr = 1  1  1  4  5  6  6  6  7  7  9 11 -- 18
+mînă   = 3  5  7  8  9 10 11 -- 15 16 17 18 19 20
+C      = 3  4  8  7  7  6  6 --  5  4  3  3  2  1,
+P = 60.963.840
+\end{verbatim}
+
+Observăm că restul valorilor din $C$ nu s-au modificat. Într-adevăr, valorile mai mici decît 14 nu și-au schimbat posibilitățile de amplasare. Valorile mai mari pierd o variantă de amplasare pentru că constrîngerea 13 a dispărut, dar cîștigă una pentru că și valoarea 14 (care ar revendica o poziție) a dispărut. Deci putem simula așezarea primei valori din mînă în $\bigoh(1)$.
+
+Cum tratăm actualizarea? Întrucît $P < k$, trebuie să încercăm și valoarea 15. În vectorii inițiali ștergem constrîngerea 13 și valoarea 15:
+
+\begin{verbatim}
+constr = 1  1  1  4  5  6  6  6  7  7  9 11 -- 18
+mînă   = 3  5  7  8  9 10 11 14 -- 16 17 18 19 20
+C      = 3  4  8  7  7  6  6  5 --  4  3  3  2  1,
+P = 60.963.840
+\end{verbatim}
+
+Observăm ceva în plus: $C[14] = 5$. El a scăzut cu 1 deoarece constrîngerea 13 a dispărut. Celelalte valori nu se modifică, pentru același raționament ca și mai înainte. Deducem regula generală:
+
+\begin{itemize}
+  \item La depunerea unei valori $x$ care  satisface constrîngerea $y \leq x$, $C[z]$ scade cu 1 pentru valorile $z$ cu $y \leq z < x$. În rest, valorile din $C$ nu se modifică.
+\end{itemize}
+
+Așadar, putem actualiza eficient $C$ și $P$ pe măsură ce căutăm valorile de amplasat.
+
+\subsubsection*{Calculul produsului}
+
+Există un mare „dar”. Produsul $P$ al valorilor din $C$ poate depăși reprezentarea. Din fericire, ne interesează doar să știm dacă el este mai mic decît $k$ (caz în care îl scădem din $k$ și încercăm să depunem următoarea valoare) sau mai mare sau egal cu $k$ (caz în care depunem valoarea testată curentă).
+
+O abordare este să menținem efectiv $C$ ca \ccode{std::multiset}, cu excepția valorilor de 1, care sînt elemente neutre la produs. Cînd avem nevoie de produs, îl calculăm naiv. Dacă depășește $k$, returnăm $+\infty$ (sau chiar $k$). Calculul este $\bigoh(\log k)$, căci în cel mult $\log k$ factori vom depăși produsul $k$. Putem chiar să testăm mărimea multisetului și să returnăm $\infty$ dacă el conține mai mult de $\log k$ factori.
+
+\subsubsection*{Optimizarea produsului}
+
+Ca discuție secundară, iată o reprezentare fără STL pentru mulțimea de factori. Ea obține $\bigoh(1)$ pentru inserarea și ștergerea unui factor, dar calculul produsului rămîne $\bigoh(\log k)$. Cîștigul ca timp este cam de 15%.
+
+Ce dorim de fapt? Dorim să știm factorii și frecvențele lor. Asta putem face cu un vector. Dar dorim și să putem itera prin factori ca să-i înmulțim. Pentru asta, stocăm trei vectori:
+
+\begin{itemize}
+  \item Frecvențele factorilor.
+
+  \item O listă cu factorii distincți.
+
+  \item Poziția fiecărui factor în listă (dacă există).
+\end{itemize}
+
+Dacă codăm îngrijit, singurele modificări apar doar în reprezentarea internă a mulțimii de factori.
+
+\subsubsection*{Reprezentarea mîinii}
+
+Ca principiu de inginerie, nu este bine să trîntiți prima structură care vă vine în minte. Corect este să porniți de la operațiile pe care trebuie să le suporte structura. Pentru reprezentarea mîinii, dorim:
+
+\begin{enumerate}
+  \item Să o inițializăm cu toate valorile $1, 2, \dots n$.
+  \item Să găsim cea mai mică valoare mai mare sau egală cu constrîngerea curentă.
+  \item Să iterăm prin valorile următoare, în ordine crescătoare.
+  \item Să ștergem valoarea aleasă în final.
+\end{enumerate}
+
+Sigur, ne putem repezi la \ccode{std::set}, care oferă timp $\bigoh(\log n)$. Dar, cu puțin efort, putem folosi un \textit{disjoint set forest}, care oferă timp $\bigoh(\log^{*} n)$ și reduce timpul de rulare de circa 4 ori.
+
+Observația-cheie este că, la depunerea și la ștergerea unei valori $x$, trebuie să unificăm $x$ cu $x + 1$. Din nou, modificările afectează strict la structura modificată.
+
+\subsubsection*{Un sfat despre abordarea problemelor}
+
+Dacă obțineți 100p cu structuri prefabricate și cod scurt, \textit{kudos}! Dar, dacă primiți TLE, este vital să aveți ochiul format ca să știți ce puteți optimiza. Acest proces de gîndire este relativ general: Oare există o altă structură care rezolvă aceleași operații asimptotic mai rapid?
+
+Odată ce găsiți structura mai eficientă, vă va fi mult mai ușor să o codați dacă separați structura de codul care o apelează. Ideal, chiar și interfața (funcțiile pe care structura le expune) va rămîne nemodificată. Altfel, dacă amestecați reprezentarea internă a structurii cu codul care apelează structura, orice adaptare devine mai grea.
