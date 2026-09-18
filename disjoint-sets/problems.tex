@@ -1,6 +1,6 @@
 \section{Probleme}
 
-\subsection{Problema Restructuring Company (CSES)}
+\subsection{Problema Restructuring Company (Codeforces)}
 \label{problem:restructuring-company}
 
 \href{https://codeforces.com/contest/566/problem/D}{enunț}
@@ -10,3 +10,62 @@ $\bullet$
 Chiar de la citirea enunțului recunoaștem problema ca pe una „servită” de păduri de mulțimi disjuncte. Singura noutate este că operațiile de tipul 2 trebuie procesate eficient, nu în $\bigoh(y - x)$.
 
 Este suficient să folosim un vector în plus, \ccode{end[]}, în care $end[i]$ indică că intervalul $[i, end[i]]$ este cunoscut ca fiind reunit. Aceasta garantează că operațiile de reuniune de interval necesită un efort total de $\bigoh(n \log^{*} n)$. De exemplu, odată ce am unificat pozițiile $i, i + 1 și i + 2$ nu vom mai consulta niciodată poziția $i + 1$ (decît, desigur, dacă primim o operație care începe de acolo).
+
+
+\subsection{Problema Trampoline (infO(1) Cup 2020)}
+\label{problem:trampoline}
+
+\href{https://kilonova.ro/problems/3275}{enunț}
+$\bullet$
+\hyperref[code:trampoline]{surse}
+
+\subsubsection*{Soluția cu binary lifting}
+
+Problema se petrece într-o matrice uriașă ($10^9 \times 10^9$). Multe din aceste probleme se rezolvă cu baleiere (engl. \textit{scan line}).
+
+Editorialul propune următoarea abordare (prima care mi-a venit și mie, este drept). Să facem următoarele observații teoretice referitoare la o  cale, $(r_1,c_1)-(r_2,c_2)$:
+
+\begin{enumerate}
+  \item Dacă avem de coborît, întotdeauna merită să coborîm pe prima trambulină disponibilă. Nu avem niciun motiv să așteptăm și să coborîm mai tîrziu, pe o trambulină mai la dreapta. Tot acolo ajungem.
+
+  \item Calea este fezabilă doar dacă există trambuline pe rîndurile $r_1, r_1 + 1, \dots, r_2 - 1$, pe coloane nedescrescătoare.
+
+  \item Calea este fezabilă dacă ultima trambulină ne lasă pe rîndul  $r_2$ pe o coloană cel mult egală cu $c_2$.
+\end{enumerate}
+
+Atunci, putem sorta trambulinele descrescător după coloană. Similar, sortăm interogările descrescător după $c_1$. Apoi le procesăm interclasat, de la dreapta la stînga.
+
+Cînd întîlnim o trambulină la ($r,c$), notăm cîte niveluri poate ea să coboare. Răspunsul este 1 + cîte niveluri poate să coboare ultima trambulină întîlnită pe rîndul $r + 1$, sau doar 1 dacă nu există o trambulină pe rîndul $r + 1$. Practic, trambulina curentă își notează indicele trambulinei de pe rîndul $r + 1$. Putem vedea acești indici ca pe niște pointeri la părinți, ceea ce duce la o structură arborescentă printre trambuline.
+
+Cînd întîlnim o interogare $(r_1,c_1)-(r_2,c_2)$, tratăm separat cazurile speciale cum ar fi $r_1 > r_2$ sau $r_1 = r_2$. În rest, vrem să știm dacă trambulina curentă de pe rîndul $r_1$ poate să coboare $r_2 - r_1$ rînduri. Mai ales, vrem să știm \textit{la ce coloană} ne lasă ultima trambulină, cea care ne coboară de la nivelul $r_2 - 1$ la $r_2$: ne lasă la o coloană cel mult egală cu $c_2$?
+
+Așadar, pentru fiecare trambulină, vrem să aflăm indicele trambulinei care este al $r_2 - r_1$-lea strămoș. Putem afla această informație cu \textit{binary lifting}, ca la multe alte probleme de arbori.
+
+\subsubsection*{Soluția cu \textit{disjoint sets}}
+
+Să mai facem o observație teoretică:
+
+\begin{enumerate}
+  \setcounter{enumi}{3}
+  \item Dacă, în timp ce procesăm două interogări, ajungem cu ele în același punct, traiectoria lor viitoare va fi identică.
+\end{enumerate}
+
+Prin asta vrem să spunem că ambele căi vor prefera, la fiecare moment, prima trambulină posibilă. Pentru completitudine, menționăm că fiecare dintre căi se va opri din folosit trambuline după ce ajunge pe rîndul-destinație. Vom clarifica acest aspect. Dar important este că, grupînd interogările, le putem lăsa pe toate să coboare simultan printr-o trambulină, oricîte ar fi. Recunoaștem unificările specifice DSF.
+
+Concret, normalizăm numerele rîndurilor (păstrăm originalele). Facem o baleiere pe coloane, de la stînga la dreapta și de sus în jos. Pentru coloana curentă $c$, vom menține pentru fiecare rînd $r$ mulțimea de interogări aflate în prezent la $(r,c)$. Procesăm trei tipuri de evenimente:
+
+\begin{enumerate}
+  \item O interogare nouă începe la $(r,c)$. Adăugăm indicele acelei interogări la mulțimea de pe rîndul $r$. \textit{Exemplu}: Dacă pe rîndul $r$ aveam interogările 2, 10, 13, unite într-o mulțime disjunctă cu reprezentatul 10, și dacă la $(r,c)$ începe interogarea cu indicele 8, unificăm mulțimea lui 10 cu mulțimea lui 8 (care îl conținea doar pe 8).
+
+  \item O trambulină se află la $(r,c)$. Dacă rîndurile $r$ și $r+1$ aveau coordonate consecutive înainte de normalizare, toate interogările de la $r$ coboară la $r+1$. Concret, unificăm mulțimile celor două rînduri, iar noua coordonată pentru toate interogările va fi $r+1$. Rîndul $r$ rămîne fără interogări (deocamdată).
+
+  \item O interogare se termină la $(r,c)$. Verificăm pe ce rînd se află mulțimea disjunctă care conține acea interogare. Răspunsul este \textit{Yes} dacă și numai dacă rîndul este cel puțin egal cu $r$.
+\end{enumerate}
+
+O clarificare pentru 3. Noi lăsăm interogările să coboare oricît de jos. Cînd dăm peste finalul interogării, ne întrebăm: a reușit interogarea să coboare \textbf{cel puțin} pînă la linia $r$ înainte să ajungă la coloana $c$? Dacă da, atunci desigur am fi putut ajunge și \textbf{exact} la $(r,c)$ dacă omiteam niște trambuline. Astfel evităm să separăm mulțimi odată unificate.
+
+Ordonarea evenimentelor este adesea importantă, dacă avem mai multe la aceleași coordonate. De exemplu, poate începe o interogare nouă care apoi folosește imediat trambulina de la aceleași coordonate.
+
+Un caz particular: algoritmul nu tratează cazurile în care $r_1 > r_2$ sau $c_1 > c_2$. Acestea trebuie filtrate de la intrare.
+
+Codul fiecărei funcții este elementar. Nu folosim decît DSF și sortări, fără arbori sau \textit{binary lifting}.
