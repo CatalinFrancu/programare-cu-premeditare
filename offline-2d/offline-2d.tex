@@ -1,0 +1,51 @@
+\chapter{Structuri 2D offline}
+
+Acest minicapitol prezintă o clasă de structuri de date care pot procesa operații pe perechi de puncte cu valori într-un interval $[1, n]$ unde $n \sim 10^5$. Structurile obțin timp $\bigoh(n \log^2 n)$ și folosesc memorie $\bigoh(n \log n)$. Aceste structuri se aplică doar în cazul în care datele sînt cunoscute în avans (\textit{offline}). Ele se bazează pe structurile deja studiate (arbori de intervale și arbori indexați binar). Ca să nu tot menționăm „AINT sau AIB” peste tot, ne vom referi doar la AINT-uri.
+
+\section{Precalcularea}
+
+Structurile funcționează astfel. Pe una dintre axe, să spunem pe $Ox$, construim un arbore de intervale $A$. Așa cum ne așteptăm, într-un nod oarecare (frunză sau nod intern), acest arbore va stoca informații despre toate punctele ale căror $x$ se încadrează în intervalul subîntins de nod.
+
+Pe $Oy$ nu putem aloca în fiecare dintre nodurile lui $A$ cîte un AINT de mărime $n$, căci nu ne permitem memorie $\bigoh(n^2)$. În loc de aceasta, facem o trecere prin datele de intrare și colectăm, pentru fiecare nod din $A$, toate coordonatele $y$ distincte ale punctelor pe care le acoperă nodul. Apoi alocăm un AINT secundar în acest nod, doar de mărimea necesară. În paralel, ținem în nod și lista sortată a coordonatelor $y$. Arborele secundar este construit peste aceste coordonate.
+
+Suma mărimilor arborilor secundari este $\bigoh(n \log n)$, pentru că fiecare punct va fi acoperit de $\log n$ noduri din $A$, deci va contribui cu +1 la mărimea arborilor secundari din acele noduri.
+
+Rezumînd, precalcularea:
+
+\begin{itemize}
+  \item Parcurge toate punctele de la intrare.
+  \item Pentru fiecare punct $P(x, y)$, parcurge toți strămoșii poziției $x$ în $A$.
+  \item În fiecare nod strămoș, notează coordonata $y$.
+  \item La final, sortează lista de coordonate $y$ din fiecare nod și inițializează cîte un AINT secundar în fiecare nod.
+\end{itemize}
+
+Care este complexitatea precalculării? O putem calcula și cu metode elementare. Dar mai instructiv este să apelăm la \href{https://en.wikipedia.org/wiki/Master_theorem_\%28analysis_of_algorithms\%29}{The Master Theorem}. Fie $T(k)$ efortul necesar pentru a preprocesa $k$ puncte. Presupunînd o distribuire relativ uniformă a punctelor pe $x$, obținem
+
+$$T(k) = \bigoh(k \log k) + 2T(k/2)$$
+
+Regăsim aici cazul 2 al \textit{The Master Theorem}, deoarece $c = c_{crit} = \log_2 2 = 1$. Așadar,
+
+$$T(n) = \bigoh(n \log^2 n)$$
+
+\section{Procesarea efectivă}
+
+Abia apoi procesăm efectiv punctele și facem operațiile specifice problemei. Să considerăm operația de actualizare într-un punct. De exemplu, problema imediat următoare, Festival, atribuie fiecărui punct cîte o valoare. Pentru a actualiza valoarea unui punct $P(x, y)$,
+
+\begin{itemize}
+  \item Vizităm toți strămoșii poziției $x$ în $A$.
+  \item În fiecare nod strămoș, căutăm binar poziția lui $y$ în lista de $y$-i a nodului.
+  \item La acea poziție actualizăm AINT-ul secundar conform nevoilor problemei.
+\end{itemize}
+
+Complexitatea acestei operații este $\bigoh(\log^2 n)$ pentru că trebuie să actualizăm $\bigoh(\log n)$ structuri secundare și fiecare actualizare necesită $\bigoh(\log n)$.
+
+Pentru operația de interogare 2D într-un dreptunghi $(x_1, y_1) - (x_2, y_2)$,
+
+\begin{itemize}
+  \item Descompunem $[x_1, x_2]$ în intervale ca în orice AINT.
+  \item În fiecare interval căutăm binar în lista de $y$-i cea mai mică coordonată $y_{lo} \geq y_1$ și cea mai mare coordonată $y_{hi} \leq y_2$.
+  \item Căutăm rezultatul dorit în arborele secundar pe intervalul $[y_{lo}, y_{hi}]$.
+  \item Agregăm aceste rezultate pentru a obține răspunsul la operație.
+\end{itemize}
+
+Și această operație are tot complexitatea $\bigoh(\log^2 n)$ din același motiv ca mai sus.
