@@ -1,0 +1,12 @@
+\section{Probleme}
+
+\subsection{Problema Restructuring Company (CSES)}
+\label{problem:restructuring-company}
+
+\href{https://codeforces.com/contest/566/problem/D}{enunț}
+$\bullet$
+\hyperref[code:restructuring-company]{sursă}
+
+Chiar de la citirea enunțului recunoaștem problema ca pe una „servită” de păduri de mulțimi disjuncte. Singura noutate este că operațiile de tipul 2 trebuie procesate eficient, nu în $\bigoh(y - x)$.
+
+Este suficient să folosim un vector în plus, \ccode{end[]}, în care $end[i]$ indică că intervalul $[i, end[i]]$ este cunoscut ca fiind reunit. Aceasta garantează că operațiile de reuniune de interval necesită un efort total de $\bigoh(n \log^{*} n)$. De exemplu, odată ce am unificat pozițiile $i, i + 1 și i + 2$ nu vom mai consulta niciodată poziția $i + 1$ (decît, desigur, dacă primim o operație care începe de acolo).
