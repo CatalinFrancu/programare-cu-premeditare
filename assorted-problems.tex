@@ -107,6 +107,73 @@ Algoritmul este $\bigoh(n^3)$, dar în practică el se mișcă fulger, deoarece 
 Am dublat șirul $Y$ pentru că urmează să facem căutări din $X$ în $Y$, căutări care este posibil să se înfășoare peste finalul lui $Y$.
 
 
+\section{Problema Triunghi (Lot 2024)}
+\label{problem:triunghi}
+
+\href{https://kilonova.ro/problems/2797}{enunț}
+$\bullet$
+\hyperref[code:triunghi]{sursă}
+
+Problema este relativ directă și totuși înșelătoare: în concurs au existat doar 5 scoruri de 100 și unul de 78!
+
+\subsection{Soluția prin înjumătățire}
+
+Dat fiind că minimul nu are inversă, nu cred să existe soluții bazate pe diferențe de arii. O soluție bazată pe compunerea de subprobleme este însă mult mai facilă. În esență, un triunghi de mărime $k$ se descompune în două triunghiuri de mărime $k / 2$ și un pătrat de mărime $k / 2$. Este nevoie de atenție la cazurile pare și impare. De exemplu:
+
+\begin{itemize}
+  \item Un triunghi de mărime 20 se compune din triunghiuri și pătrate de mărime 10.
+  \item Un triunghi de mărime 21 se compune din triunghiuri de mărime 10 și un pătrat de mărime 11.
+\end{itemize}
+
+Mai important,
+
+\begin{itemize}
+  \item Un pătrat de mărime 20 se compune din patru pătrate de mărime 10.
+  \item Un pătrat de mărime 21 nu se descompune frumos în pătrate mai mici.
+\end{itemize}
+
+Pentru acest ultim caz, editorialul propune să folosim patru pătrate de latură 10, o linie, o coloană și un element suplimentar. Așadar, este nevoie să calculăm patru elemente: triunghiuri, pătrate, linii și coloane. Soluția mea este posibil mai simplă:
+
+\begin{itemize}
+  \item Un pătrat de mărime 21 se descompune în două pătrate de mărime 11 și două pătrate de mărime 10, care cauzează exact o celulă-duplicat.
+\end{itemize}
+
+La prima vedere, fiecare din aceste valori înjumătățite (10 și 11) poate continua să se ramifice independent. De fapt, numărul variantelor nu crește dincolo de 2. Iată un exemplu pentru $k = 183$. Pentru a afla informațiile de pe o linie este suficient să avem informațiile din linia următoare.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{rrr}
+    mărimea triunghiului & mărimea pătratului 1 & mărimea pătratului 2\\
+    \hline
+    183 & --- & --- \\
+    91 & 92 & --- \\
+    45 & 46 & --- \\
+    22 & 23 & --- \\
+    11 & 11 & 12 \\
+    5 & 5 & 6 \\
+    2 & 2 & 3 \\
+    1 & 1 & 2 \\
+    \hline
+  \end{tabular}
+
+  \caption{Toate mărimile de triunghiuri și pătrate necesare pentru $k=183$.}
+\end{table}
+
+Așadar, la fiecare nivel al recurenței calculăm o mărime de triunghi și cel mult două mărimi de pătrate. Logica recurenței se complică ușor, în special dacă dorim să calculăm informațiile \textit{in-place}.
+
+\subsection{Detalii de implementare}
+
+Este ciudat că triunghiul este orientat către dreapta-sus. La descompunere, linia scade, iar coloana crește. Am implementat și această soluție, dar mai naturală mi se pare cea în care atît linia, cît și coloana cresc. Pentru aceasta, am citit și am afișat matricea oglindită (cu prima linie ultima).
+
+Limita pe Kilonova este destul de strînsă. Soluția mea cu citire/scriere rapidă necesită 360 ms, dar cea cu citire normală necesită 820 ms. La concurs, amintiți-vă să faceți întotdeauna un calcul sumar pentru mărimea fișierului de intrare și să accelerați citirea dacă ajută. În acest caz, 4 milioane de numere × 6 cifre cu spații = 28 MB. Și fișierele de ieșire ajungeau la 23 MB.
+
+Nu avem memorie pentru $\bigoh(n \log n)$ matrice, deci este vital să reținem două niveluri. Se poate și cu un singur nivel, dacă suprascriem informațiile în ordinea corectă.
+
+\subsection{Misterioasa soluție în \texorpdfstring{$\bigoh(n^2)$}{O(n^2)}}
+
+Editorialul menționează o soluție pătratică. Ideea de bază este să împărțim matricea în pătrate de latură $k / 2$ și să precalculăm informații. Eu nu sînt convins că funcționează.
+
+
 \section{Problema Takara (Baraj ONI 2019)}
 \label{problem:takara}
 
