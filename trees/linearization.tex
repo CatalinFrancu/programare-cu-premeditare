@@ -42,6 +42,7 @@ Dacă vreți, \ccode{time} este un metronom care bate la fiecare parcurgere a un
 O aplicație directă a timpilor de intrare și de ieșire este că putem decide în $\bigoh(1)$ dacă un nod $u$ este strămoș al altui nod $v$. Este necesar ca $t_i[u] < t_i[v] < t_o[v] < t_o[u]$. Inegalitatea poate fi strictă ($<$) sau permisivă ($\leq$) în funcție de varianta aleasă mai sus și dacă dorim ca $u$ să fie considerat propriul său strămoș sau nu.
 
 \section{Liniarizarea. Tipuri de liniarizare}
+\label{sec:linearization-types}
 
 Liniarizarea unui arbore este un vector. Obținem acest vector printr-o parcurgere DFS în care emitem, la anumite momente, numărul nodului curent. Acest instrument puternic ne permite să rezolvăm probleme pe arbori folosind structuri familiare pe vectori: AIB, arbori de segmente, căutări binare, algoritmul lui Mo...
 

@@ -7,7 +7,7 @@
 $\bullet$
 \hyperref[code:cut-and-paste]{sursă}
 
-Problema este o aplicație directă a treap-urilor implicite. Creăm un treap cu o literă în fiecare nod. Pentru o operație $(a, b)$, este suficient să spargem treapul în trei porțiuni, respectiv $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Apoi alipim aceste porțiuni în ordinea $XZY$.
+Problema este o aplicație directă a treapurilor implicite. Creăm un treap cu o literă în fiecare nod. Pentru o operație $(a, b)$, este suficient să spargem treapul în trei porțiuni, respectiv $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Apoi alipim aceste porțiuni în ordinea $XZY$.
 
 Remarcăm că această problemă se mulează perfect peste implementarea cu \textit{split} și \textit{merge}, dar nu și peste cea cu rotații.
 
@@ -30,7 +30,7 @@ Să pornim de la un treap implicit, căci conceptual memorăm valori dintr-un ve
 
 Să vedem acum cum implementăm cele două operații.
 
-Pentru \ccode{range_sum(a, b)}, putem să spargem treap-ul ca și în problema anterioară în $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Răspunsul va fi valoarea \ccode{subtree_sum} din $Y$. Apoi alipim la loc fragmentele în ordinea inițială.
+Pentru \ccode{range_sum(a, b)}, putem să spargem treapul ca și în problema anterioară în $X = [1, a-1]$, $Y = [a, b]$ și $Z = [b + 1, n]$. Răspunsul va fi valoarea \ccode{subtree_sum} din $Y$. Apoi alipim la loc fragmentele în ordinea inițială.
 
 Pentru \ccode{range_reverse(a, b)}, procedăm la fel, dar pe rădăcina lui $Y$ setăm \ccode{flip} la valoarea 1.
 
@@ -51,9 +51,9 @@ Am încercat să construiesc un treap implicit cu costurile tricourilor, iar în
 
 Problema nu include un editorial, dar am găsit ideea rezolvării în \href{https://codeforces.com/blog/entry/46324#comment-307625}{acest comentariu}. Ținem \textbf{un treap de bugete}, inițializat cu bugetele inițiale ale clienților, ordonate. Apoi evaluăm tricourile în ordinea de mai sus. Întrebarea este cum actualizăm rapid clienții care mai au bani să cumpere tricoul $i$. Dorim să adăugăm $+1$ la numărul de tricouri și $-c_i$ la bugetul rămas pentru toți acești clienți.
 
-Pentru tricoul curent $i$, de cost $c_i$, să apelăm \ccode{split(c[i])}. Am numit treap-urile rezultate $T_N$ (de la \textit{no buy} / nu cumpăra) și respectiv $T_B$ (de la \textit{buy} / cumpără). Pe $T_B$ notăm informația \textit{lazy} că toți clienții au $+1$ tricou și $-c_i$ la buget. Dar acum trebuie să refacem treap-ul ordonat după noile bugete. Cum să procedăm? Operația \ccode{merge()} funcționează doar cînd $T_N$ și $T_B$ acoperă intervale disjuncte de chei (orice cheie din $T_N$ este mai mică sau egală cu orice cheie din $T_B$). Dar, după ce toți clienții din $T_B$ au plătit $c_i$, cheile pot fi intercalate.
+Pentru tricoul curent $i$, de cost $c_i$, să apelăm \ccode{split(c[i])}. Am numit treapurile rezultate $T_N$ (de la \textit{no buy} / nu cumpăra) și respectiv $T_B$ (de la \textit{buy} / cumpără). Pe $T_B$ notăm informația \textit{lazy} că toți clienții au $+1$ tricou și $-c_i$ la buget. Dar acum trebuie să refacem treapul ordonat după noile bugete. Cum să procedăm? Operația \ccode{merge()} funcționează doar cînd $T_N$ și $T_B$ acoperă intervale disjuncte de chei (orice cheie din $T_N$ este mai mică sau egală cu orice cheie din $T_B$). Dar, după ce toți clienții din $T_B$ au plătit $c_i$, cheile pot fi intercalate.
 
-Soluția este să spargem din nou $T_B$ în valori $<c_i$ și $\geq c_i$ (pe noile bugete). Să numim aceste treap-uri $T_P$ (de la \textit{poor} / sărac) și $T_R$ (de la \textit{rich} / bogat). În cuvinte,
+Soluția este să spargem din nou $T_B$ în valori $<c_i$ și $\geq c_i$ (pe noile bugete). Să numim aceste treapuri $T_P$ (de la \textit{poor} / sărac) și $T_R$ (de la \textit{rich} / bogat). În cuvinte,
 
 \begin{itemize}
   \item $T_N$ sînt clienți cu bugete din $[0,c_i)$, care nu au cumpărat tricoul $i$.
@@ -127,3 +127,82 @@ Nu insistăm ca blocurile să aibă fix lungime $\sqrt{n}$, ci le lăsăm să se
 Pe fiecare bloc menținem codul hash al fragmentului de permutare din acel bloc. La o modificare de scor, recalculăm în $\bigoh(\sqrt{n})$ codul hash al celor (cel mult) două blocuri afectate. După fiecare modificare, recalculăm codul hash al întregii permutări combinînd codurile celor $\bigoh(\sqrt{n})$ fragmente după aceeași regulă ca mai sus.
 
 Cele două soluții au timpi practic egali, ceea ce arată că treapurile au constantă cam proastă.
+
+
+\subsection{Problema Roata Norocului (Lot 2024)}
+\label{problem:roata-norocului}
+
+\href{https://kilonova.ro/problems/2804}{enunț}
+$\bullet$
+\hyperref[code:roata-norocului]{sursă}
+
+\subsubsection*{Costul comprimării unui arbore}
+
+Să considerăm cazul unui arbore-stea cu 5 noduri, cu centrul de valoare 8 și vecinii de valori 6, 10, 20 și 30. Să analizăm două strategii. În prima, unim 8 cu vecinii mai scumpi, apoi cu cel mai ieftin.
+
+\begin{itemize}
+  \item Unește 10-8, cost 2.
+  \item Unește 20-8, cost 12.
+  \item Unește 30-8, cost 22.
+  \item Unește 8-6, cost 2.
+  \item Cost total 38.
+\end{itemize}
+
+În a doua strategie, unim 8 cu 6 cîndva mai devreme:
+
+\begin{itemize}
+  \item Unește 10-8, cost 2.
+  \item Unește 8-6, cost 2.
+  \item Unește 20-6, cost 14.
+  \item Unește 30-6, cost 24.
+  \item Cost total 42.
+\end{itemize}
+
+Pare că rentează să unim fiecare nod cu vecinii săi mai scumpi decît el înainte de a-l uni cu unul mai mic. Pentru a ne verifica intuiția, să privim coloana stîngă în listele de mai sus. Toate valorile apar exact o dată, cu excepția minimului (6). Este normal, căci un nod apare în stînga în momentul cînd este eliminat. Așadar, suma coloanei stîngi este constantă. Atunci, pentru a minimiza costul, trebuie să maximizăm coloana dreaptă. De aceea vom amîna să eliminăm un nod pînă cînd devine inevitabil.
+
+(Ca fapt divers, problema în forma inițială se referea la un singur arbore, fără actualizări. În acel caz, o strategie suficientă este: la fiecare pas, comprimăm muchia care maximizează minimul dintre cele două noduri.)
+
+Rezultă că fiecare nod va contribui la coloana dreaptă de atîtea ori cîți vecini mai scumpi decît el are. La egalitate putem departaja oricum, cu condiția să nu facem dublă contabilitate, ci exact unul dintre noduri să-l contorizeze pe celălalt. Deci formula pentru cost este:
+
+$$cost(u) = \sum_{x\ \text{în subarbore}} V_x - \min_{x\ \text{în subarbore}} V_x - \sum_{x\ \text{în subarbore}}V_x \cdot B_x$$
+
+Am notat cu $B_x$ numărul de vecini ai lui $x$ mai scumpi decît $x$. În funcție de implementare, poate fi nevoie să scădem 1 din $B_x$ însuși, pentru a-l exclude pe părintele lui $x$. Implementarea de mai jos evită acest caz.
+
+\subsubsection*{Operațiile necesare}
+
+Oricînd dorim să proiectăm o structură de date, pornim de la întrebarea: ce vrem să aflăm?
+
+Primii doi termeni ai formulei, adică suma și minimul din subarbore, cu actualizări, sînt partea ușoară a problemei. Vom face o \hyperref[sec:linearization-types]{liniarizare DFS}, peste care construim un arbore de intervale de sume și de minime, cu actualizări punctuale și cu interogări pe interval. Dacă notăm cu $t_i[u]$ și $t_o[u]$ timpii de intrare și de ieșire din DFS, atunci aflăm primii doi termeni ai formulei făcînd interogări pe intervalul $[t_i[u], t_o[u]]$.
+
+Pentru ultimul termen al formulei, eu am reorganizat informația astfel. Fiecare muchie $(x,y)$ are o \textbf{contribuție}, desigur egală cu $\min(V_x, V_y)$. Dacă însumăm contribuțiile tuturor muchiilor din subarbore, ajungem exact la suma dorită: valoarea $V_x$ luată de atîtea ori de cîte ori $x$ este minim pe o muchie.
+
+Fiecare nod $u$ este responsabil să stocheze \textbf{suma contribuțiilor pe muchiile de la $u$ la fiii lui $u$}. Să numim această cantitate \textbf{contribuția unui nod}. Putem stoca contribuțiile nodurilor tot în arborele de intervale. Atunci contribuția totală a unui subarbore (acel ultim termen al formulei) este tot o simplă sumă pe interval.
+
+\subsubsection*{Interogări}
+
+Răspunul la o interogare este așadar cumulul a trei valori într-un arbore de intervare elementar: suma valorilor, minus valoarea minimă, minus suma contribuțiilor.
+
+\subsubsection*{Actualizări}
+
+Desigur, actualizarea valorii unui nod în arborele de intervale este elementară. Dar cum actualizăm contribuția unui nod? Să vedem ce contribuții se schimbă pe muchii la modificarea valorii unui nod $u$ din $V_u$ în $V'_u$.
+
+\begin{enumerate}
+  \item Suma contribuțiilor dintre $u$ și fiii lui $u$, stocată în $u$.
+  \item Contribuția dintre $u$ și părintele său, stocată în părinte (dacă există).
+\end{enumerate}
+
+Pentru (1), să presupunem că valoarea crește, deci $V_u < V'_u$. Cazul în care valoarea scade se calculează la fel, doar cu semn schimbat.
+
+\begin{itemize}
+  \item Pentru fiii $x$ cu $V_x < V_u$ contribuția nu se schimbă: contribuția pe acele muchii continuă să fie $V_x$.
+
+  \item Pentru fiii $x$ cu $V_u \leq V_x < V'_u$ contribuția era $V_u$ și acum devine $V_x$. Să spunem că există $k$ astfel de fii. Pentru a actualiza contribuția nodului $u$, vom scădea $k \cdot V_u$ și vom adăuga suma valorilor acestor fiii.
+
+  \item Pentru fiii $x$ cu $V'_u < V_x$ contribuția era $V_u$ și acum devine $V'_u$. Să spunem că există $l$ astfel de fii. Pentru a actualiza contribuția nodului $u$, vom aduna $l \cdot (V'_u - V_u)$.
+\end{itemize}
+
+Așadar, avem nevoie de o structură care să ne dea rapid numărul de elemente dintr-un interval de valori dat și suma valorilor acestora.
+
+Pentru (2), putem calcula naiv contribuția, fiind vorba de o singură muchie. Apoi este nevoie să-i spunem părintelui: în lista ta de valori se află o valoare $V_u$. Schimbă acea valoarea în $V'_u$.
+
+Din păcate, nu cunosc nicio structură de date pentru aceste nevoie mai simplă decît un treap. Pe lîngă augmentarea nodurilor din treap cu numărul de elemente din subarbore, avem nevoie și de augmentarea cu suma elementelor. Întrucît fiecare nod își construiește un treap cu fiii, suma mărimilor treapurilor este $n - 1$.

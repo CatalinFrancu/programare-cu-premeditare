@@ -169,7 +169,7 @@ Limita pe Kilonova este destul de strînsă. Soluția mea cu citire/scriere rapi
 
 Nu avem memorie pentru $\bigoh(n \log n)$ matrice, deci este vital să reținem două niveluri. Se poate și cu un singur nivel, dacă suprascriem informațiile în ordinea corectă.
 
-\subsection{Misterioasa soluție în \texorpdfstring{$\bigoh(n^2)$}{O(n^2)}}
+\subsection{Misterioasa soluție în \texorpdfstring{$\bigoh(n^2)$}{O(n2)}}
 
 Editorialul menționează o soluție pătratică. Ideea de bază este să împărțim matricea în pătrate de latură $k / 2$ și să precalculăm informații. Eu nu sînt convins că funcționează.
 
@@ -210,7 +210,7 @@ Ce deducem de aici? Că valoarea lui $D_{i, j}$ este minimul tuturor valorilor d
   & \min_{p < k \leq j} \{ C_k + D_{i, k-1} \} \big\}
 \end{align*}
 
-\subsection{Reducerea la \texorpdfstring{$\bigoh(n^2)$}{O(n^2)}}
+\subsection{Reducerea la \texorpdfstring{$\bigoh(n^2)$}{O(n2)}}
 
 Acum \textbf{aproape} putem să gestionăm corect trecerea de la $D_{i,j}$ la $D_{i,j+1}$. Ce se schimbă în zona roșie de pe linia $i$? Mai facem o observație privind natura matricei $D$: valoarea lui $p$ nu poate să scadă.
 
