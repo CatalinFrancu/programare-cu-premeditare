@@ -690,3 +690,58 @@ Atunci obținem ce dorim, adică:
 \subsubsection*{Detaliu de implementare}
 
 Evaluatorul ne impune să nu folosim memorie globală, ceea ce are sens, deoarece cu memorie globală funcțiile \ccode{descuie_grajdul} și \ccode{dreseaza_cal} ar putea comunica direct între ele, șuntînd funcția \ccode{intreaba_cal} și făcînd problema banală. Din păcate, evaluatorul este prea zelos. El interzice complet declararea de \ccode{struct}-uri sau clase (mă întreb de ce!). De aceea, implementarea anexată este lizibilă, dar nu se va compila. Am rescris \href{https://kilonova.ro/submissions/772576}{sursa} pentru a obține 100p, dar o consider ilizibilă (cel puțin după standardele mele).
+
+
+\section{Problema 6 de Pentagrame (Lot 2024)}
+\label{problem:6-de-pentagrame}
+
+\href{https://kilonova.ro/problems/2801}{enunț}
+$\bullet$
+\hyperref[code:6-de-pentagrame]{sursă}
+
+De această problemă nu sînt mîndru. Am scos-o la capăt, dar este lungă și lentă. Soluția oficială folosește doar un arbore de intervale. Eu folosesc și un AIB modificat.
+
+\subsection{Observații teoretice}
+
+Fie $A$, $B$, $C$ și $D$ cadranele de sus-stînga, sus-dreapta, jos-stînga și respectiv jos-dreapta. Să considerăm un $x$ fixat și să vedem cum evoluează partiționările pe măsură ce $y$ crește. Cînd $y = 1$, în mod evident minimul va fi 0 și se va afla în $C$ sau în $D$, iar maximul va fi pozitiv și se va afla în $A$ sau în $B$. Cînd $y = n - 1$ situația se va inversa. Așadar, trebuie să existe:
+
+\begin{itemize}
+  \item o primă coordonată $y_1$ unde minimul urcă (trece din $C/D$ în $A/B$);
+  \item o primă coordonată $y_2$ unde maximul coboară (trece din $A/B$ în $C/D$).
+\end{itemize}
+
+Mai mult decît atît, odată ce minimul urcă, el va rămîne sus, căci $A$ și $B$ continuă să scadă, pe cînd $C$ și $D$ continuă să crească. Similar pentru maxim.
+
+Mai este o observație-cheie care mie mi-a scăpat pînă după încheierea taberei de la Cluj. \emoji{knocked-out-face} Să spunem că la coordonata $y_1$ minimul urcă în cadranul $A$. Atunci pe intervalul dintre $y_1$ și $y_2$ minimul va rămîne în $A$, iar maximul va rămîne în $B$ pînă cînd maximul va coborî. Cele două nu pot face schimb de locuri, căci $A$ continuă să scadă și ar trebui ca $B$ să scadă și mai mult. Or, în clipa în care $B$ nu mai este maxim, înseamnă că maximul a coborît în $C/D$.
+
+Așadar iau naștere patru cazuri, tratate similar:
+
+\begin{enumerate}
+  \item $y_1 \leq y_2$, adică minimul urcă primul.
+
+  \begin{enumerate}
+    \item Minimul este în $A$, iar maximul este în $B$.
+    \item Minimul este în $B$, iar maximul este în $A$.
+  \end{enumerate}
+
+  \item $y_1 > y_2$, adică maximul coboară primul.
+
+  \begin{enumerate}
+    \item Minimul este în $C$, iar maximul este în $D$.
+    \item Minimul este în $D$, iar maximul este în $C$.
+  \end{enumerate}
+\end{enumerate}
+
+Nu trebuie să uităm despre ce se întîmplă în afara intervalului $[y_1, y_2]$. Aceste cazuri sînt mai ușoare. Pentru $y < y_1$, costul partiționării crește pe măsură ce $y$ scade, căci $A$ și $C$ se dezechilibrează, la fel și $B$ și $D$. Similar, pentru $y > y_2$, costul partiționării crește pe măsură ce $y$ crește. Așadar, putem testa costul partiționării doar în punctele $y_1 - 1$ și $y_2 + 1$. Rămîne partea grea a problemei, testarea între $y_1$ și $y_2$.
+
+\subsection{Structuri de date}
+
+Pentru a afla costul partiționării într-un punct arbitrar, eu am folosit două AIB-uri pentru valorile punctelor înainte, respectiv după $x$. Cu aceeași structură și cu o căutare binară specifică AIB-ului putem căuta pozițiile unde minimul urcă, respectiv unde maximul coboară.
+
+Să considerăm cazul 2.2 din cele patru de mai sus. Care este costul minim al unei partiționări? Avînd în vedere că maximul este în $C$ și minimul în $D$, este suficient să menținem valoarea $C-D$ la fiecare $y$ și să aflăm minimul din $C-D$ pe intervalul $[y_1, y_2]$. Sună a arbore de intervale! Haideți să vedem și cum facem actualizarea.
+
+Vă reamintesc că $C$ și $D$ sînt sume parțiale ale greutăților pentru coordonate $\leq y$, la stînga și respectiv la dreapta lui $x$. Cînd $x$ avansează cu 1, toate punctele care au coordonata egală cu noul $x$ trec din $D$ în $C$. Pentru un punct $P(x_p, y_p, val_p)$, diferența între $C$ și $D$ crește cu $2 \cdot val_p$, iar această creștere afectează cadranele $C$ și $D$ pentru toate partiționările la coordonate $\geq y_p$.
+
+Așadar, avem într-adevăr nevoie de un arbore de intervale cu adăugare pe interval și minim pe interval. Pentru cazul cu minimul în $C$ și maximul în $D$, toate valorile din aint vor fi negative, deci vom avea nevoie de „cea mai puțin negativă” valoare, adică de maxim. Iar pentru minimul și maximul în $A$ și $B$ avem nevoie tot de un arbore de intervale cu sumă pe interval, doar că acum o operație la coordonata $y_p$ va afecta coordonatele $\leq y_p$.
+
+Ca detaliu de implementare, am implementat arborele de intervale și \href{https://kilonova.ro/submissions/376728}{iterativ}. Spre surprinderea mea, sursa este de două ori mai lentă!
