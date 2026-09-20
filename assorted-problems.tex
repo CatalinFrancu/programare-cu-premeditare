@@ -330,6 +330,55 @@ Putem trata simplu și unitar toate aceste cazuri:
 Sursa -- nu vă mint -- n-a fost ușor de scris. M-am chinuit mai mult decît era necesar la acest ultim pas, al ștergerii seriilor de lungime 0. Dar, după cum am mai spus, la ONI și chiar și la Baraj este important să putem exprima în cod niște idei rezonabil de grele.
 
 
+\section{Problema As de Spade (Lot 2024)}
+\label{problem:as-de-spade}
+
+\href{https://kilonova.ro/problems/2806}{enunț}
+$\bullet$
+\hyperref[code:as-de-spade]{surse}
+
+\href{https://github.com/roalgo-discord/Romanian-Olympiad-Solutions/blob/main/Baraj\%20\%2B\%20Lot\%20Seniori\%20(IOI\%20team\%20selection\%20tests)/2024/Lot\%202\%20Seniori\%202024.pdf}{Editorialul}, la care mi-am adus și eu o contribuție, include două soluții. Prima dintre ele folosește căutarea binară, înlocuind interogările din enunț cu interogări de tipul: cîte numere de lungime $l$ încap înainte de poziția $K$? Cea de-a doua soluție, pe care o vom studia aici, procedează mai „băbește”, compunînd cifră cu cifră, în baza 10, răspunsul la întrebarea „ce număr acoperă poziția $K$”?
+
+Pentru a înțelege mai bine structura lui $G$, putem să judecăm problema doar cu ochii minții. Dar cred că folosim mai bine timpul dacă scriem rapid un \textit{pretty printer}, un progrămel auxiliar care varsă un set de date.
+
+Să pornim de la un exemplu, un subșir al lui $G$ pentru $A=1$, $B=\numprint{999999}$:
+
+\begin{center}
+  \begin{tabular}{ l | c }
+    \hline
+    număr & poziție în $G$  \\
+    \hline
+    252526 & 4890865 \\
+    252525 & 4890871 \\
+    2525 & 4890877 \\
+    25 & 4890881 \\
+    252524 & 4890883 \\
+    252523 & 4890889 \\
+    25252 & 4890895 \\
+    252522 & 4890900 \\
+    252521 & 4890906 \\
+    \hline
+  \end{tabular}
+\end{center}
+
+Facem observația relativ evidentă că toate numerele de aceeași lungime apar în $G$ în ordine descrescătoare. Așadar, $G$ este o interclasare a șirurilor de numere de lungimi diferite. Mai exact, printre numerele de lungime maximă apar prefixe mai scurte ale acestor numere. Atunci, să definim o \textbf{zonă} ca fiind un număr împreună cu toate prefixele numărului care sunt adiacente cu acesta în $G$. De exemplu, zona lui 252525 include prefixele 2525 și 25 și are lungime totală 12. În schimb, prefixul 25252 nu este în această zonă, ci în zona lui 252522. Zona lui 252521 conține doar numărul însuși, având lungime 6.
+
+Putem deduce că un prefix se află în zona numărului de lungime maximă obținut prin completarea ciclică a prefixului până la lungimea maximă. De exemplu, 5287 face parte din zona lui 528752.
+
+Cu această informație, pentru o interogare $K$ putem afla zona de la poziția $K$. Completăm rezultatul cifră cu cifră. Întâi ne întrebăm: care este lungimea totală a zonelor care încep cu 9? Dar cu 8? Dar cu 7? Scădem aceste valori din $K$ cât timp se poate. Dacă am stabilit, de exemplu, că prima cifră a zonei este 5, ne întrebăm: care este lungimea totală a zonelor care încep cu 59? Dar cu 58? Dar cu 57? Etc.
+
+Fie $L(P, N)$ lungimea zonelor care încep cu prefixul $P$ și nu depășesc valoarea $N$. Atunci răspunsul la întrebările de mai sus va fi $L(P, B) - L(P, A-1)$, pentru prefixe $P$ succesiv mai lungi. Pentru a-l afla pe $L(P,N)$ este nevoie de:
+
+\begin{itemize}
+  \item Suma lungimilor numerelor care încep cu $P$, au între $|P|$ și $|N|$ cifre și nu depășesc $N$. Aceasta necesită doar aritmetică naivă.
+  \item Suma lungimilor prefixelor lui $P$ care sunt în zona lui $P$. Putem face acest lucru în $O(|P|)$ dacă răspundem în $O(1)$ la întrebarea: este $Q$ în zona lui $P$? Vom da un exemplu aici: $Q=523$ (3 cifre) este în zona lui $P = 5235235235$ (10 cifre) deoarece, prin repetare ciclică a lui $Q$ până la 10 cifre, îl obținem exact pe $P$. Echivalent, primele $10-3=7$ cifre ale lui $P$ coincid cu ultimele 7 cifre, iar acest test îl putem face în $O(1)$ dacă avem precalculate puterile lui 10.
+\end{itemize}
+
+Ultimul pas necesar, odată găsită zona, este să izolăm cifra dorită din zonă. Am abordat naiv acest pas, sortând toate numerele din zonă. Este dificil să anticipăm ordinea numerelor din zonă. De exemplu, pentru numărul 894848948, prefixul 89484894 îl precedă în $G$, dar prefixul 89484 vine după el.
+
+Complexitatea totală este $O(R D^2)$ per interogare, unde $R$ este baza de numerație (10), iar $D$ este lungimea maximă (18).
+
+
 \section{Problema Scurtcircuit (Lot 2025)}
 \label{problem:scurtcircuit}
 
