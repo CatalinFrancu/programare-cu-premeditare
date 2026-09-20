@@ -174,6 +174,84 @@ Nu avem memorie pentru $\bigoh(n \log n)$ matrice, deci este vital să reținem 
 Editorialul menționează o soluție pătratică. Ideea de bază este să împărțim matricea în pătrate de latură $k / 2$ și să precalculăm informații. Eu nu sînt convins că funcționează.
 
 
+\section{Problema Gurger Brill (Lot 2024)}
+\label{problem:gurger-brill}
+
+\href{https://kilonova.ro/problems/2831}{enunț}
+$\bullet$
+\hyperref[code:gurger-brill]{sursă}
+
+\href{https://github.com/roalgo-discord/Romanian-Olympiad-Solutions/blob/main/Baraj\%20\%2B\%20Lot\%20Seniori\%20(IOI\%20team\%20selection\%20tests)/2024/Lot\%203\%20Seniori\%202024.pdf}{Editorialul} prezintă o soluție „de stă mîța în coadă” care folosește $12 + 3 \log n$ interogări. Iată și alte soluții, mai pămîntene, care merg pînă la $4 \log n$ interogări și obțin 92 de puncte. În concurs, punctajul maxim a fost de 40 de puncte...
+
+\subsection{Soluție în \texorpdfstring{$\bigoh(n^2)$}{O(n2)} interogări}
+
+Pentru o primă persoană arbitrar aleasă, $X$, facem interogări cu $X$ pe pozițiile $n, n-1, \dots$, pînă cînd răspunsul devine „da” ($X$ a ajuns înaintea ambilor săi vecini). Atunci ultima persoană pe care a sărit-o $X$ în permutare, să-i spunem $Y$, este vecină cu $X$. Astfel facem cel mult $n$ interogări pentru a afla o primă pereche de vecini.
+
+Apoi, vom afla celălalt vecin al lui $Y$. Vom începe cu $Y$ pe penultima poziție și $X$ pe ultima și vom face interogări succesive, deplasîndu-i concomitent pe $Y$ și pe $X$ spre stînga pînă cînd răspunsul pentru $Y$ devine „da”. Ultima persoană peste care am sărit este celălalt vecin al lui $Y$, fie el $Z$. Continuăm cu $Z$ pe penultima poziție și $Y$ pe ultima.
+
+În acest fel facem de $n$ ori cîte $\bigoh(n)$ interogări pentru a afla întreaga permutare circulară.
+
+\subsection{Soluție în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)} interogări}
+
+Procedăm similar soluției în $\bigoh(n^2)$, dar la fiecare pas căutăm binar, nu liniar, poziția în care răspunsul devine „da”.
+
+\subsection{Soluție în \texorpdfstring{$4 \sqrt{n}$}{4 sqrt(n)} interogări}
+
+Pentru ultimele două soluții, ca regulă generală, pentru fiecare interogare $P$ facem și o interogare pentru permutarea răsturnată. Astfel, pentru o persoană $X$ iau naștere trei cazuri:
+
+\begin{itemize}
+  \item $X$ ajunge devreme în prima interogare: ambii vecini ai lui $X$ se află la dreapta lui $X$ în $P$.
+  \item $X$ ajunge devreme în a doua interogare: ambii vecini ai lui $X$ se află la stînga lui $X$ în $P$.
+  \item $X$ ajunge tîrziu în ambele interogări: $X$ are cîte un vecin de fiecare parte în $P$.
+\end{itemize}
+
+Împărțim persoanele în $r = \sqrt{n}$ blocuri de cîte $r$ persoane. Cu alte cuvinte, le grupăm după cîtul împărțirii la $r$. Facem $2r$ interogări, rotind permutarea cu $r$ elemente după fiecare pereche de interogări. Analizînd rezultatele, putem afla, pentru fiecare persoană, blocurile în care se află cei doi vecini ai săi.
+
+Acum, regrupăm persoanele după restul împărțirii la $r$ și facem $2r$ interogări similare. Astfel aflăm, pentru fiecare persoană, cîturile și resturile vecinilor la împărțirea prin $r$.
+
+De exemplu, pentru $n = 100$ de persoane numerotate de la 0 la 99, după primele 20 de interogări aflăm cifrele zecilor pentru cei doi vecini ai fiecărei persoane, iar după încă 20 de interogări aflăm cifrele unităților.
+
+Aceste date încă nu ne oferă permutarea completă. Dacă vecinii lui $X$ au cifrele zecilor 1 și 2, iar cifrele unităților 3 și 4, atunci vecinii lui $X$ ar putea fi 13 și 24 sau 14 și 23. Vom discuta remediul pentru acest neajuns în secțiunea următoare.
+
+\subsection{Soluție în \texorpdfstring{$4 \log n$}{4 log n} interogări}
+
+Pentru fiecare bit semnificativ $b$, unde $0 \leq b < \lceil \log n \rceil$, vom folosi 4 întrebări pentru a afla informații despre bitul $b$ al ambilor vecini ai tuturor persoanelor.
+
+Pentru fiecare bit $b$, partiționăm numerele după bitul $b$ și facem două interogări. Apoi răsturnăm cele două intervale și facem încă două interogări. Iată un exemplu pentru $n = 16$ și bitul 0. Am numerotat persoanele de la 0 la $n-1$ pentru claritate.
+
+\begin{verbatim}
+P = 0 2 4 6 8 10 12 14   1 3 5 7 9 11 13 15   (și răsturnata)
+Q = 14 12 10 8 6 4 2 0   15 13 11 9 7 5 3 1   (și răsturnata)
+\end{verbatim}
+
+Analizînd cazurile posibile putem deduce informații despre bitul $b$ în toți vecinii. Iată, de exemplu, posibilitățile pentru $X=6$ în funcție de numărul de vecini în stînga pentru interogările de mai sus:
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ c|c|c }
+    \hline
+    răspuns la $P$ & răspuns la $Q$ & paritatea vecinilor \\
+    \hline
+    0 & 0 & doi vecini impari \\
+    0 & 1 & un vecin par și unul impar \\
+    0 & 2 & doi vecini pari \\
+    1 & 0 & un vecin par și unul impar \\
+    1 & 1 & doi vecini pari \\
+    2 & 0 & doi vecini pari \\
+    \hline
+  \end{tabular}
+\end{table}
+
+La final nu aflăm vecinii exacți, ci distribuția biților în cei doi vecini (adică dacă pe fiecare poziție avem 0, 1 sau 2 biți de 1). De exemplu, dacă pe toate pozițiile avem cîte un 1 și un 0, vecinii pot fi 0 și 15 sau 3 și 12 sau 7 și 8 etc. De aceea, poate fi nevoie să alegem o persoană de start $A$ și să îi testăm, pe rînd, toți vecinii posibili $B$ care respectă configurațiile pe biți. Vom prefera o persoană $A$ pentru care numărul de biți variabili să fie cît mai mic. Odată fixat $B$, putem calcula restul mesei în $\bigoh(n)$, căci cunoscînd $A$ și $B$, $C$ este impus, apoi din $B$ și $C$, $D$ este impus, etc.
+
+Pe teste aleatorii, acest algoritm găsește soluția. Ea poate fi pedepsită cu teste adversariale în care toate persoanele au mulți biți variabili între cei doi vecini. Atunci algoritmul găsește, cel mai probabil, o soluție greșită. Există două remedii:
+
+\begin{itemize}
+  \item Identificarea deterministă a unui vecin al lui $A$, cu încă $\log n$ interogări (de exemplu, o căutare binară în care $A$ variază, iar restul permutării rămîne nemodificat).
+  \item Indirectarea tuturor întrebărilor și răspunsurilor printr-o permutare aleasă aleatoriu. Sursa anexată implementează acest remediu.
+\end{itemize}
+
+
 \section{Problema Takara (Baraj ONI 2019)}
 \label{problem:takara}
 
@@ -343,7 +421,8 @@ Pentru a înțelege mai bine structura lui $G$, putem să judecăm problema doar
 
 Să pornim de la un exemplu, un subșir al lui $G$ pentru $A=1$, $B=\numprint{999999}$:
 
-\begin{center}
+\begin{table}[H]
+  \centering
   \begin{tabular}{ l | c }
     \hline
     număr & poziție în $G$  \\
@@ -359,7 +438,7 @@ Să pornim de la un exemplu, un subșir al lui $G$ pentru $A=1$, $B=\numprint{99
     252521 & 4890906 \\
     \hline
   \end{tabular}
-\end{center}
+\end{table}
 
 Facem observația relativ evidentă că toate numerele de aceeași lungime apar în $G$ în ordine descrescătoare. Așadar, $G$ este o interclasare a șirurilor de numere de lungimi diferite. Mai exact, printre numerele de lungime maximă apar prefixe mai scurte ale acestor numere. Atunci, să definim o \textbf{zonă} ca fiind un număr împreună cu toate prefixele numărului care sunt adiacente cu acesta în $G$. De exemplu, zona lui 252525 include prefixele 2525 și 25 și are lungime totală 12. În schimb, prefixul 25252 nu este în această zonă, ci în zona lui 252522. Zona lui 252521 conține doar numărul însuși, având lungime 6.
 
@@ -371,12 +450,12 @@ Fie $L(P, N)$ lungimea zonelor care încep cu prefixul $P$ și nu depășesc val
 
 \begin{itemize}
   \item Suma lungimilor numerelor care încep cu $P$, au între $|P|$ și $|N|$ cifre și nu depășesc $N$. Aceasta necesită doar aritmetică naivă.
-  \item Suma lungimilor prefixelor lui $P$ care sunt în zona lui $P$. Putem face acest lucru în $O(|P|)$ dacă răspundem în $O(1)$ la întrebarea: este $Q$ în zona lui $P$? Vom da un exemplu aici: $Q=523$ (3 cifre) este în zona lui $P = 5235235235$ (10 cifre) deoarece, prin repetare ciclică a lui $Q$ până la 10 cifre, îl obținem exact pe $P$. Echivalent, primele $10-3=7$ cifre ale lui $P$ coincid cu ultimele 7 cifre, iar acest test îl putem face în $O(1)$ dacă avem precalculate puterile lui 10.
+  \item Suma lungimilor prefixelor lui $P$ care sunt în zona lui $P$. Putem face acest lucru în $\bigoh(|P|)$ dacă răspundem în $\bigoh(1)$ la întrebarea: este $Q$ în zona lui $P$? Vom da un exemplu aici: $Q=523$ (3 cifre) este în zona lui $P = 5235235235$ (10 cifre) deoarece, prin repetare ciclică a lui $Q$ până la 10 cifre, îl obținem exact pe $P$. Echivalent, primele $10-3=7$ cifre ale lui $P$ coincid cu ultimele 7 cifre, iar acest test îl putem face în $\bigoh(1)$ dacă avem precalculate puterile lui 10.
 \end{itemize}
 
 Ultimul pas necesar, odată găsită zona, este să izolăm cifra dorită din zonă. Am abordat naiv acest pas, sortând toate numerele din zonă. Este dificil să anticipăm ordinea numerelor din zonă. De exemplu, pentru numărul 894848948, prefixul 89484894 îl precedă în $G$, dar prefixul 89484 vine după el.
 
-Complexitatea totală este $O(R D^2)$ per interogare, unde $R$ este baza de numerație (10), iar $D$ este lungimea maximă (18).
+Complexitatea totală este $\bigoh(R D^2)$ per interogare, unde $R$ este baza de numerație (10), iar $D$ este lungimea maximă (18).
 
 
 \section{Problema Scurtcircuit (Lot 2025)}
