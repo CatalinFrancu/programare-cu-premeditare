@@ -17,7 +17,7 @@ long long progression_sum(long long first, long long step, int len) {
 
 // Invarianți:
 //
-// 1. Valorile reale ale nodurilor subîntines sînt valorile lor v respective
+// 1. Valorile reale ale nodurilor subîntinse sînt valorile lor v respective
 //    plus o progresie aritmetică definită prin first și step.
 // 2. Valoarea v a unui nod nu include progresia nodului.
 struct segment_tree_node {

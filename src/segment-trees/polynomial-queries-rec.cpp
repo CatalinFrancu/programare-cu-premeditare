@@ -25,7 +25,7 @@ long long progression_sum(long long first, long long step, int len) {
 
 // Invarianți:
 //
-// 1. Valorile reale ale nodurilor subîntines sînt valorile lor v respective
+// 1. Valorile reale ale nodurilor subîntinse sînt valorile lor v respective
 //    plus o progresie aritmetică definită prin first și step.
 // 2. v[k] include first[k] și step[k], dar nu și valorile de la strămoși.
 // 3. Toate intervalele sînt [închis, deschis).
