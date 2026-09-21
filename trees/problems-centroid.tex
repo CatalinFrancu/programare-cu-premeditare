@@ -339,3 +339,43 @@ După ce calculăm contribuția la răspuns pentru aceste combinații între fiu
 Cum spuneam, căile de adîncime $d \leq p$ din fiii anteriori trebuie combinate cu căile din subarborele fiului curent de lungime cel mult $p - d$, adică de adîncimi $0, 1, \dots, p - d$. Este tentant să ne gîndim la sume pe interval, iar de aici la AIB-uri.
 
 Dar nu uitați de uneltele elementare! În primul rînd, vom parcurge complet fiul curent. Abia apoi vom face interogări de sumă pe prefix. Rezultă că ne sînt suficiente sumele parțiale peste vectorul $right$! Astfel eliminăm un factor de $\bigoh(\log n)$ și obținem o soluție în $\bigoh(n \log n)$.
+
+
+\subsection{Problema LaNaic (Lot 2024)}
+\label{problem:la-naic}
+
+\href{https://kilonova.ro/problems/2830}{enunț}
+$\bullet$
+\hyperref[code:la-naic]{sursă}
+
+\subsection*{Soluție în \texorpdfstring{$\bigoh(n^2)$}{O(n2)}}
+
+Menționăm o soluție ineficientă, dar ușor de codat și care face o observație teoretică importantă. Lanțul optim trebuie să aibă un capăt undeva. Deci pornim cîte un DFS din fiecare nod ca să aflăm cît de departe putem ajunge pornind din acel nod și făcînd cel mult $m$ modificări. Pentru nodul curent, reținem:
+
+\begin{itemize}
+  \item Numărul de modificări necesare pentru a putea ajunge la el. Dacă depășim $m$ modificări, oprim DFS-ul.
+  \item Lungimea sufixului de muchii de aceeași culoare din stiva DFS curentă. Oricînd această lungime depășește $k$, incrementăm numărul de modificări necesare și resetăm lungimea.
+\end{itemize}
+
+Observăm că numărul de modificări necesare pentru a sparge un lanț monocrom de lungime $l$ este întotdeauna $\lfloor \frac{l}{k + 1} \rfloor$.
+
+\subsection*{Soluție în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)}}
+
+Să considerăm o descompunere în centroizi a arborelui. Pentru centroidul curent $x$, ne punem întrebarea: care este lanțul $k$-alternant maxim care trece prin $x$? După cum știm, dacă rezolvăm acest pas în $\bigoh(S(x))$, unde $S(x)$ este mărimea subarborelui lui $x$, atunci complexitatea globală va fi $\bigoh(n \log n)$.
+
+Construim o pereche de vectori $C_0$ și $C_1$, unde $C_i(j)$ este \textbf{costul minim} necesar pentru a construi un lanț $k$-alternant care pornește din $x$ pe o muchie de valoare $i$, are lungime (adîncime) $j$ și se termină undeva în subarborele lui $x$. Indicii $j$ iau valori între 0 și $H(x)$, unde $H(x)$ este înălțimea în muchii a subarborelui lui $x$.
+
+Definim \textbf{costul} al unui astfel de lanț ca fiind o pereche: numărul minim de modificări necesare, iar, în caz de egalitate, lungimea minimă a prefixului de muchii de valoare $i$ cu care începe lanțul. Raționamentul din spatele acestei definiții este că lanțul optim prin $x$ va consta din două lanțuri (sau, în cazul degenerat, un singur lanț) care pornesc spre doi fii diferiți. Dacă cele două lanțuri pornesc pe prefixe de aceeași culoare, și dacă suma lungimilor acestor prefixe depășește $k$, este necesară o modificare suplimentară, altfel nu. Nu avem niciun motiv să preferăm un lanț care face mai multe modificări, dar care are prefix mai scurt. Putem amîna acele modificări pînă cînd și dacă devin necesare. Mai remarcăm și că vectorii $C$ sînt monotoni: costul crește cu adîncimea.
+
+Pentru fiecare fiu $y$ putem calcula un astfel de vector, $C_y$. Există unul singur, deoarece muchia $(x,y)$ are fie valoarea 0, fie 1. Este necesară o parcurgere DFS. O implementare rezonabilă este: lansăm o primă parcurgere pe muchii de aceeași valoare cu muchia $(x,y)$, al cărei scop este să determine lungimea prefixului de aceeași valoare. Din ea comutăm la o a doua parcurgere DFS ori de cîte ori întîlnim prima muchie de valoare opusă.
+
+Pe măsură ce fiii lui $x$ își încheie parcurgerile, $x$ are de făcut două operații:
+
+\begin{enumerate}
+  \item Să caute lanțul maxim între fiul curent $y$ și oricare din fiii anteriori.
+  \item Să adauge informația din $C_y$ la $C_0$ sau $C_1$.
+\end{enumerate}
+
+Deoarece vectorii sînt monotoni, putem face pasul (1) în $\bigoh(H_{max}+ H(y))$, unde $H_{max}$ este adîncimea maximă a oricărui fiu anterior. Folosim tehnica \textit{two pointers} pentru a căuta suma maximă, dar nu mai mult de $M$, a două elemente din doi vectori sortați. Pasul (2) este trivial, constînd doar din compararea celor doi vectori poziție cu poziție.
+
+Pentru complexitate optimă, este important să procesăm fiii lui $x$ în ordinea crescătoare a adîncimii. Altfel $H_{max}$ poate crește rapid, de exemplu dacă explorăm fiul cel mai adînc primul. După sortarea fiilor, efortul total pentru $x$ va fi $\bigoh(S(x))$. Sursa anexată sortează fiii naiv, cu \ccode{std::sort}. Am încercat și să fac sortarea \href{https://kilonova.ro/submissions/1162662}{în timp liniar}, distribuind fiii după adîncimi, dar diferența de timp este minoră.
