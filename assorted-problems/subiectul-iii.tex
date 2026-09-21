@@ -1,0 +1,44 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\section{Problema Subiectul III („Single crossing”) (Lot 2024)}
+\label{problem:subiectul-iii}
+
+\href{https://kilonova.ro/problems/2843}{enunț}
+$\bullet$
+\hyperref[code:subiectul-iii]{surse}
+
+Editorialul include o soluție elegantă, bazată pe inversiuni și pe metrici, dar care mă eludează. Iată însă o rezolvare care folosește tehnici elementare (sortare + testare).
+
+\subsection{Compararea permutărilor}
+
+Soluția are doi pași. Întîi construim un candidat de soluție, care are proprietatea că fie el este \textit{single-crossing}, fie nu există soluție. Apoi verificăm dacă acest candidat este \textit{single-crossing}.
+
+Definim următorul comparator util pentru sortare. Despre două permutări nu putem spune foarte multe. În schimb, date fiind trei permutări $X$, $Y$ și $Z$, să fixăm ordinea primelor două. Raportat la acestea există cel mult o poziție corectă pentru $Z$, din cele trei variante: stînga ($ZXY$), centru ($XZY$) și dreapta ($XYZ$). Cred că există multe metode de a o găsi. Iată una dintre ele.
+
+Căutăm prima diferență între $X$ și $Y$ (prima poziție $i$ unde $X_i \neq Y_i$). Fie aceste valori $a$ și $b$. Atunci $a$ apare înainte de $b$ în $X$, iar $b$ apare înainte de $a$ în $Y$. Pentru concizie, notăm aceste proprietăți cu $a <_X b$ și $b <_Y a$. Verificăm cum apar $a$ și $b$ în $Z$. Iau naștere două cazuri.
+
+\begin{enumerate}
+  \item Dacă $a <_Z b$, atunci ordinea corectă poate fi doar $ZXY$ sau $XZY$, căci $XYZ$ cauzează o dublă trecere $ab-ba-ab$. Căutăm prima diferență între $X$ și $Z$, fie $c <_X d$ și $d <_Z c$. Căutăm $c$ și $d$ în $Y$. Iau naștere două subcazuri:
+
+  \begin{enumerate}
+    \item Dacă $c <_Y d$, atunci $XZY$ devine incorectă (dublă trecere $cd-dc-cd)$, deci singura ordonare este $ZXY$ (sau niciuna);
+    \item Dacă $d <_Y c$, atunci $ZXY$ devine incorectă, deci ordonarea este $XZY$ (sau niciuna).
+  \end{enumerate}
+
+  \item Similar pentru $b <_Z a$, unde avem de decis între $XZY$ și $XYZ$.
+\end{enumerate}
+
+\subsection{Sortare}
+
+Pe baza acestui comparator, putem implementa o sortare. Quicksort are nevoie de un mic ajutor, căci la pasul inițial nu poate partiționa vectorul relativ la un singur pivot. De aceea, alegem două permutări la întîmplare dintre cele $n$, $X$ și $Y$, iar relativ la acestea le partiționăm pe restul în trei grupe. Apoi, pentru fiecare grupă rulăm quicksortul obișnuit. La fiecare apel, quicksort alege un pivot și partiționează intervalul curent în stînga și în dreapta pivotului, folosind ca al treilea element una dintre permutările de la capătul intervalului, a cărei existență este garantată.
+
+Complexitatea sortării este $O(nm \log n)$, pentru că sortăm $n$ elemente, iar costul unei comparații este $O(m)$. La finalul sortării obținem un candidat. Prin logica partiționării acest candidat este singurul care respectă toate tripletele comparate. Dar este nevoie să ne asigurăm că respectă și toate celelalte triplete, deci că este într-adevăr \textit{single-crossing}.
+
+Putem face chiar și insert sort să meargă, cu observația că dacă implementăm comparatorul naiv, în $\bigoh(m)$, atunci insert sort va rula în $\bigoh(n^2 \cdot m)$, prea lent. Dar dacă implementăm comparatorul în $\bigoh(\log m)$, de exemplu dacă aflăm prin căutare binară poziția primei diferențe între două permutări, atunci insert sort ar trebui să ia 100 de puncte.
+
+\subsection{Verificare}
+
+Să presupunem că prima permutare este $(1, 2, \dots, m)$ (în practică, iterăm prin valorile care ne interesează în ordinea în care apar ele în prima permutare). Procedăm inductiv. Dacă primele $k$ permutări sînt \textit{single-crossing}, dorim să verificăm dacă cea de-a $k+1$-a cauzează vreo dublă trecere. Cu alte cuvinte, vrem să vedem dacă vreo pereche de valori $x < y$, care erau inversate ($y$ apărea înaintea lui $x$ în $P_k$), devin acum ordonate ($x$ apare înaintea lui $y$ în $P_{k+1}$). Procesăm valorile de la 1 la $m$ în ordine crescătoare. Dacă valoarea $x$ apare pe poziția $i$ în $P_k$ și pe poziția $j$ în $P_{k+1}$, dorim să știm: am văzut anterior vreo valoare pe o poziție $i' > i$ în $P_k$ și $j' < j$ în $P_{k+1}$? Putem afla asta cu un singur AIB, care notează valoarea $i$ la poziția $j$. Atunci interogarea devine: dă-mi maximul pe pozițiile $[1 \dots j-1]$. Așadar, folosim un AIB cu modificare pe poziție și maxim pe prefix.
+
+\end{document}
