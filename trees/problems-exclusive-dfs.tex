@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Tree and Queries (Codeforces)}
@@ -80,3 +83,5 @@ Pentru a ține evidența maximului, putem folosi o structură logaritmică, să 
 Complexitatea este $\bigoh(n \log n)$ datorită algoritmului \textit{small-to-large} exclusiv.
 
 Sursa anexată folosește vectori STL pentru listele de adiacență. Am scris și o implementare cu \href{https://codeforces.com/contest/1009/submission/357104295}{liste proprii}, care este puțin mai lentă. Cred că explicația este următoarea: pentru un arbore atît de mare, faptul că listele sînt împrăștiate prin memorie dăunează cache-ului. În schimb, \ccode{stl::vector} își ține elementele grupate și are \textit{cache locality} bun.
+
+\end{document}

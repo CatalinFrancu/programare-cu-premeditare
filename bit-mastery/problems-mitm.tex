@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Meet in the Middle (CSES)}
@@ -351,3 +354,5 @@ Pentru \textit{meet in the middle}, ne închipuim că am rezolvat subproblema pe
 Aici este singurul pas specific problemei. Trebuie să ne asigurăm că niciun bit din $X$ nu se exclude cu niciun bit din $Y$-ul curent. De aceea, pe măsură ce compunem (recursiv, ca de obicei) masca $Y$ vom construi și „masca excluziunilor”: masca tuturor biților din stînga care devin interziși. Cînd adăugăm un bit $k$ la masca dreaptă $Y$, masca excluziunilor lui $Y$ crește (cu OR) cu masca excluziunilor lui $k$.
 
 Ultima subproblemă de rezolvat este: am completat o mască $Y$, îi știm masca excluziunilor și, prin negație, obținem o mască $Z$ cu biții din stînga care ne sînt încă permiși. Acum dorim să obținem rapid submasca fezabilă a lui $Z$ de populație maximă. Pe aceasta o precalculăm cu programare dinamică pe biți, imediat după recursivitatea stîngă și înainte de a da drumul la cea dreaptă.
+
+\end{document}

@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Finding A Centroid (CSES)}
@@ -379,3 +382,5 @@ Pe măsură ce fiii lui $x$ își încheie parcurgerile, $x$ are de făcut două
 Deoarece vectorii sînt monotoni, putem face pasul (1) în $\bigoh(H_{max}+ H(y))$, unde $H_{max}$ este adîncimea maximă a oricărui fiu anterior. Folosim tehnica \textit{two pointers} pentru a căuta suma maximă, dar nu mai mult de $M$, a două elemente din doi vectori sortați. Pasul (2) este trivial, constînd doar din compararea celor doi vectori poziție cu poziție.
 
 Pentru complexitate optimă, este important să procesăm fiii lui $x$ în ordinea crescătoare a adîncimii. Altfel $H_{max}$ poate crește rapid, de exemplu dacă explorăm fiul cel mai adînc primul. După sortarea fiilor, efortul total pentru $x$ va fi $\bigoh(S(x))$. Sursa anexată sortează fiii naiv, cu \ccode{std::sort}. Am încercat și să fac sortarea \href{https://kilonova.ro/submissions/1162662}{în timp liniar}, distribuind fiii după adîncimi, dar diferența de timp este minoră.
+
+\end{document}

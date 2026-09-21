@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Heavy Path Decomposition (Infoarena)}
@@ -459,3 +462,5 @@ Sînt 99\% sigur că acest algoritm este eficient, dar demonstrația este alunec
 Dar, dacă drumul de la $u$ la rădăcină include vreun lanț complet, pe acela nu vom face efort $\bigoh(\textrm{lungime})$, ci doar $\bigoh(1)$, deoarece migrația în acel lanț va fi doar în jos, spre $u$! De exemplu, în figura \ref{fig:tree-heavy-light-2}, pentru $u = 30$ elementele de pe lanțul roșu migrează doar în jos.
 
 De aceea, un caz adversarial ar fi o cale de la $u$ la rădăcină care, ori de cîte ori schimbă lanțul, se „înțeapă” undeva la jumătatea noului lanț. Or acest lucru este imposibil datorită modului în care funcționează decompunerea \textit{heavy-light}. Din punct de vedere al nodului de înțepare, lanțul ar prefera să continue pe calea spre $u$, dacă aceasta este destul de lungă. Așadar, dacă am avea $\bigoh(\sqrt{n})$ lanțuri, toate de lungime $\bigoh(\sqrt{n})$, numărul total de noduri de pe acea cale ar deveni $\bigoh(n)$ și majoritatea lanțurilor s-ar înțepa în capătul de jos al lanțului anterior.
+
+\end{document}

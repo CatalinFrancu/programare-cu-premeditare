@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Gold Transfer (Codeforces)}
@@ -120,3 +123,5 @@ Cum aflăm populația pe o cale? Nu văd o soluție în $\bigoh(a + \log n)$, da
 Atenție la metoda folosită! \textit{Binary lifting} cu memorie $\bigoh(n \log n)$ va necesita $\np{100000} \times 18 \times 10$ întregi, adică 72 MB în plus. Este fezabil, dar este de evitat. Implementarea mea este printre cele mai rapide și nu face nimic deosebit, doar folosește \textit{binary lifting} cu doi pointeri. Economia de memorie înseamnă economie de timp.
 
 Ne întîlnim, din nou, cu o situație care cere să particularizați structurile de date, nu doar să le pictați. Un alt exemplu de astfel de problemă este: să se preproceseze un arbore astfel încît să putem răspunde eficient la interogări de forma $(u,v)$ = maximul pe calea $u-v$. Și aici putem face fiecare \textit{jump pointer} să rețină maximul pe calea subîntinsă. Problema are și soluții mai eficiente, dar aceasta este relativ elementară.
+
+\end{document}

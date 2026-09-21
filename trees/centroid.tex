@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Descompunere în centroizi}
 
 Încheiem studiul arborilor cu tehnica descompunerii în centroizi. Ea ne permite să rezolvăm probleme rezistente la alte abordări.
@@ -64,3 +67,5 @@ De aceea, o implementare care face efort $\bigoh(\textrm{mărime\_subarbore})$ �
 Dacă efortul într-un subarbore este mai mare decît liniar, atunci descompunerea în centroizi adaugă un factor logaritmic. De exemplu, dacă efortul într-un subarbore de mărime $k$ este $\bigoh(k \log k)$, atunci complexitatea totală devine $\bigoh(n \log^2 n)$. Pentru detalii, vedeți \href{https://en.wikipedia.org/wiki/Master\_theorem\_(analysis\_of\_algorithms)}{Master Theorem}, cazul 2.
 
 Descompunerea în centroizi ne spune „este OK să apelezi un DFS din fiecare nod”. Desigur, ce face acel DFS depinde de la problemă la problemă. Dar ocazional putem scrie algoritmi relativ naivi (plus șablonul de cod pentru descompunere) și totuși să obținem complexitate $\bigoh(n \log n)$.
+
+\end{document}

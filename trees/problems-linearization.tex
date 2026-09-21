@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Tree Queries (Codeforces)}
@@ -226,3 +229,5 @@ Condiția este mai ușor de testat decît pare. Dacă lăsăm $LMA(u) = 0$ pentr
 Cum menținem informația de LMA? Este suficient un singur arbore de segmente, fără propagare \textit{lazy}, construit peste liniarizare. La marcarea unui nod $u$ ca șters, marcăm tot intervalul subîntins de $u$ chiar cu valoarea $u$. La interogarea $LMA(v)$, pornim din frunza din AINT corespunzătoare nodului $v$ și raportăm prima valoare întîlnită (sau 0 dacă nu întîlnim valori scrise).
 
 Mai există un singur aspect important. Un nod din AINT poate fi acoperit de mai multe noduri din arbore. Dacă mai multe actualizări (ștergeri) acoperă același nod, cînd suprascriem valori și cînd nu? Este important că nodurile respective din arbore sînt toate în relația strămoș-descendent. De aceea, cele mai de jos au prioritate. Echivalent, cele care subîntind un interval mai mic în AINT au prioritate. AINT-ul procedează exact astfel: acordă valorilor scrise priorități egale cu lungimea intervalului scris.
+
+\end{document}

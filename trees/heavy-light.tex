@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Descompunere \textit{heavy-light}}
 
 Descompunerea \textit{heavy-light} (engl. \textit{heavy-light decomposition} sau HLD, numită și \textit{heavy path decomposition}) este încă o tehnică de liniarizare a arborilor, utilă pentru interogări pe căi.
@@ -66,3 +69,5 @@ Nu construim cîte o structură (AIB, AINT etc.) pe fiecare lanț! Ca la orice l
 Ce structură folosim depinde de natura problemei. Dacă problema cere informații pe căi de la noduri la rădăcină, atunci căile vizitează doar prefixe (capetele de sus) ale lanțurilor. Deci s-ar putea ca un AIB să fie suficient. Dacă problema cere informații între orice două noduri, atunci căile pot vizita și porțiuni din mijlocul lanțurilor. Deci probabil avem nevoie de arbori de segmente.
 
 Nu este necesar să implementăm LCA. În loc de asta, fiecare nod menține un pointer la capătul superior al lanțului. Astfel urcăm „naiv” din lanț în lanț, căci știm deja că numărul de lanțuri este logaritmic.
+
+\end{document}

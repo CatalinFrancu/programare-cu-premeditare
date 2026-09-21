@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Fixed-Length Paths I (CSES)}
@@ -141,3 +144,5 @@ O soluție considerabil mai scurtă (cea inclusă în anexă) procedează astfel
 O a treia implementare este: colectăm nodurile separat pe fiecare nivel, în ordinea timpilor de vizitare (care este chiar ordinea DFS). Acum intervalul de interes pentru o interogare referitoare la nodul $u$ este pe un nivel cunoscut și este delimitat de timpii de intrare și de ieșire din $u$.
 
 Este greu să construim cîte un AIB pe fiecare nivel, dar putem folosi un \ccode{set} cu aceeași informație: pozițiile ultimelor apariții ale fiecărui element distinct. Iată \href{https://codeforces.com/contest/246/submission/300415656}{o implementare} curată a fostului olimpic Alex Nuță.
+
+\end{document}
