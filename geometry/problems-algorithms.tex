@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Copaci (Infoarena)}
@@ -292,3 +295,5 @@ Codul meu are un bug de eficiență, chiar în funcția \ccode{rotating_calipers
     Punctul $r$ evoluează corect, avansînd de la poziția anterioară, dar punctele $a$ și $l$ sînt recalculate complet la fiecare iterație. Din fericire, testele nu pedepsesc această greșeală. \href{https://infoarena.ro/job_detail/3291367?action=view-source}{Această versiune} repară bugul eliminînd reinițializările lui $a$ și $l$. Este nevoie de un \ccode{if} ca să decidem dacă $l$ a fost calculat anterior sau nu.
   \end{minipage}
 \end{turn}
+
+\end{document}

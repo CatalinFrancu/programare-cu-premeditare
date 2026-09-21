@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Distanțe}
 
 Pentru demonstrații și pentru o ordonare mai bună a noțiunilor, vă recomand cu căldură cartea \href{http://mitpress.mit.edu/algorithms}{Introduction to Algorithms}.
@@ -122,3 +125,5 @@ Două detalii de implementare:
 
   \item Putem reduce memoria de la $\bigoh(kn)$ la $\bigoh(k + n)$ astfel. Cînd procesăm nodurile de la distanța $x$, vom face inserări și ștergeri doar din listele de pe pozițiile $x \dots x + k$ (de ce?). Deci putem stoca din vectorul $V$ doar fereastra curentă de lățime $k + 1$, folosind un buffer circular sau o listă înlănțuită.
 \end{itemize}
+
+\end{document}

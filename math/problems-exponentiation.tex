@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Al k-lea termen Fibonacci (Infoarena)}
@@ -478,3 +481,5 @@ Subliniem că nu mai este suficient un vector. Nu putem număra doar drumurile d
 Dacă notăm cu $b = \lfloor \frac{c}{k} \rfloor$ numărul de blocuri complete și cu $r = c \mod k$ numărul de coloane din ultimul bloc, atunci cu matricea $G^b$ ajungem pînă la coloana $kb$. Putem să rezolvăm separat ultimele $r$ coloane, dar ar fi păcat. În procesul de construire a matricei $G$, noi vom fi construit la un moment dat matricea de tranziție pentru primele $r$ coloane. Trebuie doar să-i facem o copie la momentul potrivit.
 
 Este nevoie de atenție la detalii. Bunăoară, mie mi-a fost mai ușor să vizualizez tranzițiile astfel. Pentru blocul de coloane $[0, k)$, $G_{r_1, r_2}$ este numărul de drumuri care încep pe linia $r_1$, \textbf{în stînga blocului} (deci pe coloana -1) și se termină pe linia $r_2$, coloana $k-1$.
+
+\end{document}

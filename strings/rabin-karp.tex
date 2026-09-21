@@ -1,32 +1,7 @@
-\chapter{Căutări în șiruri de caractere. Algoritmul Rabin-Karp}
+\documentclass[../main.tex]{subfiles}
+\begin{document}
 
-% image settings
-\tikzset{
-  col-index/.style={
-    color=black!50,
-    font=\scriptsize,
-    minimum size=20pt,
-  },
-  fading/.style={
-    draw=black,densely dotted,
-  },
-  blue-bg/.style={
-    fill=DeepSkyBlue!20,
-  },
-  green-bg/.style={
-    fill=green!20,
-  },
-  red-bg/.style={
-    fill=red!20,
-  },
-  square/.style={
-    anchor=center,
-    draw,
-    minimum size=20pt,
-    text height=1.5ex,
-    text depth=.25ex,
-  },
-}
+\chapter{Căutări în șiruri de caractere. Algoritmul Rabin-Karp}
 
 Căutarea unui subșir într-un șir înseamnă găsirea tuturor pozițiilor la care subșirul apare în șir. Să introducem cîteva definiții și notații pentru restul acestei părți.
 
@@ -253,3 +228,5 @@ Ca încercare de optimizare, putem folosi un modul putere a lui 2 pentru viteză
 Putem renunța la comparările naive dacă avem speranțe reale că nu vor exista coliziuni. Vom considera orice apariție a lui $H(P)$ ca fiind o deplasare validă. Atunci algoritmul devine $\bigoh(m + n)$, dar este important să alegem un modul suficient de mare încît probabilitatea coliziunilor să fie infimă.
 
 Dacă chiar și cu un modul mare întîlnim coliziuni, putem calcula două funcții hash modulo două valori diferite, $H_1(P)$ și $H_2(P)$. Șansa să întîlnim o coliziune modulo ambele valori simultan scade pătratic.
+
+\end{document}

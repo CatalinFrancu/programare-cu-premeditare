@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Căutări cu automate finite. Algoritmul Knuth-Morris-Pratt}
 \label{chapter:kmp}
 
@@ -466,3 +469,5 @@ Soluție: Concatenăm $S$ cu el însuși. În șirul $S + S$ îl căutăm pe $T$
 Dat fiind un șir $S$, adăugați cît mai puține caractere la finalul lui pentru a îl face palindrom.
 
 Soluție: Ne interesează cel mai lung sufix al lui $S$ care este palindrom. Prefixul dinaintea acestui palindrom trebuie răsturnat și adăugat după $S$. De aceea, Construim șirul $S^R + \# + S$. Pe acest șir calculăm funcția $\pi$. Prin definiție, $\pi[n - 1]$ ne arată cel mai lung sufix al lui $S$ care este prefix al lui $S^R$, adică exact cel mai lung sufix palindromic al lui $S$.
+
+\end{document}

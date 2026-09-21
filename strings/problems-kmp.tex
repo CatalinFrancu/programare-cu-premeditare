@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Bart (NerdArena)}
@@ -80,3 +83,5 @@ Prima iterație a codului meu proceda chiar astfel. Pentru fiecare $i$ și fieca
 \subsubsection*{Soluție în \texorpdfstring{$\bigoh(SP\Sigma)$}{SP Sigma}}
 
 În loc de aceasta, putem să calculăm tranzițiile din starea $d_{i,j}$ în alte stări conform următorului caracter, care fie este impus (literă), fie poate lua $\Sigma$ valori (\texttt{?}). Practic, trebuie să răspundem la întrebări de tipul: „Dacă ne aflăm în starea $j$, iar următorul caracter de la intrare este $S[i]$, în ce stare ajungem?”. Aceste informații reprezintă exact matricea de tranziție despre care am vorbit în capitolul despre automate! Cu ajutorul funcției de prefix $\pi$, putem calcula această matrice în $\bigoh(P^2)$ (\href{https://codeforces.com/contest/808/submission/376033109}{o sursă} mai veche) sau chiar $\bigoh(P \Sigma)$.
+
+\end{document}

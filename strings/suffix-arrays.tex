@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Șiruri de sufixe}
 
 \section{Definiție}
@@ -454,3 +457,5 @@ void build_lcp() {
 \subsection{Analiza complexității}
 
 Deoarece avem o buclă \ccode{while} într-o buclă \ccode{for}, la prima vedere algoritmul are complexitatea $\bigoh(n^2)$. Cu toate acestea, să observăm că $l$ este o lungime care nu poate depăși $n$ (ea servește la compararea de indici din $S$). Mai mult, $l$ scade cu cel mult o unitate la fiecare iterație a buclei \ccode{for}. Rezultă că suma creșterilor lui $l$ din bucla \ccode{while} nu poate depăși $n$. Așadar, construcția șirului $LCP$ durează $\bigoh(n)$.
+
+\end{document}

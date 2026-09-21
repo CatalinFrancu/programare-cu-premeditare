@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Radio (Lot 2010)}
@@ -52,3 +55,5 @@ Ce decurge de aici? Programul nostru alege $c=9$, deci va încerca toate cele ci
 Care este soluția? Să observăm că toate aceste fragmente de lungime $c$ duc la comparații naive \textbf{la aceeași deplasare în $s$}. Așadar, putem reduce mult timpul dacă memorăm deplasările din $s$ la care am făcut deja comparația naivă. Putem face asta cu o tabelă hash sau cu un simplu vector. Aceasta reduce timpul de rulare la circa 160 ms.
 
 Ca optimizare minoră (încă circa 10 ms), putem alege modulul $2^{20}$, care accelerează împărțirile. Care este efortul total pentru Rabin-Karp? Avem $n + ml \approx 2,2 M$ de caractere și fiecare caracter intră și iese din fereastra de mărime $c$. Intrarea necesită o operație modulo, iar ieșirea una sau două în funcție de implementare. Deci avem de făcut 4,4 sau 6,6 milioane de împărțiri. Nu este neglijabil!
+
+\end{document}

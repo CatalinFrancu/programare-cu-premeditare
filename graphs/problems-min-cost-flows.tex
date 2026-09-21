@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Parcel Delivery (CSES)}
@@ -270,3 +273,5 @@ Algoritmul Bellman-Ford este prea lent pentru calculul inițial al distanțelor 
 Spre tristețea mea, din această cauză am pierdut circa 30 de minute depanînd următoarea optimizare, care nu merge. Din punct de vedere al corectitudinii, este suficient să creăm cîte o singură listă pentru fiecare bloc. Pentru exemplul de mai sus, cu etajele  30, 10, 50, 20, 60 și 40, putem crea o singură listă dublu înlănțuită care se leagă, în ordine de etajele 10, 20, 30, 40, 50 și 60. Pentru fiecare nod drept superior, ambii pointeri intră în această listă pe poziții vecine. Un nod drept terminat la etajul 27 va avea pointeri către nodurile 20 și 30.
 
 Am neglijat însă faptul că fiecare pereche de elemente din aceste liste formează un ciclu. \emoji{smiling-face-with-tear}. De aceea, sortarea topologică eșua.
+
+\end{document}

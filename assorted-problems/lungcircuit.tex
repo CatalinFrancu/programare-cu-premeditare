@@ -1,0 +1,64 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\section{Problema Lungcircuit (Lot 2025)}
+\label{problem:lungcircuit}
+
+\href{https://kilonova.ro/problems/3807}{enunț}
+$\bullet$
+\hyperref[code:lungcircuit]{surse}
+
+Problema Lungcircuit îmi aparține. Inițial căutam o problemă pentru lotul de juniori, bazată pe jocul \href{https://ruwix.com/twisty-puzzles/hungarian-rings-sliding-puzzle/}{Hungarian Rings}. A rezultat o problemă prea grea pentru juniori. În seara dinaintea unei probe, comisia de seniori mi-a cerut problema ca să o dea a doua zi, pentru că problema avea un mare avantaj: era la cheie (teste, subtaskuri, soluții pentru toate subtaskurile, chiar și editorial). Uneori gradul de pregătire bate calitatea problemei. \emoji{smiling-face-with-tear}
+
+Problema are o soluție „tractor” și o soluție elegantă, care este mai mult de idee. \href{https://drive.google.com/drive/folders/1EqiZNtAgVsJ-FbrPRqzF-OIpyOPeztnR}{Editorialul} include și soluții pentru subtaskuri.
+
+\subsection{Soluția „tractor”}
+
+Introducem doi termeni pentru a ușura descrierea. Numim pozițiile comune \textbf{noduri}. Primul nod este la poziția 0, iar ultimul nod este la poziția $(k-1)d$. Numim \textbf{lanțuri exterioare} pozițiile $(k-1)d + 1 \dots n - 1$ pe fiecare circuit.
+
+Pentru subtaskurile mici, putem menține circuitele complete la fiecare mișcare. Pentru o soluție în $\bigoh((q + n) \log k)$, să schimbăm paradigma. Să urmărim traseul fiecărei bile și să aflăm poziția ei finală după cele $q$ mutări. Vom accelera simularea procesînd rapid porțiuni de circuit. Pornind de la mutarea 0, fiecare bilă va trece prin următoarele etape (sau o submulțime a lor):
+
+\begin{enumerate}
+  \item Avansează pînă la următorul nod.
+  \item Avansează pînă la ultimul nod.
+  \item Avansează pînă la primul nod (parcurgînd lanțul exterior).
+  \item Găsește ultima mutare cînd bila mai revine în primul nod.
+  \item Avansează un număr întreg de noduri (cel mult $k-1$).
+  \item Avansează pozițiile rămase pînă la epuizarea operațiilor.
+\end{enumerate}
+
+Pentru (1), (3) și (6), știind că bila se află pe circuitul $c$ la mutarea $t$ și că dorim să avanseze $p$ pași, trebuie să putem răspunde la întrebarea „ce indice are a $p$-a mutare de tip $c$, începînd cu mutarea $t$”? Putem răspunde la aceste întrebări cu o precalculare ușoară, colectînd în doi vectori pozițiile literelor \textbf{R} și \textbf{A} în șirul de mutări.
+
+Pentru (2) și (5), să remarcăm că bila pornește dintr-un nod, deci prima mișcare dictează pe ce drum pornește bila. Pentru a avansa un interval în $\bigoh(1)$, dacă prima mișcare este $c$ la momentul $t$, trebuie să găsim rapid a $d$-a apariție a lui $c$, începînd cu mutarea $t$, în șirul de mutări. Și această informație poate fi precalculată.
+
+Noi dorim să avansăm eficient $\bigoh(k)$ intervale, deci peste informația de mai sus construim o tabelă rară (\textit{sparse table}). Astfel putem avansa pînă la ultimul nod în $\bigoh(\log k)$.
+
+Pentru (4), dorim să răspundem la întrebări de forma: „dacă o bilă se află în nodul 0 la momentul $t$, cînd va reveni ea în nodul 0?”. Putem refolosi exact codul anterior. Dacă răspunsul există și este $t'$, atunci putem completa de la sfîrșitul spre începutul vectorului de mutări momentul \textbf{ultimei} reveniri în nodul 0: el va fi același pentru $t$ și pentru $t'$.
+
+\subsection{Soluție cu liste}
+
+O soluție în $\bigoh(n + q)$, semnificativ mai simplu de codat, pornește de la următoarea observație. Bilele din noduri (în exemplul dat, 0, 3, 6, 9 și 12) au o traiectorie similară. Dacă prima mutare este \textbf{R} și bila 0 intră pe circuitul roșu, la fel vor face și celelalte. Cînd 0 revine într-un nod, la fel și celelalte. Similar sînt unite și bilele 1, 4, 7, 10 și 13.
+
+De aceea, putem să grupăm aceste bile și să le mutăm pe toate cu efort mic. Concret, reprezentăm un circuit ca:
+
+\begin{itemize}
+  \item $d$ liste, prima de $k$ bile, iar restul de cîte $k-1$ bile. Numim această structură \textbf{rețea}, căci elementele listelor sînt intercalate. Prima listă conține nodurile și este comună celor două circuite.
+  \item Lanțul exterior (inițial 16-31, respectiv 42-57).
+\end{itemize}
+
+Ce se întîmplă la o mutare \textbf{R} (cazul \textbf{A} este simetric)?
+
+\begin{itemize}
+  \item Lanțul exterior capătă o bilă la început, și anume ultimul nod (15).
+  \item Lanțul exterior pierde o bilă de la final (31), care ajunge la începutul ultimei liste din rețea, care devine 31, 2, 5, 8, 11, 14.
+  \item Permutăm circular listele rețelei. Ultima listă devine prima. Astfel, bila 31, care acum stă în nodul 0, devine în mod corect prima bilă din prima listă.
+  \item Notificăm circuitul albastru că prima sa listă nu mai este $0, 3, \dots$, ci este $31, 2, \dots$
+\end{itemize}
+
+Cu această reprezentare putem simula toți pașii de mai sus, și deci toate mutările, în $\bigoh(1)$ fiecare. Putem reprezenta atît listele din rețea, cît și lista de liste (rețeaua însăși), ca pe buffere circulare, ca să le putem permuta circular în $\bigoh(1)$.
+
+Unele implementări se simplifică considerabil dacă stocăm ultimul nod separat de rețea. Atunci toate listele din rețea au lungime egală, $k-1$.
+
+Implementarea cu \ccode{deque}-uri este chiar mai scurtă, dar este foarte ineficientă cînd $d$ este mare, deoarece creează o mulțime de \ccode{deque}-uri mici.
+
+\end{document}

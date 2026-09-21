@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Arbori parțiali minimi}
 
 \textbf{Definiție}: Dat fiind un graf neorientat conex $G=(V,E)$ cu $n$ noduri și $m$ muchii, unde fiecare muchie are asociat un cost, un \textbf{arbore parțial} (engl. \textit{spanning tree}) este o colecție de $n-1$ muchii care conectează toate cele $n$ noduri. Un \textbf{arbore parțial minim} (APM, engl. \textit{minimum spanning tree, MST}) este un arbore parțial care minimizează suma costurilor celor $n-1$ muchii.
@@ -56,3 +59,5 @@ Cum actualizăm un APM, $T$, cînd costul unei muchii se modifică?
 \end{itemize}
 
 Cum actualizăm un APM, $T$, la adăugarea unui nod $z$? Nu putem pur și simplu să privim $(V, \{z\})$ ca pe o tăietură, deoarece $z$ poate aduce cu el muchii foarte ușoare, ceea ce face ca $T$ \textbf{să nu mai fie APM} pentru mulțimea sa de noduri. Putem folosi o \href{https://www.sciencedirect.com/science/article/pii/0022000078900223}{parcurgere DFS} specifică problemei, în $\mathcal{O}(n)$, sau putem rula algoritmii lui Kruskal și Prim pe mulțimea formată din $T$ și muchiile nou adăugate de $z$. De ce?
+
+\end{document}

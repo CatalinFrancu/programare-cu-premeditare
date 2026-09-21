@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Carry Bit (IIOT 2023-2024 runda 3)}
@@ -110,3 +113,5 @@ Acum căutăm grupe maximale de sufixe consecutive (lexicografic) care provin di
 \subsubsection*{Optimizare}
 
 Putem omite cu totul structura de date pentru RMQ. Să observăm, de fapt, că toate interogările de minim sînt grupate. Pentru fiecare poziție $a \leq k \leq b$ ne interesează minimul pe intervalele $[a - 1, k]$ și $[k, b + 1]$. Putem calcula aceste minime prin două treceri, una înapoi și una înainte, prin intervalul $[a, b]$.
+
+\end{document}

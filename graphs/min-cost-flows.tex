@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Fluxuri de cost minim}
 
 \section{Descrierea problemei}
@@ -143,3 +146,5 @@ Acest \href{https://codeforces.com/blog/entry/95823}{articol pe Codeforces} expl
   \item Muchiile saturate dispar din graf. Acestea nu au cum să contrazică funcția de potențial, căci ce este de fapt această funcție? Este o restricție, o condiție impusă fiecărei muchii. O muchie dispărută înseamnă o restricție mai puțin.
   \item Pot apărea muchii reziduale în graf. Dar aceste muchii sînt pe o cale minimă $s-t$ și deci respectă $p(u, v) + h(u) - h(v) = 0 \Leftrightarrow -p(u, v) + h(v) - h(u) = 0$, deci și muchia $(v, u)$ nou creată va respecta potențialele.
 \end{enumerate}
+
+\end{document}

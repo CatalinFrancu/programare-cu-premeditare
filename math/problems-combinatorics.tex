@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 Primele 8 probleme sînt educaționale, clasice.
@@ -348,3 +351,5 @@ Cazul (1) îl tratăm ca și pînă acum, iar cazul (2) îl oglindim față de $
 Ne folosim doar de $LL(d)$. Iterăm prin toate valorile posibile pentru deplasarea $d$. Pentru o deplasare $d$ aleasă, adunăm la rezultat cantitatea $LL(d)$ înmulțită cu numărul de perechi de linii, una din $A$ și una din $B$, între care distanța pe verticală este $d$. Să notăm această cantitate cu $P(d)$.
 
 Cît este $P(d)$? Dat fiind că zona $B$ ocupă liniile pe verticală de la $y_1$ la $y_2$, o putem pune în corespondență cu liniile din zona $A$ cu coordonate între $y_1-d$ și $y_2-d$ (astfel ca deplasarea pe verticală să fie de $d$ pași). Așadar, trebuie doar să intersectăm intervalul zonei A, să-l numim $(y^A_1, y^A_2)$, cu intervalul de interes $(y_2 - d, y_1 - d)$. Această operație este elementară.
+
+\end{document}

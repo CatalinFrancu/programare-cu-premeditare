@@ -26,7 +26,7 @@
 % Reenable page numbering.
 \mainmatter
 
-\import{./}{preface.tex}
+\subfile{preface.tex}
 
 \pagestyle{fancy}
 
@@ -114,13 +114,77 @@
 \subfile{trees/centroid}
 \subfile{trees/problems-centroid}
 
-\import{./}{math.tex}
-\import{./}{geometry.tex}
-\import{./}{graphs.tex}
-\import{./}{strings.tex}
-\import{./}{assorted-problems.tex}
+\part{Matematică}
 
-\import{./}{afterword.tex}
+\subfile{math/number-theory}
+\subfile{math/problems-number-theory}
+\subfile{math/crt}
+\subfile{math/problems-crt}
+\subfile{math/combinatorics}
+\subfile{math/problems-combinatorics}
+\subfile{math/ranking}
+\subfile{math/problems-ranking}
+\subfile{math/exponentiation}
+\subfile{math/problems-exponentiation}
+
+\part{Geometrie computațională}
+
+\subfile{geometry/basics}
+\subfile{geometry/problems-basics}
+\subfile{geometry/algorithms}
+\subfile{geometry/problems-algorithms}
+
+\part{Grafuri}
+
+\subfile{graphs/mst}
+\subfile{graphs/problems-mst}
+\subfile{graphs/connectivity}
+\subfile{graphs/problems-connectivity}
+\subfile{graphs/distances}
+\subfile{graphs/problems-distances}
+\subfile{graphs/eulerian-paths}
+\subfile{graphs/problems-eulerian-paths}
+\subfile{graphs/flows}
+\subfile{graphs/problems-flows}
+\subfile{graphs/matchings}
+\subfile{graphs/problems-matchings}
+\subfile{graphs/min-cost-flows}
+\subfile{graphs/problems-min-cost-flows}
+
+\part{Algoritmi pe șiruri de caractere}
+
+\begingroup
+\input{strings/tikz-styles.tex}
+\subfile{strings/rabin-karp}
+\subfile{strings/problems-rabin-karp}
+\subfile{strings/kmp}
+\subfile{strings/problems-kmp}
+\subfile{strings/z-function}
+\subfile{strings/ternary-sort}
+\subfile{strings/problems-ternary-sort}
+\subfile{strings/suffix-arrays}
+\subfile{strings/problems-suffix-arrays}
+\subfile{strings/tries}
+\subfile{strings/problems-tries}
+\endgroup
+
+\part{Probleme diverse}
+
+\subfile{assorted-problems/intro}
+\subfile{assorted-problems/liars}
+\subfile{assorted-problems/pavare-infinită}
+\subfile{assorted-problems/triunghi}
+\subfile{assorted-problems/gurger-brill}
+\subfile{assorted-problems/takara}
+\subfile{assorted-problems/tornade}
+\subfile{assorted-problems/as-de-spade}
+\subfile{assorted-problems/scurtcircuit}
+\subfile{assorted-problems/lungcircuit}
+\subfile{assorted-problems/cal-cule}
+\subfile{assorted-problems/6-de-pentagrame}
+
+\subfile{afterword.tex}
+
 \import{./}{appendix.tex}
 
 \end{document}

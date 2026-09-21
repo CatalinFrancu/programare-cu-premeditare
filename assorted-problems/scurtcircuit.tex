@@ -1,0 +1,96 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\section{Problema Scurtcircuit (Lot 2025)}
+\label{problem:scurtcircuit}
+
+\href{https://kilonova.ro/problems/3805}{enunț}
+$\bullet$
+\hyperref[code:scurtcircuit]{sursă}
+
+Problema necesită cîteva cunoștințe de nișă despre \href{https://en.wikipedia.org/wiki/Adder_(electronics)}{sumatoare}. Eu aveam doar bazele, dar am reușit să redescopăr o bună parte, pînă la 90p. \emoji{slightly-smiling-face}
+
+Sigur, am putem proiecta sumatorul băbește. Pe ultima coloană adunăm doi biți, din care rezultă un rezultat și un bit de transport pentru penultima coloană. Rezultatul îl adunăm cu al treilea bit și rezultă încă un transport pentru penultima coloană etc. Dificultatea problemei constă în faptul că ține cont de adîncimea circuitului, adică de numărul maxim de porți înlănțuite astfel încît intrarea uneia să depindă de ieșirea precedentei. Această adîncime trebuie să fie oarecum logaritmică pentru punctaj maxim (vezi coloana $D_{lim_5}$ din enunț). Sumatorul naiv va ajunge la adîncime $\bigoh(nk)$, mult prea rea.
+
+\subsection{Compresorul 3:2}
+
+Să observăm că un sumator pentru două numere nu adună doar doi cîte doi biți. Pe fiecare poziție, sumatorul are nevoie de un circuit elementar cu \textbf{trei} intrări: biții de pe acea poziție și transportul de la poziția anterioară. Acest circuit se numește sumator integral (engl. \textit{full adder}), spre deosebire de un sumator fără transport, care se numește semisumator (engl. \textit{half adder}).
+
+Rezultatul adunării a 3 biți va fi între 0 și 3 (cine a spus că nu învățăm și matematică la acest cerc??). Așadar, la ieșire ne ajung doar doi biți: rezultatul pe aceeași poziție și transportul pentru următoarea poziție. De aceea, sumatoarele integrale se mai numesc și \href{https://en.wikipedia.org/wiki/Adder_(electronics)#3:2_compressors}{compresoare 3:2}.
+
+Merită să petrecem puțin timp ca să proiectăm un compresor 3:2 cît mai eficient (conform problemei), căci este cărămida de bază a soluției. Adîncimea este crucială; numărul de celule suplimentare este doar cireașa de pe tort. Iată un sumator integral care folosește 3 celule suplimentare și are adîncime 3. Codul de mai jos adună biții din celulele $x$, $y$ și $z$ și pune suma în $s$ și transportul (\textit{carry}) în $c$. Folosim formulele:
+
+\begin{itemize}
+  \item $s = x \oplus y \oplus z$
+  \item $c = x \cdot y + y \cdot z + z \cdot x$ sau, ca să refolosim celulele, $x \cdot y + (x \oplus y) \cdot z$
+\end{itemize}
+
+\begin{minted}{c}
+void compress_32(int x, int y, int z, int* s, int* c) {
+int x_xor_y = new_cell(OP_XOR, x, y);
+*s = new_cell(OP_XOR, x_xor_y, z);
+int x_and_y = new_cell(OP_AND, x, y);
+int x_xor_y_and_z = new_cell(OP_AND, x_xor_y, z);
+*c = new_cell(OP_OR, x_and_y, x_xor_y_and_z);
+}
+\end{minted}
+
+\subsection{Reducerea de la \texorpdfstring{$k$}{k} numere la două numere}
+
+Noi putem folosi compresorul 3:2 și la modul general, adunînd orice 3 biți vrem noi. Să privim numerele ca pe o matrice de $n \cdot k$ biți. Pe fiecare coloană $c$, luăm grupe de cîte trei biți și îi înlocuim cu doi: unul pe coloana $c$ și unul pe coloana $c + 1$. Procedăm astfel pe toate coloanele și obținem o nouă colecție de biți, toți calculabili la adîncime 3, căci așa funcționează sumatorul (biții rămași ca rest modulo 3 sînt la adîncime 0, dar ne interesează maximul).
+
+Repetăm acest procedeu, reducînd la fiecare trecere numărul de biți la circa 2/3. Așadar, vor fi necesare circa $\log_{3/2}(n/2)$ iterații pentru a reduce $n$ biți la 2 biți, iar fiecare iterație crește adîncimea cu 3. Mai există niște rotunjiri în sus datorită biților rămași modulo 3, dar ne încadrăm bine în limitele problemei. Ca să dăm un exemplu la întîmplare, pentru $n = 500$ și $k = 200$ ne trebuie $\log_{3/2} 250 < 14$ iterații ca să reducem 500 de numere la două numere, adică adîncime 42 din totalul de 65 permis pentru punctaj maxim.
+
+\subsection{Generarea și propagarea transportului}
+
+Am redus așadar problema la două numere de $k + \log_2 n$ biți (vom spune $k$ pentru simplitate). Nu ne permitem să adunăm numerele naiv, de la dreapta la stînga, căci fiecare transport ar depinde de anteriorul, ceea ce ar duce la o adîncime $\bigoh(k)$. Este nevoie să paralelizăm efortul, adică să scriem sumatoare progresiv mai mari pentru subsecvențe ale numerelor. Dar sumatoarele au nevoie, la intrare, de transport. Cum putem ști, pe distanțe mari, dacă există transport? Pentru aceasta, să introducem noțiunea de \textit{generare-propagare} (GP).
+
+Să considerăm o coloană $i$ cu biții $a$ și $b$. La adunare,
+
+\begin{itemize}
+  \item Coloana \textbf{generează} transport dacă $a = b = 1$.
+
+  \item Coloana \textbf{propagă} transportul primit de la coloana $i-1$ către coloana $i+1$ dacă $a \oplus b = 1$.
+\end{itemize}
+
+Să definim așadar cantitățile booleene $g$ și $p$ care indică, respectiv, dacă coloana $i$ generează și propagă transport. Acum, să considerăm două zone mai mari de coloane, de lățimi arbitrare, alipite. Să spunem că le-am calculat caracteristicile $g_1$ și $p_1$ (pentru zona mai puțin semnificativă), respectiv $g_2$ și $p_2$ (pentru zona mai semnificativă). Ce putem spune despre reuniunea zonelor?
+
+\begin{itemize}
+  \item Reuniunea generează transport dacă zona 2 generează transport \textbf{sau} zona 1 generează transport, iar zona 2 îl propagă. Așadar, $g = g_2 + g_1 \cdot p_2$ (operatorii $+$ și $\cdot$ sînt booleeni).
+
+  \item Reuniunea propagă transportul dacă și zona 1, și zona 2 îl propagă. Așadar, $p = p_1 \cdot p_2$.
+\end{itemize}
+
+Putem exprima aceste formule ca pe un operator:
+
+$$(g_1, p_1) \circ (g_2, p_2) = (g_2 + g_1 \cdot p_2, p_1 \cdot p_2)$$
+
+Implementarea acestui operator este în funcția \ccode{combine()}, care are adîncime 2:
+
+\begin{minted}{c}
+struct gen_prop {
+  int g, p;
+};
+
+gen_prop combine(gen_prop a, gen_prop b) {
+  gen_prop res;
+  int a_gen_b_prop = new_cell(OP_AND, a.g, b.p);
+  res.g = new_cell(OP_OR, b.g, a_gen_b_prop);
+  res.p = new_cell(OP_AND, a.p, b.p);
+  return res;
+}
+\end{minted}
+
+\subsection{Adunarea a două numere}
+
+În sfîrșit putem ataca adunarea finală. Să definim $G_i$ și $P_i$ = generarea, respectiv propagarea transportului în zona de coloane $0 \dots i$. Dacă reușim să le calculăm, atunci suma celor două numere este ușor de calculat. Transportul la intrare pe orice coloană i va fi $G_{i-1}$, iar suma (bitul de rezultat care ne interesează) va fi $a_i \oplus b_i \oplus G_{i-1} = P_i \oplus G_{i-1}$. Foarte convenabil, toate aceste valori pot fi calculate în paralel (adică la adîncime 1).
+
+Iar, pentru a calcula $G_i$ și $P_i$, vom construi o tabelă rară \ccode{GP}, unde \ccode{GP[p][i]} reține valorile parțiale \ccode{G[i-2^p+1...i]} și \ccode{P[i-2^p+1...i]}. Calculăm fiecare celulă combinînd două jumătăți, ca la RMQ. Ca să ne facem viața mai ușoară, definim și valorile \ccode{GP[p][i]} pentru care $i < 2^p$, cu convenția că în acele cazuri ne referim la tot intervalul $[0, i]$. Atunci pe ultima linie a tabelei \ccode{GP}, fie ea linia $h$ (cu $2^h \geq k$) toate intervalele vor începe de la 0, deci linia $h$ conține fix valorile $G_i$ și $P_i$ care ne interesează.
+
+Calculul tabelei \ccode{GP} crește adîncimea circuitului cu $2 \log_2 k$ niveluri.
+
+Mai rămîne doar să calculăm rezultatul, în adîncime 1, așa cum am spus.
+
+Acest circuit se numește \href{https://en.wikipedia.org/wiki/Kogge\%E2\%80\%93Stone_adder}{sumator Kogge-Stone}. În prima mea încercare am folosit un alt sumator, \href{https://en.wikipedia.org/wiki/Brent\%E2\%80\%93Kung_adder}{Brent-Kung}, dar acesta necesită o adîncime mai mare, $4 \log_2 k$ și depășea limita pentru punctaj maxim.
+
+\end{document}
