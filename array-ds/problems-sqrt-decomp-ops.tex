@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Serega and Fun (Codeforces)}
@@ -116,3 +119,5 @@ $$[20-25], [31-35], [15-0], [36-39], [30-26], [19-16]$$
 Pentru a găsi valoarea de pe o poziție, parcurgem naiv lista de blocuri pînă ajungem la cel care include poziția dorită. De exemplu, poziția \#20 se regăsește în blocul $[15,0]$ pe poziția 9, așadar la indicele 6 în vectorul original.
 
 Lungimea listei de blocuri poate crește cu 2 la fiecare operație. Ca să nu ajungem la timpi $\bigoh(q)$ per operație, la fiecare (circa) $\sqrt{q}$ operații \textbf{defragmentăm} lista. Pentru aceasta, iterăm prin lista de blocuri și vărsăm într-un vector elementele de la indicii întîlniți. Astfel reconstruim vectorul real. Apoi resetăm lista de blocuri la același unic bloc, $[0,n-1]$.
+
+\end{document}

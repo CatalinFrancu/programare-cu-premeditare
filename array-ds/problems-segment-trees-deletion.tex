@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \section{Probleme}
 
 \subsection{Problema Addition on Segments (Codeforces)}
@@ -125,3 +128,5 @@ Nu în ultimul rînd, este important să gestionăm cît mai comod cazurile part
 \end{itemize}
 
 Inițial m-am chinuit să folosesc două DSF, una pentru $x$-i și una pentru $y$-i. Dar codul s-a complicat mult. În loc de asta, folosesc un singur DSF, pentru rețele. Inițializez rețele cu etichetele $0 \dots MAX\_COORD-1$ pe axa $Ox$ și $MAX\_COORD \dots 2 \cdot MAX\_COORD - 1$ pe axa $Oy$. Pentru fiecare rețea rețin mărimile (numărul de $x$ distincți și numărul de $y$ distincți). Dacă inițializăm corect aceste mărimi, ca să respecte regula de compunere de mai sus, atunci cazurile particulare dispar.
+
+\end{document}

@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Ștergerea din structuri de date care nu admit ștergeri}
 
 Există situații cînd avem nevoie de o structură de date $S$ care să suporte adăugări și ștergeri. Știm să facem adăugarea într-o complexitate $\bigoh(T(n))$, dar nu știm deloc să facem ștergerea. Să spunem, în schimb, că știm să facem operații \textit{undo} (ștergerea elementelor în ordinea inversă adăugării lor). Această operație este adesea mai simplă. În această situație, putem folosi arborii de intervale ca să implementăm și ștergeri în general, dacă plătim un cost suplimentar de $\bigoh(\log n)$. Așadar, complexitatea finală va fi $\bigoh(T(n) \log n)$ per operație.
@@ -11,3 +14,5 @@ Iată un exemplu. Să spunem că dorim o structură care să admită adăugări,
 \end{turn}
 
 În supa culturală românească, tehnica se numește „AINT pe timp”. \href{https://cp-algorithms.com/data_structures/deleting_in_log_n.html}{CP Algorithms} are un articol foarte bun despre subiect.
+
+\end{document}

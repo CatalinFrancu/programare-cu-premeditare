@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Structuri 2D offline}
 
 Acest minicapitol prezintă o clasă de structuri de date care pot procesa operații pe perechi de puncte cu valori într-un interval $[1, n]$ unde $n \sim 10^5$. Structurile obțin timp $\bigoh(n \log^2 n)$ și folosesc memorie $\bigoh(n \log n)$. Aceste structuri se aplică doar în cazul în care datele sînt cunoscute în avans (\textit{offline}). Ele se bazează pe structurile deja studiate (arbori de intervale și arbori indexați binar). Ca să nu tot menționăm „AINT sau AIB” peste tot, ne vom referi doar la AINT-uri.
@@ -49,3 +52,5 @@ Pentru operația de interogare 2D într-un dreptunghi $(x_1, y_1) - (x_2, y_2)$,
 \end{itemize}
 
 Și această operație are tot complexitatea $\bigoh(\log^2 n)$ din același motiv ca mai sus.
+
+\end{document}

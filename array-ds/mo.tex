@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Algoritmul lui Mo}
 \label{chapter:mo}
 
@@ -79,3 +82,5 @@ Poziția lui $r$ se schimbă cu $\bigoh(S)$ la fiecare operație. În plus, pent
 Pentru fiecare pereche de blocuri, $t$ poate trece prin toate cele $q$ operații, cu un efort total de $\bigoh(qB^2)$.
 
 Așadar, complexitatea algoritmului este $\bigoh(qS + nB + qB^2)$. De aceea dorim ca $B^2 \approx S$ și alegem $B \approx n^{1/3}$ și $S \approx n^{2/3}$, pentru o complexitate totală de $\bigoh((q + n)n^{2/3})$.
+
+\end{document}

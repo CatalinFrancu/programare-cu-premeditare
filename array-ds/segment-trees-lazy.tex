@@ -1,3 +1,6 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
 \chapter{Arbori de intervale cu propagare \textit{lazy}}
 \label{chapter:segment-trees-lazy}
 
@@ -293,3 +296,5 @@ Este nevoie de atenție la compunerea actualizărilor. Dacă avem două cantită
 O regulă de aur este că, la începutul și la sfîrșitul fiecărei funcții, arborele trebuie să fie într-o stare \textbf{coerentă}. Aceasta înseamnă că trebuie să definim un \textbf{contract}, o promisiune despre care este structura logică a fiecărui nod. Vă recomand chiar să notați acest contract într-un comentariu de una-două fraze, la începutul codului pentru AINT. Apoi, scrieți codul astfel încît, la intrarea și la ieșirea din orice funcție, toate nodurile arborelui să respecte acel contract.
 
 De exemplu, dacă informația \textit{lazy} este o cantitate de adăugat pe tot subarborele, atunci operația \textit{push} trebuie neapărat să se încheie prin a pune pe 0 valoarea \textit{lazy} din părinte. În niciun caz nu trebuie să încheiem operația \textit{push} lăsînd aceeași valoare \textit{lazy} în părinte și în fii.
+
+\end{document}
