@@ -1,0 +1,37 @@
+\documentclass[../main.tex]{subfiles}
+\begin{document}
+
+\section{Problema Subiectul I („Nervi”) (Lot 2024)}
+\label{problem:subiectul-i}
+
+\href{https://kilonova.ro/problems/2841}{enunț}
+$\bullet$
+\hyperref[code:subiectul-i]{surse}
+
+\subsection{Soluție în \texorpdfstring{$\bigoh(n^3)$}{O(n3)}}
+
+O soluție în $\bigoh(n^3)$ primește 54 de puncte și este relativ evidentă: extindem fiecare spirală, pornind pe rînd din fiecare centru $(l, c)$ în oricare dintre cele patru direcții și în cele două sensuri (orar sau antiorar). Maximul acestor opt posibilități ne arată raza maximă a unei spirale care pornește din $(l, c)$. Răspunsul la problemă este suma acestor maxime pentru toate punctele de pornire (toate celulele matricei).
+
+Trebuie să acordăm atenție spiralelor de latură pară. Dacă la cele impare centrul cade într-o celulă, la cele impare centrul care la intersecția a patru celule. Este important să numărăm aceste spirale exact o dată.
+
+Pentru a obține complexitatea de $\bigoh(n)$ per punct de pornire, trebuie să putem extinde spirala cu încă o latură (sau, de fapt, cu un colțar format din două laturi) în $\bigoh(1)$. Putem face acest lucru precalculînd, pentru fiecare punct și fiecare dintre cele patru direcții, distanța pînă la primul element care nu este ordonat. De exemplu:
+
+$$
+d[l][c][dreapta] =
+\begin{cases}
+1 & \text{dacă} \ \ \ a[l][c] < a[l][c+1] \\
+1 + d[l][c + 1][dreapta] & \text{dacă} \ \ \ a[l][c] \geq a[l][c+1]
+\end{cases}
+$$
+
+Pentru a simplifica implementarea, putem să evităm să scriem cod similar pentru cele patru direcții. În loc de aceasta, putem scrie cod pentru o singură direcție și orientare, iar pe celelalte le obținem rotind și oglindind matricea.
+
+\subsection{Soluție în \texorpdfstring{$\bigoh(n^2)$}{O(n2)}}
+
+Pentru 100 de puncte este nevoie să găsim următoarea recurență. Raportat la centru, matricea se compune din patru triunghiuri dreptunghice. Pentru triunghiul care se extinde spre nord, dorim să răspundem la întrebarea: ce latură maximă poate avea acest triunghi astfel încît, pe fiecare linie orizontală, elementele să fie descrescătoare? Similar și pentru celelalte trei triunghiuri. Latura maximă a unei spirale impare este minimul dintre răspunsurile pentru cele patru triunghiuri.
+
+Putem calcula în $\bigoh(n^2)$ răspunsurile pentru toate triunghiurile care merg spre nord, observînd că putem obține triunghiul cu vîrful în $(l, c)$ din două triunghiuri cu vîrfurile în $(l - 1, c - 1)$ și $(l - 1, c + 1)$.
+
+Din nou, este nevoie să tratăm cu atenție spiralele de latură pară.
+
+\end{document}
