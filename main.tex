@@ -185,6 +185,51 @@
 
 \subfile{afterword.tex}
 
-\import{./}{appendix.tex}
+\appendix
+% Implicit folosește litere, dar avem mai mult de 26. :-)
+\renewcommand{\thechapter}{\arabic{chapter}}
+
+\part{Anexă: Cod-sursă}
+
+\subfile{appendix/principles-good-practices.tex}
+\subfile{appendix/segment-trees.tex}
+\subfile{appendix/segment-trees-lazy.tex}
+\subfile{appendix/segment-trees-deletion.tex}
+\subfile{appendix/fenwick-trees.tex}
+\subfile{appendix/offline-2d.tex}
+\subfile{appendix/sqrt-decomp.tex}
+\subfile{appendix/mo.tex}
+\subfile{appendix/advanced-ds-skip-lists.tex}
+\subfile{appendix/advanced-ds-treaps.tex}
+\subfile{appendix/other-ds-dsf.tex}
+\subfile{appendix/bit-mastery-bit-hacks.tex}
+\subfile{appendix/bit-mastery-mitm.tex}
+\subfile{appendix/tree-basics.tex}
+\subfile{appendix/tree-linearization.tex}
+\subfile{appendix/tree-small-to-large.tex}
+\subfile{appendix/tree-lca.tex}
+\subfile{appendix/tree-mo.tex}
+\subfile{appendix/tree-heavy-light.tex}
+\subfile{appendix/tree-centroid.tex}
+\subfile{appendix/math-number-theory.tex}
+\subfile{appendix/math-crt.tex}
+\subfile{appendix/math-combinatorics.tex}
+\subfile{appendix/math-ranking.tex}
+\subfile{appendix/math-exponentiation.tex}
+\subfile{appendix/geometry-basics.tex}
+\subfile{appendix/geometry-algorithms.tex}
+\subfile{appendix/graphs-mst.tex}
+\subfile{appendix/graphs-connectivity.tex}
+\subfile{appendix/graphs-distances.tex}
+\subfile{appendix/graphs-eulerian-paths.tex}
+\subfile{appendix/graphs-flows.tex}
+\subfile{appendix/graphs-matchings.tex}
+\subfile{appendix/graphs-min-cost-flows.tex}
+\subfile{appendix/strings-rabin-karp.tex}
+\subfile{appendix/strings-kmp.tex}
+\subfile{appendix/strings-ternary-sort.tex}
+\subfile{appendix/strings-suffix-arrays.tex}
+\subfile{appendix/strings-tries.tex}
+\subfile{appendix/assorted-problems.tex}
 
 \end{document}
