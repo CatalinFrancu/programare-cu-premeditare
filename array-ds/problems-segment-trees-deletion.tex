@@ -20,12 +20,11 @@ Pentru a demonstra echivalența, să presupunem că obținem o valoare $a$ pe o 
 
 Cu această cerință, problema amintește de problema rucsacului 0/1. Să fixăm o poziție $i$. Considerăm toate valorile $x$ pentru interogările $[l,r]$ care satisfac $l \leq i \leq r$. Rezolvăm problema rucsacului pentru acele valori și aflăm mulțimea de sume pe care le putem obține (limitate la valoarea $n$ conform enunțului).
 
-Rezolvarea pentru o poziție (rucsacul clasic) are complexitate de $\bigoh(q^2)$, așadar efortul total este $\bigoh(nq^2)$, prea mare. Dar dacă am încerca să baleiem pozițiile de la 1 la $n$? Atunci avem nevoie de o structură de date cu următoarele operații:
+Rezolvarea pentru o poziție (rucsacul clasic) are complexitate de $\bigoh(qn)$, așadar efortul total este $\bigoh(qn^2)$, prea mare. Dar dacă am încerca să baleiem pozițiile de la 1 la $n$? Ca să avansăm de la poziția $i$ la $i+1$ și să actualizăm rucsacul, avem nevoie de o structură de date cu următoarele operații:
 
 \begin{enumerate}
-  \item Adaugă un obiect la rucsac (la poziția $l$, adăugăm obiectul $x$ la rucsac).
-
-  \item Scoate un obiect din rucsac (la poziția $r$, scoatem obiectul $x$ din rucsac).
+  \item Adaugă un obiect în rucsac (pentru intervalele care încep la $i+1$).
+  \item Scoate un obiect din rucsac (pentru intervalele care se termină la $i$).
 \end{enumerate}
 
 Adăugarea este relativ cunoscută. O reiau aici pentru cei care nu au mai văzut-o. Dacă folosim al $k$-lea obiect de greutate $x$, putem obține (1) orice sume puteam obține cu primele $k-1$ obiecte și (2) aceleași sume mărite cu $x$.
