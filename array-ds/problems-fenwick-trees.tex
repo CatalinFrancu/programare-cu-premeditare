@@ -164,9 +164,11 @@ Aici intervine ultimul artificiu. Dorim să reducem problema la o interogare uni
 
 Putem răspunde la aceste întrebări cu un AIB de maxime, cu două observații:
 
-Trebuie să normalizăm coordonatele $x$ la intervalul $[1, n]$. Nu ne interesează valorile exacte, ci doar relațiile între ele.
+\begin{enumerate}
+  \item Trebuie să normalizăm coordonatele $x$ la intervalul $[1, n]$. Nu ne interesează valorile exacte, ci doar relațiile între ele.
 
-AIB-ul de maxime știe să calculeze doar maxime pe prefix, nu pe sufix. Dar putem să reflectăm toate valorile $x$ normalizate față de $n$ pentru a transforma interogările pe sufix în interogări pe prefix.
+  \item AIB-ul de maxime știe să calculeze doar maxime pe prefix, nu pe sufix. Dar putem să reflectăm toate valorile $x$ normalizate față de $n$ pentru a transforma interogările pe sufix în interogări pe prefix.
+\end{enumerate}
 
 Observație tangențială: Întotdeauna estimați mărimea fișierului de intrare! În acest caz, avem 1,5 milioane de numere pe 9 cifre plus spații, deci circa 15 MB. Timpul de rulare este efectiv dominat de citire. Sursa inclusă a rulat în 1.100 ms. O \href{https://codeforces.com/contest/12/submission/280421220}{a doua sursă}, cu citire rapidă, a rulat în 170 ms.
 
