@@ -75,41 +75,20 @@ void normalize_x() {
   }
 }
 
-void sort_ladies_by_z() {
+void sort_ladies_by_z_desc_x_asc() {
   std::sort(l, l + n, [](lady& a, lady& b) {
-    return a.z > b.z;
+    return (a.z > b.z) || ((a.z == b.z) && (a.x < b.x));
   });
-}
-
-int process_equal_z_batch(int start, int end) {
-  int result = 0;
-
-  for (int i = start; i < end; i++) {
-    int prev_max_y = fen.suffix_max(l[i].x + 1);
-    result += (prev_max_y > l[i].y);
-  }
-  for (int i = start; i < end; i++) {
-    fen.update(l[i].x, l[i].y);
-  }
-
-  return result;
 }
 
 int count_self_murderers() {
   fen.init(n);
 
   int result = 0;
-
-  // Procesează calupuri de valori z egale. Aceste doamne nu se domină una pe
-  // alta.
-  int i = 0;
-  while (i < n) {
-    int j = i;
-    while ((j < n) && (l[j].z == l[i].z)) {
-      j++;
-    }
-    result += process_equal_z_batch(i, j);
-    i = j;
+  for (int i = 0; i < n; i++) {
+    int prev_max_y = fen.suffix_max(l[i].x + 1);
+    result += (prev_max_y > l[i].y);
+    fen.update(l[i].x, l[i].y);
   }
 
   return result;
@@ -122,7 +101,7 @@ void write_answer(int answer) {
 int main() {
   read_data();
   normalize_x();
-  sort_ladies_by_z();
+  sort_ladies_by_z_desc_x_asc();
   int answer = count_self_murderers();
   write_answer(answer);
 

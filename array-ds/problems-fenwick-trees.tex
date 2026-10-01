@@ -154,15 +154,30 @@ Pentru a scurta codul, putem întoarce pe dos logica structurii: sortăm operaț
 $\bullet$
 \hyperref[code:ball]{sursă}
 
-Să abstractizăm problema: date fiind $n$ puncte în spațiu, cîte dintre ele sînt dominate de un alt punct? Spunem că un punct $(x,y,z)$ domină un punct ($x', y', z'$) dacă $x > x'$, $y > y'$ și $z > z'$.
+Să abstractizăm problema: date fiind $n$ puncte în spațiu, cîte dintre ele sînt dominate de un alt punct? Spunem că un punct $Q$ domină un punct $P$ dacă $x_Q > x_P$, $y_Q > y_P$ și $z_Q > z_P$.
 
-Ca și la problema Subsequences, un prim pas este să reducem interogările tridimensionale la interogări  bidimensionale. Să sortăm punctele descrescător după $z$. Dacă toate $z$-urile ar fi diferite, atunci am ști că toate punctele procesate anterior au $z$-ul mai mare decît toate cele viitoare. Dat fiind că $z$-urile pot fi egale, trebuie să ne adaptăm. Este suficient să procesăm  punctele în grupuri cu același $z$. Pentru toate punctele dintr-un grup calculăm întîi răspunsul și abia apoi le adăugăm la structura de date (oricare ar fi ea).
+Ideea generală a rezolvării este să construim o structură de date în care să includem punctele unul cîte unul. Înainte de a include fiecare punct $P$, ne întrebăm: printre punctele deja existente în structură, este vreunul care îl domină pe $P$? Remarcăm că ne promitem că orice punct va fi adăugat la această structură înaintea tuturor punctelor pe care le domină.
 
-Astfel, problema pentru punctul $p(p_x, p_y, p_z)$ devine: există vreun punct văzut anterior care să aibă și $x$-ul și $y$-ul mai mare? Interogarea pare bidimensională: trebuie să aflăm dacă există vreun punct în cadranul de la $(p_x,p_y)$ la $(\infty,\infty)$. Iar coordonatele sînt prea mari pentru un AIB 2D.
+Ca și la alte probleme, vom scăpa de constrîngerile pe una dintre dimensiuni -- să zicem $z$ -- sortînd punctele descrescător după $z$. Apoi vom ignora coordonata $z$ pentru tot restul problemei. Intenția este ca, orice formă va lua structura de date pe care o proiectăm, să avem garanția cînd evaluăm un punct $P$ că punctele existente în structură îl domină pe $P$ pe axa $Oz$. Această condiție este \textbf{aproape} suficientă pentru a ne respecta promisiunea sus-menționată.
 
-Aici intervine ultimul artificiu. Dorim să reducem problema la o interogare unidimensională pe sufix: dintre toate punctele văzute anterior, considerîndu-le doar pe cele cu $x > p_x$, există vreunul cu $y > p_y$? Putem reformula această întrebare ca pe una de maxim: Dă-mi maximul lui $y$ pe domeniul $[p_x, \infty)$. Dacă acest maxim este  $> p_y$, atunci există un punct care îl domină pe $p$, altfel nu.
+Dar există un detaliu, înainte de a uita complet de coordonatele $z$. Dacă mai multe puncte au coordonata $z$ egală, atunci niciunul nu îl domină pe celălalt conform definiției. Totuși, dacă îl inserăm pe $Q = (5, 5, 10)$ în structură ca $(5, 5)$, apoi evaluăm punctul $P = (3, 3, 10)$, riscăm să credem că $Q$ îl domină pe $P$. Rezultă că trebuie să mai facem o promisiune: dacă un punct $Q$ din structură domină punctul curent $P$ pe $x$ și pe $y$, el îl domină și pe $z$.
 
-Putem răspunde la aceste întrebări cu un AIB de maxime, cu două observații:
+O primă soluție procesează punctele în grupe cu același $z$. Pentru fiecare grupă, întîi evaluăm punctele (decidem dacă sînt dominate sau nu) și abia apoi le adăugăm la structură. Această ordine este corectă întrucît nicio pereche dintre aceste puncte nu se domină între ele. Iată \href{https://codeforces.com/contest/12/submission/280419808}{o sursă} cu această abordare.
+
+A doua soluție, din sursa anexată, observă că este suficient să sortăm punctele descrescător după $z$, apoi crescător după $x$. Nu mai este necesară gruparea punctelor. Această sortare garantează respectarea celor două promisiuni:
+
+\begin{enumerate}
+  \item Dacă $Q$ îl domină pe $P$, atunci în particular $z_Q > z_P$, deci $Q$ este deja în structură.
+  \item Dacă un punct $Q$ din structură îl domină pe $P$ pe $x$ și pe $y$, atunci nu poate avea același $z$, căci l-am fi procesat pe $P$ înaintea lui $Q$. Deci cu siguranță $z_Q > z_P$.
+\end{enumerate}
+
+Mulțumiri lui Victor D. pentru această soluție elegantă.
+
+Acum putem ataca problema bidimensională. Pentru punctul $P$ ne întrebăm: există vreun punct văzut anterior care să aibă și $x$-ul și $y$-ul mai mare? Așadar, trebuie să aflăm dacă există vreun punct în cadranul de la $(x_P,y_P)$ la $(\infty,\infty)$. Iar coordonatele sînt prea mari pentru un AIB 2D.
+
+Aici intervine ultimul artificiu. Dorim să reducem problema la o interogare unidimensională pe sufix: dintre toate punctele văzute anterior, considerîndu-le doar pe cele cu $x > x_P$, există vreunul cu $y > y_P$? Putem reformula această întrebare ca pe una de maxim: Dă-mi maximul lui $y$ pe domeniul $[x_P, \infty)$. Dacă acest maxim este  $> y_P$, atunci există un punct care îl domină pe $p$, altfel nu.
+
+După cum am mai spus, dacă vrem să construim un AIB care să răspundă la interogări pentru $x > x_P$, rezultă că vom indexa AIB-ul după coordonatele $x$. Două detalii de implementare.
 
 \begin{enumerate}
   \item Trebuie să normalizăm coordonatele $x$ la intervalul $[1, n]$. Nu ne interesează valorile exacte, ci doar relațiile între ele.
@@ -170,6 +185,6 @@ Putem răspunde la aceste întrebări cu un AIB de maxime, cu două observații:
   \item AIB-ul de maxime știe să calculeze doar maxime pe prefix, nu pe sufix. Dar putem să reflectăm toate valorile $x$ normalizate față de $n$ pentru a transforma interogările pe sufix în interogări pe prefix.
 \end{enumerate}
 
-Observație tangențială: Întotdeauna estimați mărimea fișierului de intrare! În acest caz, avem 1,5 milioane de numere pe 9 cifre plus spații, deci circa 15 MB. Timpul de rulare este efectiv dominat de citire. Sursa inclusă a rulat în 1.100 ms. O \href{https://codeforces.com/contest/12/submission/280421220}{a doua sursă}, cu citire rapidă, a rulat în 170 ms.
+Observație tangențială: Întotdeauna estimați mărimea fișierului de intrare! În acest caz, avem 1,5 milioane de numere pe 9 cifre plus spații, deci circa 15 MB. Timpul de rulare este efectiv dominat de citire. Sursa inclusă a rulat în 1.100 ms. O \href{https://codeforces.com/contest/12/submission/392826861}{a doua sursă}, cu citire rapidă, a rulat în 180 ms.
 
 \end{document}
