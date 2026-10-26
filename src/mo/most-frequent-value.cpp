@@ -48,7 +48,7 @@ void add(int pos) {
   num_having_f[x - 1]--;
   num_having_f[x]++;
   if (x > max_f) {
-    max_f = f[v[pos]];
+    max_f = x;
   }
 }
 
