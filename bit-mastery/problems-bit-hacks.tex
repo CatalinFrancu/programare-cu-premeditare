@@ -226,11 +226,11 @@ Putem implementa aceste condiții cu o programare dinamică de tip înainte. Din
   \item Colecția de măști obținute din masca $m'$ prin ștergerea oricărui bit 1 în afară de bitul $b$. Ele au la fel de mulți biți ca $m$, semnificînd că suprascriem variabila al cărei bit dispare.
 \end{itemize}
 
-Complexitatea este $\bigoh(n \cdot 2^n)$ datorită generării colecției descrise mai sus.
+Complexitatea este $\bigoh(n^2 \cdot 2^n)$ datorită căutării pătratice a unei perechi de biți ale căror valori corespunzătoare să dea suma $a_b$. Această soluție se încadrează în timp... dar se poate mai bine!
 
-\subsubsection*{Verificarea sumelor}
+\subsubsection*{Verificarea eficientă a sumelor}
 
-Așadar, înainte de a completa măștile de variabile pentru bitul $b$, trebuie să ne întrebăm care dintre măștile anterioare (pe $b$ biți) sînt cu adevărat utile, în sensul că includ două elemente a căror sumă este $a_b$. De exemplu, pentru vectorul $a = (1, 2, 3, 100, 200)$, putem procesa primele 3 elemente în diverse moduri, obținînd diverse măști pe 3 biți. Dar toate sînt inutile, căci nicio combinație din primele 3 valori nu ne va da suma 100.
+Ca să reducem complexitatea la $\bigoh(n \cdot 2^n)$, trebuie să aflăm mai eficient dacă o mască include două elemente a căror sumă este $a_b$. De exemplu, pentru vectorul $a = (1, 2, 3, 100, 200)$, putem procesa primele 3 elemente în diverse moduri, obținînd diverse măști pe 3 biți. Dar toate sînt inutile, căci nicio combinație din primele 3 valori nu ne va da suma 100.
 
 Vom folosi un al doilea bitset de măști pentru acest scop, calculabil tot în $\bigoh(n \cdot 2^n)$. Vom calcula în aceeași iterație toate măștile în care MSB este bitul $b-1$. Le vom procesa în ordine crescătoare, astfel încît la procesarea unei măști să avem garanția că toate submăștile ei au fost procesate. Pentru masca $m$, fie $k$ bitul cel mai puțin semnificativ (LSB). Avem trei cazuri:
 

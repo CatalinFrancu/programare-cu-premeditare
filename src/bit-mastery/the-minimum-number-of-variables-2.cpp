@@ -1,3 +1,4 @@
+#pragma GCC target("lzcnt,popcnt")
 #include <stdio.h>
 
 const int MAX_N = 23;
