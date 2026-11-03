@@ -12,7 +12,7 @@ $\bullet$
 
 Iată o problemă aleasă ușor forțat pentru a ilustra compactarea variabilelor. Am căutat „DNA” pe codeforces, întrucît alfabetul ADN are doar 4 litere. \emoji{nerd-face}
 
-\subsubsection*{Soluție în $\bigoh(n \log n)$}
+\subsubsection*{Soluție în \texorpdfstring{$\bigoh(n \log n)$}{O(n log n)}}
 
 Pentru fiecare literă $L$, pentru fiecare lungime a unei infecții, $1 \leq e \leq 10$, și pentru fiecare rest $h$ modulo $e$, reținem cîte un AIB în care notăm 1 pe pozițiile din $s$ congruente cu $h$ modulo $e$ care conțin o literă $L$. Să presupunem că îl denumim \ccode{aib[L][e][h]}.
 
@@ -22,7 +22,7 @@ Interogările pornesc de la observația că, dacă litera $L$ apare pe poziția 
 
 Din ce am observat pe Codeforces, aceste soluții tind să folosească între 150 și 300 MB de memorie. Ordinul de mărime este corect: 55 de AIB-uri pentru 4 litere, fiecare conținînd \np{100000} de întregi, necesită $55 \times 4 \times \np{100000} \times 4 = 88$ MB de memorie. Restul este posibil să fie risipă.
 
-Soluție în $\bigoh(n \sqrt{n})$
+\subsubsection*{Soluție în \texorpdfstring{$\bigoh(n \sqrt{n})$}{O(n sqrt n)}}
 
 Iată și o soluție în $\bigoh(n \sqrt{n})$ care consumă doar 64 kB de memorie. Din această cauză, ea operează 100\% din time în cache-ul L1 și obține timpi comparabili cu soluția anterioară. Nu am ales întîmplător acest deziderat de 64 kB. \href{https://codeforces.com/blog/entry/57248}{Evaluatorul Codeforces} folosește un procesor i5-3470, care are un cache L1 de \href{https://www.techpowerup.com/cpu-specs/core-i5-3470.c1039}{64 kB per core}. Este o cifră comună pentru procesoarele moderne.
 
@@ -48,6 +48,6 @@ Varianta a treia elimină majoritatea operațiilor de împărțire. Ea este de c
 
 \subsubsection*{Concluzii}
 
-Această problemă nu este un exemplu perfect pentru compactarea variabilelor. În schimb, ea este un exemplu instructiv că reducerea de \np{3000} de ori a memoriei (de la ~200 MB la ~64 kB) compensează cu succes un algoritm asimptotic mai slab. Să nu uităm că $\log \np{100000} \approx \np{16.6}$, pe cînd $\sqrt{\np{100000}} \approx 316$. În plus, AIB-urile au constantă bună. Deci \textbf{teoretic descompunerea logaritmică ar trebui să fie de 19 ori mai lentă}.
+Această problemă nu este un exemplu perfect pentru compactarea variabilelor. În schimb, ea este un exemplu instructiv că reducerea de \np{3000} de ori a memoriei (de la ~200 MB la ~64 kB) compensează cu succes un algoritm asimptotic mai slab. Să nu uităm că $\log \np{100000} \approx \np{16.6}$, pe cînd $\sqrt{\np{100000}} \approx 316$. În plus, AIB-urile au constantă bună. Deci \textbf{teoretic descompunerea logaritmică ar trebui să fie de 19 ori mai rapidă}.
 
 \end{document}
