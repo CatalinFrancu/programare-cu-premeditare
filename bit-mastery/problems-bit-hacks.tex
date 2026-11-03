@@ -36,7 +36,7 @@ Calculăm vectorul \ccode{fit} extinzînd măștile cîte un bit la un moment da
 
 Dorim să evaluăm masca $z$ după ce am evaluat toate măștile care au cu un bit de 1 mai puțin. Ordinea naturală, crescătoare, oferă această proprietate, deci codul este simplu.
 
-Odată calculat vectorul fit, trecem prin vectorul $a$ și, pentru fiecare element $a_i$, definim $b = \overline{a_i}$ și tipărim \ccode{fit[b]} sau \ccode{-1}, după caz.
+Odată calculat vectorul \ccode{fit}, trecem prin vectorul $a$ și, pentru fiecare element $a_i$, definim $b = \overline{a_i}$ și tipărim \ccode{fit[b]} sau \ccode{-1}, după caz.
 
 \subsubsection*{Optimizare de memorie}
 
@@ -102,7 +102,7 @@ Pentru implementare vom folosi măști de biți. Unele concepte sînt simple și
 
 Așadar, să reprezentăm orice subsecvență de caractere distincte printr-o mască de $\Sigma = 20$ de biți corespunzători literelor \textit{a...t}, unde bitul 0 corespunde literei a, iar bitul 19 literei t. Fiecare bit are valoarea 1 dacă și numai dacă litera corespunzătoare apare în subsecvență. De exemplu, subsecvența \textit{cbtf} corespunde măștii \texttt{1000 0000 0000 0010 0110} (nu uitați că bitul 0 este cel mai din dreapta).
 
-Un concept des întîlnit este calcularea tuturor măștilor posibile. În acest caz, există cel mult $2^{20} \approx \np{1000000}$ de măști posibile. Putem construi un vector de \ccode{bool} (sau chiar un \ccode{bitset}) care indică ce măști putem obține, oriunde în șirul dat. Construcția este simplă și durează $\bigoh(\Sigma \cdot 2^\Sigma) \approx \np{20000000}$.
+Un concept des întîlnit este calcularea tuturor măștilor posibile. În acest caz, există cel mult $2^{20} \approx \np{1000000}$ de măști posibile. Putem construi un vector de \ccode{bool} (sau chiar un \ccode{bitset}) care indică ce măști putem obține, oriunde în șirul dat. Construcția este simplă și durează $\bigoh(\Sigma \cdot n) \approx \np{20000000}$.
 
 \begin{minted}{c}
 void build_obtainable_masks() {
@@ -202,7 +202,7 @@ $\bullet$
 
 \subsubsection*{Reprezentarea datelor}
 
-Trebuie să vedem unde intervin cele $2^n$ stări așteptate. Este destul de natural să privim lucrurile astfel. Să reindexăm vectorul $a$ de la 0. Să construim acum un vector boolean $p[0 \dots 2^n - 1]$ care reține cîte o informație pentru fiecare mască pe $n$ biți. Pentru o mască $m$, fie $b$ indicele celui mai semnificativ bit 1 (unde $0 \leq b < n$). Atunci desemnăm $v[m]$ ca fiind \ccode{true} dacă și numai dacă putem procesa variabilele $a_0, \dots a_b$ astfel încît pe cele care corespund la biți de 1 să le stocăm în prezent în variabile. De exemplu, pentru masca $77 = 1001101_{(2)}$, $v[77]$ va fi \ccode{true} dacă putem procesa valorile $a_0 \dots a_6$ astfel încît la final să avem patru variabile cu valorile $a_0, a_2, a_3$ și $a_6$.
+Trebuie să vedem unde intervin cele $2^n$ stări așteptate. Este destul de natural să privim lucrurile astfel. Să reindexăm vectorul $a$ de la 0. Să construim acum un vector boolean $v[0 \dots 2^n - 1]$ care reține cîte o informație pentru fiecare mască pe $n$ biți. Pentru o mască $m$, fie $b$ indicele celui mai semnificativ bit 1 (unde $0 \leq b < n$). Atunci desemnăm $v[m]$ ca fiind \ccode{true} dacă și numai dacă putem procesa variabilele $a_0, \dots a_b$ astfel încît pe cele care corespund la biți de 1 să le stocăm în prezent în variabile. De exemplu, pentru masca $77 = 1001101_{(2)}$, $v[77]$ va fi \ccode{true} dacă putem procesa valorile $a_0 \dots a_6$ astfel încît la final să avem patru variabile cu valorile $a_0, a_2, a_3$ și $a_6$.
 
 Subliniem că, prin convenție, o mască unde bitul cel mai semnificativ (MSB) este $b$ se referă întotdeauna la starea sistemului după ce am procesat elementele $a_0, \dots, a_b$. Aceasta deoarece ultima variabilă este în mod necesar stocată (deci bitul aferent este 1).
 
