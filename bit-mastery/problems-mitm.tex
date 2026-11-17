@@ -23,7 +23,7 @@ Dar există și o soluție mai puțin cunoscută în $\bigoh(2^{n/2})$. Pe evalu
   \item toate valorile din $L_{k}$ crescute cu $x$, dacă alegem să îl folosim pe $x$.
 \end{itemize}
 
-Așadar, este suficient să îl stocăm pe $L_{k}$ într-un vector și să-l interclasăm cu $L_{k} + x$. Această operație necesită $2^{k + 1}$ comparații, deci efortul însumat pentru toate $k$-urile este $\bigoh{2^{n/2}}$.
+Așadar, este suficient să îl stocăm pe $L_{k}$ într-un vector și să-l interclasăm cu $L_{k} + x$. Această operație necesită $2^{k + 1}$ comparații, deci efortul însumat pentru toate $k$-urile este $\bigoh(2^{n/2})$.
 
 \subsection{Puzzle-urile de pe Infoarena}
 
@@ -53,7 +53,7 @@ Aici este mai mult de povestit și este un intermezzo interesant. Vom demonstra 
 
 Dacă enumerăm toate cele $2^n$ măști pe $n$ biți și pentru fiecare submască enumerăm toate sumăștile, efortul este $\bigoh(3^n)$ (deși intuiția ne spune că ar fi $\bigoh(4^n)$).
 
-Iată \href{https://cp-algorithms.com/algebra/all-submasks.html#iterating-through-all-masks-with-their-submasks-complexity-o3n}{o demonstrație frumoasă} bazată pe combinatorică. Iată și o demonstrație bazată pe bijecții. Să considerăm masca 10011 pe 5 biți. Așadar, am ales ca din cei 5 biți să setăm doi pe 0. Acum îi vom enumera submăștile, de la 00000 la 11111. Așadar pot apărea noi zerouri... dar acestea nu sînt la fel ca primele. \emoji{slightly-smiling-face} Concret, să construim o bijecție între submăștile submăștilor pe $n$ biți și mulțimea numerelor în baza 3 pe $n$ biți:
+Iată \href{https://cp-algorithms.com/algebra/all-submasks.html#iterating-through-all-masks-with-their-submasks-complexity-o3n}{o demonstrație frumoasă} bazată pe combinatorică. Iată și o demonstrație bazată pe bijecții. Să considerăm masca 10011 pe 5 biți. Așadar, am ales ca din cei 5 biți să setăm doi pe 0. Acum îi vom enumera submăștile, de la 00000 la 11111. Așadar pot apărea noi zerouri... dar acestea nu sînt la fel ca primele. \emoji{slightly-smiling-face} Concret, să construim o bijecție între submăștile măștilor pe $n$ biți și mulțimea numerelor cu $n$ cifre în baza 3:
 
 \begin{itemize}
   \item Cifra 1 semnifică că am ales bitul 1 în submască, apoi și în submasca submăștii.
@@ -106,7 +106,7 @@ De aici soluțiile diverg. Un exemplu cu tabele hash ar putea fi:
 \begin{itemize}
   \item Grupează toate sumele obținute în stînga. Atașează fiecărei sume $x$ un vector $v$ în care $v[i]$ reține în cîte moduri am obținut suma $x$ cu $i$ abțibilduri.
 
-  \item Fă sume parțiale peste acești vectori, astfel va $v[i]$ să rețină în cîte moduri putem obține suma $x$ cu cel mult $i$ abțibilduri.
+  \item Fă sume parțiale peste acești vectori, astfel ca $v[i]$ să rețină în cîte moduri putem obține suma $x$ cu cel mult $i$ abțibilduri.
 
   \item Pune toate sumele și vectorii lor într-o tabelă hash indexată după suma $x$.
 
@@ -218,7 +218,7 @@ Pentru sortare, este important să evităm comparația naivă de vectori, care r
 
 \subsubsection*{Optimizare de memorie}
 
-A doua versiunea de sursă face o optimizare uriașă de memorie (de la 7 MB la 300 KB). Nu este nevoie să stocăm vectorii de diferențe de lungime $n-1$. Putem recalcula la cerere orice element cu cost $\bigoh(1)$. Este nevoie să stocăm doar masca cu care am construit vectorul și jumătatea stîngă/dreaptă din care provine. Din nou, codul care consumă mai puțină memorie este mai rapid, deși face conversii suplimentare. Cine-ar fi crezut? \emoji{winking-face}
+A doua versiune de sursă face o optimizare uriașă de memorie (de la 7 MB la 300 KB). Nu este nevoie să stocăm vectorii de diferențe de lungime $n-1$. Putem recalcula la cerere orice element cu cost $\bigoh(1)$. Este nevoie să stocăm doar masca cu care am construit vectorul și jumătatea stîngă/dreaptă din care provine. Din nou, codul care consumă mai puțină memorie este mai rapid, deși face conversii suplimentare. Cine-ar fi crezut? \emoji{winking-face}
 
 
 \subsection{Problema Light Switches (Codeforces)}
@@ -232,7 +232,7 @@ Pornim de la observația elementară că două apăsări ale aceluiași buton se
 
 Putem gîndi totul în termeni de \ccode{bitset}-uri. Fie $x_1, \dots, x_s$ bitseturile celor $s$ butoane, unde $x_i[j]=1$ dacă și numai dacă butonul $i$ afectează becul $j$. Fie $y_1, \dots, y_d$ bitseturile celor $d$ zile. Atunci soluția pentru ziua $i$ va fi un subset minimal al lui $x$ al cărui xor să fie $y_i$.
 
-Soluția în $\bigoh(n \cdot d \cdot 2^s)$ ar fi: calculează xor-ul pentru fiecare submulțime a lui $x$, apoi pentru fiecare zi caută bitsetul zilei în mulțimea de bitseturi generate. Fiecare comparație este liniară, în $\bigoh(n)$. Desigur, această soluție este ineficientă, dar ne dă ideea pentru \textit{meet in the middle}:
+Soluția în $\bigoh(n \cdot (s + d) \cdot 2^s)$ ar fi: calculează xor-ul pentru fiecare submulțime a lui $x$, apoi pentru fiecare zi caută bitsetul zilei în mulțimea de bitseturi generate. Fiecare comparație este liniară, în $\bigoh(n)$. Desigur, această soluție este ineficientă, dar ne dă ideea pentru \textit{meet in the middle}:
 
 \begin{enumerate}
   \item Calculăm $2^l$ bitseturi pe care le putem obține doar cu primele $l$ butoane. Le punem într-o tabelă hash (vom avea nevoie să căutăm prin ele). Pentru fiecare bitset reținem și cu cîte butoane l-am obținut. Dacă mai multe combinații de butoane duc la același bitset, reținem numărul minim de apăsări.
@@ -274,7 +274,7 @@ $\bullet$
 
 Problema are o soluție naivă în $\bigoh(2^m \cdot n)$: generăm toate combinațiile de culori și, pentru fiecare combinație, verificăm dacă putem parcurge vectorul. Deci ideea de \textit{meet in the middle} este să generăm, separat, combinații de cîte $m/2$ culori.
 
-Dar chiar și așa, $\bigoh(2^{m/2} \cdot n)$ va depăși timpul! Trebuie să scăpăm cumva de factorul de $n$. Observăm că o pereche de culori consecutive $\langle x,y \rangle$ înseamnă că trebuie să cumpărăm măcar una dintre culorile $x$ și $y$. Numim această pereche o \textit{relație} între $x$ și $y$. Astfel ia naștere o matrice de relații de $m \times m = \np{1600}$, mult mai puțin decît $n=\np{300000}$. Matricea este chiar simetrică și are doar $m \times (m + 1) / 2 = 780$ de valori utile.
+Dar chiar și așa, $\bigoh(2^{m/2} \cdot n)$ va depăși timpul! Trebuie să scăpăm cumva de factorul de $n$. Observăm că o pereche de platforme consecutive de culori $\langle x,y \rangle$ înseamnă că trebuie să cumpărăm măcar una dintre culorile $x$ și $y$. Numim această pereche o \textit{relație} între $x$ și $y$. Astfel ia naștere o matrice de relații de $m \times m = \np{1600}$, mult mai puțin decît $n=\np{300000}$. Matricea este chiar simetrică și are doar $m \times (m + 1) / 2 = 780$ de valori utile.
 
 Am reprezentat matricea ca pe un vector de măști de 40 de biți, ceea ce paralelizează unele operații. De exemplu, dacă avem o mască de culori deja cumpărate $a$ și masca $b$ de relații a unei alte culori $x$, putem verifica ușor dacă $x$ trebuie cumpărată obligatoriu: $b \land \neg a$. Astfel testăm dacă $x$ are relații care nu apar în $a$. Dar cred că, și dacă nu sînteți versați în folosirea măștilor pe biți, puteți lua punctaj maxim. Unele operații ar fi de $m/2$ ori mai scumpe, dar s-ar încadra în timp.
 

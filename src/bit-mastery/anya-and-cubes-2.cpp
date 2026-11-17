@@ -86,7 +86,7 @@ struct subset_generator {
 
 subset_generator sub_gen;
 
-// Capsule care izolează unele variabile.
+// Capsulă care izolează unele variabile.
 struct half_merger {
   int l, r;
   long long result;
