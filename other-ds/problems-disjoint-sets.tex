@@ -3,6 +3,63 @@
 
 \section{Probleme}
 
+\subsection{Problema Road Construction (CSES)}
+\label{problem:road-construction}
+
+\href{https://cses.fi/problemset/task/1676}{enunț}
+$\bullet$
+\hyperref[code:road-construction]{sursă}
+
+În această problemă vedem o aplicație simplă și comună a pădurilor de mulțimi disjuncte. Într-un graf trebuie să procesăm două tipuri de operații:
+
+\begin{enumerate}
+  \item Actualizare: Trasează o muchie între două noduri.
+  \item Interogare: Spune dacă două noduri se află în aceeași componentă conexă.
+\end{enumerate}
+
+Acest tip de operații poartă numele de \textbf{conexitate incrementală}. Observăm că, la trasarea unei muchii $(u, v)$, nu afectăm cu nimic operațiile viitoare dacă în loc de $(u, v)$ trasăm muchia $(u', v')$, unde $u'$ și $v'$ sînt deja accesibile din $u$ și respectiv din $v$. De fapt, ce contează este crearea și menținerea unor \textbf{clase de echivalență} în care este partiționată mulțimea de noduri.
+
+Pădurile de mulțimi disjuncte sînt (așa cum le spune și numele) arbori. Structura reorganizează în permanență arborii pentru a-i comprima pe înălțime. Astfel ea obține complexitatea amortizată $\bigoh(\log^{*} n)$ per operație.
+
+O cerință fundamentală pentru ca DSF să se preteze la rezolvarea problemei este ca datele (oricare ar fi ele) să nu se mai deconecteze odată ce le-am conectat. DSF se aplică doar la conectivitatea incrementală, nu și la cea generalizată.
+
+
+\subsection{Problema Unbelievable Array (Toph)}
+\label{problem:unbelievable-array}
+
+\href{https://toph.co/p/unbelievable-array}{enunț}
+$\bullet$
+\hyperref[code:unbelievable-array]{sursă}
+
+Problema întrunește cerința ca să se preteze la DSF: pozițiile sau valorile se reunesc și apoi nu se mai despart. Dar detaliile sînt importante!
+
+Menționăm în treacăt o direcție de explorare care se dovedește a fi o fundătură. Să încercăm să unificăm valorile. După o operație \texttt{1 10 12}, orice valoare 10 este reunită cu 12 și, pentru restul operațiilor, are o soartă comună cu culoarea 12. Dacă ulterior unificăm \texttt{1 12 13}, toate fostele valori 10 devin 13. Nu?
+
+... nu chiar. În viitor putem întîlni unificarea \texttt{1 8 10}, care va „da naștere” unei noi generații de valori 10. Diverse alte experimente de gîndire ne duc la concluzia că valorile se pot despărți după unificare.
+
+Soluția corectă este să unificăm poziții. Dacă două poziții $a_i = x$ și $a_j = y$ se unesc prin operația \texttt{1 x y}, atunci ele chiar nu vor mai căpăta niciodată valori separate. Restul sînt detalii de implementare:
+
+\begin{itemize}
+  \item Operațiile sînt pe valori, deci avem nevoie să reținem o poziție (oricare) pe care apare fiecare valoare.
+  \item Cînd o valoare dispare prin unificare, notăm că ea nu mai apare nicăieri. Dar un caz particular este \texttt{1 x x}, cînd \textbf{nu} trebuie să notăm că $x$ a dispărut! Nu am depistat acest caz decît scriind o sursă naivă și un generator de teste aleatorii.
+\end{itemize}
+
+
+\subsection{Problema Parking (Codeforces)}
+\label{problem:parking}
+
+\href{https://codeforces.com/edu/course/2/lesson/7/2/practice/contest/289391/problem/B}{enunț}
+$\bullet$
+\hyperref[code:parking]{sursă}
+
+Să pornim de la soluția naivă. Pentru fiecare mașină $i$, pornind de la poziția $p_i$ parcurgem circular vectorul pînă la o poziție liberă. Desigur, complexitatea este $\bigoh(n^2)$, de exemplu dacă valorile $p_i$ sînt descrescătoare și consecutive.
+
+Ca să accelerăm simularea, dorim să găsim rapid capătul unui interval de poziții ocupate. Următorul loc este liber, deci mașina în el. Aici intervine ideea de unificare permanentă: Odată ce un interval de poziții este blocat, el poate doar să crească, eventual unindu-se cu alte intervale blocate la dreapta sau la stînga.
+
+De aceea, vom folosi o pădure de mulțimi disjuncte în care fiecare mulțime corespunde unui interval. Suplimentar, pentru fiecare rădăcină din această mulțime vom reține poziția de final a intervalului. La unificarea a două intervale, vom reține poziția de final a intervalului din dreapta (circular).
+
+În practică, eu am folosit chiar cîmpul părinte pentru a reține poziția de final. Mai exact, la toate unificările intervalul stîng devine fiu al intervalului drept. Teoretic, această implementare nu mai garantează complexitatea de $\bigoh(n \log^{*} n)$, dar în practică o consider imposibil de pedepsit, deoarece compresia căii va scurta inevitabil căile lungi.
+
 \subsection{Problema Restructuring Company (Codeforces)}
 \label{problem:restructuring-company}
 
@@ -13,6 +70,86 @@ $\bullet$
 Chiar de la citirea enunțului recunoaștem problema ca pe una „servită” de păduri de mulțimi disjuncte. Singura noutate este că operațiile de tipul 2 trebuie procesate eficient, nu în $\bigoh(y - x)$.
 
 Este suficient să folosim un vector în plus, \ccode{end[]}, în care $end[i]$ indică că intervalul $[i, end[i]]$ este cunoscut ca fiind reunit. Aceasta garantează că operațiile de reuniune de interval necesită un efort total de $\bigoh(n \log^{*} n)$. De exemplu, odată ce am unificat pozițiile $i$, $i + 1$ și $i + 2$ nu vom mai consulta niciodată poziția $i + 1$ (decît, desigur, dacă primim o operație care începe de acolo).
+
+
+\subsection{Problema Colorful Array (SPOJ)}
+\label{problem:colorful-array}
+
+\href{https://www.spoj.com/problems/CLFLARR/}{enunț}
+$\bullet$
+\hyperref[code:colorful-array]{sursă}
+
+Putem să procesăm operațiile în ordine cronologică, dar problema devine una clasică de arbori de intervale cu actualizări pe interval și interogări punctuale. Pe fiecare nod reținem ultima vopsire care a acoperit întregul interval subîntins. La vopsirea unui interval, notăm ID-ul operației pe toate nodurile în care se descompune intervalul. Pentru a tipări vectorul final, facem cîte o interogare pe fiecare poziție. Răspunsul la o interogare este ID-ul maxim al unei operații notat pe oricare dintre strămoșii poziției. Complexitatea este, desigur, $\bigoh((n + q) \log n)$.
+
+Soluția cu DSF obține o complexitate mai bună, $\bigoh((n + q) \log^{*} n)$, procesînd operațiile în ordine inversă. Să observăm că:
+
+\begin{itemize}
+  \item Ultima operație, $[l_q, r_q]$, stabilește culoarea finală a tuturor pozițiilor acoperite.
+  \item Penultima operație, $[l_{q-1}, r_{q-1}]$, stabilește culoarea pozițiilor acoperite, cu excepția celor care se află și în intervalul $[l_q, r_q]$.
+  \item În general, operația $[l_k, r_k]$ stabilește culoarea pozițiilor acoperite, cu excepția celor care au căpătat anterior o valoare.
+\end{itemize}
+
+De aceea, soluția cu DSF pornește din cea naivă. Pentru o operație $(l, r, c)$, vizităm pozițiile de la $l$ la $r$ și vopsim cu culoarea $c$ pozițiile încă nevopsite. După vopsire, apelăm la DSF ca să unificăm această poziție cu eventualele intervale vopsite din stînga și din dreapta ei. Dacă poziția curentă este deja vopsită, avem nevoie să găsim rapid sfîrșitul intervalului de poziții vopsite. Pentru aceasta apelăm tot la DSF.
+
+Care este complexitatea? Să considerăm acțiunile pe care le poate face o operație.
+
+\begin{enumerate}
+  \item Operația poate întîlni o poziție goală, pe care o vopsește în $\bigoh(\log^{*} n)$. Dar fiecare poziție este scrisă numai o dată, deci efortul total este $\bigoh(n \log^{*} n)$.
+  \item Operația poate întîlni o poziție vopsită. Dar, tocmai pentru că cerem finalul intervalului de poziții vopsite, următoarea poziție este garantat goală și va fi vopsită. Deci majoritatea efortului este amortizat de operațiile de vopsire. Este posibil ca ultima poziție vopsită întîlnită să \textbf{nu} mai fie urmată de o poziție goală, iar efortul total pentru aceste situații este $\bigoh(q \log^{*} n)$.
+\end{enumerate}
+
+
+\subsection{Problema Consecutive Letters (SPOJ)}
+\label{problem:consecutive-letters}
+
+\href{https://www.spoj.com/problems/CONSEC/}{enunț}
+$\bullet$
+\hyperref[code:consecutive-letters]{sursă}
+
+Problema este similară în spirit cu Colorful Array. Ideea să folosim DSF ne poate veni dacă ne gîndim că șirul inițial se fărîmițează în segmente tot mai scurte de litere. Este greu să ținem evidența fărîmițărilor (\textit{decremental connectivity}), dar este ușor să mergem invers cronologic și să ținem evidența unificărilor (\textit{incremental connectivity}).
+
+Vom simula întîi operațiile pentru a obține șirul final. Vom nota în fiecare operație litera pe care a înlocuit-o, ca să putem restaura șirul inițial. Apoi vom derula invers operațiile. Pe măsură ce literele reapar în șir, le vom unifica cu literele egale din cele două părți, dacă există.
+
+Ca să putem răspunde la interogări, vom reține pentru fiecare interval și lungimea sa.
+
+
+\subsection{Problema Path Queries (Codeforces)}
+\label{problem:path-queries-2}
+
+\href{https://codeforces.com/contest/1213/problem/G}{enunț}
+$\bullet$
+\hyperref[code:path-queries-2]{sursă}
+
+Soluția pentru această problemă amintește puțin de algoritmul lui Kruskal pentru aflarea arborelui parțial minim. Ca și acolo, și aici este de ajutor să pornim cu un arbore vid (fără muchii) și să îi adăugăm muchiile în ordine crescătoare. Astfel, el începe să se reconecteze, ceea ce putem gestiona cu păduri de mulțimi disjuncte. Dacă ultima muchie adăugată are greutatea $w$, atunci prin definiție arborele conține exact căile pe care greutatea maximă nu depășește $w$.
+
+De aceea, vom sorta și interogările în ordine crescătoare. Înainte de a răspunde la o interogare $q$, vom adăuga la arbore toate muchiile de greutate cel mult $q$. Care este răspunsul la interogare? Dacă nodurile formează în prezent $k$ componente conexe de dimensiuni $s_1, s_2, \dots, s_k$, atunci numărul de căi între ele este
+
+$$\sum_{i=1}^{k} C_{s_i}^2$$
+
+Putem menține această cantitate pe măsură ce adăugăm muchii în arbore. Cînd reunim două componente de mărimi $s_i$ și $s_j$, fiecare nod din prima componentă capătă acces la fiecare nod din a doua componentă. Așadar, adăugăm $s_i \cdot s_j$ la numărul total de căi.
+
+
+\subsection{Problema Experience (Codeforces)}
+\label{problem:experience}
+
+\href{https://codeforces.com/edu/course/2/lesson/7/1/practice/contest/289390/problem/C}{enunț}
+$\bullet$
+\hyperref[code:experience]{sursă}
+
+Recunoaștem clar problema ca pe una de unificări. Odată ce $x$ și $y$ sînt unificați în aceeași echipă, toate cîștigurile lor viitoare vor fi identice. Totuși, mai este nevoie de ceva. Nu putem pur și simplu să reținem doar scorul echipei lui $x$ și $y$. Jucătorii pot avea scoruri diferite din cauza parcursului anterior unificării. Aceste scoruri trebuie reținute cumva.
+
+Intuitiv, cînd o echipă cîștigă experiență, dorim să notăm cîștigul pe rădăcina echipei, pentru ca fiecare membru să afle despre acest cîștig. Astfel, putem percepe structura ca pe un \textbf{DSF augmentat} cu informații suplimentare.
+
+Ulterior, dacă echipa $A$ cu rădăcina $r_A$ se unifică cu echipa $B$ cu rădăcina $r_B$, obținem (aproape) ce ne dorim. Cîștigurile dinaintea unificării sînt notate în $r_A$, iar cele de după unificare în $r_B$. Rezultă că putem afla experiența unui jucător însumînd experiențele notate în toți strămoșii săi pînă la rădăcină.
+
+Trebuie să mai lămurim cîteva aspecte la cele două operații care modifică structura.
+
+\begin{enumerate}
+  \item La unificarea lui $A$ cu $B$ nu dorim ca nodurile din $A$ să beneficieze automat de experiența notată în $r_B$: acelea sînt puncte acumulate înaintea unificării. De aceea, vom scădea din $r_A$ experiența curentă din $r_B$.
+  \item La compresia căii, dorim să legăm fiecare nod $u$ direct de rădăcina $r$. Dar atunci $u$ pierde experiența notată pe calea de la $u$ la $r$, cu excepția nodurilor $u$ și $r$ însele! Din fericire, este ușor să compensăm această pierdere, însumînd și adunînd acele experiențe la nodul $u$, în timp $\bigoh(1)$ per nod.
+\end{enumerate}
+
+Problema \hyperref[problem:regate]{Regate} folosește această structură într-un context mai dificil.
 
 
 \subsection{Problema Trampoline (infO(1) Cup 2020)}
