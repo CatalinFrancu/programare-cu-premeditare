@@ -152,6 +152,76 @@ Trebuie să mai lămurim cîteva aspecte la cele două operații care modifică 
 Problema \hyperref[problem:regate]{Regate} folosește această structură într-un context mai dificil.
 
 
+\subsection{Problema Strange Food Chain (SPOJ)}
+\label{problem:strange-food-chain}
+
+\href{https://www.spoj.com/problems/CHAIN/}{enunț}
+$\bullet$
+\hyperref[code:strange-food-chain]{sursă}
+
+Găsirea reprezentării a datelor ne poate da de furcă. Poate părea natural să facem unificarea a două animale doar la afirmații de tip 1 (cele de echivalență). Dar ce înseamnă, de fapt, unificarea? Înseamnă că tipurile a două animale sînt pe viitor legate. Dacă îl aflăm pe unul, îl aflăm și pe celălalt. (Ca fapt divers, problema nu dă și nu cere tipuri exacte, ci doar relații între ele.)
+
+Dar, în acest sens, și afirmațiile de tip 2 leagă între ele tipurile a două animale! Dacă $x$ îl mănîncă pe $y$, și dacă ulterior aflăm că $y$ este de tip $C$, atunci în mod necesar $x$ este de tip $B$. Dacă $x$ îl mănîncă pe $y$ și $z$ pe $t$, iar $y$ și $t$ sînt echivalente, atunci și $x$ și $z$ sînt echivalente.
+
+Cu alte cuvinte, noi trebuie să unificăm animalele pentru orice afirmație, dar trebuie să reținem cumva relațiile între animalele din același arbore. Aici intervine augmentarea. Să spunem că unificăm două noduri izolate, $x$ și $y$, și că îl facem pe $x$ fiu al lui $y$. Atunci vom pune pe muchia $(x, y)$ valoarea 0 dacă afirmația dată este una de echivalență, respectiv 1 dacă afirmația dată este „$x$ îl mănîncă pe $y$”.
+
+Dacă ulterior aflăm că $y \equiv z$ și îl unim pe $y$ de $z$ cu o muchie de valoarea 0, atunci suma valorilor de pe muchii de la $x$ la $z$ este 1, ceea ce ne spune, corect, că $x$ îl mănîncă și pe $z$.
+
+Dacă ulterior aflăm că $z$ îl mănîncă pe $u$, iar $u$ pe $v$, și adăugăm muchiile $(z, u)$ și $(u, v)$, ambele de valoare 1, atunci suma valorilor de la $x$ la $v$ este 3, care ne spune că $x$ și $v$ au același tip.
+
+Așadar, problema este similară cu Experience în sensul că:
+
+\begin{itemize}
+  \item Notăm o valoare, să-i spunem $dist[u]$, în fiecare nod $u$, pentru a reprezenta valoarea de pe muchia de la $u$ la părintele său.
+  \item Suma valorilor de la un nod la rădăcină reprezintă o clasă de echivalență raportată la rădăcină.
+  \item Diferența modulo 3 dintre aceste clase de echivalență pentru două noduri $u$ și $v$ aflate în același arbore ne indică dacă $u$ îl mănîncă pe $v$, $v$ pe $u$ sau cele două animale sînt de același tip.
+  \item La compresia căii lui $u$, recalculăm aceste sume în fiecare strămoș al lui $u$ (modulo 3).
+\end{itemize}
+
+Ultima operație rămasă de tratat este unificarea. Traducem fiecare afirmație $(u, v, tip)$ într-o operație $(u, v, d)$ în DSF, unde $d$ este 0 pentru afirmațiile de echivalență sau 1 pentru afirmațiile de tip „$u$ îl mănîncă pe $v$”. Iau naștere mai multe scenarii.
+
+\begin{enumerate}
+  \item Dacă $u$ și $v$ sînt deja unificate, iar distanța dintre $u$ și $v$ corespunde cu $d$, atunci afirmația este adevărată și nu mai avem nimic de făcut.
+  \item Dacă $u$ și $v$ sînt deja unificate, iar distanța dintre $u$ și $v$ nu corespunde cu $d$, atunci afirmația este falsă și nu mai avem nimic de făcut.
+  \item Altfel unificăm arborii lui $u$ și $v$. Fie $r$ și $s$ rădăcinile arborilor. Pe muchia $(r, s)$ punem valoarea necesară (0, 1 sau 2) astfel încît distanța între $u$ și $v$ să fie $d$.
+\end{enumerate}
+
+
+\subsection{Problema Matrice (ONI 2009, clasele 11-12)}
+\label{problem:matrice}
+
+\href{https://kilonova.ro/problems/177}{enunț}
+$\bullet$
+\hyperref[code:matrice]{sursă}
+
+Dacă pornim de la raționamente de bază (BFS, Lee etc.), vom ajunge la concluzia că problema este una de conectivitate, nu de distanțe. Noi nu trebuie să găsim un drum de o lungime minimă, ci unul care să treacă prin valori cît mai mari.
+
+Astfel ne poate veni ideea să procesăm valorile în ordine descrescătoare. Pe măsură ce „activăm” celulele respective din matrice, porțiuni tot mai mari devin circulabile. Pentru fiecare cale, noi dorim să răspundem la întrebarea: la ce moment (mai exact, prin adăugarea cărei valori) s-au interconectat cele două capete ale căii?
+
+Așadar, putem construi o structură de mulțimi disjuncte peste matrice. O schiță de rezolvare interesantă ar fi următoarea:
+
+\begin{itemize}
+  \item Inițial, notează în fiecare celulă ID-urile căilor care au un capăt în acea celulă.
+  \item Pe parcursul algoritmului, fiecare rădăcină din DSF menține lista căilor cu un capăt în subarborele său și care încă nu au răspuns.
+  \item La unificarea a două rădăcini $r$ și $s$ din DSF, propagă în tată (să zicem $s$) lista de ID-uri din $r$.
+  \item Dacă listele lui $r$ și $s$ conțin același ID $x$, atunci valoarea curentă este cea care închide calea $x$, așadar este cea mai mică valoare posibilă pentru calea $x$. Notăm răspunsul pentru $x$ și îl eliminăm din lista unificată.
+\end{itemize}
+
+Această rezolvare depinde de eficiența combinării a două liste și nu vom insista asupra ei. În schimb, iată o altă idee. Vom procesa întîi toate valorile din matrice și vom face toate unificările, iar după aceea vom răspunde la toate întrebările.
+
+Vom renunța la compresia căii. În schimb, vom menține pentru fiecare componentă numărul său de celule și, la unificare, vom agăța mereu rădăcina componentei mai mici de cea mare. Cu această reprezentare, vom pierde complexitatea de $\bigoh(\log^{*} n)$ per operație, dar încă mai putem garanta $\bigoh(\log n)$ per operație. De ce? Deoarece, dacă pornim din orice nod și urcăm pînă la rădăcina arborelui său, ori de cîte ori traversăm o muchie ajungem într-un arbore de mărime cel puțin dublă. De aceea, înălțimea oricărui arbore nu va depăși $\log n$.
+
+Atunci cînd procesăm o celulă de valoare $val$ și ea duce la unificarea a doi arbori, pe muchia dintre cele două rădăcini vom nota valoarea $val$. Sensul acestei notații este că, pentru a ajunge de la orice celulă din primul arbore la orice celulă din al doilea arbore, muchia minimă este $val$.
+
+Subliniem că muchia din DSF nu este neapărat între două celule vecine din matrice. Din nou, arborii din DSF nu urmăresc să reprezinte structura exactă a matricei, ci doar zonele conexe create pînă acum.
+
+Cu această reprezentare, pentru a determina valoarea care a dus la conectarea a două noduri $u$ și $v$, trebuie să găsim valoarea minimă de pe calea $(u, v)$ din arborele final. Această nevoie amintește de algoritmii de LCA (\textit{lowest common ancestor}), dar ei nu sînt necesari aici. Întrucît arborele are înălțime logaritmică, un algoritm naiv este suficient. Pornim cu doi pointeri din $u$ și din $v$ și, la fiecare pas, urcăm pointerul din subarborele mai mic, pînă cînd cei doi pointeri se întîlnesc în LCA.
+
+Ca detaliu de implementare, ca să nu operăm pe perechi (linie, coloană) am înlocuit fiecare celulă $(r, c)$ cu un ID egal cu $r \cdot n + c$. Atunci vecinii fiecărei celule $x$ sînt $x - n$, $x + n$, $x - 1$ și $x + 1$ (sînt necesare verificări rudimentare ca să nu ne revărsăm dincolo de prima sau ultima coloană).
+
+Puteți rezolva și problemele \hyperref[problem:mst-for-each-edge]{Minimum Spanning Tree for Each Edge} și \hyperref[problem:termite]{Termite} pentru aplicații mai grele ale acestei structuri.
+
+
 \subsection{Problema Trampoline (infO(1) Cup 2020)}
 \label{problem:trampoline}
 
